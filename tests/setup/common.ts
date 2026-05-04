@@ -9,17 +9,19 @@ expect.extend(matchers);
 // Cleanup after each test
 afterEach(() => {
   cleanup();
-  // Clear all mocks
   vi.clearAllMocks();
-  // Clear localStorage and sessionStorage
-  localStorage.clear();
-  sessionStorage.clear();
+  // Tests may install ad-hoc storage shims that don't implement clear()
+  // (e.g. the "storage disabled" simulation). Be defensive.
+  try { (localStorage as Storage & { clear?: () => void }).clear?.(); } catch {}
+  try { (sessionStorage as Storage & { clear?: () => void }).clear?.(); } catch {}
   // Clear all cookies
-  document.cookie.split(";").forEach((c) => {
-    document.cookie = c
-      .replace(/^ +/, "")
-      .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
-  });
+  try {
+    document.cookie.split(';').forEach((c) => {
+      document.cookie = c
+        .replace(/^ +/, '')
+        .replace(/=.*/, '=;expires=' + new Date().toUTCString() + ';path=/');
+    });
+  } catch {}
 });
 
 // Mock window.matchMedia for responsive tests

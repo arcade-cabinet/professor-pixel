@@ -59,27 +59,29 @@ export class CookieMock {
             .join('; ');
         },
         set: (value: string) => {
-          const pairs = value.split(';').map(s => s.trim());
-          const [cookiePair] = pairs;
-          if (cookiePair) {
-            const [key, val] = cookiePair.split('=');
-            if (val && !val.includes('expires=')) {
-              this.cookies[key] = val;
-            } else if (val?.includes('expires=')) {
-              // Check if it's an expiry deletion
-              const expiryMatch = value.match(/expires=([^;]+)/);
-              if (expiryMatch) {
-                const expiryDate = new Date(expiryMatch[1]);
-                if (expiryDate < new Date()) {
-                  delete this.cookies[key];
-                } else {
-                  this.cookies[key] = val.split(';')[0];
-                }
-              }
+          // Parse a Set-Cookie-style string. The first segment is name=value;
+          // subsequent segments are attributes (expires, path, SameSite, …).
+          const segments = value.split(';').map(s => s.trim());
+          const first = segments[0];
+          if (!first) return;
+          const eq = first.indexOf('=');
+          if (eq < 0) return;
+          const key = first.slice(0, eq);
+          const val = first.slice(eq + 1);
+
+          const expiresAttr = segments
+            .slice(1)
+            .find(s => s.toLowerCase().startsWith('expires='));
+          if (expiresAttr) {
+            const expiryDate = new Date(expiresAttr.slice('expires='.length));
+            if (Number.isFinite(expiryDate.getTime()) && expiryDate < new Date()) {
+              delete this.cookies[key];
+              return;
             }
           }
-        }
-      }
+          this.cookies[key] = val;
+        },
+      },
     };
   }
 

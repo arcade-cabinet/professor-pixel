@@ -241,8 +241,8 @@ export function loadUserPreferences(): UserPreferences {
     return {
       theme: (theme as 'light' | 'dark' | 'system') || 'system',
       dismissedTips: dismissedTipsStr ? JSON.parse(dismissedTipsStr) : [],
-      soundEnabled: soundEnabled === 'true',
-      autoSaveEnabled: autoSaveEnabled !== 'false' // Default to true
+      soundEnabled: soundEnabled !== 'false', // Default to true
+      autoSaveEnabled: autoSaveEnabled !== 'false', // Default to true
     };
   } catch (error) {
     handleStorageError(error as Error, 'loadUserPreferences');
@@ -277,20 +277,36 @@ export function clearAllData(): void {
 
 // Migration utilities for future updates
 export function migrateStorageIfNeeded(): void {
-  // This function can be called on app initialization to handle
-  // any necessary data migrations between versions
-  const wizardState = loadWizardState();
-  const sessionState = loadSessionState();
-  
-  // Perform any needed migrations here
-  if (wizardState && wizardState.version !== STORAGE_VERSION) {
-    console.log('Migrating wizard state to new version');
-    saveWizardState(wizardState);
+  // Inspect the raw stored payload (loadWizardState would have already
+  // upgraded the in-memory version field in validateAndMigrate).
+  const needsWizardMigration = needsMigration(WIZARD_STATE_KEY, localStorage);
+  const needsSessionMigration = needsMigration(SESSION_STATE_KEY, sessionStorage);
+
+  if (needsWizardMigration) {
+    const wizardState = loadWizardState();
+    if (wizardState) {
+      console.log('Migrating wizard state to new version');
+      saveWizardState(wizardState);
+    }
   }
-  
-  if (sessionState && sessionState.version !== STORAGE_VERSION) {
-    console.log('Migrating session state to new version');
-    saveSessionState(sessionState);
+
+  if (needsSessionMigration) {
+    const sessionState = loadSessionState();
+    if (sessionState) {
+      console.log('Migrating session state to new version');
+      saveSessionState(sessionState);
+    }
+  }
+}
+
+function needsMigration(key: string, storage: Storage): boolean {
+  try {
+    const raw = storage.getItem(key);
+    if (!raw) return false;
+    const parsed = JSON.parse(raw);
+    return parsed?.version !== STORAGE_VERSION;
+  } catch {
+    return false;
   }
 }
 
