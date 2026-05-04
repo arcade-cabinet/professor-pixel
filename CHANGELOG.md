@@ -22,7 +22,7 @@ Going forward, releases and version bumps are managed automatically by [release-
 - `release-please` configuration and a `release.yml` workflow to automate version bumps and notes from Conventional Commits.
 - `dependabot.yml` for weekly npm + GitHub Actions dependency PRs (minor/patch grouped).
 
-## [0.1.0] — initial development (2025-09 → 2025-09)
+## [1.0.0] — initial development (2025-09 → 2025-09)
 
 The project was developed iteratively in public from the first commit through the v0.1.0 cut. The summary below groups ~150 commits by theme rather than enumerating each one. Use `git log` for the full history.
 
@@ -72,5 +72,5 @@ The project was developed iteratively in public from the first commit through th
 - Code-execution stability after grading pass.
 - Asset-loader reliability and pagination on the asset browser.
 
-[Unreleased]: https://github.com/arcade-cabinet/professor-pixel/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/arcade-cabinet/professor-pixel/releases/tag/v0.1.0
+[Unreleased]: https://github.com/arcade-cabinet/professor-pixel/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/arcade-cabinet/professor-pixel/releases/tag/v1.0.0

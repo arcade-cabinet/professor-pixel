@@ -36,7 +36,7 @@ Bringing the repo up to the standard-repo profile. In progress on the open PR.
 
 | Milestone | When | Notes |
 |-----------|------|-------|
-| Initial development complete (v0.1.0 baseline) | 2025-09 | See [`CHANGELOG.md`](../CHANGELOG.md) for the themed summary |
+| Initial development complete (v1.0.0 baseline) | 2025-09 | See [`CHANGELOG.md`](../CHANGELOG.md) for the themed summary |
 | Multi-resolution Playwright suite | 2025-09 | 7 viewports, runtime-error detection wired in |
 | Universal wizard with JSON-driven flows | 2025-09 | Replaced Yarn dialogue files; supports 7 game types |
 | WYSIWYG editor with drag-and-drop | 2025-09 | Component property inspector, code view, live preview |
