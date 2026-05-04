@@ -1,476 +1,458 @@
 {
   "start": {
     "id": "start",
-    "text": "Awesome! Let's create a jumpy, bouncy platformer game! 🎮",
-    "multiStep": [
-      "In a platformer, your character jumps between platforms, collects items, and avoids obstacles.",
-      "We'll set up jumping mechanics, gravity, and platform collision!",
-      "Ready to build your platformer? Let's start!"
-    ],
-    "options": [
-      {
-        "text": "Let's design the gameplay!",
-        "next": "choose-character"
-      }
-    ]
-  },
-  
-  "choose-character": {
-    "id": "choose-character",
-    "text": "First, let's pick your platformer hero! Who will jump through your levels?",
-    "showLivePreview": {
-      "enabled": true,
-      "previewType": "character",
-      "pixelComments": ["Choose your jumpy hero!"],
-      "autoPlay": true
+    "speaker": "Pixel",
+    "text": "Awesome! A platformer - the classic jump-and-run adventure! Let's build this scene by scene with meaningful choices that shape your game. First, let's define your world's theme!",
+    "followUp": "What kind of world should your platformer take place in? This choice bundles matching backgrounds, platforms, and music!",
+    "action": "showComponentChoice",
+    "actionParams": {
+      "componentId": "worldTheme",
+      "category": "environment"
     },
     "options": [
       {
-        "text": "🦘 Bouncy Kangaroo - Super high jumps!",
-        "next": "choose-platforms",
-        "updatePreview": {
-          "type": "character",
-          "id": "kangaroo",
-          "name": "Bouncy Kangaroo",
-          "properties": {
-            "speed": 6,
-            "jumpHeight": 20,
-            "doubleJump": true,
-            "color": [200, 150, 100]
-          }
+        "text": "A: Forest Adventure - Lush greenery, wooden platforms, nature sounds",
+        "action": "selectComponentVariant",
+        "actionParams": { 
+          "componentId": "worldTheme", 
+          "variant": "A",
+          "bundle": ["forest_bg", "wood_platforms", "nature_music"]
         },
-        "previewComment": "Wow! Look at that jump height!"
+        "next": "projectSetup"
       },
       {
-        "text": "🐸 Speedy Frog - Quick and agile!",
-        "next": "choose-platforms",
-        "updatePreview": {
-          "type": "character",
-          "id": "frog",
-          "name": "Speedy Frog",
-          "properties": {
-            "speed": 8,
-            "jumpHeight": 15,
-            "wallJump": true,
-            "color": [50, 200, 50]
-          }
+        "text": "B: Desert Challenge - Sandy dunes, stone blocks, mystical ambience",
+        "action": "selectComponentVariant",
+        "actionParams": { 
+          "componentId": "worldTheme", 
+          "variant": "B",
+          "bundle": ["desert_bg", "stone_platforms", "mystic_music"]
         },
-        "previewComment": "So fast! And it can wall jump!"
-      },
-      {
-        "text": "🤖 Robot Runner - Precise controls!",
-        "next": "choose-platforms",
-        "updatePreview": {
-          "type": "character",
-          "id": "robot",
-          "name": "Robot Runner",
-          "properties": {
-            "speed": 5,
-            "jumpHeight": 12,
-            "airControl": true,
-            "color": [150, 150, 200]
-          }
-        },
-        "previewComment": "Perfect air control for tricky jumps!"
+        "next": "projectSetup"
       }
     ]
   },
-  
-  "choose-platforms": {
-    "id": "choose-platforms",
-    "text": "What kind of platforms will your hero jump on?",
-    "showLivePreview": {
-      "enabled": true,
-      "previewType": "platforms",
-      "pixelComments": ["Watch different platform types!"],
-      "autoPlay": true
+
+  "projectSetup": {
+    "id": "projectSetup",
+    "speaker": "Pixel",
+    "text": "Perfect choice! Now let's make this YOUR game. What should we call your platformer adventure?",
+    "options": [
+      {
+        "text": "A: Let me type my own game name",
+        "action": "promptGameName",
+        "next": "titlePresentation"
+      },
+      {
+        "text": "B: Generate a cool name based on my theme",
+        "action": "generateGameName",
+        "actionParams": { "gameType": "platformer" },
+        "next": "titlePresentation"
+      }
+    ]
+  },
+
+  "titlePresentation": {
+    "id": "titlePresentation",
+    "speaker": "Pixel",
+    "text": "How should your title screen present the game name?",
+    "action": "showComponentChoice",
+    "actionParams": {
+      "componentId": "titleStyle",
+      "category": "ui"
     },
     "options": [
       {
-        "text": "☁️ Fluffy clouds - Bouncy and soft!",
-        "next": "choose-obstacles",
-        "updatePreview": {
-          "type": "platforms",
-          "id": "clouds",
-          "style": "soft",
-          "properties": {
-            "bounce": true,
-            "texture": "cloud"
-          }
-        },
-        "previewComment": "Bouncy clouds! Extra jump boost!"
+        "text": "A: Animated Title - Letters bounce in with particle effects",
+        "action": "selectComponentVariant",
+        "actionParams": { "componentId": "titleStyle", "variant": "A" },
+        "next": "titleShowcase"
       },
       {
-        "text": "🧱 Solid blocks - Classic platforming!",
-        "next": "choose-obstacles",
-        "updatePreview": {
-          "type": "platforms",
-          "id": "blocks",
-          "style": "solid",
-          "properties": {
-            "stable": true,
-            "texture": "brick"
-          }
-        },
-        "previewComment": "Classic and reliable platforms!"
-      },
-      {
-        "text": "🌈 Moving platforms - Extra challenge!",
-        "next": "choose-obstacles",
-        "updatePreview": {
-          "type": "platforms",
-          "id": "moving",
-          "style": "dynamic",
-          "properties": {
-            "moving": true,
-            "pattern": "horizontal"
-          }
-        },
-        "previewComment": "They move! Timing is everything!"
+        "text": "B: Static Title with Effects - Glowing, pulsing logo with lens flares",
+        "action": "selectComponentVariant",
+        "actionParams": { "componentId": "titleStyle", "variant": "B" },
+        "next": "titleShowcase"
       }
     ]
   },
-  
-  "choose-obstacles": {
-    "id": "choose-obstacles",
-    "text": "What obstacles should players avoid?",
-    "showLivePreview": {
-      "enabled": true,
-      "previewType": "obstacles",
-      "pixelComments": ["Careful! These are dangerous!"],
-      "autoPlay": true
+
+  "titleShowcase": {
+    "id": "titleShowcase",
+    "speaker": "Pixel",
+    "text": "What should be the main focus of your title screen?",
+    "action": "showComponentChoice",
+    "actionParams": {
+      "componentId": "titleFocus",
+      "category": "ui"
     },
     "options": [
       {
-        "text": "⚡ Electric zappers - Shocking!",
-        "next": "choose-collectibles",
-        "updatePreview": {
-          "type": "obstacles",
-          "id": "zappers",
-          "damage": 1,
-          "pattern": "static"
-        },
-        "previewComment": "Zap! Don't touch those!"
+        "text": "A: Hero Showcase - Character bounces and shows abilities",
+        "action": "selectComponentVariant",
+        "actionParams": { "componentId": "titleFocus", "variant": "A" },
+        "next": "jumpMechanics"
       },
       {
-        "text": "🌊 Rising water - Keep climbing!",
-        "next": "choose-collectibles",
-        "updatePreview": {
-          "type": "obstacles",
-          "id": "water",
-          "damage": "instant",
-          "pattern": "rising"
-        },
-        "previewComment": "The water is rising! Hurry up!"
-      },
-      {
-        "text": "🎯 Flying projectiles - Duck and jump!",
-        "next": "choose-collectibles",
-        "updatePreview": {
-          "type": "obstacles",
-          "id": "projectiles",
-          "damage": 1,
-          "pattern": "periodic"
-        },
-        "previewComment": "Watch out for flying dangers!"
+        "text": "B: World Preview - Scrolling preview of level elements",
+        "action": "selectComponentVariant",
+        "actionParams": { "componentId": "titleFocus", "variant": "B" },
+        "next": "jumpMechanics"
       }
     ]
   },
-  
-  "choose-collectibles": {
-    "id": "choose-collectibles",
-    "text": "What should players collect for points?",
-    "showLivePreview": {
-      "enabled": true,
-      "previewType": "collectibles",
-      "pixelComments": ["Shiny collectibles everywhere!"],
-      "autoPlay": true
+
+  "jumpMechanics": {
+    "id": "jumpMechanics",
+    "speaker": "Pixel",
+    "text": "STAGE 2: Core Mechanics! First - how should jumping feel?",
+    "action": "showComponentChoice",
+    "actionParams": {
+      "componentId": "jumpStyle",
+      "category": "movement"
     },
     "options": [
       {
-        "text": "⭐ Sparkling stars - Classic!",
-        "next": "choose-powerup",
-        "updatePreview": {
-          "type": "collectible",
-          "id": "stars",
-          "points": 10,
-          "effect": "sparkle"
-        },
-        "previewComment": "Collect all the stars!"
+        "text": "A: Floaty Jump - Variable height with air control",
+        "action": "selectComponentVariant",
+        "actionParams": { "componentId": "jumpStyle", "variant": "A" },
+        "next": "movementSpeed"
       },
       {
-        "text": "💎 Precious gems - Valuable!",
-        "next": "choose-powerup",
-        "updatePreview": {
-          "type": "collectible",
-          "id": "gems",
-          "points": 25,
-          "effect": "shine"
-        },
-        "previewComment": "Ooh, shiny gems! Worth more points!"
-      },
-      {
-        "text": "🍓 Yummy fruits - Delicious!",
-        "next": "choose-powerup",
-        "updatePreview": {
-          "type": "collectible",
-          "id": "fruits",
-          "points": 15,
-          "effect": "bounce"
-        },
-        "previewComment": "Tasty fruits for bonus points!"
+        "text": "B: Realistic Jump - Fixed arc with momentum physics",
+        "action": "selectComponentVariant",
+        "actionParams": { "componentId": "jumpStyle", "variant": "B" },
+        "next": "movementSpeed"
       }
     ]
   },
-  
-  "choose-powerup": {
-    "id": "choose-powerup",
-    "text": "What special power-up should appear rarely?",
-    "showLivePreview": {
-      "enabled": true,
-      "previewType": "powerup",
-      "pixelComments": ["Special powers activate!"],
-      "autoPlay": true
+
+  "movementSpeed": {
+    "id": "movementSpeed",
+    "speaker": "Pixel",
+    "text": "How fast should your character move?",
+    "action": "showComponentChoice",
+    "actionParams": {
+      "componentId": "speedStyle",
+      "category": "movement"
     },
     "options": [
       {
-        "text": "🚀 Super speed boost!",
-        "next": "customize-difficulty",
-        "updatePreview": {
-          "type": "powerup",
-          "id": "speed",
-          "effect": "speed_boost",
-          "duration": 5
+        "text": "A: Speedy Runner - Fast-paced action gameplay",
+        "action": "selectComponentVariant",
+        "actionParams": { "componentId": "speedStyle", "variant": "A" },
+        "next": "deathStyle"
+      },
+      {
+        "text": "B: Careful Explorer - Precision platforming focus",
+        "action": "selectComponentVariant",
+        "actionParams": { "componentId": "speedStyle", "variant": "B" },
+        "next": "deathStyle"
+      }
+    ]
+  },
+
+  "deathStyle": {
+    "id": "deathStyle",
+    "speaker": "Pixel",
+    "text": "What happens when the player gets hit or falls?",
+    "action": "showComponentChoice",
+    "actionParams": {
+      "componentId": "deathMechanic",
+      "category": "gameplay"
+    },
+    "options": [
+      {
+        "text": "A: Instant Respawn - Quick fade and back in action",
+        "action": "selectComponentVariant",
+        "actionParams": { "componentId": "deathMechanic", "variant": "A" },
+        "next": "checkpointSystem"
+      },
+      {
+        "text": "B: Dramatic Death Animation - Full sequence with sound effects",
+        "action": "selectComponentVariant",
+        "actionParams": { "componentId": "deathMechanic", "variant": "B" },
+        "next": "checkpointSystem"
+      }
+    ]
+  },
+
+  "checkpointSystem": {
+    "id": "checkpointSystem",
+    "speaker": "Pixel",
+    "text": "How forgiving should the checkpoint system be?",
+    "action": "showComponentChoice",
+    "actionParams": {
+      "componentId": "checkpoints",
+      "category": "gameplay"
+    },
+    "options": [
+      {
+        "text": "A: Generous Checkpoints - Save progress frequently",
+        "action": "selectComponentVariant",
+        "actionParams": { "componentId": "checkpoints", "variant": "A" },
+        "next": "platformTypes"
+      },
+      {
+        "text": "B: Challenging Sparse - Checkpoints only at major milestones",
+        "action": "selectComponentVariant",
+        "actionParams": { "componentId": "checkpoints", "variant": "B" },
+        "next": "platformTypes"
+      }
+    ]
+  },
+
+  "platformTypes": {
+    "id": "platformTypes",
+    "speaker": "Pixel",
+    "text": "STAGE 3: World Building! What kind of platforms will challenge players?",
+    "action": "showComponentChoice",
+    "actionParams": {
+      "componentId": "platformBehavior",
+      "category": "world"
+    },
+    "options": [
+      {
+        "text": "A: Moving Platforms - Patrol paths and elevators",
+        "action": "selectComponentVariant",
+        "actionParams": { "componentId": "platformBehavior", "variant": "A" },
+        "next": "enemyBehavior"
+      },
+      {
+        "text": "B: Static Challenges - Crumbling and bouncy platforms",
+        "action": "selectComponentVariant",
+        "actionParams": { "componentId": "platformBehavior", "variant": "B" },
+        "next": "enemyBehavior"
+      }
+    ]
+  },
+
+  "enemyBehavior": {
+    "id": "enemyBehavior",
+    "speaker": "Pixel",
+    "text": "How should enemies behave when they spot the player?",
+    "action": "showComponentChoice",
+    "actionParams": {
+      "componentId": "enemyAI",
+      "category": "world"
+    },
+    "options": [
+      {
+        "text": "A: Patrol Routes - Predictable patterns to learn",
+        "action": "selectComponentVariant",
+        "actionParams": { "componentId": "enemyAI", "variant": "A" },
+        "next": "powerUpStyle"
+      },
+      {
+        "text": "B: Chase Mode - Actively hunt the player",
+        "action": "selectComponentVariant",
+        "actionParams": { "componentId": "enemyAI", "variant": "B" },
+        "next": "powerUpStyle"
+      }
+    ]
+  },
+
+  "powerUpStyle": {
+    "id": "powerUpStyle",
+    "speaker": "Pixel",
+    "text": "What power-up system fits your game best? This includes collectibles too!",
+    "action": "showComponentChoice",
+    "actionParams": {
+      "componentId": "powerUpSystem",
+      "category": "items"
+    },
+    "options": [
+      {
+        "text": "A: Mario Style - Mushrooms for size, flowers for projectiles, coins for lives",
+        "action": "selectComponentVariant",
+        "actionParams": { 
+          "componentId": "powerUpSystem", 
+          "variant": "A",
+          "bundle": ["mushroom", "fireflower", "coins", "1up"]
         },
-        "previewComment": "Zoom! Super speed activated!"
+        "next": "bossPattern"
       },
       {
-        "text": "🛡️ Invincibility shield!",
-        "next": "customize-difficulty",
-        "updatePreview": {
-          "type": "powerup",
-          "id": "shield",
-          "effect": "invincible",
-          "duration": 3
+        "text": "B: Sonic Style - Rings for health, shields for protection, speed boosts",
+        "action": "selectComponentVariant",
+        "actionParams": { 
+          "componentId": "powerUpSystem", 
+          "variant": "B",
+          "bundle": ["rings", "shields", "speedboost", "invincibility"]
         },
-        "previewComment": "You're invincible! Nothing can hurt you!"
-      },
-      {
-        "text": "🎈 Float power - Defy gravity!",
-        "next": "customize-difficulty",
-        "updatePreview": {
-          "type": "powerup",
-          "id": "float",
-          "effect": "low_gravity",
-          "duration": 7
-        },
-        "previewComment": "Floating! Jump super high!"
+        "next": "bossPattern"
       }
     ]
   },
-  
-  "customize-difficulty": {
-    "id": "customize-difficulty",
-    "text": "How challenging should your platformer be?",
+
+  "bossPattern": {
+    "id": "bossPattern",
+    "speaker": "Pixel",
+    "text": "STAGE 4: Boss Battle! How should the boss AI work?",
+    "action": "showComponentChoice",
+    "actionParams": {
+      "componentId": "bossAI",
+      "category": "boss"
+    },
     "options": [
       {
-        "text": "Easy - Relaxed jumping fun",
-        "next": "preview-game",
-        "updatePreview": {
-          "difficulty": "easy",
-          "lives": 5,
-          "checkpoints": "many"
-        },
-        "previewComment": "Perfect for beginners!"
+        "text": "A: Predictable Patterns - Learn attack sequences to win",
+        "action": "selectComponentVariant",
+        "actionParams": { "componentId": "bossAI", "variant": "A" },
+        "next": "arenaDesign"
       },
       {
-        "text": "Medium - Balanced challenge",
-        "next": "preview-game",
-        "updatePreview": {
-          "difficulty": "medium",
-          "lives": 3,
-          "checkpoints": "some"
-        },
-        "previewComment": "A good challenge!"
-      },
-      {
-        "text": "Hard - For platformer pros!",
-        "next": "preview-game",
-        "updatePreview": {
-          "difficulty": "hard",
-          "lives": 1,
-          "checkpoints": "few"
-        },
-        "previewComment": "Only for the brave!"
+        "text": "B: Adaptive AI - Boss learns and counters player strategy",
+        "action": "selectComponentVariant",
+        "actionParams": { "componentId": "bossAI", "variant": "B" },
+        "next": "arenaDesign"
       }
     ]
   },
-  
-  "preview-game": {
-    "id": "preview-game",
-    "text": "Awesome! Your platformer is ready! Look at the preview - your game is running!",
-    "action": "launchFullGame",
-    "multiStep": [
-      "Use arrow keys or WASD to move and jump!",
-      "Collect items for points and avoid obstacles!",
-      "Try to reach the end of each level!"
-    ],
+
+  "arenaDesign": {
+    "id": "arenaDesign",
+    "speaker": "Pixel",
+    "text": "What kind of arena should the boss fight take place in?",
+    "action": "showComponentChoice",
+    "actionParams": {
+      "componentId": "bossArena",
+      "category": "boss"
+    },
     "options": [
       {
-        "text": "Play my game!",
-        "next": "play-mode",
-        "action": "launchFullGame"
+        "text": "A: Open Arena - Focus on dodging and timing",
+        "action": "selectComponentVariant",
+        "actionParams": { "componentId": "bossArena", "variant": "A" },
+        "next": "bossDefeat"
       },
       {
-        "text": "Change something",
-        "next": "what-to-change"
-      },
-      {
-        "text": "I'm done! Save my game!",
-        "next": "save-game"
+        "text": "B: Platform Challenge - Use environment to your advantage",
+        "action": "selectComponentVariant",
+        "actionParams": { "componentId": "bossArena", "variant": "B" },
+        "next": "bossDefeat"
       }
     ]
   },
-  
-  "what-to-change": {
-    "id": "what-to-change",
-    "text": "What would you like to adjust?",
+
+  "bossDefeat": {
+    "id": "bossDefeat",
+    "speaker": "Pixel",
+    "text": "How should the boss defeat be presented?",
+    "action": "showComponentChoice",
+    "actionParams": {
+      "componentId": "bossVictory",
+      "category": "boss"
+    },
     "options": [
       {
-        "text": "Change my character",
-        "next": "choose-character"
+        "text": "A: Epic Cutscene - Dramatic slow-motion with explosions",
+        "action": "selectComponentVariant",
+        "actionParams": { "componentId": "bossVictory", "variant": "A" },
+        "next": "levelComplete"
       },
       {
-        "text": "Different platforms",
-        "next": "choose-platforms"
-      },
-      {
-        "text": "New obstacles",
-        "next": "choose-obstacles"
-      },
-      {
-        "text": "Actually, it's perfect!",
-        "next": "preview-game"
+        "text": "B: Quick Celebration - Jump to victory immediately",
+        "action": "selectComponentVariant",
+        "actionParams": { "componentId": "bossVictory", "variant": "B" },
+        "next": "levelComplete"
       }
     ]
   },
-  
-  "play-mode": {
-    "id": "play-mode",
-    "text": "Have fun playing your platformer! You created this!",
-    "action": "launchFullGame",
+
+  "levelComplete": {
+    "id": "levelComplete",
+    "speaker": "Pixel",
+    "text": "STAGE 5: Transitions & Polish! What happens when a level is completed?",
+    "action": "showComponentChoice",
+    "actionParams": {
+      "componentId": "levelEnd",
+      "category": "transitions"
+    },
     "options": [
       {
-        "text": "Keep playing!",
-        "next": "play-mode",
-        "action": "launchFullGame"
+        "text": "A: Stats Screen - Show time, score, collectibles found",
+        "action": "selectComponentVariant",
+        "actionParams": { "componentId": "levelEnd", "variant": "A" },
+        "next": "gameOver"
       },
       {
-        "text": "Make changes",
-        "next": "what-to-change"
-      },
-      {
-        "text": "Save and share!",
-        "next": "save-game"
+        "text": "B: Victory Dance - Character celebrates with animation",
+        "action": "selectComponentVariant",
+        "actionParams": { "componentId": "levelEnd", "variant": "B" },
+        "next": "gameOver"
       }
     ]
   },
-  
-  "save-game": {
-    "id": "save-game",
-    "text": "Great job! Your platformer game is saved! 🎉",
-    "action": "exportPyodideGame",
-    "multiStep": [
-      "You can share your game with friends!",
-      "Or keep building and adding more features!",
-      "You're now a game developer!"
-    ],
+
+  "gameOver": {
+    "id": "gameOver",
+    "speaker": "Pixel",
+    "text": "What happens when the player runs out of lives?",
+    "action": "showComponentChoice",
+    "actionParams": {
+      "componentId": "gameOverScreen",
+      "category": "transitions"
+    },
     "options": [
       {
-        "text": "Download my game",
-        "action": "exportPyodideGame",
-        "next": "congratulations"
+        "text": "A: Retry from Checkpoint - Continue from last checkpoint",
+        "action": "selectComponentVariant",
+        "actionParams": { "componentId": "gameOverScreen", "variant": "A" },
+        "next": "celebrationEffects"
       },
       {
-        "text": "Keep improving it",
-        "next": "advanced-features"
+        "text": "B: Restart Level - Begin the entire level again",
+        "action": "selectComponentVariant",
+        "actionParams": { "componentId": "gameOverScreen", "variant": "B" },
+        "next": "celebrationEffects"
       }
     ]
   },
-  
-  "advanced-features": {
-    "id": "advanced-features",
-    "text": "Want to add more advanced features to your platformer?",
+
+  "celebrationEffects": {
+    "id": "celebrationEffects",
+    "speaker": "Pixel",
+    "text": "Finally, what celebration effects for game completion?",
+    "action": "showComponentChoice",
+    "actionParams": {
+      "componentId": "celebration",
+      "category": "effects"
+    },
     "options": [
       {
-        "text": "Add boss battles!",
-        "next": "boss-setup"
+        "text": "A: Confetti Explosion - Colorful paper celebration",
+        "action": "selectComponentVariant",
+        "actionParams": { "componentId": "celebration", "variant": "A" },
+        "next": "complete"
       },
       {
-        "text": "Create more levels",
-        "next": "level-builder"
-      },
-      {
-        "text": "Add a story",
-        "next": "story-mode"
-      },
-      {
-        "text": "I'm happy with it!",
-        "next": "save-game"
+        "text": "B: Fireworks Display - Sky-filling pyrotechnics",
+        "action": "selectComponentVariant",
+        "actionParams": { "componentId": "celebration", "variant": "B" },
+        "next": "complete"
       }
     ]
   },
-  
-  "boss-setup": {
-    "id": "boss-setup",
-    "text": "Boss battles make platformers epic! Coming soon...",
+
+  "complete": {
+    "id": "complete",
+    "speaker": "Pixel",
+    "text": "🎮 AMAZING! Your platformer is complete with all 5 stages perfectly designed!",
+    "followUp": "Title ✓ Core Mechanics ✓ World Building ✓ Boss Battle ✓ Transitions ✓ Every choice shapes your unique game!",
+    "action": "compileFullGame",
     "options": [
       {
-        "text": "Back to my game",
-        "next": "preview-game"
-      }
-    ]
-  },
-  
-  "level-builder": {
-    "id": "level-builder",
-    "text": "Level builder coming soon! For now, enjoy your first level!",
-    "options": [
-      {
-        "text": "Back to my game",
-        "next": "preview-game"
-      }
-    ]
-  },
-  
-  "story-mode": {
-    "id": "story-mode",
-    "text": "Story mode will let you add dialogue and quests! Coming soon...",
-    "options": [
-      {
-        "text": "Back to my game",
-        "next": "preview-game"
-      }
-    ]
-  },
-  
-  "congratulations": {
-    "id": "congratulations",
-    "text": "Congratulations! You've created an amazing platformer game! 🎊",
-    "multiStep": [
-      "You learned about game mechanics, level design, and player controls!",
-      "Keep experimenting and creating new games!",
-      "You're officially a game developer now!"
-    ],
-    "options": [
-      {
-        "text": "Create another game!",
-        "next": "start"
+        "text": "Play my complete platformer!",
+        "action": "launchPyodideGame"
       },
       {
-        "text": "Play my game again!",
-        "next": "play-mode",
-        "action": "launchFullGame"
+        "text": "Export as Python file",
+        "action": "exportPyodideGame"  
+      },
+      {
+        "text": "Open in Pro Editor",
+        "action": "openWYSIWYGEditor"
       }
     ]
   }
