@@ -19,14 +19,14 @@ import {
   PersistedWizardState,
   PersistedSessionState,
   UserPreferences
-} from '../persistence';
+} from '@lib/storage/persistence';
 import {
   LocalStorageMock,
   SessionStorageMock,
   CookieMock,
   createCorruptedData,
-  waitFor
-} from '../../../tests/test-utils';
+  waitFor,
+} from '../helpers/test-utils';
 
 describe('Persistence Library', () => {
   let localStorageMock: LocalStorageMock;

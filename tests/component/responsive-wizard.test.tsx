@@ -2,7 +2,7 @@ import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import UniversalWizard from '../client/src/components/universal-wizard';
+import UniversalWizard from '@/components/wizard/universal';
 import '@testing-library/jest-dom';
 
 // Mock window.matchMedia for different screen sizes

@@ -59,3 +59,36 @@ jobs:
       - name: Prettier
         run: npx prettier --check .
         continue-on-error: true
+
+  test:
+    name: Vitest (unit + integration + component)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Build asset catalog
+        run: npm run catalog
+
+      - name: Run unit tests
+        run: npm run test:unit
+
+      - name: Run integration tests
+        run: npm run test:integration
+        continue-on-error: true # advisory while pre-existing test logic catches up
+
+      - name: Run component tests (Vitest browser)
+        run: npm run test:component
+        continue-on-error: true # advisory while pre-existing test logic catches up

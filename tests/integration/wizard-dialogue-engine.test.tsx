@@ -1,15 +1,15 @@
 // Integration tests for wizard-dialogue-engine component
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { renderHook, act, waitFor as waitForHook } from '@testing-library/react';
-import { useWizardDialogue } from '../wizard-dialogue-engine';
+import { useWizardDialogue } from '@/components/wizard/dialogue-engine';
 import {
   LocalStorageMock,
   SessionStorageMock,
   createMockFlowData,
   createMockWizardNode,
   waitFor,
-  simulatePageRefresh
-} from '../../../tests/test-utils';
+  simulatePageRefresh,
+} from '../helpers/test-utils';
 import * as persistence from '@lib/storage/persistence';
 
 // Mock the persistence module
