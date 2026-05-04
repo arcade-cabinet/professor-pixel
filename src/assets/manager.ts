@@ -1,23 +1,16 @@
 // Asset Manager System
 // Main system for loading, managing, and searching game assets
 
-import { 
-  GameAsset, 
-  AssetFilter, 
-  AssetSelection, 
+import {
+  GameAsset,
+  AssetFilter,
+  AssetSelection,
   AssetLoadStatus,
   SpriteAsset,
   SoundAsset,
-  BackgroundAsset 
+  BackgroundAsset,
 } from './types';
-import { allSprites } from './_curated-sprites';
-import { allSounds } from './_curated-sounds';
-import { allBackgrounds } from './_curated-backgrounds';
-
-// Import real Kenney assets
-import { kenneySprites } from './_kenney-sprites';
-import { kenneyBackgrounds } from './_kenney-backgrounds';
-import { kenneySounds, kenneyMusic } from './_kenney-sounds';
+import { loadCatalog } from './catalog';
 
 // Asset Manager Class
 export class AssetManager {
@@ -26,6 +19,7 @@ export class AssetManager {
   private loadedSounds: Map<string, HTMLAudioElement>;
   private loadStatus: AssetLoadStatus;
   private selection: AssetSelection;
+  private hydration: Promise<void> | null = null;
 
   constructor() {
     this.assets = new Map();
@@ -35,7 +29,7 @@ export class AssetManager {
       total: 0,
       loaded: 0,
       failed: [],
-      isLoading: false
+      isLoading: false,
     };
     this.selection = {
       player: undefined,
@@ -43,51 +37,22 @@ export class AssetManager {
       items: [],
       background: undefined,
       sounds: [],
-      music: undefined
+      music: undefined,
     };
-
-    // Initialize with all available assets
-    this.initializeAssets();
   }
 
-  // Initialize asset registry
-  private initializeAssets() {
-    // Add placeholder sprites (for fallback)
-    allSprites.forEach(sprite => {
-      this.assets.set(sprite.id, sprite);
-    });
-
-    // Add placeholder sounds (for fallback)
-    allSounds.forEach(sound => {
-      this.assets.set(sound.id, sound);
-    });
-
-    // Add placeholder backgrounds (for fallback)
-    allBackgrounds.forEach(bg => {
-      this.assets.set(bg.id, bg);
-    });
-
-    // Add REAL Kenney sprites
-    kenneySprites.forEach(sprite => {
-      this.assets.set(sprite.id, sprite as any);
-    });
-
-    // Add REAL Kenney backgrounds
-    kenneyBackgrounds.forEach(bg => {
-      this.assets.set(bg.id, bg as any);
-    });
-
-    // Add REAL Kenney sounds
-    kenneySounds.forEach(sound => {
-      this.assets.set(sound.id, sound as any);
-    });
-
-    // Add REAL Kenney music
-    kenneyMusic.forEach(music => {
-      this.assets.set(music.id, music as any);
-    });
-
-    this.loadStatus.total = this.assets.size;
+  // Hydrate registry from /assets/catalog.json. Idempotent — call before any
+  // read API on a fresh instance, or use the awaiting accessors below.
+  async ready(): Promise<void> {
+    if (!this.hydration) {
+      this.hydration = loadCatalog().then(catalog => {
+        for (const sprite of catalog.sprites) this.assets.set(sprite.id, sprite);
+        for (const sound of catalog.sounds) this.assets.set(sound.id, sound);
+        for (const bg of catalog.backgrounds) this.assets.set(bg.id, bg);
+        this.loadStatus.total = this.assets.size;
+      });
+    }
+    return this.hydration;
   }
 
   // Get all assets
@@ -380,9 +345,11 @@ let assetManagerInstance: AssetManager | null = null;
 export function getAssetManager(): AssetManager {
   if (!assetManagerInstance) {
     assetManagerInstance = new AssetManager();
+    // Fire-and-forget hydration. Callers that need a guaranteed-ready manager
+    // should `await assetManager.ready()` explicitly.
+    void assetManagerInstance.ready();
   }
   return assetManagerInstance;
 }
 
-// Export convenience functions
 export const assetManager = getAssetManager();

@@ -27,6 +27,7 @@ export default defineConfig({
     alias: {
       '@': path.resolve(import.meta.dirname, 'app'),
       '@lib': path.resolve(import.meta.dirname, 'src'),
+      '@assets': path.resolve(import.meta.dirname, 'app/assets'),
     },
   },
   build: {

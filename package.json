@@ -4,10 +4,13 @@
   "type": "module",
   "license": "MIT",
   "scripts": {
+    "predev": "node scripts/build-asset-catalog.mjs",
     "dev": "vite",
+    "prebuild": "node scripts/build-asset-catalog.mjs",
     "build": "tsc && vite build",
     "preview": "vite preview",
     "check": "tsc",
+    "catalog": "node scripts/build-asset-catalog.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:ui": "vitest --ui",
