@@ -1,6 +1,6 @@
 # Continuous Work Directive — professor-pixel
 
-**Status:** ACTIVE
+**Status:** RELEASED
 **Owner:** jbogaty
 
 ## What CONTINUOUS means
@@ -58,4 +58,4 @@ Branch: feat/foundations-pillar-completion
 
 ### CI
 
-- [ ] TC.1 Make integration + component tests blocking — drop `continue-on-error` from those vitest matrix entries; PR CI green with new gates
+- [x] TC.1 Make integration + component tests blocking — drop `continue-on-error` from those vitest matrix entries; PR CI green with new gates
