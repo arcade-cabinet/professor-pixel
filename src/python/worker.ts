@@ -56,18 +56,26 @@ class WorkerRunner {
     this.stdoutBuffer = [];
     this.stderrBuffer = [];
 
-    if (input !== undefined) {
-      // Pre-load input lines so input() returns them. Each line, terminated by \n.
-      pyodide.globals.set('__pp_input__', input);
-      pyodide.runPython(`
+    // Always (re)install builtins.input. If the caller passed `input`, lines
+    // come from a StringIO buffer; otherwise input() raises EOFError immediately.
+    // Without this reset, a previous test's buffer would leak into this call —
+    // either silently returning '' past EOF or hanging waiting for stdin.
+    pyodide.globals.set('__pp_input__', input ?? '');
+    pyodide.globals.set('__pp_has_input__', input !== undefined);
+    pyodide.runPython(`
 import builtins, io
-__buf = io.StringIO(__pp_input__ + ('' if __pp_input__.endswith('\\n') else '\\n'))
-def __pp_input(prompt=''):
-    line = __buf.readline()
-    return line[:-1] if line.endswith('\\n') else line
+if __pp_has_input__:
+    _pp_buf = io.StringIO(__pp_input__ + ('' if __pp_input__.endswith('\\n') else '\\n'))
+    def __pp_input(prompt=''):
+        line = _pp_buf.readline()
+        if line == '':
+            raise EOFError('EOF when reading a line')
+        return line[:-1] if line.endswith('\\n') else line
+else:
+    def __pp_input(prompt=''):
+        raise EOFError('EOF when reading a line')
 builtins.input = __pp_input
 `);
-    }
 
     try {
       await pyodide.runPythonAsync(code);
