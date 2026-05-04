@@ -20,7 +20,7 @@ Non-negotiables for code, design, and accessibility. If a rule here conflicts wi
 
 ## ESLint / Prettier
 
-- **`npx eslint .` must be clean** before merge. No `// eslint-disable-next-line` without a one-line justification on the same comment.
+- **`npx eslint .` must be clean** before merge. No `// eslint-disable-next-line` without a one-line justification on the same comment. (The CI lint job is currently advisory — `continue-on-error: true` — while the codebase is brought to a clean state. New code is held to the standard at review time and the CI gate flips to blocking once the existing backlog is addressed; tracked in [`docs/STATE.md`](docs/STATE.md).)
 - **Prettier is the formatter.** Settings: `printWidth: 100`, single quotes, 2-space indent, semicolons, `trailingComma: 'es5'`, LF line endings. Don't argue with Prettier — fix the config or accept it.
 - **No unused variables.** Allowed: prefix with `_` (e.g., `_unused`). The rule respects this.
 - **Naming convention.** camelCase for variables and functions, PascalCase for types and components, SCREAMING_SNAKE_CASE only for true compile-time constants.

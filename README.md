@@ -52,7 +52,7 @@ See [`docs/TESTING.md`](docs/TESTING.md) for the full testing strategy.
 
 Capacitor-style flat layout: one `app/`, one `src/`, one `public/` at the repo root. No client/server split, no monorepo.
 
-```
+```text
 app/                         React TSX (.tsx only)
   components/{editor,pixel,pygame,wizard,ui}/
   pages/                     Page-level routes (_dev/ for dev-only screens)

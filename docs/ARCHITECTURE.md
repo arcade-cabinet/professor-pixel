@@ -15,7 +15,7 @@ A React 18 + TypeScript single-page app, built with Vite. **No backend.** All pe
 
 ## High-level diagram
 
-```
+```text
 ┌─────────────────────────────────── Browser (only runtime) ───────────────────────────────┐
 │                                                                                          │
 │   React SPA (Vite build)                                                                 │
@@ -130,7 +130,7 @@ Served as-is by Vite. `assets/catalog.json` is generated.
 
 ## Build pipeline
 
-```
+```text
 src + app + public ── tsc (npm run check) ── type errors gate everything else
                    └─ vite build ─────────► dist/   (static SPA + bundled assets)
 ```
