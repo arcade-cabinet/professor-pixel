@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef } from 'react';
-import type { Entity, HistoryEntry } from '@shared/schema';
+import type { Entity, HistoryEntry } from '@lib/types/schema';
 
 interface UseEditorHistoryOptions {
   maxHistorySize?: number;

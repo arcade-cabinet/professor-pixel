@@ -4,7 +4,7 @@
  */
 
 import { logger } from "./console-logger";
-import { performanceMonitor } from "./performance-monitor";
+import { performanceMonitor } from "./performance";
 
 export interface HealthCheck {
   name: string;

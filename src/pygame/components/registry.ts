@@ -5,32 +5,32 @@
 import type { 
   PyGameComponent,
   ComponentType
-} from './pygame-component-types';
+} from './types';
 
 import {
   hexToRgb,
   drawStar,
   drawHeart,
   drawCloud
-} from './pygame-component-types';
+} from './types';
 
 // Import individual components
-import { spriteComponent } from './pygame-component-sprite';
-import { platformComponent } from './pygame-component-platform';
-import { ballComponent } from './pygame-component-ball';
-import { paddleComponent } from './pygame-component-paddle';
-import { enemyComponent } from './pygame-component-enemy';
-import { collectibleComponent } from './pygame-component-collectible';
+import { spriteComponent } from './sprite';
+import { platformComponent } from './platform';
+import { ballComponent } from './ball';
+import { paddleComponent } from './paddle';
+import { enemyComponent } from './enemy';
+import { collectibleComponent } from './collectible';
 import { 
   scoreTextComponent, 
   buttonComponent, 
   timerComponent, 
   healthBarComponent 
-} from './pygame-component-ui';
+} from './ui';
 import { 
   particleEffectComponent, 
   backgroundComponent 
-} from './pygame-component-effects';
+} from './effects';
 
 // Re-export types
 export type {

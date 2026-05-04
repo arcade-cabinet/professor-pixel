@@ -1,4 +1,4 @@
-import { ClientStorage } from "@shared/storage-client";
+import { ClientStorage } from "@lib/storage/client";
 
 // Environment detection for storage mode
 export const isStaticMode = (): boolean => {

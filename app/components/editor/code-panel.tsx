@@ -3,10 +3,10 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Copy, Download, FileCode } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { PlacedComponent } from './pygame-wysiwyg-editor';
-import { getComponentById } from '@/lib/pygame-components';
-import { useToast } from '@/hooks/use-toast';
+import { cn } from '@lib/utils/cn';
+import { PlacedComponent } from './wysiwyg';
+import { getComponentById } from '@lib/pygame/components/registry';
+import { useToast } from '@lib/hooks/use-toast';
 
 interface PygameEditorCodePanelProps {
   components: PlacedComponent[];

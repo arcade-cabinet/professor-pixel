@@ -2,8 +2,8 @@
 // Combines selected components into a complete pygame game script
 
 // Import necessary types and functions
-import { getComponentById } from './pygame-components';
-import type { ComponentType } from './pygame-component-types';
+import { getComponentById } from '@lib/pygame/components/registry';
+import type { ComponentType } from '@lib/pygame/components/types';
 
 // Define ComponentSelection interface locally
 export interface ComponentSelection {

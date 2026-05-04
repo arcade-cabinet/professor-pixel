@@ -7,12 +7,12 @@ import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { cn } from '@/lib/utils';
+import { cn } from '@lib/utils/cn';
 
-import PygameEditorCanvas from './pygame-editor-canvas';
-import PygameEditorPalette from './pygame-editor-palette';
-import PygameEditorProperties from './pygame-editor-properties';
-import PygameEditorCodePanel from './pygame-editor-code-panel';
+import PygameEditorCanvas from './canvas';
+import PygameEditorPalette from './palette';
+import PygameEditorProperties from './properties';
+import PygameEditorCodePanel from './code-panel';
 
 export interface PlacedComponent {
   id: string;

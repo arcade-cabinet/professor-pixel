@@ -9,7 +9,7 @@ import {
   Star
 } from 'lucide-react';
 import pixelImage from '@assets/pixel/Pixel_happy_excited_expression_22a41625.png';
-import { SessionActions } from './wizard-types';
+import { SessionActions } from '@lib/wizard/types';
 
 interface PixelMinimizedProps {
   onRestore: () => void;

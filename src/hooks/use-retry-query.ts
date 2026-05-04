@@ -1,8 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, useCallback } from "react";
-import { retryMechanism, type RetryOptions } from "@/lib/retry-mechanism";
-import { trackNetworkError } from "@/lib/global-error-handler";
-import { logger } from "@/lib/console-logger";
+import { retryMechanism, type RetryOptions } from "@lib/net/retry";
+import { trackNetworkError } from "@lib/errors/global-handler";
+import { logger } from "@lib/monitoring/console-logger";
 
 /**
  * Enhanced useQuery with retry mechanisms and better error handling

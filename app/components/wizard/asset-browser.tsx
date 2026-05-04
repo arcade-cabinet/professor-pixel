@@ -29,8 +29,8 @@ import {
   AssetType, 
   AssetFilter,
   AssetSelection
-} from '@/lib/asset-library/asset-types';
-import { assetManager } from '@/lib/asset-library/asset-manager';
+} from '@lib/assets/types';
+import { assetManager } from '@lib/assets/manager';
 
 interface AssetBrowserProps {
   onSelect?: (asset: GameAsset) => void;

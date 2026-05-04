@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Lightbulb, ArrowRight, Trophy, X, Copy, Code, CheckCircle, Sparkles, Zap } from "lucide-react";
 import { useState, useEffect } from "react";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@lib/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface FloatingFeedbackProps {

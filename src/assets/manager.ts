@@ -9,15 +9,15 @@ import {
   SpriteAsset,
   SoundAsset,
   BackgroundAsset 
-} from './asset-types';
-import { allSprites } from './asset-sprites';
-import { allSounds } from './asset-sounds';
-import { allBackgrounds } from './asset-backgrounds';
+} from './types';
+import { allSprites } from './_curated-sprites';
+import { allSounds } from './_curated-sounds';
+import { allBackgrounds } from './_curated-backgrounds';
 
 // Import real Kenney assets
-import { kenneySprites } from './kenney-sprites';
-import { kenneyBackgrounds } from './kenney-backgrounds';
-import { kenneySounds, kenneyMusic } from './kenney-sounds';
+import { kenneySprites } from './_kenney-sprites';
+import { kenneyBackgrounds } from './_kenney-backgrounds';
+import { kenneySounds, kenneyMusic } from './_kenney-sounds';
 
 // Asset Manager Class
 export class AssetManager {

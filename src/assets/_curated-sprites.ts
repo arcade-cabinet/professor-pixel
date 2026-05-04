@@ -1,7 +1,7 @@
 // Sprite Asset Definitions
 // CC0 sprites from Kenney.nl game assets
 
-import { SpriteAsset } from './asset-types';
+import { SpriteAsset } from './types';
 
 // Character sprites
 export const characterSprites: SpriteAsset[] = [

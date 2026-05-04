@@ -1,18 +1,18 @@
 import { useParams, useLocation } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useState, useEffect, useMemo } from "react";
-import { queryClient, apiRequest } from "@/lib/queryClient";
+import { queryClient, apiRequest } from "@lib/net/query-client";
 import { motion, AnimatePresence } from "framer-motion";
 import Header from "@/components/header";
-import CodeEditor from "@/components/code-editor";
+import CodeEditor from "@/components/editor/code-editor";
 import FloatingFeedback from "@/components/floating-feedback";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Sparkles, ChevronRight, ChevronLeft, Trophy, Heart, Code2, Zap, BookOpen, Rocket } from "lucide-react";
-import type { Lesson, UserProgress } from "@shared/schema";
-import { createPythonRunner, type PythonRunner, type ExecutionResult, type ExecutionContext } from "@/lib/python/runner";
-import { gradeCode, type GradingContext } from "@/lib/grading";
+import type { Lesson, UserProgress } from "@lib/types/schema";
+import { createPythonRunner, type PythonRunner, type ExecutionResult, type ExecutionContext } from "@lib/python/runner";
+import { gradeCode, type GradingContext } from "@lib/grading";
 
 // Import Pixel images
 import pixelHappy from '@assets/pixel/Pixel_happy_excited_expression_22a41625.png';

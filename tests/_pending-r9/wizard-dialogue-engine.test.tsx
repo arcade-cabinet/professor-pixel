@@ -10,10 +10,10 @@ import {
   waitFor,
   simulatePageRefresh
 } from '../../../tests/test-utils';
-import * as persistence from '@/lib/persistence';
+import * as persistence from '@lib/storage/persistence';
 
 // Mock the persistence module
-vi.mock('@/lib/persistence', () => ({
+vi.mock('@lib/storage/persistence', () => ({
   saveWizardStateDebounced: vi.fn(),
   loadWizardState: vi.fn(),
   clearWizardState: vi.fn(),

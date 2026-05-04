@@ -4,25 +4,25 @@ import {
   WizardNode, 
   DialogueState, 
   SessionActions 
-} from './wizard-types';
+} from '@lib/wizard/types';
 import { 
   getCurrentText, 
   shouldShowOptions, 
   shouldShowContinue,
   updateSessionActionsForOption,
   loadWizardFlow
-} from './wizard-utils';
+} from '@lib/wizard/utils';
 import { 
   WIZARD_FLOW_PATH, 
   INITIAL_NODE_ID,
   STYLES,
   ANIMATIONS
-} from './wizard-constants';
+} from '@lib/wizard/constants';
 import {
   saveWizardStateDebounced,
   loadWizardState,
   PersistedWizardState
-} from '@/lib/persistence';
+} from '@lib/storage/persistence';
 
 interface UseWizardDialogueProps {
   initialNodeId?: string;

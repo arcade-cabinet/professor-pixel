@@ -1,9 +1,9 @@
 // PyGame Game Compiler
 // Compiles selected components and assets into a playable Python game
 
-import { PygameComponent } from '@/lib/pygame-components/types';
-import { pygameComponents } from '@/lib/pygame-components';
-import { GameAsset } from '@/lib/asset-library/asset-types';
+import { PygameComponent } from '@lib/pygame/components/system-types';
+import { pygameComponents } from '@lib/pygame/components/registry';
+import { GameAsset } from '@lib/assets/types';
 
 export function compilePythonGame(
   selectedComponents: Record<string, string>, // componentId -> variant

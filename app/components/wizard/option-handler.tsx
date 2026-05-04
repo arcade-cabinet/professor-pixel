@@ -1,19 +1,19 @@
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { ChevronRight } from 'lucide-react';
-import { WizardOption } from './wizard-types';
+import { WizardOption } from '@lib/wizard/types';
 import { 
   getGameTypeIcon,
   shouldUseOptionGrid,
   getButtonVariant,
   getButtonSize,
   formatTestId
-} from './wizard-utils';
+} from '@lib/wizard/utils';
 import { 
   BUTTON_STYLES, 
   ICON_SIZES,
   ANIMATIONS 
-} from './wizard-constants';
+} from '@lib/wizard/constants';
 
 interface WizardOptionsProps {
   options: WizardOption[];

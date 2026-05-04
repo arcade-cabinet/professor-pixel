@@ -2,7 +2,7 @@
 import { vi } from 'vitest';
 import { render, RenderOptions } from '@testing-library/react';
 import { ReactElement } from 'react';
-import { WizardNode, DialogueState, SessionActions } from '@/components/wizard-types';
+import { WizardNode, DialogueState, SessionActions } from '@lib/wizard/types';
 
 // Mock localStorage with spy capabilities
 export class LocalStorageMock {

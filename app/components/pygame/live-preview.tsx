@@ -7,17 +7,17 @@ import {
   Play, Pause, RotateCcw, Zap, Volume2, 
   Gamepad2, Sparkles, FlaskConical, Split
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn } from '@lib/utils/cn';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@lib/hooks/use-toast';
 import { 
   setCanvasContext, 
   flushFrameBuffer, 
   createPygameEnvironment,
   resetPygameState
-} from '@/lib/pygame-simulation';
-import { PythonRunner } from '@/lib/python/runner';
-import { generatePygameCode } from './pygame-code-generator';
+} from '@lib/pygame/runtime/simulator';
+import { PythonRunner } from '@lib/python/runner';
+import { generatePygameCode } from '@lib/wizard/code-generator';
 
 export interface GameChoice {
   type: 'character' | 'enemy' | 'collectible' | 'background' | 'rule' | 'mechanic';

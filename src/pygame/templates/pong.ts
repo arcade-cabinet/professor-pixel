@@ -1,5 +1,5 @@
 // PyGame Pong Template
-import { GameTemplate } from './pygame-template-types';
+import { GameTemplate } from './types';
 
 export const pongTemplate: GameTemplate = {
   id: 'pong',

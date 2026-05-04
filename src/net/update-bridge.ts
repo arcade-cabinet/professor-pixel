@@ -1,4 +1,4 @@
-import type { GameConfig, Entity, ComponentChoice } from '@shared/schema';
+import type { GameConfig, Entity, ComponentChoice } from '@lib/types/schema';
 
 // Patch operations for incremental updates
 export interface GamePatch {

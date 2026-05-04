@@ -12,7 +12,7 @@ import {
   clearAllData,
   setCookie,
   getCookie
-} from '@/lib/persistence';
+} from '@lib/storage/persistence';
 
 export default function PersistenceTest() {
   const [wizardState, setWizardState] = useState<any>(null);

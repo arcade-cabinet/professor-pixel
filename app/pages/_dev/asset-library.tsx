@@ -4,9 +4,9 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import AssetBrowserWizard from '@/components/asset-browser-wizard';
-import { GameAsset } from '@/lib/asset-library/asset-types';
-import { assetManager } from '@/lib/asset-library/asset-manager';
+import AssetBrowserWizard from '@/components/wizard/asset-browser';
+import { GameAsset } from '@lib/assets/types';
+import { assetManager } from '@lib/assets/manager';
 import { Sparkles, Search, Grid3x3 } from 'lucide-react';
 
 export default function AssetLibraryTest() {

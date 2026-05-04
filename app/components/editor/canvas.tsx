@@ -3,10 +3,10 @@ import { useDrop } from 'react-dnd';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Trash2, Move } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { PlacedComponent } from './pygame-wysiwyg-editor';
-import { getComponentById } from '@/lib/pygame-components';
-import { setCanvasContext, flushFrameBuffer } from '@/lib/pygame-simulation';
+import { cn } from '@lib/utils/cn';
+import { PlacedComponent } from './wysiwyg';
+import { getComponentById } from '@lib/pygame/components/registry';
+import { setCanvasContext, flushFrameBuffer } from '@lib/pygame/runtime/simulator';
 
 interface PygameEditorCanvasProps {
   components: PlacedComponent[];

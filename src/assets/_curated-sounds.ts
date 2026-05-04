@@ -1,7 +1,7 @@
 // Sound Asset Definitions
 // CC0 sound effects and music for games
 
-import { SoundAsset } from './asset-types';
+import { SoundAsset } from './types';
 
 // Sound effect assets
 export const soundEffects: SoundAsset[] = [

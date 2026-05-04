@@ -1,5 +1,5 @@
 // PyGame Enemy Component
-import { PyGameComponent, hexToRgb } from './pygame-component-types';
+import { PyGameComponent, hexToRgb } from './types';
 
 interface EnemyProperties {
   x: number;

@@ -3,8 +3,8 @@
  * Provides comprehensive error tracking, analytics, and debugging capabilities
  */
 
-import { logger, type LogLevel } from "./console-logger";
-import { globalErrorHandler, type GlobalError } from "./global-error-handler";
+import { logger, type LogLevel } from "@lib/monitoring/console-logger";
+import { globalErrorHandler, type GlobalError } from "./global-handler";
 
 export interface ErrorContext {
   userId?: string;

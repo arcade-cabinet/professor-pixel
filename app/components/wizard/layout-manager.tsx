@@ -2,30 +2,30 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Menu, Gamepad2, Sparkles } from 'lucide-react';
-import { useEdgeSwipe } from '@/hooks/use-edge-swipe';
-import PixelMenu from './pixel-menu';
-import GameProgressSidebar from './game-progress-sidebar';
-import { PortraitAvatar, LandscapeAvatar, CenteredAvatar } from './wizard-avatar-display';
-import { DialogueBox, DialogueText } from './wizard-dialogue-engine';
-import WizardOptionHandler, { ContinueButton } from './wizard-option-handler';
+import { useEdgeSwipe } from '@lib/hooks/use-edge-swipe';
+import PixelMenu from '@/components/pixel/menu';
+import GameProgressSidebar from '@/components/game-progress-sidebar';
+import { PortraitAvatar, LandscapeAvatar, CenteredAvatar } from './avatar-display';
+import { DialogueBox, DialogueText } from './dialogue-engine';
+import WizardOptionHandler, { ContinueButton } from './option-handler';
 import { 
   WizardNode, 
   WizardOption, 
   DeviceState,
   UIState,
   SessionActions
-} from './wizard-types';
+} from '@lib/wizard/types';
 import { 
   STYLES, 
   EDGE_SWIPE_CONFIG,
   ANIMATIONS,
   ICON_SIZES
-} from './wizard-constants';
+} from '@lib/wizard/constants';
 import { 
   getCurrentText,
   shouldShowOptions, 
   shouldShowContinue
-} from './wizard-utils';
+} from '@lib/wizard/utils';
 
 interface LayoutProps {
   currentNode: WizardNode | null;

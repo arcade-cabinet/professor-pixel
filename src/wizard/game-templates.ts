@@ -1,7 +1,7 @@
 // Game templates for the Project Builder
 // These provide starter code for different types of games
 
-import { generateGameTemplate, getUserComponentChoices, ComponentChoice } from './game-building-blocks';
+import { generateGameTemplate, getUserComponentChoices, ComponentChoice } from './building-blocks';
 
 export interface GameTemplate {
   id: string;

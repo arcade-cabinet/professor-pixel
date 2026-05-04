@@ -12,11 +12,17 @@ import {
   Play, Pause, Grid3x3, Move, Trash2, Settings,
   MousePointer, Maximize2, RotateCw, Copy
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn } from '@lib/utils/cn';
 // Pyodide removed - new pygame component system coming
-import { useToast } from '@/hooks/use-toast';
-import type { Entity, Scene, GameConfig } from '@shared/schema';
-import type { DraggableAsset } from './draggable-asset-library';
+import { useToast } from '@lib/hooks/use-toast';
+import type { Entity, Scene, GameConfig } from '@lib/types/schema';
+// DraggableAsset shape used by react-dnd payloads from the asset browser.
+interface DraggableAsset {
+  id: string;
+  name: string;
+  type: 'entity' | 'decoration' | string;
+  defaultProperties?: Record<string, unknown>;
+}
 
 interface InteractiveGameCanvasProps {
   gameConfig: GameConfig;

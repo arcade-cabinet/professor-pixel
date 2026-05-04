@@ -10,32 +10,32 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import PixelMenu from './pixel-menu';
+import PixelMenu from '@/components/pixel/menu';
 import { 
   UniversalWizardProps, 
   DeviceState, 
   UIState 
-} from './wizard-types';
-import { detectDevice, getLayoutMode } from './wizard-utils';
-import { useWizardDialogue, DialogueText, getDialogueHelpers } from './wizard-dialogue-engine';
-import WizardOptionHandler, { ContinueButton } from './wizard-option-handler';
+} from '@lib/wizard/types';
+import { detectDevice, getLayoutMode } from '@lib/wizard/utils';
+import { useWizardDialogue, DialogueText, getDialogueHelpers } from './dialogue-engine';
+import WizardOptionHandler, { ContinueButton } from './option-handler';
 import { 
   PhonePortraitLayout, 
   PhoneLandscapeLayout, 
   DesktopLayout,
   useLayoutEdgeSwipe 
-} from './wizard-layout-manager';
-import WizardCodeRunner from './wizard-code-runner';
-import PygameRunner from './pygame-runner';
-import PygameWysiwygEditor from './pygame-wysiwyg-editor';
-import AssetBrowserWizard from './asset-browser-wizard';
-import PixelMinimizeAnimation from './pixel-minimize-animation';
-import PixelMinimized from './pixel-minimized';
-import PygameComponentSelector from './pygame-component-selector';
-import { GameAsset } from '@/lib/asset-library/asset-types';
-import { assetManager } from '@/lib/asset-library/asset-manager';
-import { ICON_SIZES, STYLES } from './wizard-constants';
-import { compilePythonGame, downloadPythonFile } from '@/lib/pygame-game-compiler';
+} from './layout-manager';
+import WizardCodeRunner from './code-runner';
+import PygameRunner from '@/components/pygame/runner';
+import PygameWysiwygEditor from '@/components/editor/wysiwyg';
+import AssetBrowserWizard from './asset-browser';
+import PixelMinimizeAnimation from '@/components/pixel/minimize-animation';
+import PixelMinimized from '@/components/pixel/minimized';
+import PygameComponentSelector from '@/components/pygame/component-selector';
+import { GameAsset } from '@lib/assets/types';
+import { assetManager } from '@lib/assets/manager';
+import { ICON_SIZES, STYLES } from '@lib/wizard/constants';
+import { compilePythonGame, downloadPythonFile } from '@lib/pygame/runtime/compiler';
 import {
   saveSessionState,
   loadSessionState,
@@ -44,7 +44,7 @@ import {
   clearWizardState,
   clearAllData,
   PersistedSessionState
-} from '@/lib/persistence';
+} from '@lib/storage/persistence';
 
 interface ExtendedWizardProps extends UniversalWizardProps {
   flowType?: 'default' | 'game-dev';

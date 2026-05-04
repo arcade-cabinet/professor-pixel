@@ -6,8 +6,8 @@ import { jumpComponent } from './movement/jump';
 import { walkComponent } from './movement/walk';
 import { shootingComponent } from './combat/shooting';
 import { meleeComponent } from './combat/melee';
-import { healthComponent } from './ui/health';
-import { scoreComponent } from './ui/score';
+import { healthComponent } from './ui-systems/health';
+import { scoreComponent } from './ui-systems/score';
 import { gravityComponent } from './world/gravity';
 import { collisionComponent } from './world/collision';
 

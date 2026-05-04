@@ -1,4 +1,4 @@
-import type { UserProfile, WizardState } from "@shared/schema";
+import type { UserProfile, WizardState } from "@lib/types/schema";
 
 // User Profile Management
 export const getUserProfile = (): UserProfile | null => {

@@ -13,7 +13,7 @@ import {
   Music,
   Settings
 } from 'lucide-react';
-import { SessionActions } from './wizard-types';
+import { SessionActions } from '@lib/wizard/types';
 import { useEffect, useState } from 'react';
 
 interface GameProgressSidebarProps {

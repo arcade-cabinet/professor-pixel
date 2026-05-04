@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import pixelImage from '@assets/pixel/Pixel_happy_excited_expression_22a41625.png';
-import { ANIMATIONS, AVATAR_SIZES, STYLES } from './wizard-constants';
+import { ANIMATIONS, AVATAR_SIZES, STYLES } from '@lib/wizard/constants';
 
 interface WizardAvatarProps {
   size?: 'desktop' | 'phone-portrait' | 'phone-landscape';

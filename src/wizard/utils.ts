@@ -3,8 +3,8 @@ import {
   DeviceState, 
   LayoutMode,
   SessionActions
-} from './wizard-types';
-import { BREAKPOINTS, GAME_TYPE_ICONS } from './wizard-constants';
+} from './types';
+import { BREAKPOINTS, GAME_TYPE_ICONS } from './constants';
 
 // Device detection utilities
 export const detectDevice = (): DeviceState => {

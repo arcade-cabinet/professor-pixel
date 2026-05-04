@@ -12,8 +12,8 @@ import {
   History,
   X
 } from "lucide-react";
-import { sessionHistory } from "@/lib/session-history";
-import { useIsMobile } from "@/hooks/use-media-query";
+import { sessionHistory } from "@lib/storage/session-history";
+import { useIsMobile } from "@lib/hooks/use-media-query";
 
 // Import Pixel images
 import pixelHappy from '@assets/pixel/Pixel_happy_excited_expression_22a41625.png';

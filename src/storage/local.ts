@@ -1,5 +1,5 @@
 // localStorage wrapper for progress tracking
-import type { UserProgress } from "@shared/schema";
+import type { UserProgress } from "@lib/types/schema";
 
 const STORAGE_PREFIX = 'pygame_academy_';
 const PROGRESS_KEY = STORAGE_PREFIX + 'progress';

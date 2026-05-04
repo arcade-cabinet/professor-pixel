@@ -1,5 +1,5 @@
 // PyGame Platform Component
-import { PyGameComponent, hexToRgb } from './pygame-component-types';
+import { PyGameComponent, hexToRgb } from './types';
 
 interface PlatformProperties {
   x: number;

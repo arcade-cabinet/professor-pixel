@@ -3,7 +3,7 @@
  * Transforms technical errors into learning opportunities
  */
 
-import { logger } from "./console-logger";
+import { logger } from "@lib/monitoring/console-logger";
 
 export interface EducationalError {
   originalError: string;

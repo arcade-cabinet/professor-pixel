@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Play, RotateCcw, Keyboard, CheckCircle2, Target } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn } from "@lib/utils/cn";
 
 // Monaco Editor types
 declare global {

@@ -1,7 +1,7 @@
 // Comprehensive Asset Catalog System
 // Manages 2000+ assets across 2D sprites, 3D models, UI elements, and audio files
 
-import { GameAsset } from './asset-library';
+import { GameAsset } from './_legacy-asset-library';
 
 export interface AssetMetadata {
   id: string;

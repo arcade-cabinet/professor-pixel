@@ -1,6 +1,6 @@
 // PyGame Collecting Game Template
-import { GameTemplate } from './pygame-template-types';
-import { drawStar } from './pygame-component-types';
+import { GameTemplate } from './types';
+import { drawStar } from '@lib/pygame/components/types';
 
 export const collectingTemplate: GameTemplate = {
   id: 'collecting-game',

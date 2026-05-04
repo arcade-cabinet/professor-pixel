@@ -7,9 +7,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Settings, Palette, Move, Code } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { PlacedComponent } from './pygame-wysiwyg-editor';
-import { getComponentById } from '@/lib/pygame-components';
+import { cn } from '@lib/utils/cn';
+import { PlacedComponent } from './wysiwyg';
+import { getComponentById } from '@lib/pygame/components/registry';
 
 interface PygameEditorPropertiesProps {
   component: PlacedComponent;

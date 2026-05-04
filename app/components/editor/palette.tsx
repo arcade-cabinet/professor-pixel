@@ -7,8 +7,8 @@ import {
   Star, Image, Type, 
   Sparkles, Timer, Heart, RectangleHorizontal
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { getAllComponents, PyGameComponent } from '@/lib/pygame-components';
+import { cn } from '@lib/utils/cn';
+import { getAllComponents, PyGameComponent } from '@lib/pygame/components/registry';
 
 interface PygameEditorPaletteProps {
   className?: string;

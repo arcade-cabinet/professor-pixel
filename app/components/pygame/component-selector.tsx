@@ -3,9 +3,9 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { cn } from '@/lib/utils';
-import type { PygameComponent } from '@/lib/pygame-components/types';
-import { allComponents } from '@/lib/pygame-components';
+import { cn } from '@lib/utils/cn';
+import type { PygameComponent } from '@lib/pygame/components/system-types';
+import { allComponents } from '@lib/pygame/components/registry';
 
 interface ComponentSelectorProps {
   componentId?: string;

@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { Card } from '@/components/ui/card';
 import { Code2, Play, Settings } from 'lucide-react';
-import { EmbeddedComponentType } from './wizard-types';
+import { EmbeddedComponentType } from '@lib/wizard/types';
 
 interface CodeRunnerProps {
   type: EmbeddedComponentType;
