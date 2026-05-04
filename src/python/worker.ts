@@ -11,12 +11,10 @@
 
 import * as Comlink from 'comlink';
 
-// Pyodide ships a CommonJS `pyodide.js` exposing the global `loadPyodide`.
-// Inside a worker we can importScripts() it without a script tag.
-declare function importScripts(...urls: string[]): void;
-declare const self: DedicatedWorkerGlobalScope & {
-  loadPyodide?: (opts?: PyodideLoadOptions) => Promise<PyodideInstance>;
-};
+// Pyodide ships an ESM variant at `pyodide.mjs` exposing `loadPyodide`.
+// We dynamic-import it so the worker stays an ESM module (which Vite's
+// `?worker` produces by default; classic workers can't use ES imports for
+// the rest of our code).
 
 const PYODIDE_BASE = '/pyodide/';
 
@@ -37,11 +35,10 @@ class WorkerRunner {
   private async getPyodide(): Promise<PyodideInstance> {
     if (!this.bootstrap) {
       this.bootstrap = (async () => {
-        importScripts(`${PYODIDE_BASE}pyodide.js`);
-        if (!self.loadPyodide) {
-          throw new Error('worker: loadPyodide not exposed after importScripts');
-        }
-        return self.loadPyodide({
+        const mod = (await import(/* @vite-ignore */ `${PYODIDE_BASE}pyodide.mjs`)) as {
+          loadPyodide: (opts?: PyodideLoadOptions) => Promise<PyodideInstance>;
+        };
+        return mod.loadPyodide({
           indexURL: PYODIDE_BASE,
           stdout: (s: string) => this.stdoutBuffer.push(s),
           stderr: (s: string) => this.stderrBuffer.push(s),

@@ -47,7 +47,16 @@ export async function gradeCode(
     }
   }
 
-  if (executionError) {
+  const tests = step.tests ?? [];
+  const allAstOnly =
+    tests.length > 0 &&
+    tests.every((t) => t.mode === 'rules' && t.astRules && !t.runtimeRules);
+
+  if (executionError && !allAstOnly) {
+    // Only short-circuit when at least one test depends on runtime state.
+    // AST-only steps (pygame lessons that import a package pyodide doesn't
+    // ship) should still grade against the source — execution failure is
+    // expected and irrelevant.
     return {
       passed: false,
       score: 0,
@@ -57,8 +66,6 @@ export async function gradeCode(
       partial: { ast: [], runtime: [] },
     };
   }
-
-  const tests = step.tests ?? [];
   if (tests.length === 0) {
     return {
       passed: true,
