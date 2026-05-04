@@ -53,7 +53,7 @@ npm run dev      # development with HMR + Replit overlays
 npm run build && npm start   # production-style on Replit's Node runtime
 ```
 
-`.replit` is the Replit run/config descriptor. `replit.md` was the legacy "AI overview" Replit reads — its content is now in `ARCHITECTURE.md` + `DESIGN.md`; the file is being removed (see [`STATE.md`](STATE.md)).
+`.replit` is the Replit run/config descriptor. The legacy `replit.md` "AI overview" has been removed; its content lives in [`ARCHITECTURE.md`](ARCHITECTURE.md) and [`DESIGN.md`](DESIGN.md).
 
 ## Self-host
 

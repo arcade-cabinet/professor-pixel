@@ -33,6 +33,6 @@ Pixel's PyGame Palace — a conversational, mascot-driven React+Express platform
 
 ## Notes
 
-- Origin: Replit (see `replit.md`, `.replit`, `@replit/vite-plugin-*` deps). Watch for Replit-specific assumptions when running locally.
+- Origin: Replit (see `.replit` and the `@replit/vite-plugin-*` deps). Watch for Replit-specific assumptions when running locally; the legacy `replit.md` overview was migrated into `docs/ARCHITECTURE.md` and `docs/DESIGN.md`.
 - Three test runners coexist: vitest (unit), playwright (e2e), selenium (legacy/cross-browser). Prefer vitest+playwright for new work.
 - `pyproject.toml` is for ancillary asset tooling (numpy/pillow), not the main project.

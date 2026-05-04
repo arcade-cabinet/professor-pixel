@@ -30,7 +30,7 @@ Bringing the repo up to the standard-repo profile. In progress on the open PR.
 - [x] `release-please-config.json` + manifest
 - [x] `.github/workflows/release.yml` — release-please + signed build artefact
 - [x] Audit `ci.yml` / rename `deploy.yml` → `cd.yml`, bump `actions/checkout@v6`, add concurrency
-- [ ] Remove `replit.md`, `TESTING_GUIDE.md`
+- [x] Remove `replit.md`, `TESTING_GUIDE.md` (content migrated)
 
 ## Done (recent milestones)
 
