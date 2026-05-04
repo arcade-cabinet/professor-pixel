@@ -20,3 +20,4 @@
 {"ts":"2026-05-04T21:03:01.295Z","sha":"8c5a3dacefca","subject":"chore(directive): queue batch-20260504-160227 from stabilization-pillar.prq.md","decision":null,"why":null,"resolves":["directive seeding for stabilization-pillar.prq.md"],"overrides":[]}
 {"ts":"2026-05-04T21:05:27.704Z","sha":"363c353bcb53","subject":"feat(layout): page banner renders on all viewports (S1, S2)","decision":null,"why":null,"resolves":["S1","S2"],"overrides":[]}
 {"ts":"2026-05-04T21:06:33.854Z","sha":"61ecde86de97","subject":"refactor(pygame): name the type seam (S3)","decision":null,"why":null,"resolves":["S3"],"overrides":[]}
+{"ts":"2026-05-04T21:09:19.699Z","sha":"793abc19c838","subject":"feat(grading): worker-based ESM bootstrap + AST-only execution gate (S4)","decision":null,"why":null,"resolves":["S4"],"overrides":[]}

@@ -1,6 +1,6 @@
 # Continuous Work Directive — professor-pixel
 
-**Status:** ACTIVE
+**Status:** RELEASED
 **Owner:** jbogaty
 
 ## What CONTINUOUS means
@@ -73,4 +73,4 @@ Branch: feat/stabilization-pillar
 - [x] S2 Flip component CI to blocking — drop `continue-on-error` from the component step in `.github/workflows/ci.yml`; PR CI green
 - [x] S3 Unify or document the pygame-component type seam — `src/pygame/components/types.ts` vs `system-types.ts`; `npm run check` clean
 - [x] S4 Grader e2e via worker — new `tests/component/grader-e2e.test.tsx` runs each lesson's `solution` through the worker, asserts `score === 1.0` for every step
-- [ ] SD.1 Update `docs/STATE.md` — move stabilized items from Next → Done; refresh; queue `no-explicit-any` cleanup as a separate PRQ at 209-instance impact
+- [x] SD.1 Update `docs/STATE.md` — move stabilized items from Next → Done; refresh; queue `no-explicit-any` cleanup as a separate PRQ at 209-instance impact
