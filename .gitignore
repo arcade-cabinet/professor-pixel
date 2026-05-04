@@ -29,6 +29,9 @@ coverage/
 .nyc_output/
 tests/component/__screenshots__/
 
+# Claude Code working dir (cache + scheduled-task locks; see ~/.claude/CLAUDE.md)
+.claude/
+
 # IDEs and editors
 .vscode/
 .idea/
