@@ -4,3 +4,4 @@
 export * from './error-handler';
 export * from './pyodide-singleton';
 export * from './runner';
+export * from './worker-runner';
