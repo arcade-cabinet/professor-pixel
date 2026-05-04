@@ -1,4 +1,10 @@
-import { type User, type InsertUser, type Lesson, type InsertLesson, type UserProgress, type InsertUserProgress, type Project, type InsertProject } from "@lib/types/schema";
+import {
+  type User,
+  type Lesson,
+  type UserProgress,
+  type Project,
+  type InsertProject,
+} from '@lib/types/schema';
 
 // Client-side storage adapter for GitHub Pages compatibility
 // Uses static JSON files for lessons and LocalStorage for user data
