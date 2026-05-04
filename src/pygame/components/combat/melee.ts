@@ -1,6 +1,6 @@
-import { PygameComponent } from '../system-types';
+import { PygameSystemSpec } from '../system-types';
 
-export const meleeComponent: PygameComponent = {
+export const meleeComponent: PygameSystemSpec = {
   id: 'melee',
   name: 'Melee Combat',
   category: 'combat',

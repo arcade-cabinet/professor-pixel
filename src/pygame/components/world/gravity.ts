@@ -1,6 +1,6 @@
-import { PygameComponent } from '../system-types';
+import { PygameSystemSpec } from '../system-types';
 
-export const gravityComponent: PygameComponent = {
+export const gravityComponent: PygameSystemSpec = {
   id: 'gravity',
   name: 'Gravity System',
   category: 'world',

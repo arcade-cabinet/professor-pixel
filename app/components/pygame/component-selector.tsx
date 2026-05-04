@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@lib/utils/cn';
-import type { PygameComponent } from '@lib/pygame/components/system-types';
+import type { PygameSystemSpec } from '@lib/pygame/components/system-types';
 import { allComponents } from '@lib/pygame/components/systems-index';
 
 interface ComponentSelectorProps {
@@ -26,8 +26,8 @@ export default function PygameComponentSelector({
   
   // Find the component by ID or get first from category
   const component = componentId 
-    ? allComponents.find((c: PygameComponent) => c.id === componentId)
-    : allComponents.find((c: PygameComponent) => c.category === category);
+    ? allComponents.find((c: PygameSystemSpec) => c.id === componentId)
+    : allComponents.find((c: PygameSystemSpec) => c.category === category);
     
   if (!component) {
     return (
