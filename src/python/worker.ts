@@ -4,9 +4,9 @@
  * `while True:` can't wedge the main thread and a runaway program can be
  * killed with `worker.terminate()` without crashing React.
  *
- * The worker exposes a Comlink API: ready(), runSnippet(), runWithInput().
- * The main-thread runner.ts owns the worker lifecycle — it spawns this file
- * once, keeps the Comlink remote, and respawns on timeout.
+ * The worker exposes a Comlink API: ready(), runSnippet(code, input?).
+ * The main-thread WorkerPythonRunner owns the worker lifecycle — it spawns
+ * this file once, keeps the Comlink remote, and respawns on timeout.
  */
 
 import * as Comlink from 'comlink';

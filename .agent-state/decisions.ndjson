@@ -14,3 +14,4 @@
 {"ts":"2026-05-04T19:58:35.531Z","sha":"728784a8eaa7","subject":"ci(test): make integration tests blocking; unblock component runner (TC.1)","decision":null,"why":null,"resolves":["TC.1"],"overrides":[]}
 {"ts":"2026-05-04T20:18:00.513Z","sha":"6739ddcb26ae","subject":"fix(grading): return JSON results from AST validator unconditionally","decision":null,"why":null,"resolves":["PR #19 review"],"overrides":[]}
 {"ts":"2026-05-04T20:19:18.455Z","sha":"04e7a85508b8","subject":"fix(python): reset builtins.input on every runSnippet call","decision":null,"why":null,"resolves":["PR #19 review (reviewer found via subagent dispatch)"],"overrides":[]}
+{"ts":"2026-05-04T20:31:03.718Z","sha":"f57213f93f9b","subject":"fix: address CodeRabbit review (PR #19)","decision":null,"why":null,"resolves":["PR #19 review (CodeRabbit","18 actionable comments)"],"overrides":[]}

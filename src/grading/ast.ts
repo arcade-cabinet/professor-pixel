@@ -1,4 +1,4 @@
-import type { AstRules, RuleResult } from './types';
+import type { AstRules, RuleResult } from '@lib/grading/types';
 
 /**
  * AST-based grading. Runs the full rule set in a single Pyodide call —
@@ -267,7 +267,11 @@ else:
                     violated = True
                     break
         else:
-            violated = False
+            # Don't fail open on unknown kinds — emit a failing rule so the
+            # author sees their typo instead of silently passing.
+            add(f"ast.not_uses:{kind or '*'}", False,
+                f"Unknown forbidden-construct kind: {kind!r}")
+            continue
         ok = not violated
         add(f"ast.not_uses:{kind}:{name or '*'}", ok,
             f"Did not use {kind}{':'+name if name else ''}" if ok else

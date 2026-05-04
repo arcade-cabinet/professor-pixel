@@ -17,7 +17,7 @@ status: ACTIVE
 
 PR #19 (foundations) left three cleanup threads dangling, all of which block downstream work:
 
-1. **Layout banner regression.** The Capacitor-style refactor removed the `<header role="banner">` wrapper that `tests/component/responsive-wizard.test.tsx` asserts on. Component CI is currently `continue-on-error: true` because of this — flipping it to blocking is gated on restoring a real banner.
+1. **Layout banner regression.** The Capacitor-style refactor left the only `<header>` (banner landmark) gated by `hidden lg:block`, so `tests/component/responsive-wizard.test.tsx`'s `getByRole('banner')` finds nothing in the a11y tree at the test's mocked viewport. Component CI is currently `continue-on-error: true` because of this — flipping it to blocking is gated on restoring a real banner.
 2. **Parallel pygame-component type layers.** `src/pygame/components/types.ts` (rendering primitives) and `src/pygame/components/system-types.ts` (system specs with variants/category) share names but have diverging shapes. Drift waiting to bite.
 3. **Grader has unit-level coverage but no end-to-end coverage.** The unit tests catch authoring mistakes in `lessons.json`; nothing catches grader regressions where the AST/runtime rules drift away from the canonical solutions.
 
@@ -25,7 +25,7 @@ Plus `@typescript-eslint/no-explicit-any` should flip from `warn` to `error` onc
 
 ## Tasks
 
-- [ ] P1: S1 — Restore page banner / `<header role="banner">` in the app shell so `responsive-wizard.test.tsx` passes
+- [ ] P1: S1 — Restore page banner (top-level `<header>`) in the app shell so `responsive-wizard.test.tsx` passes
 - [ ] P1: S2 — Flip the component-test CI step to blocking (drop `continue-on-error`); confirm green
 - [ ] P1: S3 — Unify or document the seam between `pygame/components/types.ts` and `system-types.ts`
 - [ ] P2: S4 — Component-project Pyodide test that runs each lesson's `solution` through the worker and asserts `score === 1.0`
@@ -50,7 +50,7 @@ Two viable fixes:
 
 Pick (1) — it improves UX *and* unblocks the test.
 
-- [ ] App shell renders `<header role="banner">` at the document level on all viewports (mobile gets a compact variant; desktop keeps the existing rich one).
+- [ ] App shell renders a top-level `<header>` element on all viewports (mobile gets a compact variant; desktop keeps the existing rich one). Don't add `role="banner"` manually — `<header>` already implies it as a top-level landmark.
 - [ ] `npm run test:component` passes locally.
 - [ ] Visual review at 375×667 and 1280×800 — neither feels worse than current.
 
@@ -95,11 +95,11 @@ Pick (1) — it improves UX *and* unblocks the test.
 
 - **No toolchain bumps in this PR.** pnpm / TS6 / Biome / Vite8 / React19 are deliberately separate — they each carry their own risk profile and shouldn't be entangled with stabilization fixes.
 - **No new lessons.** Content cadence is its own track.
-- **Worker runner is reused.** S5 imports `getWorkerRunner()` directly; do not spawn a parallel runner.
+- **Worker runner is reused.** S4 imports `getWorkerRunner()` directly; do not spawn a parallel runner.
 - **Banner restoration uses semantic HTML, not ARIA hacks.** `<header>` defaults to `role="banner"` when it's a top-level landmark; don't add the role attribute manually unless a Radix component demands it.
 
 ## Risks
 
 - S1 could touch the page-shell components broadly. If the diff balloons past ~150 LOC of layout changes, it's a sign the original removal was structural, not cosmetic — split into its own PR rather than fold it into stabilization.
 - S3 may surface that the duplication is load-bearing (one file is consumed by the WYSIWYG editor, the other by the simulator runtime). If so, the right answer is "document the seam" not "merge."
-- S5's runtime cost: 6 lessons × ~13 steps × Pyodide cold start. The worker runner is reused across calls, so cold start happens once. If the test still bloats, gate it behind `--changed` or a nightly job.
+- S4's runtime cost: 6 lessons × ~13 steps × Pyodide cold start. The worker runner is reused across calls, so cold start happens once. If the test still bloats, gate it behind `--changed` or a nightly job.
