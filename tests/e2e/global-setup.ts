@@ -26,9 +26,10 @@ async function globalSetup(config: FullConfig) {
     const page = await browser.newPage();
     
     console.log('⏳ Checking if server is responding...');
-    await page.goto(config.use?.baseURL || 'http://localhost:5000', { 
+    const baseURL = config.projects[0]?.use?.baseURL ?? 'http://localhost:5173';
+    await page.goto(baseURL, {
       timeout: 30000,
-      waitUntil: 'networkidle'
+      waitUntil: 'networkidle',
     });
     
     console.log('✅ Server is responding');

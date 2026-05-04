@@ -15,7 +15,7 @@ export class WizardNavigator {
     try {
       // Get current dialogue text
       const dialogueElement = this.page.locator('[data-testid="dialogue-text"], .dialogue-text').first();
-      const currentDialogue = await dialogueElement.textContent().catch(() => undefined);
+      const currentDialogue = (await dialogueElement.textContent().catch(() => undefined)) ?? undefined;
 
       // Get available options
       const optionElements = this.page.locator('[data-testid^="option-"], .wizard-option');

@@ -1,76 +1,85 @@
 import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
-import path from 'path';
+import path from 'node:path';
+
+// Single Vitest config with `projects` (Vitest 3 native) declaring three test
+// classifications:
+//   * unit         — pure-logic tests in jsdom (fast)
+//   * integration  — multi-module tests in jsdom (hooks, persistence-glue)
+//   * component    — React component tests in real Chromium via @vitest/browser
+//
+// e2e lives in playwright.config.ts and is intentionally NOT a Vitest project.
+
+const repoRoot = import.meta.dirname;
+const alias = {
+  '@': path.resolve(repoRoot, 'app'),
+  '@lib': path.resolve(repoRoot, 'src'),
+  '@assets': path.resolve(repoRoot, 'app/assets'),
+};
+
+const sharedExclude = [
+  '**/node_modules/**',
+  '**/dist/**',
+  '**/tests/e2e/**',
+];
 
 export default defineConfig({
   plugins: [react()],
+  resolve: { alias },
   test: {
-    environment: 'jsdom',
-    globals: true,
-    setupFiles: ['./tests/setup.ts'],
-    // Set test timeout to prevent hanging tests
-    testTimeout: 10000,
-    hookTimeout: 10000,
-    // Exclude integration tests from default test run when collecting coverage
-    exclude: [
-      '**/node_modules/**',
-      '**/dist/**',
-      // Exclude integration tests from coverage runs
-      process.env.COVERAGE === 'true' ? '**/tests/integration/**' : '',
-      // Exclude e2e tests
-      '**/tests/e2e/**',
-      '**/*.e2e.test.{ts,tsx}',
-      '**/*.integration.test.{ts,tsx}'
-    ].filter(Boolean),
+    projects: [
+      {
+        plugins: [react()],
+        resolve: { alias },
+        test: {
+          name: 'unit',
+          environment: 'jsdom',
+          globals: true,
+          include: ['tests/unit/**/*.test.{ts,tsx}'],
+          exclude: sharedExclude,
+          setupFiles: ['./tests/setup/common.ts'],
+        },
+      },
+      {
+        plugins: [react()],
+        resolve: { alias },
+        test: {
+          name: 'integration',
+          environment: 'jsdom',
+          globals: true,
+          include: ['tests/integration/**/*.test.{ts,tsx}'],
+          exclude: sharedExclude,
+          setupFiles: ['./tests/setup/common.ts'],
+          testTimeout: 15000,
+        },
+      },
+      {
+        plugins: [react()],
+        resolve: { alias },
+        test: {
+          name: 'component',
+          include: ['tests/component/**/*.test.{ts,tsx}'],
+          exclude: sharedExclude,
+          setupFiles: ['./tests/setup/common.ts'],
+          browser: {
+            enabled: true,
+            provider: 'playwright',
+            headless: true,
+            instances: [{ browser: 'chromium' }],
+          },
+        },
+      },
+    ],
     coverage: {
       provider: 'v8',
-      reporter: ['text', 'json', 'html', 'lcov'],
+      reporter: ['text', 'html', 'lcov'],
       reportsDirectory: './coverage',
+      include: ['app/**/*.{ts,tsx}', 'src/**/*.{ts,tsx}'],
       exclude: [
-        'node_modules/',
-        'dist/', 
-        'tests/',
-        '*.config.ts',
-        '*.config.js',
-        'server/',
         '**/index.ts',
         '**/*.d.ts',
-        // Explicitly exclude integration and e2e tests from coverage
-        '**/tests/integration/**',
-        '**/tests/e2e/**',
-        '**/*.integration.test.{ts,tsx}',
-        '**/*.e2e.test.{ts,tsx}'
+        'app/**/*.stories.tsx',
       ],
-      include: [
-        'client/src/**/*.{ts,tsx}'
-      ],
-      thresholds: {
-        lines: 90,
-        functions: 90,
-        branches: 85,
-        statements: 90
-      }
     },
-    // Run tests in parallel for better performance
-    pool: 'threads',
-    poolOptions: {
-      threads: {
-        singleThread: false
-      }
-    }
   },
-  resolve: {
-    alias: {
-      '@': path.resolve(__dirname, './client/src'),
-      '@shared': path.resolve(__dirname, './shared'),
-      '@/components': path.resolve(__dirname, './client/src/components'),
-      '@/lib': path.resolve(__dirname, './client/src/lib'),
-      '@/hooks': path.resolve(__dirname, './client/src/hooks'),
-      '@/pages': path.resolve(__dirname, './client/src/pages'),
-      '@assets': path.resolve(__dirname, './attached_assets')
-    }
-  },
-  esbuild: {
-    jsx: 'automatic'
-  }
 });

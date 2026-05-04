@@ -12,7 +12,7 @@ export default defineConfig({
     ['line']
   ],
   use: {
-    baseURL: 'http://localhost:5000',
+    baseURL: 'http://localhost:5173',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
     trace: 'on-first-retry',
@@ -93,7 +93,7 @@ export default defineConfig({
   // Development server configuration
   webServer: {
     command: 'npm run dev',
-    url: 'http://localhost:5000',
+    url: 'http://localhost:5173',
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000, // 2 minutes to start
   },
