@@ -84,7 +84,9 @@ Aliases: `@/*` → `./app/*` (TSX), `@lib/*` → `./src/*` (TS logic), `@assets/
 | [`AGENTS.md`](AGENTS.md) | Operating protocols, conventions, and patterns for human + AI contributors |
 | [`STANDARDS.md`](STANDARDS.md) | Code quality, design, and accessibility non-negotiables |
 | [`CHANGELOG.md`](CHANGELOG.md) | Notable changes per release |
-| [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | System design, boundaries, data flow |
+| [`docs/README.md`](docs/README.md) | Documentation index |
+| [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | Cross-pillar contracts, build pipeline, data flow |
+| [`docs/pillars/`](docs/pillars/) | Per-pillar implementation contracts (frontend, runtime, lesson engine, grading, design system) |
 | [`docs/DESIGN.md`](docs/DESIGN.md) | Product vision, Pixel's voice, UX principles |
 | [`docs/TESTING.md`](docs/TESTING.md) | Test strategy, coverage, how to run |
 | [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) | Environments, secrets, deploy procedures |

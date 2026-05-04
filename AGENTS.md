@@ -42,7 +42,7 @@ Aliases: `@/*` → `./app/*`, `@lib/*` → `./src/*`, `@assets/*` → `./app/ass
 
 ## Patterns
 
-**Cross-domain types.** Define types in `src/types/schema.ts` (or the relevant domain folder under `src/`). Convert to Zod when migrating — `z.infer<typeof Schema>` is the target shape. No untyped data crossing module boundaries.
+**Cross-domain types.** Define types in `src/types/schema.ts` (or the relevant domain folder under `src/`) as Zod schemas — `z.infer<typeof Schema>` is the canonical type. No untyped data crossing module boundaries; validate at every external seam (network JSON, localStorage, postMessage). See [`docs/pillars/03-lesson-engine.md`](docs/pillars/03-lesson-engine.md).
 
 **State.** Server state goes through TanStack Query — no manual fetch in components. Local UI state stays in React. Don't introduce Redux/MobX/Zustand without a written reason and a migration plan.
 
@@ -102,7 +102,8 @@ The following require explicit human approval each time, even for AI agents oper
 
 ## When in doubt
 
-1. Read [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) and [`docs/DESIGN.md`](docs/DESIGN.md).
-2. Check [`docs/STATE.md`](docs/STATE.md) for active work.
+1. Read [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for cross-pillar contracts, then the relevant pillar in [`docs/pillars/`](docs/pillars/) — frontend, runtime, lesson engine, grading, design system.
+2. Read [`docs/DESIGN.md`](docs/DESIGN.md) for product vision and Pixel's voice.
+3. Check [`docs/STATE.md`](docs/STATE.md) for active work.
 3. Search the codebase — there's likely an existing pattern.
 4. Open a draft PR and ask. Cheaper than guessing.

@@ -46,15 +46,15 @@ Branch: feat/foundations-pillar-completion
 
 ### Pillar 0 — Docs restructure (frontmatter-headed pillars)
 
-- [ ] TD.1 `docs/README.md` index — frontmatter + table mapping pillar → file
-- [ ] TD.2 `docs/pillars/01-frontend.md` — TS/React/Vite/aliases/build pipeline
-- [ ] TD.3 `docs/pillars/02-runtime.md` — Pyodide loader/Worker/Comlink/simulator + sequence diagram
-- [ ] TD.4 `docs/pillars/03-lesson-engine.md` — Zod schema, authoring workflow, sequencing, resume
-- [ ] TD.5 `docs/pillars/04-grading.md` — every rule kind documented with examples + common mistakes
-- [ ] TD.6 `docs/pillars/05-design-system.md` — tokens/voice/components carved out of DESIGN.md
-- [ ] TD.7 Rewrite `docs/ARCHITECTURE.md` — cross-pillar boundaries only, ~80 lines
-- [ ] TD.8 Update `docs/STATE.md` — R-phases → Done; this PR's work in Active; refresh Next
-- [ ] TD.9 Update `STANDARDS.md` + `AGENTS.md` — cross-refs to pillar files; verify no broken links
+- [x] TD.1 `docs/README.md` index — frontmatter + table mapping pillar → file
+- [x] TD.2 `docs/pillars/01-frontend.md` — TS/React/Vite/aliases/build pipeline
+- [x] TD.3 `docs/pillars/02-runtime.md` — Pyodide loader/Worker/Comlink/simulator + sequence diagram
+- [x] TD.4 `docs/pillars/03-lesson-engine.md` — Zod schema, authoring workflow, sequencing, resume
+- [x] TD.5 `docs/pillars/04-grading.md` — every rule kind documented with examples + common mistakes
+- [x] TD.6 `docs/pillars/05-design-system.md` — tokens/voice/components carved out of DESIGN.md
+- [x] TD.7 Rewrite `docs/ARCHITECTURE.md` — cross-pillar boundaries only, ~80 lines
+- [x] TD.8 Update `docs/STATE.md` — R-phases → Done; this PR's work in Active; refresh Next
+- [x] TD.9 Update `STANDARDS.md` + `AGENTS.md` — cross-refs to pillar files; verify no broken links
 
 ### CI
 

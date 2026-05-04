@@ -16,7 +16,7 @@ Non-negotiables for code, design, and accessibility. If a rule here conflicts wi
 - **No `as` casts** except (a) narrowing `unknown` after a runtime check, (b) the `as const` assertion. Anything else needs a comment explaining why TS can't infer it.
 - **`noEmit: true`** — type-checking is the build for `tsc`. The actual JS output comes from Vite.
 - **Module boundaries.** Use the `@/` (`./app/*`), `@lib/` (`./src/*`), and `@assets/` (`./app/assets/*`) aliases — never relative paths that reach across a domain boundary.
-- **Schema-first.** Cross-domain data is defined as a Zod schema in `src/types/` (or the relevant domain folder); the TypeScript type is `z.infer<typeof Schema>`. Don't hand-write a type and a validator that can drift. Migration from plain TS interfaces is in flight (see [`docs/STATE.md`](docs/STATE.md)).
+- **Schema-first.** Cross-domain data is defined as a Zod schema in `src/types/schema.ts` (or the relevant domain folder); the TypeScript type is `z.infer<typeof Schema>`. Don't hand-write a type and a validator that can drift. See [`docs/pillars/03-lesson-engine.md`](docs/pillars/03-lesson-engine.md) for the canonical lesson schema and [`docs/pillars/04-grading.md`](docs/pillars/04-grading.md) for grading rule schemas.
 
 ## ESLint / Prettier
 
@@ -49,7 +49,7 @@ Non-negotiables for code, design, and accessibility. If a rule here conflicts wi
 - **Warm, soft colors.** No harsh black-on-white or white-on-black. Theme tokens live in CSS variables (`--background`, `--foreground`, etc.) and are wired through Tailwind via `tailwind.config.ts`.
 - **No hardcoded hex values** in components. Reach for the semantic token (`bg-background`, `text-foreground`, `text-muted-foreground`, …) or extend the token set in `tailwind.config.ts` first.
 - **Type scale + spacing scale come from Tailwind defaults** unless explicitly extended. Don't add ad-hoc `text-[13px]` or `mt-[7px]` in components.
-- **Mascot voice (Pixel).** Friendly, plain-language, no jargon. See [`docs/DESIGN.md`](docs/DESIGN.md) for tone and phrasing rules.
+- **Mascot voice (Pixel).** Friendly, plain-language, no jargon. See [`docs/DESIGN.md`](docs/DESIGN.md) for tone philosophy and [`docs/pillars/05-design-system.md`](docs/pillars/05-design-system.md) for the implementation contract (tokens, components, voice rules).
 - **Layout efficiency.** Minimize negative space; the platform is dense by design (the audience is kids on small screens). When in doubt, tighter is better than airier.
 - **Animations honor `prefers-reduced-motion`.** Wrap non-essential motion in a `@media (prefers-reduced-motion: reduce)` check or use Framer Motion's `useReducedMotion`.
 

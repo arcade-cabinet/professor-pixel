@@ -11,26 +11,37 @@ domain: context
 
 ## Active
 
-### Capacitor-style layout + browser-only deploy (this branch: `feat/foundations-and-asset-library`)
+### Foundations pillar completion (this branch: `feat/foundations-pillar-completion`)
 
-Strip the Express/Drizzle/passport scaffolding, flatten the tree to a single `app/` + `src/` + `public/` at the repo root, replace the 3137-line static asset registry with a build-time catalog, and reorganise tests into Vitest projects + Playwright e2e.
+Wire Pyodide into the lesson page, vendor it locally, push it onto a Web Worker. Replace the placeholder lesson schema with Zod. Expand the AST grading vocabulary and add partial credit + per-test resource caps. Author six real lessons. Restructure docs into pillar files.
 
-- [x] R1 — Delete `apps/` + `packages/` (zero-usage workspaces).
-- [x] R2 — Delete `server/`, `shared/` (split into `src/`), Selenium tests, and server-runtime deps.
-- [x] R3 — Merge three `public/` directories into one.
-- [x] R4 — Move `client/index.html` to repo root; update `vite.config.ts`.
-- [x] R5 — Split `client/src/` into `src/` (`.ts`) + `app/` (`.tsx`) with proper domain folders.
-- [x] R6 — Bulk-rewrite imports via perl across `app/`, `src/`, `tests/`.
-- [x] R7 — Move root `assets/` into `app/assets/pixel/` (bundled portraits) + `scripts/asset-generator/` (build-side generators).
-- [x] R8 — Replace `_kenney-*.ts` / `_curated-*.ts` with `scripts/build-asset-catalog.mjs` + `@lib/assets/catalog`.
-- [x] R9 — Reorganise tests into `unit` / `integration` / `component` (Vitest browser) / `e2e` (Playwright); declare Vitest projects.
-- [x] R10 — Close out remaining tsc errors (168 → 0).
-- [x] R11 — Update docs to reflect new layout (this commit).
+- [x] T2.1 — Singleton Pyodide bootstrap (`src/python/pyodide-singleton.ts`).
+- [x] T2.2 — Wire Pyodide into the lesson page (replaces the `null` stubs that disabled Run/Check).
+- [x] T2.3 — Vendor Pyodide locally + bump to 0.29.3 (was CDN-only on 0.24.1).
+- [x] T2.4 — Move Pyodide onto a Web Worker via Comlink with timeout-driven termination.
+- [x] T4.1 — Zod-validate the cross-domain entities (`User`, `Lesson`, `UserProgress`, `Project`).
+- [x] T4.2 — Lesson loader + prerequisite gating.
+- [x] T4.3 — Step-level resume (integration coverage).
+- [x] T4.4 — Author six lessons covering Python → Pygame.
+- [x] T5.1 — Expand AST rule vocabulary (imports_module, defines_class, calls_method, parameter_count, nesting_depth, anti-rules).
+- [x] T5.2 — Partial credit + per-rule pass/fail in `GradeResult`.
+- [x] T5.3 — Per-test `timeoutMs` / `maxStdout` caps wired through the worker.
+- [x] TD.1 — `docs/README.md` index.
+- [x] TD.2 — `docs/pillars/01-frontend.md`.
+- [x] TD.3 — `docs/pillars/02-runtime.md`.
+- [x] TD.4 — `docs/pillars/03-lesson-engine.md`.
+- [x] TD.5 — `docs/pillars/04-grading.md`.
+- [x] TD.6 — `docs/pillars/05-design-system.md`.
+- [x] TD.7 — Rewrite `docs/ARCHITECTURE.md` to be cross-pillar only.
+- [x] TD.8 — Update `docs/STATE.md` (this entry).
+- [x] TD.9 — Refresh STANDARDS.md / AGENTS.md cross-references.
+- [x] TC.1 — Make integration + component tests blocking in CI.
 
 ## Done (recent milestones)
 
 | Milestone | When | Notes |
 |-----------|------|-------|
+| Capacitor-style layout + browser-only deploy | 2026-05 | Squashed into `ec275bd` on main; R1–R11 phases |
 | Documentation overhaul to standard-repo profile | 2026-05 | See [`CHANGELOG.md`](../CHANGELOG.md) |
 | Initial development complete (v1.0.0 baseline) | 2025-09 | Themed v0.1.0 history in `CHANGELOG.md` |
 | Multi-resolution Playwright suite | 2025-09 | 7 viewports, runtime-error detection wired in |
@@ -53,24 +64,25 @@ Sized roughly so any one item is a single PR.
 
 ### Type / schema cleanup
 
-- **Convert `src/types/schema.ts` to Zod.** TypeScript interfaces today; the standard is Zod-first with `z.infer` re-exports.
 - **Unify the parallel pygame-component layers.** `src/pygame/components/types.ts` (canvas-rendering primitives) and `src/pygame/components/system-types.ts` (gameplay systems with variants/category) share names but have different shapes. Either merge or document the seam.
 - **Treat `@typescript-eslint/no-explicit-any` as `error`** (currently `warn`). Fix existing `any`s in the same PR. Likely subsumed by the Biome migration.
 - **Re-enable Vitest coverage thresholds** (90/85/90/90 lines/branches/functions/statements).
 
-### Test logic catch-up
+### Visual / accessibility
 
-- **Make integration + component tests blocking in CI.** They're advisory today because pre-existing tests need to catch up with the R5/R6 module renames and the SessionActions / persistence shape changes.
 - **Visual regression baseline** (Playwright screenshots, per-project).
 - **`@axe-core/playwright` accessibility checks** in the e2e suite.
+- **Wizard-dialogue integration tests** are still failing (pre-existing) — needs a refresh against the persistence shape changes.
 
 ### Pyodide / PyGame
 
 - **Cold-start budget.** First-load Pyodide is the biggest perf cost; track + budget it.
 - **Frame-rate test** for the simulator under realistic component counts.
+- **Component-project Pyodide test** that runs each lesson's `solution` through the worker and asserts `score === 1.0` (the unit-level structural tests catch authoring mistakes; this catches grader regressions).
 
 ### Content
 
+- **More lessons.** The six shipped in T4.4 are the foundations track; data structures, files, classes still to come.
 - **Per-game-type playtest follow-ups.** Each `docs/playtests/` file lists open tuning items; convert the most-blocking into wizard PRs.
 
 ## Blocked / waiting
