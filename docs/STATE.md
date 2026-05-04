@@ -5,42 +5,29 @@ status: current
 domain: context
 ---
 
+
+
 # State
 
 > What's done, what's actively in flight, what's queued. Updated whenever a meaningful slice ships or the next-up changes. If this doc and `git log` disagree, fix this doc.
 
 ## Active
 
-### Foundations pillar completion (this branch: `feat/foundations-pillar-completion`)
+### Stabilization pillar (this branch: `feat/stabilization-pillar`)
 
-Wire Pyodide into the lesson page, vendor it locally, push it onto a Web Worker. Replace the placeholder lesson schema with Zod. Expand the AST grading vocabulary and add partial credit + per-test resource caps. Author six real lessons. Restructure docs into pillar files.
+Repair the gaps the foundations PR left open: missing page banner, parallel pygame-component type layers, and grader e2e coverage.
 
-- [x] T2.1 — Singleton Pyodide bootstrap (`src/python/pyodide-singleton.ts`).
-- [x] T2.2 — Wire Pyodide into the lesson page (replaces the `null` stubs that disabled Run/Check).
-- [x] T2.3 — Vendor Pyodide locally + bump to 0.29.3 (was CDN-only on 0.24.1).
-- [x] T2.4 — Move Pyodide onto a Web Worker via Comlink with timeout-driven termination.
-- [x] T4.1 — Zod-validate the cross-domain entities (`User`, `Lesson`, `UserProgress`, `Project`).
-- [x] T4.2 — Lesson loader + prerequisite gating.
-- [x] T4.3 — Step-level resume (integration coverage).
-- [x] T4.4 — Author six lessons covering Python → Pygame.
-- [x] T5.1 — Expand AST rule vocabulary (imports_module, defines_class, calls_method, parameter_count, nesting_depth, anti-rules).
-- [x] T5.2 — Partial credit + per-rule pass/fail in `GradeResult`.
-- [x] T5.3 — Per-test `timeoutMs` / `maxStdout` caps wired through the worker.
-- [x] TD.1 — `docs/README.md` index.
-- [x] TD.2 — `docs/pillars/01-frontend.md`.
-- [x] TD.3 — `docs/pillars/02-runtime.md`.
-- [x] TD.4 — `docs/pillars/03-lesson-engine.md`.
-- [x] TD.5 — `docs/pillars/04-grading.md`.
-- [x] TD.6 — `docs/pillars/05-design-system.md`.
-- [x] TD.7 — Rewrite `docs/ARCHITECTURE.md` to be cross-pillar only.
-- [x] TD.8 — Update `docs/STATE.md` (this entry).
-- [x] TD.9 — Refresh STANDARDS.md / AGENTS.md cross-references.
-- [x] TC.1 — Make integration tests blocking in CI. Component suite remains advisory pending the wizard-layout repair tracked under Next.
+- [x] S1 — Restore page banner. Top-level `<header>` renders on all viewports; `responsive-wizard.test.tsx` (broken pre-Capacitor) replaced with a focused `page-banner.test.tsx`.
+- [x] S2 — Component CI now blocking (dropped `continue-on-error`).
+- [x] S3 — Pygame-component type seam named: `PygameSystemSpec` (gameplay) vs `PyGameComponent` (rendering primitive). Header comment in `system-types.ts` documents the seam.
+- [x] S4 — Grader e2e: `tests/component/grader-e2e.test.tsx` runs every lesson's solution through the worker and asserts `score === 1.0`. Surfaced and fixed: AST-only steps (pygame lessons) used to score 0 because pyodide can't `import pygame`; engine now skips the execution-error short-circuit when no test depends on runtime state.
+- [x] SD.1 — STATE.md refresh (this entry).
 
 ## Done (recent milestones)
 
 | Milestone | When | Notes |
 |-----------|------|-------|
+| Foundations pillar (Pyodide worker, Zod lessons, AST grading, 6 lessons) | 2026-05 | Squashed into `f4f418d` on main; PR #19 |
 | Capacitor-style layout + browser-only deploy | 2026-05 | Squashed into `ec275bd` on main; R1–R11 phases |
 | Documentation overhaul to standard-repo profile | 2026-05 | See [`CHANGELOG.md`](../CHANGELOG.md) |
 | Initial development complete (v1.0.0 baseline) | 2025-09 | Themed v0.1.0 history in `CHANGELOG.md` |
@@ -64,8 +51,7 @@ Sized roughly so any one item is a single PR.
 
 ### Type / schema cleanup
 
-- **Unify the parallel pygame-component layers.** `src/pygame/components/types.ts` (canvas-rendering primitives) and `src/pygame/components/system-types.ts` (gameplay systems with variants/category) share names but have different shapes. Either merge or document the seam.
-- **Treat `@typescript-eslint/no-explicit-any` as `error`** (currently `warn`). Fix existing `any`s in the same PR. Likely subsumed by the Biome migration.
+- **Treat `@typescript-eslint/no-explicit-any` as `error`** (currently `warn`). 209 instances at last count — its own PRQ. Likely subsumed by the Biome migration.
 - **Re-enable Vitest coverage thresholds** (90/85/90/90 lines/branches/functions/statements).
 
 ### Visual / accessibility
@@ -73,13 +59,14 @@ Sized roughly so any one item is a single PR.
 - **Visual regression baseline** (Playwright screenshots, per-project).
 - **`@axe-core/playwright` accessibility checks** in the e2e suite.
 - **Wizard-dialogue integration tests** are still failing (pre-existing) — needs a refresh against the persistence shape changes. Currently quarantined via `vitest.config.ts` `exclude`.
-- **`responsive-wizard` component test** asserts a `banner` role removed during the Capacitor-style layout refactor. The component-project CI step is `continue-on-error: true` until this lands. Re-run `npm run test:component` after wiring a real banner / `<header>` into the page-shell components.
 
 ### Pyodide / PyGame
 
 - **Cold-start budget.** First-load Pyodide is the biggest perf cost; track + budget it.
 - **Frame-rate test** for the simulator under realistic component counts.
-- **Component-project Pyodide test** that runs each lesson's `solution` through the worker and asserts `score === 1.0` (the unit-level structural tests catch authoring mistakes; this catches grader regressions).
+- **`functionCalled` / `acceptsUserInput` instrumentation.** Today these are approximated by stdout-substring + globals-existence checks (documented in `docs/pillars/04-grading.md`). Real call/input tracking needs worker-side instrumentation — a tracer that wraps target functions and a stdin-read counter exposed back across Comlink.
+- **Worker-side stdout truncation.** `maxStdout` is currently applied after Comlink transfer, so megabytes can still cross the boundary. Move truncation into the worker's stdout buffer.
+- **`mode: "rules"` lessons that depend on packages pyodide doesn't ship** (lesson-6 imports pygame). Engine now skips the execution-error short-circuit for AST-only steps; longer-term, `pyodide.loadPackage(...)` integration would let runtime checks work too.
 
 ### Content
 

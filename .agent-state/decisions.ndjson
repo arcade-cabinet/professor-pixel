@@ -16,3 +16,10 @@
 {"ts":"2026-05-04T20:19:18.455Z","sha":"04e7a85508b8","subject":"fix(python): reset builtins.input on every runSnippet call","decision":null,"why":null,"resolves":["PR #19 review (reviewer found via subagent dispatch)"],"overrides":[]}
 {"ts":"2026-05-04T20:31:03.718Z","sha":"f57213f93f9b","subject":"fix: address CodeRabbit review (PR #19)","decision":null,"why":null,"resolves":["PR #19 review (CodeRabbit","18 actionable comments)"],"overrides":[]}
 {"ts":"2026-05-04T20:40:58.287Z","sha":"a1afa098dfba","subject":"fix: address second CodeRabbit pass (PR #19)","decision":null,"why":null,"resolves":["PR #19 review (CodeRabbit","2nd pass — 5 of 7 actionable comments)"],"overrides":[]}
+{"ts":"2026-05-04T20:50:19.157Z","sha":"eca5ba6dcb88","subject":"fix: address third CodeRabbit pass (PR #19)","decision":null,"why":null,"resolves":["PR #19 review (CodeRabbit","3rd pass — 6 of 9 actionable comments)"],"overrides":[]}
+{"ts":"2026-05-04T21:03:01.295Z","sha":"8c5a3dacefca","subject":"chore(directive): queue batch-20260504-160227 from stabilization-pillar.prq.md","decision":null,"why":null,"resolves":["directive seeding for stabilization-pillar.prq.md"],"overrides":[]}
+{"ts":"2026-05-04T21:05:27.704Z","sha":"363c353bcb53","subject":"feat(layout): page banner renders on all viewports (S1, S2)","decision":null,"why":null,"resolves":["S1","S2"],"overrides":[]}
+{"ts":"2026-05-04T21:06:33.854Z","sha":"61ecde86de97","subject":"refactor(pygame): name the type seam (S3)","decision":null,"why":null,"resolves":["S3"],"overrides":[]}
+{"ts":"2026-05-04T21:09:19.699Z","sha":"793abc19c838","subject":"feat(grading): worker-based ESM bootstrap + AST-only execution gate (S4)","decision":null,"why":null,"resolves":["S4"],"overrides":[]}
+{"ts":"2026-05-04T21:10:44.081Z","sha":"444cabff1f33","subject":"docs(state): stabilization pillar shipped (SD.1)","decision":null,"why":null,"resolves":["SD.1"],"overrides":[]}
+{"ts":"2026-05-04T21:23:01.262Z","sha":"0c218d5e4fc1","subject":"fix: address CodeRabbit pass on PR #20","decision":null,"why":null,"resolves":["PR #20 review (CodeRabbit","10 of 11 — one barrel exemption explained on-thread)"],"overrides":[]}

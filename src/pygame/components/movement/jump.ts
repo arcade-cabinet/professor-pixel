@@ -1,6 +1,6 @@
-import { PygameComponent } from '../system-types';
+import { PygameSystemSpec } from '@lib/pygame/components/system-types';
 
-export const jumpComponent: PygameComponent = {
+export const jumpComponent: PygameSystemSpec = {
   id: 'jump',
   name: 'Jump Mechanics',
   category: 'movement',

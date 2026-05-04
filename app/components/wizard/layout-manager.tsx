@@ -218,38 +218,40 @@ export function DesktopLayout({
   );
 }
 
-// Desktop Header Component
-function DesktopHeader() {
+// Page banner — top-level <header> renders on all viewports so the banner
+// landmark is always present in the a11y tree. Mobile gets a compact variant
+// (smaller title, hidden tagline); desktop keeps the rich layout.
+export function DesktopHeader() {
   return (
-    <header className={`hidden lg:block ${STYLES.HEADER_BG} border-b border-border sticky top-0 z-40 shadow-sm`}>
-      <div className="container mx-auto px-4 py-3">
+    <header className={`${STYLES.HEADER_BG} border-b border-border sticky top-0 z-40 shadow-sm`}>
+      <div className="container mx-auto px-3 sm:px-4 py-2 sm:py-3">
         <div className="flex items-center justify-between">
-          <motion.div 
-            className="flex items-center space-x-3"
+          <motion.div
+            className="flex items-center space-x-2 sm:space-x-3"
             whileHover={{ scale: 1.05 }}
             transition={{ type: "spring", stiffness: 300 }}
           >
             <div className="relative">
               <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl blur-lg opacity-75 animate-pulse"></div>
-              <div className="relative bg-white dark:bg-gray-900 rounded-xl p-2">
-                <Gamepad2 className="text-purple-600 h-8 w-8" />
+              <div className="relative bg-white dark:bg-gray-900 rounded-xl p-1.5 sm:p-2">
+                <Gamepad2 className="text-purple-600 h-6 w-6 sm:h-8 sm:w-8" />
               </div>
             </div>
             <div>
-              <h1 className="text-2xl font-black bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+              <h1 className="text-base sm:text-2xl font-black bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
                 Pixel's PyGame Palace
               </h1>
-              <p className="text-xs text-muted-foreground">Your Game Building Adventure</p>
+              <p className="hidden sm:block text-xs text-muted-foreground">Your Game Building Adventure</p>
             </div>
           </motion.div>
-          
+
           <div className="flex items-center space-x-2">
             <motion.div
-              animate={{ rotate: ANIMATIONS.SPARKLE_ROTATE.rotate as any }}
-              transition={{ 
-                duration: ANIMATIONS.SPARKLE_ROTATE.duration, 
-                repeat: Infinity, 
-                ease: "linear" 
+              animate={{ rotate: [...ANIMATIONS.SPARKLE_ROTATE.rotate] }}
+              transition={{
+                duration: ANIMATIONS.SPARKLE_ROTATE.duration,
+                repeat: Infinity,
+                ease: "linear"
               }}
             >
               <Sparkles className={`${ICON_SIZES.MEDIUM} text-purple-600`} />

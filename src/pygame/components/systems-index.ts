@@ -13,7 +13,7 @@ import { collisionComponent } from './world/collision';
 
 // Export component types
 export type { PyGameComponent } from './types';
-export type { PygameComponent, ComponentSelection } from './system-types';
+export type { PygameSystemSpec, ComponentSelection } from './system-types';
 
 // Export components organized by category
 export const pygameComponents = {

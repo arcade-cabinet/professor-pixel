@@ -1,6 +1,6 @@
-import { PygameComponent } from '../system-types';
+import { PygameSystemSpec } from '@lib/pygame/components/system-types';
 
-export const collisionComponent: PygameComponent = {
+export const collisionComponent: PygameSystemSpec = {
   id: 'collision',
   name: 'Collision System',
   category: 'world',

@@ -1,6 +1,6 @@
-import { PygameComponent } from '../system-types';
+import { PygameSystemSpec } from '@lib/pygame/components/system-types';
 
-export const healthComponent: PygameComponent = {
+export const healthComponent: PygameSystemSpec = {
   id: 'health',
   name: 'Health System',
   category: 'ui',
