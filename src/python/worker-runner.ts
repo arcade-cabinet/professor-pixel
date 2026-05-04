@@ -75,11 +75,22 @@ export class WorkerPythonRunner {
     if (this.remote) return this.remote;
     if (!this.bootstrap) {
       this.bootstrap = (async () => {
-        // Vite resolves the `?worker` suffix to a compiled bundle URL.
-        const WorkerCtor = (await import('./worker?worker')).default;
-        this.worker = new WorkerCtor();
-        this.remote = Comlink.wrap<WorkerRunner>(this.worker);
-        await this.remote.ready();
+        try {
+          // Vite resolves the `?worker` suffix to a compiled bundle URL.
+          const WorkerCtor = (await import('./worker?worker')).default;
+          this.worker = new WorkerCtor();
+          this.remote = Comlink.wrap<WorkerRunner>(this.worker);
+          await this.remote.ready();
+        } catch (err) {
+          // Don't poison the singleton — drop all state so the next call
+          // can retry from scratch (e.g. after a transient network failure
+          // pulling the worker bundle).
+          this.worker?.terminate();
+          this.worker = null;
+          this.remote = null;
+          this.bootstrap = null;
+          throw err;
+        }
       })();
     }
     await this.bootstrap;

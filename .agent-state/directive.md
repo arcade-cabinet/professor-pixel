@@ -34,14 +34,14 @@ Branch: feat/foundations-pillar-completion
 - [x] T2.3 Vendor Pyodide locally + version bump — `pyodide` dep, postinstall to `public/pyodide/`, no CDN refs, boots offline
 - [x] T2.4 Move Pyodide into Web Worker — `src/python/worker.ts` + Comlink; `while True:` rejects within timeout; UI stays responsive
 
-### Pillar 4 — Lesson engine
+### Pillar 3 — Lesson engine
 
 - [x] T4.1 Zod-ify schema — `src/types/schema.ts` Zod throughout; `LessonSchema.parse` validates `lessons.json`; ZodError surfaced
 - [x] T4.2 Lesson loader + prerequisite gating — `src/lessons/loader.ts` + `sequence.ts`; home page renders unlocked/locked
 - [x] T4.3 Step-level resume — read/write `UserProgress.currentStep`; reload at step 3 → opens step 3
 - [x] T4.4 Author 6 lessons — `lessons.json` rewrite; lessons 1-6; integration test runs each solution → score 1.0
 
-### Pillar 5 — AST-based feedback
+### Pillar 4 — Grading (AST-based feedback)
 
 - [x] T5.1 Expand AST rule vocabulary — `imports_module`, `defines_class`, `calls_method`, `parameter_count`, `nesting_depth`, `not_uses`
 - [x] T5.2 Partial credit + structural diff — `GradeResult.score`, `partial`, `diffSolution`; UI renders score per rule

@@ -94,9 +94,9 @@ GitHub Pages deploy: `.github/workflows/cd.yml` runs `vite build` with a compute
 ### Lesson view
 
 1. User visits `/lesson/:lessonId`.
-2. `LessonPage` queries `useLessons()` → `loadLessons()` → `LessonSchema.array().parse(...)`.
-3. The `useQuery(['pyodide'])` hook resolves to a worker-backed runner (Pillar 2).
-4. Monaco renders `step.initialCode`; on **Run**, code goes through the worker; on **Check**, the grader (Pillar 4) returns a `GradeResult` with score + per-rule pass/fail.
+2. `LessonPage` runs `useQuery(['lessons', lessonId], loadLessons)` — the loader fetches `/api/static/lessons.json` and validates with `LessonSchema.array().parse(...)`.
+3. `useQuery(['pyodide'], getPyodide)` boots the main-thread Pyodide singleton (Pillar 2). Run/Check execution goes through `getWorkerRunner()` (worker-backed) — the singleton is held only because the grader's AST validator runs Python `ast.parse` on the main thread.
+4. Monaco renders `step.initialCode`; on **Run**, code goes through the worker runner with a hard timeout; on **Check**, the grader (Pillar 4) returns a `GradeResult` with score + per-rule pass/fail.
 5. `UserProgress` is persisted to localStorage on every advance.
 
 ### Wizard flow

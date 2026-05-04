@@ -27,8 +27,9 @@ const ConstructTypeSchema = z.enum([
 const RequiredConstructSchema = z
   .object({
     type: ConstructTypeSchema,
+    /** For imports_module: the module identifier (e.g. {type:'imports_module', name:'pygame'}). */
     name: z.string().optional(),
-    /** For imports_module: optional sub-attribute, e.g. {module: 'pygame', from: 'event'} */
+    /** For imports_module: optional sub-attribute, e.g. {name:'event', from:'pygame'} for `from pygame import event`. */
     from: z.string().optional(),
     /** For defines_class: required base class name (e.g. {baseClass: 'Sprite'}) */
     baseClass: z.string().optional(),
