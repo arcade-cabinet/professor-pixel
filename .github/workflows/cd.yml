@@ -1,4 +1,4 @@
-name: Deploy to GitHub Pages
+name: CD
 
 on:
   push:
@@ -16,13 +16,14 @@ concurrency:
 
 jobs:
   deploy:
+    name: Deploy to GitHub Pages
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         
       - name: Setup Node
         uses: actions/setup-node@v4

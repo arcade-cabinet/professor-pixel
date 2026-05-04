@@ -13,7 +13,7 @@ domain: ops
 
 | Target | What runs | Trigger | Defined in |
 |--------|-----------|---------|------------|
-| **GitHub Pages** | Static SPA (`dist/public/`) | `push: main` or manual dispatch | `.github/workflows/deploy.yml` |
+| **GitHub Pages** | Static SPA (`dist/public/`) | `push: main` or manual dispatch | `.github/workflows/cd.yml` |
 | **Replit** | Full stack (Express + SPA) | Push to the Replit-linked branch | Replit project settings + `.replit` |
 | **Self-hosted Node** | Full stack | Manual `npm run build && npm start` | This doc |
 
@@ -88,8 +88,8 @@ The standard-repo doctrine is **ci → release → cd**:
 | Stage | Workflow | Status |
 |-------|----------|--------|
 | **CI** (lint, type-check, test, build) | `.github/workflows/ci.yml` | Active — runs `npm run check` and `npm run build`. Tests not yet wired in (tracked in [`STATE.md`](STATE.md)). |
-| **Release** (tag, build versioned artefact, generate notes) | `.github/workflows/release.yml` | Tracked in [`STATE.md`](STATE.md); release-please config landing in this overhaul. |
-| **CD** (deploy what release built, on `push: main`) | `.github/workflows/deploy.yml` (will be renamed `cd.yml`) | Active for GitHub Pages; rename pending in this overhaul. |
+| **Release** (tag, build versioned artefact, generate notes) | `.github/workflows/release.yml` | Active — release-please raises the release PR; merging it cuts a tag and uploads a versioned artefact with a build-provenance attestation. |
+| **CD** (deploy on `push: main`) | `.github/workflows/cd.yml` | Active for GitHub Pages. |
 
 ## Rolling back
 

@@ -25,11 +25,11 @@ Bringing the repo up to the standard-repo profile. In progress on the open PR.
 - [x] `docs/TESTING.md` (supersedes `TESTING_GUIDE.md`)
 - [x] `docs/DEPLOYMENT.md`
 - [x] `docs/STATE.md` (this file)
-- [ ] `docs/playtests/` — move `playtest-*.md`, add frontmatter
-- [ ] `.github/dependabot.yml`
-- [ ] `release-please-config.json` + manifest
-- [ ] `.github/workflows/release.yml`
-- [ ] Audit `ci.yml` / `deploy.yml` (rename `deploy.yml` → `cd.yml`, bump `actions/checkout` if appropriate)
+- [x] `docs/playtests/` — `playtest-*.md` moved, frontmatter added, index README written
+- [x] `.github/dependabot.yml` — npm + actions, weekly, minor/patch grouped
+- [x] `release-please-config.json` + manifest
+- [x] `.github/workflows/release.yml` — release-please + signed build artefact
+- [x] Audit `ci.yml` / rename `deploy.yml` → `cd.yml`, bump `actions/checkout@v6`, add concurrency
 - [ ] Remove `replit.md`, `TESTING_GUIDE.md`
 
 ## Done (recent milestones)
