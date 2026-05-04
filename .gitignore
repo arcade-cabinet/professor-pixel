@@ -61,3 +61,4 @@ staging/
 # Database
 *.sqlite
 *.db
+coverage-backend/
