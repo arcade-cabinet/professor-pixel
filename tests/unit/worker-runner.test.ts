@@ -41,7 +41,7 @@ describe('WorkerPythonRunner', () => {
   it('returns the worker result on a normal run', async () => {
     fakeRunSnippet.mockResolvedValueOnce({ output: 'hi\n', error: null });
     const runner = new WorkerPythonRunner();
-    const result = await runner.runSnippet("print('hi')");
+    const result = await runner.runSnippet({ code: "print('hi')" });
     expect(result).toEqual({ output: 'hi\n', error: null });
     expect(fakeReady).toHaveBeenCalledOnce();
   });
@@ -50,7 +50,7 @@ describe('WorkerPythonRunner', () => {
     fakeRunSnippet.mockImplementationOnce(() => new Promise(() => {})); // never resolves
     const runner = new WorkerPythonRunner();
     await expect(
-      runner.runSnippet('while True: pass', { timeoutMs: 50 }),
+      runner.runSnippet({ code: 'while True: pass', timeoutMs: 50 }),
     ).rejects.toBeInstanceOf(PythonTimeoutError);
   });
 
@@ -58,11 +58,11 @@ describe('WorkerPythonRunner', () => {
     fakeRunSnippet.mockImplementationOnce(() => new Promise(() => {}));
     const runner = new WorkerPythonRunner();
     await expect(
-      runner.runSnippet('while True: pass', { timeoutMs: 30 }),
+      runner.runSnippet({ code: 'while True: pass', timeoutMs: 30 }),
     ).rejects.toBeInstanceOf(PythonTimeoutError);
     // Next call must rebuild the worker via ensure()
     fakeRunSnippet.mockResolvedValueOnce({ output: 'ok', error: null });
-    const result = await runner.runSnippet("print('ok')");
+    const result = await runner.runSnippet({ code: "print('ok')" });
     expect(result.output).toBe('ok');
     expect(fakeReady).toHaveBeenCalledTimes(2); // bootstrapped twice
   });
@@ -71,7 +71,7 @@ describe('WorkerPythonRunner', () => {
     const big = 'x'.repeat(200);
     fakeRunSnippet.mockResolvedValueOnce({ output: big, error: null });
     const runner = new WorkerPythonRunner();
-    const result = await runner.runSnippet('whatever', { maxStdout: 50 });
+    const result = await runner.runSnippet({ code: 'whatever', maxStdout: 50 });
     expect(result.output.length).toBeLessThan(big.length);
     expect(result.output).toContain('truncated');
   });

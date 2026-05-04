@@ -51,7 +51,9 @@ export async function validateRuntime(
   }
 
   for (const name of rules.variableExists ?? []) {
-    const exists = pyodide ? Boolean(pyodide.globals.get(name)) : false;
+    // Use `!== undefined` so falsy Python values (0, '', False, None) still count
+    // as defined. Boolean() would erroneously fail a student who set count = 0.
+    const exists = pyodide ? pyodide.globals.get(name) !== undefined : false;
     results.push({
       id: `runtime.variableExists:${name}`,
       passed: exists,
@@ -66,7 +68,7 @@ export async function validateRuntime(
   // common authoring pattern is to print results from the called function).
   // The AST rule calls_method gives the structural check.
   for (const name of rules.functionCalled ?? []) {
-    const ok = output.includes(name) || (pyodide ? Boolean(pyodide.globals.get(name)) : false);
+    const ok = output.includes(name) || (pyodide ? pyodide.globals.get(name) !== undefined : false);
     results.push({
       id: `runtime.functionCalled:${name}`,
       passed: ok,

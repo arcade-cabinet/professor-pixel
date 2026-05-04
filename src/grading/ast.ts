@@ -70,12 +70,23 @@ else:
                     out.append(n)
         return out
 
+    def _expr_to_dotted(node):
+        # "obj.attr1.attr2" → "obj.attr1.attr2"; "name" → "name"; anything else → None.
+        if isinstance(node, ast.Name):
+            return node.id
+        if isinstance(node, ast.Attribute):
+            inner = _expr_to_dotted(node.value)
+            return f"{inner}.{node.attr}" if inner else None
+        return None
+
     def method_calls(receiver, method):
         out = []
         for n in nodes:
             if isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute):
-                base = n.func.value
-                if isinstance(base, ast.Name) and base.id == receiver and n.func.attr == method:
+                if n.func.attr != method:
+                    continue
+                base_path = _expr_to_dotted(n.func.value)
+                if base_path == receiver:
                     out.append(n)
         return out
 

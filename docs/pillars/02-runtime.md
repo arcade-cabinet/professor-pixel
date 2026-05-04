@@ -8,7 +8,7 @@ domain: technical
 # Pillar 2 — Runtime
 
 > Python in the browser. Pyodide on a Web Worker, behind a Comlink RPC, with timeouts and resource caps.
-> The lesson page, the runner component, and the live preview all share one worker per page.
+> The lesson page and the grading engine run on the worker (one per page). The runner component and `_dev/` pygame preview still use the main-thread singleton because they need synchronous canvas access.
 
 ## Why a worker
 
@@ -64,13 +64,14 @@ Both stdout and stderr stream through buffered handlers passed to `loadPyodide`;
 
 ### Main-thread wrapper (`src/python/worker-runner.ts`)
 
-`WorkerPythonRunner.runSnippet(code, opts)`:
+`WorkerPythonRunner.runSnippet(opts)` takes a single options object so it satisfies the `CodeRunner` interface used by the grading engine:
 
-| Option | Default | Purpose |
-|--------|---------|---------|
+| Field | Default | Purpose |
+|-------|---------|---------|
+| `code` | _required_ | Source to execute. |
+| `input` | undefined | Pre-loaded input lines for `input()`. Stub raises `EOFError` if `input()` is called and none was provided. |
 | `timeoutMs` | 5000 | Kill the worker if execution exceeds this. Throws `PythonTimeoutError`. |
 | `maxStdout` | 65536 | Truncate captured output above this size; appends a marker. |
-| `input` | undefined | Pre-loaded input lines for `input()` |
 
 After a `PythonTimeoutError`, the wrapper calls `worker.terminate()` and resets internal state. The next `runSnippet` call spawns a fresh worker on demand.
 

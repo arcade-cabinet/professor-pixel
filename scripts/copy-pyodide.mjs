@@ -41,8 +41,12 @@ for (const name of RUNTIME_FILES) {
   const from = join(src, name);
   const to = join(dest, name);
   if (!existsSync(from)) {
-    console.warn(`[copy-pyodide] skipping ${name} (not present in package)`);
-    continue;
+    // Fail fast: the runtime won't boot without these. A silent skip would
+    // ship a broken vendored Pyodide that only manifests at lesson-page load.
+    throw new Error(
+      `[copy-pyodide] required runtime asset missing: ${name} (looked in ${src}). ` +
+        `Reinstall pyodide or check the package version.`,
+    );
   }
   copyFileSync(from, to);
   copied += 1;

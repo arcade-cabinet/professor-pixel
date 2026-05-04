@@ -432,7 +432,8 @@
               "astRules": {
                 "requiredConstructs": [
                   { "type": "imports_module", "name": "pygame", "minCount": 1 },
-                  { "type": "calls_method", "on": "pygame", "method": "init", "minCount": 1 }
+                  { "type": "calls_method", "on": "pygame", "method": "init", "minCount": 1 },
+                  { "type": "calls_method", "on": "pygame.display", "method": "set_mode", "minCount": 1 }
                 ]
               },
               "timeoutMs": 4000
@@ -457,7 +458,8 @@
               "astRules": {
                 "requiredConstructs": [
                   { "type": "imports_module", "name": "pygame", "minCount": 1 },
-                  { "type": "calls_method", "on": "screen", "method": "fill", "minCount": 1 }
+                  { "type": "calls_method", "on": "screen", "method": "fill", "minCount": 1 },
+                  { "type": "calls_method", "on": "pygame.draw", "method": "circle", "minCount": 1 }
                 ]
               },
               "timeoutMs": 4000

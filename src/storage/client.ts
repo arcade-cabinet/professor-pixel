@@ -84,31 +84,33 @@ export class ClientStorage {
 
   // Lesson methods - load from static JSON files
   async getLessons(): Promise<Lesson[]> {
+    const baseUrl = import.meta.env.BASE_URL || '/';
+    let response: Response;
     try {
-      const baseUrl = import.meta.env.BASE_URL || '/';
-      const response = await fetch(`${baseUrl}api/static/lessons.json`);
-      if (response.ok) {
-        const raw = (await response.json()) as unknown;
-        const parsed = LessonSchema.array().safeParse(raw);
-        if (!parsed.success) {
-          // Surface a structured error pointing at the offending lesson + field path.
-          // The boundary is the right place to fail loudly — don't silently fall back.
-          const issues = parsed.error.issues
-            .slice(0, 5)
-            .map((i) => `${i.path.join('.')}: ${i.message}`)
-            .join('; ');
-          throw new Error(`lessons.json failed schema validation — ${issues}`);
-        }
-        return parsed.data;
-      }
+      response = await fetch(`${baseUrl}api/static/lessons.json`);
     } catch (error) {
-      console.warn(
-        'Failed to load lessons from static file, using fallback',
-        error,
-      );
+      // Network/IO error only — fall back so the app remains usable offline.
+      console.warn('Failed to load lessons from static file, using fallback', error);
+      return this.getFallbackLessons();
     }
 
-    return this.getFallbackLessons();
+    if (!response.ok) {
+      console.warn(`lessons.json fetch returned ${response.status}, using fallback`);
+      return this.getFallbackLessons();
+    }
+
+    const raw = (await response.json()) as unknown;
+    const parsed = LessonSchema.array().safeParse(raw);
+    if (!parsed.success) {
+      // Schema-validation failure is an authoring bug, not a network problem —
+      // surface it loudly so we don't silently render a corrupt catalog.
+      const issues = parsed.error.issues
+        .slice(0, 5)
+        .map((i) => `${i.path.join('.')}: ${i.message}`)
+        .join('; ');
+      throw new Error(`lessons.json failed schema validation — ${issues}`);
+    }
+    return parsed.data;
   }
 
   async getLesson(id: string): Promise<Lesson | undefined> {

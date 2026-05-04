@@ -92,6 +92,7 @@ GitHub Pages deploy: `.github/workflows/cd.yml` runs `vite build` with a compute
 ## Data flows (cross-pillar entry points)
 
 ### Lesson view
+
 1. User visits `/lesson/:lessonId`.
 2. `LessonPage` queries `useLessons()` → `loadLessons()` → `LessonSchema.array().parse(...)`.
 3. The `useQuery(['pyodide'])` hook resolves to a worker-backed runner (Pillar 2).
@@ -99,6 +100,7 @@ GitHub Pages deploy: `.github/workflows/cd.yml` runs `vite build` with a compute
 5. `UserProgress` is persisted to localStorage on every advance.
 
 ### Wizard flow
+
 1. User starts at `/wizard`.
 2. The Universal Wizard loads a JSON-driven flow keyed by game type.
 3. Persistence (`@lib/storage/persistence`) tracks active flow path, current node, session actions, selected components in localStorage with versioned migration.
@@ -106,6 +108,7 @@ GitHub Pages deploy: `.github/workflows/cd.yml` runs `vite build` with a compute
 5. On export, the project is zipped (README + runnable PyGame source) and downloaded.
 
 ### Asset catalog
+
 1. `scripts/build-asset-catalog.mjs` runs as `predev`/`prebuild`, walking `public/assets/` and emitting `public/assets/catalog.json`.
 2. `@lib/assets/catalog` lazily fetches the JSON on first access and caches the typed result.
 3. `@lib/assets/manager`'s singleton `assetManager` fires `ready()` on first construction; consumers needing strict ordering `await assetManager.ready()`.

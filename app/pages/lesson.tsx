@@ -11,7 +11,7 @@ import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Sparkles, ChevronRight, ChevronLeft, Trophy, Heart, Code2, Zap, BookOpen, Rocket } from "lucide-react";
 import type { Lesson, UserProgress } from "@lib/types/schema";
-import { createPythonRunner, type ExecutionResult, type ExecutionContext } from "@lib/python/runner";
+import { getWorkerRunner } from "@lib/python/worker-runner";
 import { getPyodide } from "@lib/python/pyodide-singleton";
 import { loadLessons } from "@lib/lessons";
 import { getClientStorage } from "@lib/storage/mode";
@@ -102,21 +102,11 @@ export default function LessonEnhanced() {
     staleTime: Infinity,
   });
 
-  // No-op enhanced-error path; the educational error transformer in
-  // src/errors/educational.ts is wired through the grader, not here.
-  const executeWithEnhancedErrors = async (
-    _code: string,
-    _context: ExecutionContext,
-  ): Promise<ExecutionResult> => ({ output: "", hasError: false });
-  const isEnhancedReady = false;
-
-  const pythonRunner = useMemo(() => {
-    if (!pyodide) return null;
-    return createPythonRunner(pyodide, {
-      executeWithEnhancedErrors,
-      isEnhancedReady,
-    });
-  }, [pyodide]);
+  // The worker runner is the only execution path for the lesson page —
+  // student code runs off the main thread with a hard timeout so a runaway
+  // `while True:` cannot wedge the UI. Reuses the page-level singleton so
+  // the worker's Pyodide bootstraps once.
+  const pythonRunner = useMemo(() => (pyodide ? getWorkerRunner() : null), [pyodide]);
 
   const { data: lesson, isLoading: lessonLoading } = useQuery<Lesson | undefined>({
     queryKey: ["lessons", lessonId],
@@ -349,11 +339,31 @@ export default function LessonEnhanced() {
     }
   };
 
+  if (pyodideError) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-yellow-50 dark:from-gray-900 dark:via-purple-900/10 dark:to-pink-900/10 flex items-center justify-center px-6">
+        <Card className="max-w-md p-6 text-center space-y-4">
+          <motion.img src={pixelThinking} alt="Pixel concerned" className="w-20 h-20 mx-auto" />
+          <h2 className="text-lg font-semibold text-foreground">Python didn't load</h2>
+          <p className="text-sm text-muted-foreground">
+            {pyodideError instanceof Error ? pyodideError.message : String(pyodideError)}
+          </p>
+          <Button
+            onClick={() => queryClient.invalidateQueries({ queryKey: ["pyodide"] })}
+            data-testid="button-retry-pyodide"
+          >
+            Try again
+          </Button>
+        </Card>
+      </div>
+    );
+  }
+
   if (lessonLoading || pyodideLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-yellow-50 dark:from-gray-900 dark:via-purple-900/10 dark:to-pink-900/10 flex items-center justify-center">
         <div className="text-center">
-          <motion.img 
+          <motion.img
             src={pixelThinking}
             alt="Pixel thinking"
             className="w-20 h-20 mx-auto mb-4"

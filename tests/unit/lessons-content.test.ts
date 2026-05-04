@@ -74,8 +74,10 @@ describe('shipped lessons.json', () => {
     expect(seenKinds.has('calls_method')).toBe(true);
   });
 
-  it('order values are strictly increasing across the catalog', () => {
-    const orders = lessons.map((l) => l.order).sort((a, b) => a - b);
+  it('order values are strictly increasing in catalog sequence', () => {
+    // Don't sort — the test's job is to catch out-of-sequence entries in the
+    // file as written. Sorting first hides exactly the bug we're guarding against.
+    const orders = lessons.map((l) => l.order);
     for (let i = 1; i < orders.length; i++) {
       expect(orders[i]).toBeGreaterThan(orders[i - 1]);
     }

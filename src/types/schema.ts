@@ -86,7 +86,18 @@ const TestSpecSchema = z
     /** Cap on captured stdout in bytes. Excess is truncated with a marker. */
     maxStdout: z.number().int().positive().optional(),
   })
-  .strict();
+  .strict()
+  .superRefine((data, ctx) => {
+    // mode: 'rules' is a contract that the engine should evaluate astRules
+    // and/or runtimeRules. Without either, the engine silently falls back to
+    // output-mode and the lesson author gets nothing they asked for. Reject.
+    if (data.mode === 'rules' && !data.astRules && !data.runtimeRules) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "mode: 'rules' requires astRules and/or runtimeRules",
+      });
+    }
+  });
 
 const StepValidationSchema = z
   .object({

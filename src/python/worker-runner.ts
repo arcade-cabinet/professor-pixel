@@ -9,11 +9,12 @@ export class PythonTimeoutError extends Error {
 }
 
 export interface RunOptions {
+  code: string;
+  input?: string;
   /** Hard cap for the run; on overshoot the worker is terminated and respawned. */
   timeoutMs?: number;
   /** Cap on captured stdout to prevent the worker shipping megabytes back. */
   maxStdout?: number;
-  input?: string;
 }
 
 const DEFAULT_TIMEOUT_MS = 5000;
@@ -33,7 +34,7 @@ export class WorkerPythonRunner {
     await this.ensure();
   }
 
-  async runSnippet(code: string, opts: RunOptions = {}): Promise<RunResult> {
+  async runSnippet(opts: RunOptions): Promise<RunResult> {
     const timeoutMs = opts.timeoutMs ?? DEFAULT_TIMEOUT_MS;
     const maxStdout = opts.maxStdout ?? DEFAULT_MAX_STDOUT;
     const remote = await this.ensure();
@@ -45,7 +46,7 @@ export class WorkerPythonRunner {
 
     try {
       const result = await Promise.race([
-        remote.runSnippet(code, opts.input),
+        remote.runSnippet(opts.code, opts.input),
         timeoutPromise,
       ]);
       if (timer) clearTimeout(timer);
