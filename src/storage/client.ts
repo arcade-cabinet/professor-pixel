@@ -4,6 +4,7 @@ import {
   type UserProgress,
   type Project,
   type InsertProject,
+  LessonSchema,
 } from '@lib/types/schema';
 
 // Client-side storage adapter for GitHub Pages compatibility
@@ -84,18 +85,29 @@ export class ClientStorage {
   // Lesson methods - load from static JSON files
   async getLessons(): Promise<Lesson[]> {
     try {
-      // Use base-aware URL for GitHub Pages compatibility
       const baseUrl = import.meta.env.BASE_URL || '/';
       const response = await fetch(`${baseUrl}api/static/lessons.json`);
       if (response.ok) {
-        const lessons = await response.json();
-        return lessons;
+        const raw = (await response.json()) as unknown;
+        const parsed = LessonSchema.array().safeParse(raw);
+        if (!parsed.success) {
+          // Surface a structured error pointing at the offending lesson + field path.
+          // The boundary is the right place to fail loudly — don't silently fall back.
+          const issues = parsed.error.issues
+            .slice(0, 5)
+            .map((i) => `${i.path.join('.')}: ${i.message}`)
+            .join('; ');
+          throw new Error(`lessons.json failed schema validation — ${issues}`);
+        }
+        return parsed.data;
       }
     } catch (error) {
-      console.warn('Failed to load lessons from static file, using fallback');
+      console.warn(
+        'Failed to load lessons from static file, using fallback',
+        error,
+      );
     }
 
-    // Fallback to embedded lesson data if static file not available
     return this.getFallbackLessons();
   }
 
