@@ -17,11 +17,7 @@ import WizardWithPreview from '@/components/wizard/with-preview';
 import PygameLivePreview, { GameChoice } from '@/components/pygame/live-preview';
 import { generateTestCode } from '@lib/wizard/code-generator';
 
-declare global {
-  interface Window {
-    loadPyodide?: () => Promise<any>;
-  }
-}
+// Pyodide globals are declared in src/types/pyodide.d.ts.
 
 export default function PygamePreviewTest() {
   const [pyodide, setPyodide] = useState<any>(null);

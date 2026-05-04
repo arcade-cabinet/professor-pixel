@@ -157,18 +157,18 @@ export function useWizardDialogue({
       // Even if flow is loaded, check if we need to restore persisted state
       // This handles scenarios where state needs to be synchronized
       const persistedState = loadWizardState();
-      if (persistedState && persistedState.currentNodeId && 
-          wizardData[persistedState.currentNodeId]) {
+      const persistedNodeId = persistedState?.currentNodeId;
+      if (persistedNodeId && wizardData[persistedNodeId]) {
         // Always sync with persisted state if the node exists
-        if (persistedState.currentNodeId !== dialogueState.currentNodeId) {
-          console.log('📍 Restoring persisted node in already-loaded flow:', persistedState.currentNodeId);
+        if (persistedNodeId !== dialogueState.currentNodeId) {
+          console.log('📍 Restoring persisted node in already-loaded flow:', persistedNodeId);
           setDialogueState(prev => ({
             ...prev,
-            currentNodeId: persistedState.currentNodeId,
-            currentNode: wizardData[persistedState.currentNodeId],
+            currentNodeId: persistedNodeId,
+            currentNode: wizardData[persistedNodeId],
             dialogueStep: 0,
             carouselIndex: 0,
-            showAllChoices: false
+            showAllChoices: false,
           }));
         }
       }

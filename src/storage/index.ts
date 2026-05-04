@@ -5,4 +5,3 @@ export * from './local';
 export * from './mode';
 export * from './persistence';
 export * from './session-history';
-export * from './user-profile';

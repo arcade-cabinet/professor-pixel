@@ -82,7 +82,7 @@ async function checkServerHealth() {
     
     try {
       // Try to start the server
-      exec('npm run dev', { detached: true });
+      exec('npm run dev', { detached: true } as Parameters<typeof exec>[1]);
       console.log('🚀 Started development server');
       
       // Wait for server to be ready

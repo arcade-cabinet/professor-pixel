@@ -14,13 +14,7 @@ interface PygameRunnerProps {
   onClose?: () => void;
 }
 
-// Declare Pyodide types
-declare global {
-  interface Window {
-    loadPyodide: any;
-    pyodide: any;
-  }
-}
+// Pyodide globals are declared in src/types/pyodide.d.ts.
 
 export default function PygameRunner({
   selectedComponents = {},
@@ -66,9 +60,11 @@ export default function PygameRunner({
           }, 100);
         });
         
-        // Initialize Pyodide
+        if (!window.loadPyodide) {
+          throw new Error('Pyodide script loaded but window.loadPyodide is undefined');
+        }
         window.pyodide = await window.loadPyodide({
-          indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.24.1/full/'
+          indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.24.1/full/',
         });
         
         // Skip pygame installation - we'll use our mock implementation

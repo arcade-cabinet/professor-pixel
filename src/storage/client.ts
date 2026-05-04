@@ -69,7 +69,6 @@ export class ClientStorage {
     const newUser: User = {
       id: this.generateId(),
       username,
-      password: 'anonymous' // Non-sensitive placeholder for anonymous users
     };
     users[newUser.id] = newUser;
     this.saveToLocalStorage(ClientStorage.STORAGE_KEYS.USERS, users);
@@ -129,8 +128,7 @@ export class ClientStorage {
         lessonId,
         currentStep: 0,
         completed: false,
-        code: null,
-        ...progressData
+        ...progressData,
       };
     }
     
@@ -155,10 +153,8 @@ export class ClientStorage {
     const newProject: Project = {
       id: this.generateId(),
       createdAt: new Date(),
-      publishedAt: null,
-      published: false,
       ...project,
-      description: project.description ?? null
+      published: false,
     };
     projects[newProject.id] = newProject;
     this.saveToLocalStorage(ClientStorage.STORAGE_KEYS.PROJECTS, projects);
@@ -201,9 +197,9 @@ export class ClientStorage {
   }
 
   async unpublishProject(id: string): Promise<Project> {
-    return this.updateProject(id, { 
-      published: false, 
-      publishedAt: null 
+    return this.updateProject(id, {
+      published: false,
+      publishedAt: undefined,
     });
   }
 

@@ -1,48 +1,24 @@
 // Persistence library for wizard state management
 // Handles localStorage, sessionStorage, and cookies for state persistence
 
+import type { SessionActions, UIState } from '@lib/wizard/types';
+
 // Type definitions for persisted data
 export interface PersistedWizardState {
   version: string;
-  activeFlowPath: string | null;
-  currentNodeId: string;
-  gameType: string | null;
-  selectedGameType: string | null;
-  sessionActions: {
-    choices: string[];
-    createdAssets: string[];
-    gameType: string | null;
-    selectedGameType?: string | null;
-    currentProject: any | null;
-    completedSteps: string[];
-    unlockedEditor: boolean;
-    selectedComponents?: Record<string, string>;
-    compiledScenes?: Record<string, boolean>;
-    gameAssembled?: boolean;
-    titlePresetApplied?: boolean;
-    gameplayConfigured?: boolean;
-    endingConfigured?: boolean;
-  };
+  activeFlowPath?: string | null;
+  currentNodeId?: string;
+  gameType?: string | null;
+  selectedGameType?: string | null;
+  sessionActions?: SessionActions;
   updatedAt: string;
 }
 
 export interface PersistedSessionState {
   version: string;
-  uiState: {
-    pixelMenuOpen: boolean;
-    embeddedComponent: string;
-    pixelState: string;
-    wysiwygEditorOpen: boolean;
-    assetBrowserOpen: boolean;
-    assetBrowserType: string;
-    selectedGameType?: string;
-    isMinimizing: boolean;
-    minimizeMessage?: string;
-    previewMode?: string;
-    viewMode?: string;
-    pyodideMode?: boolean;
-    curatedMode?: boolean;
-  };
+  uiState?: UIState;
+  /** Free-form game name set by the wizard's "name your game" step. */
+  gameName?: string;
   updatedAt: string;
 }
 

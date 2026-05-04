@@ -81,7 +81,7 @@ describe('Persistence Library', () => {
           createdAssets: ['player.png'],
           gameType: 'platformer',
           selectedGameType: 'platformer',
-          currentProject: { name: 'My Game' },
+          currentProject: 'My Game',
           completedSteps: ['intro', 'setup'],
           unlockedEditor: true
         }
@@ -94,8 +94,8 @@ describe('Persistence Library', () => {
       expect(loaded?.activeFlowPath).toBe('/platformer-flow.json');
       expect(loaded?.currentNodeId).toBe('game-setup');
       expect(loaded?.gameType).toBe('platformer');
-      expect(loaded?.sessionActions.choices).toEqual(['start', 'platformer']);
-      expect(loaded?.sessionActions.unlockedEditor).toBe(true);
+      expect(loaded!.sessionActions!.choices).toEqual(['start', 'platformer']);
+      expect(loaded!.sessionActions!.unlockedEditor).toBe(true);
       expect(loaded?.version).toBe('1.0.0');
       expect(loaded?.updatedAt).toBeTruthy();
     });
@@ -129,8 +129,8 @@ describe('Persistence Library', () => {
       const loaded = loadWizardState();
       expect(loaded?.currentNodeId).toBe('next-node');
       expect(loaded?.gameType).toBe('platformer');
-      expect(loaded?.sessionActions.choices).toEqual(['initial', 'next']);
-      expect(loaded?.sessionActions.unlockedEditor).toBe(true);
+      expect(loaded!.sessionActions!.choices).toEqual(['initial', 'next']);
+      expect(loaded!.sessionActions!.unlockedEditor).toBe(true);
     });
 
     it('should handle corrupted data gracefully', () => {
@@ -227,7 +227,7 @@ describe('Persistence Library', () => {
           pixelState: 'minimized',
           wysiwygEditorOpen: false,
           assetBrowserOpen: true,
-          assetBrowserType: 'sprites',
+          assetBrowserType: 'sprite',
           selectedGameType: 'platformer',
           isMinimizing: false,
           previewMode: 'gameplay'
@@ -238,9 +238,9 @@ describe('Persistence Library', () => {
       const loaded = loadSessionState();
 
       expect(loaded).toBeTruthy();
-      expect(loaded?.uiState.pixelMenuOpen).toBe(true);
-      expect(loaded?.uiState.embeddedComponent).toBe('code-editor');
-      expect(loaded?.uiState.selectedGameType).toBe('platformer');
+      expect(loaded!.uiState!.pixelMenuOpen).toBe(true);
+      expect(loaded!.uiState!.embeddedComponent).toBe('code-editor');
+      expect(loaded!.uiState!.selectedGameType).toBe('platformer');
       expect(loaded?.version).toBe('1.0.0');
     });
 
@@ -451,7 +451,7 @@ describe('Persistence Library', () => {
     it('should recover from corrupted session state', () => {
       // Save valid state
       saveSessionState({ uiState: { pixelMenuOpen: true } as any });
-      expect(loadSessionState()?.uiState.pixelMenuOpen).toBe(true);
+      expect(loadSessionState()!.uiState!.pixelMenuOpen).toBe(true);
       
       // Corrupt the data
       sessionStorageMock.setItem('wizard.session.v1', '{invalid-json}');
@@ -462,7 +462,7 @@ describe('Persistence Library', () => {
       
       // Should be able to save new state
       saveSessionState({ uiState: { pixelMenuOpen: false } as any });
-      expect(loadSessionState()?.uiState.pixelMenuOpen).toBe(false);
+      expect(loadSessionState()!.uiState!.pixelMenuOpen).toBe(false);
     });
   });
 

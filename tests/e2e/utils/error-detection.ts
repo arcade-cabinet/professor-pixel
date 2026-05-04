@@ -70,7 +70,7 @@ export class ErrorDetector {
       
       if (viteOverlayVisible) {
         const errorMessage = await viteOverlay.textContent().catch(() => 'Unknown Vite error');
-        return { hasError: true, message: errorMessage };
+        return { hasError: true, message: errorMessage ?? undefined };
       }
 
       // Check for Replit's runtime error modal
@@ -79,7 +79,7 @@ export class ErrorDetector {
       
       if (modalVisible) {
         const errorMessage = await runtimeErrorModal.textContent().catch(() => 'Unknown runtime error');
-        return { hasError: true, message: errorMessage };
+        return { hasError: true, message: errorMessage ?? undefined };
       }
 
       // Check for generic error boundaries
@@ -88,7 +88,7 @@ export class ErrorDetector {
       
       if (boundaryVisible) {
         const errorMessage = await errorBoundary.textContent().catch(() => 'Component error boundary triggered');
-        return { hasError: true, message: errorMessage };
+        return { hasError: true, message: errorMessage ?? undefined };
       }
 
       return { hasError: false };

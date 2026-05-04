@@ -12,7 +12,7 @@ import { breakoutTemplate } from './breakout';
 import { collectingTemplate } from './collecting';
 
 // Re-export types
-export { GameTemplate, TemplateComponent, GameSettings };
+export type { GameTemplate, TemplateComponent, GameSettings };
 
 // Combine all templates into a single array
 export const gameTemplates: GameTemplate[] = [
