@@ -81,6 +81,10 @@ const TestSpecSchema = z
     mode: z.enum(['output', 'rules']).optional(),
     astRules: AstRulesSchema.optional(),
     runtimeRules: RuntimeRulesSchema.optional(),
+    /** Hard cap; on overshoot the worker is terminated and the test fails. */
+    timeoutMs: z.number().int().positive().optional(),
+    /** Cap on captured stdout in bytes. Excess is truncated with a marker. */
+    maxStdout: z.number().int().positive().optional(),
   })
   .strict();
 

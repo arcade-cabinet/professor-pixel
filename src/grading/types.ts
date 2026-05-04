@@ -41,8 +41,16 @@ export interface TestResult {
   input?: string;
 }
 
+export interface CodeRunnerOptions {
+  input?: string;
+  /** Per-test hard cap; the runner terminates the worker on overshoot. */
+  timeoutMs?: number;
+  /** Per-test stdout cap; excess is truncated. */
+  maxStdout?: number;
+}
+
 export interface CodeRunner {
-  runSnippet: (args: { code: string; input?: string }) => Promise<{
+  runSnippet: (args: { code: string } & CodeRunnerOptions) => Promise<{
     output: string;
     error: string | null;
   }>;

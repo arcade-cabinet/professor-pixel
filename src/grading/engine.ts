@@ -1,5 +1,6 @@
 import { validateAst } from './ast';
 import { validateRuntime } from './runtime';
+import { PythonTimeoutError } from '@lib/python/worker-runner';
 import type { GradeResult, GradingContext, RuleResult, TestSpec } from './types';
 
 /**
@@ -24,9 +25,26 @@ export async function gradeCode(
     actualOutput = preExecutionResult.output;
     executionError = preExecutionResult.error;
   } else {
-    const result = await runner.runSnippet({ code, input });
-    actualOutput = result.output;
-    executionError = result.error;
+    // Step caps: take the *minimum* timeout across all rule-mode tests so a
+    // single fast test doesn't get a generous cap meant for a slower one.
+    const stepCaps = collectStepCaps(step.tests ?? []);
+    try {
+      const result = await runner.runSnippet({ code, input, ...stepCaps });
+      actualOutput = result.output;
+      executionError = result.error;
+    } catch (err) {
+      if (err instanceof PythonTimeoutError) {
+        return {
+          passed: false,
+          score: 0,
+          feedback: `Your code took too long (more than ${err.timeoutMs}ms). Look for an infinite loop or a slow algorithm.`,
+          actualOutput: '',
+          errors: [err.message],
+          partial: { ast: [], runtime: [] },
+        };
+      }
+      throw err;
+    }
   }
 
   if (executionError) {
@@ -94,6 +112,22 @@ export async function gradeCode(
 function matchesExpectedOutput(actual: string, test: TestSpec): boolean {
   const norm = (s: string) => s.trim().replace(/\s+/g, ' ');
   return norm(actual) === norm(test.expectedOutput);
+}
+
+function collectStepCaps(
+  tests: TestSpec[],
+): { timeoutMs?: number; maxStdout?: number } {
+  let timeoutMs: number | undefined;
+  let maxStdout: number | undefined;
+  for (const t of tests) {
+    if (t.timeoutMs !== undefined) {
+      timeoutMs = timeoutMs === undefined ? t.timeoutMs : Math.min(timeoutMs, t.timeoutMs);
+    }
+    if (t.maxStdout !== undefined) {
+      maxStdout = maxStdout === undefined ? t.maxStdout : Math.min(maxStdout, t.maxStdout);
+    }
+  }
+  return { timeoutMs, maxStdout };
 }
 
 function buildFeedback(

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { gradeCode } from '@lib/grading/engine';
+import { PythonTimeoutError } from '@lib/python/worker-runner';
 import type { GradingContext } from '@lib/grading/types';
 import type { LessonStep } from '@lib/types/schema';
 
@@ -88,5 +89,51 @@ describe('gradeCode', () => {
     const result = await gradeCode(ctx(stepNoTests, "print('hi')"));
     expect(result.passed).toBe(true);
     expect(result.score).toBe(1);
+  });
+
+  it('reports timeout failure when the runner throws PythonTimeoutError', async () => {
+    const timeoutRunner = {
+      runSnippet: async () => {
+        throw new PythonTimeoutError(2000);
+      },
+    };
+    const stepWithCap: LessonStep = {
+      ...exactStep,
+      tests: [{ expectedOutput: '', mode: 'rules', timeoutMs: 2000, runtimeRules: { outputContains: ['x'] } }],
+    };
+    const result = await gradeCode({
+      code: 'while True: pass',
+      step: stepWithCap,
+      runner: timeoutRunner,
+      pyodide: null,
+    });
+    expect(result.passed).toBe(false);
+    expect(result.score).toBe(0);
+    expect(result.feedback).toContain('too long');
+    expect(result.errors?.[0]).toContain('2000');
+  });
+
+  it('passes the minimum step timeout to the runner', async () => {
+    const calls: Array<{ timeoutMs?: number }> = [];
+    const recordingRunner = {
+      runSnippet: async (args: { code: string; timeoutMs?: number }) => {
+        calls.push({ timeoutMs: args.timeoutMs });
+        return { output: 'hi\n', error: null };
+      },
+    };
+    const stepCaps: LessonStep = {
+      ...exactStep,
+      tests: [
+        { expectedOutput: 'hi', mode: 'rules', timeoutMs: 5000 },
+        { expectedOutput: 'hi', mode: 'rules', timeoutMs: 1000 },
+      ],
+    };
+    await gradeCode({
+      code: "print('hi')",
+      step: stepCaps,
+      runner: recordingRunner,
+      pyodide: null,
+    });
+    expect(calls[0].timeoutMs).toBe(1000);
   });
 });
