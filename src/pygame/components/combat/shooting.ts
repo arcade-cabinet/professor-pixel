@@ -1,4 +1,4 @@
-import { PygameSystemSpec } from '../system-types';
+import { PygameSystemSpec } from '@lib/pygame/components/system-types';
 
 export const shootingComponent: PygameSystemSpec = {
   id: 'shooting',

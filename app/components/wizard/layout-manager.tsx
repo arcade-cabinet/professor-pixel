@@ -247,7 +247,7 @@ export function DesktopHeader() {
 
           <div className="flex items-center space-x-2">
             <motion.div
-              animate={{ rotate: ANIMATIONS.SPARKLE_ROTATE.rotate as any }}
+              animate={{ rotate: [...ANIMATIONS.SPARKLE_ROTATE.rotate] }}
               transition={{
                 duration: ANIMATIONS.SPARKLE_ROTATE.duration,
                 repeat: Infinity,

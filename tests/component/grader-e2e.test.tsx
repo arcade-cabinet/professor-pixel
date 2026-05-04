@@ -22,13 +22,8 @@ import { LessonSchema } from '@lib/types/schema';
 describe('Grader e2e — every lesson solution scores 1.0', () => {
   it('grades all canonical solutions to a perfect score', async () => {
     // Boot once for the whole test run — both Pyodide instances are page-singletons.
-    const [pyodide, runner] = await Promise.all([
-      getPyodide(),
-      Promise.resolve(getWorkerRunner()).then(async (r) => {
-        await r.ready();
-        return r;
-      }),
-    ]);
+    const runner = getWorkerRunner();
+    const [pyodide] = await Promise.all([getPyodide(), runner.ready()]);
 
     // Load lessons directly (not via loader's TanStack Query plumbing).
     const response = await fetch(`${import.meta.env.BASE_URL || '/'}api/static/lessons.json`);
