@@ -1,3 +1,11 @@
+---
+title: Racing Playtest
+updated: 2026-05-04
+status: current
+domain: product
+summary: Wizard playtest notes for the racing game type
+---
+
 # Racing Game Playtest
 
 ## Starting Point

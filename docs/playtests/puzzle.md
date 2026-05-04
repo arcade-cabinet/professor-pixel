@@ -1,3 +1,11 @@
+---
+title: Puzzle Playtest
+updated: 2026-05-04
+status: current
+domain: product
+summary: Wizard playtest notes for the puzzle game type
+---
+
 # Puzzle Game Playtest
 
 ## Starting Point

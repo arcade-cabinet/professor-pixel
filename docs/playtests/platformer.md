@@ -1,3 +1,11 @@
+---
+title: Platformer Playtest
+updated: 2026-05-04
+status: current
+domain: product
+summary: Wizard playtest notes for the platformer game type
+---
+
 # Platformer Game Playtest
 
 ## Starting Point

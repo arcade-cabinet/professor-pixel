@@ -1,3 +1,11 @@
+---
+title: Playtest Analysis (cross-cutting)
+updated: 2026-05-04
+status: current
+domain: product
+summary: Critical issues observed across all game-type playtests
+---
+
 # Comprehensive Playtest Analysis
 
 ## CRITICAL ISSUES ACROSS ALL GAME TYPES

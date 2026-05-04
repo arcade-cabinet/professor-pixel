@@ -1,3 +1,11 @@
+---
+title: Space Shooter Playtest
+updated: 2026-05-04
+status: current
+domain: product
+summary: Wizard playtest notes for the space-shooter game type
+---
+
 # Space Shooter Playtest
 
 ## Starting Point

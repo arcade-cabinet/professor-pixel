@@ -1,3 +1,11 @@
+---
+title: RPG Playtest
+updated: 2026-05-04
+status: current
+domain: product
+summary: Wizard playtest notes for the RPG game type
+---
+
 # RPG Game Playtest
 
 ## Starting Point
