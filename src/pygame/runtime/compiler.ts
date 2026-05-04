@@ -1,7 +1,6 @@
 // PyGame Game Compiler
 // Compiles selected components and assets into a playable Python game
 
-import { PygameSystemSpec } from '@lib/pygame/components/system-types';
 import { pygameComponents } from '@lib/pygame/components/registry';
 import { GameAsset } from '@lib/assets/types';
 

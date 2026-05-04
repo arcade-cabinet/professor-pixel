@@ -22,3 +22,4 @@
 {"ts":"2026-05-04T21:06:33.854Z","sha":"61ecde86de97","subject":"refactor(pygame): name the type seam (S3)","decision":null,"why":null,"resolves":["S3"],"overrides":[]}
 {"ts":"2026-05-04T21:09:19.699Z","sha":"793abc19c838","subject":"feat(grading): worker-based ESM bootstrap + AST-only execution gate (S4)","decision":null,"why":null,"resolves":["S4"],"overrides":[]}
 {"ts":"2026-05-04T21:10:44.081Z","sha":"444cabff1f33","subject":"docs(state): stabilization pillar shipped (SD.1)","decision":null,"why":null,"resolves":["SD.1"],"overrides":[]}
+{"ts":"2026-05-04T21:23:01.262Z","sha":"0c218d5e4fc1","subject":"fix: address CodeRabbit pass on PR #20","decision":null,"why":null,"resolves":["PR #20 review (CodeRabbit","10 of 11 — one barrel exemption explained on-thread)"],"overrides":[]}
