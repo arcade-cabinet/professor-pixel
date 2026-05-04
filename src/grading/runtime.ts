@@ -1,88 +1,100 @@
+import type { RuleResult, RuntimeRules } from './types';
+
+/**
+ * Runtime grading. Drives off the schema's LessonRuntimeRules shape:
+ *   outputContains[], outputMatches, variableExists[], functionCalled[],
+ *   acceptsUserInput, outputIncludesInput.
+ *
+ * variableExists / functionCalled require a Pyodide instance (the variables
+ * live in the just-executed Python globals); the others are stdout-only.
+ *
+ * T5.3 caps (timeoutMs, maxStdout) live one level up in the engine —
+ * runtime validation only sees output that's already been sized.
+ */
 export async function validateRuntime(
-  output: string, 
-  runtimeRules: any[] | undefined, 
-  input?: string
-): Promise<{ passed: boolean; errors: string[] }> {
-  if (!runtimeRules || runtimeRules.length === 0) {
-    console.log("🔍 Runtime validation skipped: no runtimeRules");
-    return { passed: true, errors: [] };
+  output: string,
+  rules: RuntimeRules | undefined,
+  input: string | undefined,
+  pyodide: PyodideInstance | null,
+): Promise<RuleResult[]> {
+  if (!rules) return [];
+  const results: RuleResult[] = [];
+
+  for (const needle of rules.outputContains ?? []) {
+    const ok = output.includes(needle);
+    results.push({
+      id: `runtime.outputContains:${needle}`,
+      passed: ok,
+      message: ok
+        ? `Output contains "${needle}"`
+        : `Output should contain "${needle}"`,
+    });
   }
 
-  console.log("🔍 Starting runtime validation with:", { 
-    output: output.substring(0, 100) + (output.length > 100 ? "..." : ""),
-    runtimeRules,
-    input
-  });
-
-  const errors: string[] = [];
-
-  try {
-    for (const rule of runtimeRules) {
-      const ruleName = rule.rule;
-      const params = rule.params || {};
-
-      switch (ruleName) {
-        case 'contains_text':
-          const expectedText = params.text;
-          if (!output.includes(expectedText)) {
-            errors.push(`Output should contain: "${expectedText}"`);
-          }
-          break;
-
-        case 'matches_pattern':
-          const pattern = new RegExp(params.pattern);
-          if (!pattern.test(output)) {
-            errors.push(`Output should match pattern: ${params.pattern}`);
-          }
-          break;
-
-        case 'has_length':
-          const expectedLength = params.length;
-          const actualLength = output.trim().split('\n').length;
-          if (actualLength !== expectedLength) {
-            errors.push(`Output should have ${expectedLength} lines, but has ${actualLength}`);
-          }
-          break;
-
-        case 'is_numeric':
-          const numericValue = parseFloat(output.trim());
-          if (isNaN(numericValue)) {
-            errors.push("Output should be a valid number");
-          }
-          break;
-
-        case 'equals_value':
-          const expectedValue = params.value;
-          const normalizedOutput = output.trim().replace(/\s+/g, ' ');
-          const normalizedExpected = String(expectedValue).trim().replace(/\s+/g, ' ');
-          if (normalizedOutput !== normalizedExpected) {
-            errors.push(`Expected: "${expectedValue}", but got: "${output.trim()}"`);
-          }
-          break;
-
-        case 'range_check':
-          const value = parseFloat(output.trim());
-          const min = params.min;
-          const max = params.max;
-          if (isNaN(value) || value < min || value > max) {
-            errors.push(`Output should be a number between ${min} and ${max}`);
-          }
-          break;
-
-        default:
-          console.warn(`Unknown runtime rule: ${ruleName}`);
-      }
+  if (rules.outputMatches) {
+    let ok = false;
+    let err: string | null = null;
+    try {
+      ok = new RegExp(rules.outputMatches).test(output);
+    } catch (e) {
+      err = e instanceof Error ? e.message : String(e);
     }
-
-    const passed = errors.length === 0;
-    console.log("🔍 Runtime validation completed:", { passed, errors });
-    return { passed, errors };
-
-  } catch (error) {
-    console.error("🚨 Runtime validation error:", error);
-    return { 
-      passed: false, 
-      errors: [`Runtime validation failed: ${error instanceof Error ? error.message : String(error)}`]
-    };
+    results.push({
+      id: `runtime.outputMatches`,
+      passed: ok && err === null,
+      message: err
+        ? `Invalid pattern: ${err}`
+        : ok
+          ? `Output matches /${rules.outputMatches}/`
+          : `Output should match /${rules.outputMatches}/`,
+    });
   }
+
+  for (const name of rules.variableExists ?? []) {
+    // Use `!== undefined` so falsy Python values (0, '', False, None) still count
+    // as defined. Boolean() would erroneously fail a student who set count = 0.
+    const exists = pyodide ? pyodide.globals.get(name) !== undefined : false;
+    results.push({
+      id: `runtime.variableExists:${name}`,
+      passed: exists,
+      message: exists
+        ? `Variable ${name} exists`
+        : `Variable ${name} should be defined`,
+    });
+  }
+
+  // functionCalled is a runtime check that requires instrumentation. Without
+  // a tracer, we approximate by looking for the function name in stdout (the
+  // common authoring pattern is to print results from the called function).
+  // The AST rule calls_method gives the structural check.
+  for (const name of rules.functionCalled ?? []) {
+    const ok = output.includes(name) || (pyodide ? pyodide.globals.get(name) !== undefined : false);
+    results.push({
+      id: `runtime.functionCalled:${name}`,
+      passed: ok,
+      message: ok
+        ? `${name}() appears called`
+        : `Make sure ${name}() runs`,
+    });
+  }
+
+  if (rules.acceptsUserInput) {
+    const ok = typeof input === 'string' && input.length > 0;
+    results.push({
+      id: 'runtime.acceptsUserInput',
+      passed: ok,
+      message: ok ? 'Code accepts user input' : 'Code should accept input()',
+    });
+  }
+
+  if (rules.outputIncludesInput) {
+    const ok = typeof input === 'string' && input.length > 0 && output.includes(input);
+    results.push({
+      id: 'runtime.outputIncludesInput',
+      passed: ok,
+      message: ok ? 'Output includes the user input' : "Output should echo the user's input",
+    });
+  }
+
+  return results;
 }

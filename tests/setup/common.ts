@@ -40,21 +40,24 @@ Object.defineProperty(window, 'matchMedia', {
 });
 
 // Mock IntersectionObserver
-global.IntersectionObserver = vi.fn().mockImplementation(() => ({
+globalThis.IntersectionObserver = vi.fn().mockImplementation(() => ({
   observe: vi.fn(),
   unobserve: vi.fn(),
   disconnect: vi.fn(),
 }));
 
 // Mock ResizeObserver
-global.ResizeObserver = vi.fn().mockImplementation(() => ({
+globalThis.ResizeObserver = vi.fn().mockImplementation(() => ({
   observe: vi.fn(),
   unobserve: vi.fn(),
   disconnect: vi.fn(),
 }));
 
-// Mock fetch for API calls
-global.fetch = vi.fn();
+// Mock fetch only in jsdom — component tests run in a real browser and need
+// real fetch (e.g. for the asset catalog bootstrap).
+if (typeof window !== 'undefined' && window.navigator?.userAgent?.includes('jsdom')) {
+  globalThis.fetch = vi.fn();
+}
 
 // Setup console error/warning suppression for expected errors in tests
 const originalError = console.error;

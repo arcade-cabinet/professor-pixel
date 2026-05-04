@@ -1,7 +1,7 @@
 import { useParams, useLocation } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useState, useEffect, useMemo } from "react";
-import { queryClient, apiRequest } from "@lib/net/query-client";
+import { queryClient } from "@lib/net/query-client";
 import { motion, AnimatePresence } from "framer-motion";
 import Header from "@/components/header";
 import CodeEditor from "@/components/editor/code-editor";
@@ -11,7 +11,10 @@ import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Sparkles, ChevronRight, ChevronLeft, Trophy, Heart, Code2, Zap, BookOpen, Rocket } from "lucide-react";
 import type { Lesson, UserProgress } from "@lib/types/schema";
-import { createPythonRunner, type PythonRunner, type ExecutionResult, type ExecutionContext } from "@lib/python/runner";
+import { getWorkerRunner } from "@lib/python/worker-runner";
+import { getPyodide } from "@lib/python/pyodide-singleton";
+import { loadLessons } from "@lib/lessons";
+import { getClientStorage } from "@lib/storage/mode";
 import { gradeCode, type GradingContext } from "@lib/grading";
 
 // Import Pixel images
@@ -87,40 +90,57 @@ export default function LessonEnhanced() {
     actualOutput?: string;
   } | null>(null);
 
-  // Pyodide temporarily disabled
-  const pyodide = null;
-  const pyodideLoading = false;
-  const pyodideError = null;
-  const executeWithEnhancedErrors = async (code: string, context: ExecutionContext): Promise<ExecutionResult> => ({ output: "", hasError: false });
-  const isEnhancedReady = false;
-  
-  // Create PythonRunner instance when pyodide is ready
-  const pythonRunner = useMemo(() => {
-    if (!pyodide) return null;
-    return createPythonRunner(pyodide, {
-      executeWithEnhancedErrors,
-      isEnhancedReady
-    });
-  }, [pyodide, executeWithEnhancedErrors, isEnhancedReady]);
+  // Pyodide loads lazily via the page-singleton; runner.tsx + pygame-preview
+  // share the same instance (T2.1).
+  const {
+    data: pyodide,
+    isLoading: pyodideLoading,
+    error: pyodideError,
+  } = useQuery({
+    queryKey: ["pyodide"],
+    queryFn: () => getPyodide(),
+    staleTime: Infinity,
+  });
 
-  const { data: lesson, isLoading: lessonLoading } = useQuery<Lesson>({
-    queryKey: ["/api/lessons", lessonId],
+  // The worker runner is the only execution path for the lesson page —
+  // student code runs off the main thread with a hard timeout so a runaway
+  // `while True:` cannot wedge the UI. Reuses the page-level singleton so
+  // the worker's Pyodide bootstraps once.
+  const pythonRunner = useMemo(() => (pyodide ? getWorkerRunner() : null), [pyodide]);
+
+  const {
+    data: lesson,
+    isLoading: lessonLoading,
+    error: lessonError,
+  } = useQuery<Lesson | undefined>({
+    queryKey: ["lessons", lessonId],
+    queryFn: async () => {
+      const lessons = await loadLessons();
+      return lessons.find((l) => l.id === lessonId);
+    },
     enabled: !!lessonId,
   });
 
-  const { data: progress } = useQuery<UserProgress | null>({
-    queryKey: ["/api/progress", lessonId],
+  const { data: progress } = useQuery<UserProgress | undefined>({
+    queryKey: ["progress", lessonId],
+    queryFn: async () => {
+      if (!lessonId) return undefined;
+      const userId = "local-user"; // single-user offline app
+      return getClientStorage().getUserProgressForLesson(userId, lessonId);
+    },
     enabled: !!lessonId,
   });
 
   const updateProgressMutation = useMutation({
     mutationFn: async (data: { currentStep?: number; completed?: boolean; code?: string }) => {
-      return apiRequest("PUT", `/api/progress/${lessonId}`, data);
+      if (!lessonId) return;
+      const userId = "local-user";
+      return getClientStorage().updateUserProgress(userId, lessonId, data);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/progress", lessonId] });
-      queryClient.invalidateQueries({ queryKey: ["/api/progress"] });
-    }
+      queryClient.invalidateQueries({ queryKey: ["progress", lessonId] });
+      queryClient.invalidateQueries({ queryKey: ["progress"] });
+    },
   });
 
   const currentStep = lesson?.content.steps[currentStepIndex];
@@ -194,7 +214,7 @@ export default function LessonEnhanced() {
             step: currentStep,
             input: inputValues,
             runner: pythonRunner,
-            pyodide
+            pyodide: pyodide ?? null,
           };
 
           const gradeResult = await gradeCode(gradingContext, result);
@@ -323,11 +343,39 @@ export default function LessonEnhanced() {
     }
   };
 
+  if (pyodideError || lessonError) {
+    const err = pyodideError ?? lessonError;
+    const isPyodide = !!pyodideError;
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-yellow-50 dark:from-gray-900 dark:via-purple-900/10 dark:to-pink-900/10 flex items-center justify-center px-6">
+        <Card className="max-w-md p-6 text-center space-y-4">
+          <motion.img src={pixelThinking} alt="Pixel concerned" className="w-20 h-20 mx-auto" />
+          <h2 className="text-lg font-semibold text-foreground">
+            {isPyodide ? "Python didn't load" : "Lessons failed to load"}
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            {err instanceof Error ? err.message : String(err)}
+          </p>
+          <Button
+            onClick={() =>
+              queryClient.invalidateQueries({
+                queryKey: isPyodide ? ["pyodide"] : ["lessons", lessonId],
+              })
+            }
+            data-testid="button-retry-load"
+          >
+            Try again
+          </Button>
+        </Card>
+      </div>
+    );
+  }
+
   if (lessonLoading || pyodideLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-yellow-50 dark:from-gray-900 dark:via-purple-900/10 dark:to-pink-900/10 flex items-center justify-center">
         <div className="text-center">
-          <motion.img 
+          <motion.img
             src={pixelThinking}
             alt="Pixel thinking"
             className="w-20 h-20 mx-auto mb-4"

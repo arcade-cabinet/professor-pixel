@@ -87,8 +87,10 @@ jobs:
 
       - name: Run integration tests
         run: npm run test:integration
-        continue-on-error: true # advisory while pre-existing test logic catches up
 
       - name: Run component tests (Vitest browser)
         run: npm run test:component
-        continue-on-error: true # advisory while pre-existing test logic catches up
+        # Advisory: 10 pre-existing failures in tests/component/responsive-wizard.test.tsx
+        # rely on a banner role removed during the Capacitor-style layout refactor.
+        # Tracked in docs/STATE.md → Next → Visual / accessibility.
+        continue-on-error: true

@@ -1,106 +1,220 @@
-// Simple TypeScript types for Pixel's PyGame Palace - no database dependencies!
+// Cross-domain runtime contracts for Pixel's PyGame Palace.
+// Schema-first: each entity that crosses an external boundary (network JSON,
+// localStorage, postMessage) is defined as a Zod schema; the TS type is
+// `z.infer<typeof Schema>`. The schemas validate at the boundary, so bad data
+// fails loudly instead of crashing inside a stale React render.
+//
+// In-memory-only types (editor state, mascot UI, component config) stay as
+// plain TS interfaces below — they never come from untrusted input.
 
-export interface User {
-  id: string;
-  username: string;
-}
+import { z } from 'zod';
 
-export interface Lesson {
-  id: string;
-  title: string;
-  description: string;
-  order: number;
-  intro?: string;
-  learningObjectives?: string[];
-  goalDescription?: string;
-  previewCode?: string;
-  content: {
-    introduction: string;
-    steps: Array<{
-      id: string;
-      title: string;
-      description: string;
-      initialCode: string;
-      solution: string;
-      hints: string[];
-      tests?: Array<{
-        input?: string;
-        expectedOutput: string;
-        description?: string;
-        mode?: 'output' | 'rules';
-        astRules?: {
-          requiredFunctions?: string[];
-          requiredConstructs?: Array<{
-            type: 'variable_assignment' | 'function_call' | 'import' | 'if_statement' | 'loop' | 'string_literal' | 'f_string';
-            name?: string;
-            minCount?: number;
-            maxCount?: number;
-          }>;
-          forbiddenConstructs?: Array<{
-            type: 'variable_assignment' | 'function_call' | 'import' | 'if_statement' | 'loop' | 'string_literal' | 'f_string';
-            name?: string;
-          }>;
-        };
-        runtimeRules?: {
-          outputContains?: string[];
-          outputMatches?: string;
-          variableExists?: string[];
-          functionCalled?: string[];
-          acceptsUserInput?: boolean;
-          outputIncludesInput?: boolean;
-        };
-      }>;
-      validation?: {
-        type: 'output' | 'variable' | 'function' | 'exact';
-        expected?: any;
-      };
-    }>;
-  };
-  prerequisites?: string[];
-  difficulty?: string;
-  estimatedTime?: number;
-}
+const ConstructTypeSchema = z.enum([
+  'variable_assignment',
+  'function_call',
+  'import',
+  'if_statement',
+  'loop',
+  'string_literal',
+  'f_string',
+  'imports_module',
+  'defines_class',
+  'calls_method',
+  'parameter_count',
+  'nesting_depth',
+]);
 
-export interface UserProgress {
-  id: string;
-  userId: string;
-  lessonId: string;
-  currentStep: number;
-  completed: boolean;
-  code?: string;
-}
+const RequiredConstructSchema = z
+  .object({
+    type: ConstructTypeSchema,
+    /** For imports_module: the module identifier (e.g. {type:'imports_module', name:'pygame'}). */
+    name: z.string().optional(),
+    /** For imports_module: optional sub-attribute, e.g. {name:'event', from:'pygame'} for `from pygame import event`. */
+    from: z.string().optional(),
+    /** For defines_class: required base class name (e.g. {baseClass: 'Sprite'}) */
+    baseClass: z.string().optional(),
+    /** For defines_class: minimum number of methods on the class */
+    minMethods: z.number().int().nonnegative().optional(),
+    /** For calls_method: receiver name (e.g. {on: 'screen', method: 'fill'}) */
+    on: z.string().optional(),
+    /** For calls_method: method name */
+    method: z.string().optional(),
+    /** For parameter_count: function name + min/max parameter count */
+    function: z.string().optional(),
+    min: z.number().int().nonnegative().optional(),
+    max: z.number().int().nonnegative().optional(),
+    minCount: z.number().int().nonnegative().optional(),
+    maxCount: z.number().int().nonnegative().optional(),
+  })
+  .strict();
 
-export interface Project {
-  id: string;
-  userId: string;
-  name: string;
-  template: string;
-  description?: string;
-  published: boolean;
-  createdAt: Date;
-  publishedAt?: Date;
-  thumbnailDataUrl?: string;
-  files: Array<{
-    path: string;
-    content: string;
-  }>;
-  assets: Array<{
-    id: string;
-    name: string;
-    type: 'image' | 'sound' | 'other';
-    path: string;
-    dataUrl: string;
-  }>;
-}
+const ForbiddenConstructSchema = z
+  .object({
+    type: ConstructTypeSchema,
+    name: z.string().optional(),
+  })
+  .strict();
 
-export type ProjectAsset = Project['assets'][0];
-export type ProjectFile = Project['files'][0];
+const AstRulesSchema = z
+  .object({
+    requiredFunctions: z.array(z.string()).optional(),
+    requiredConstructs: z.array(RequiredConstructSchema).optional(),
+    forbiddenConstructs: z.array(ForbiddenConstructSchema).optional(),
+  })
+  .strict();
 
-// For backward compatibility, keeping these type aliases
-export type InsertUser = Omit<User, 'id'>;
-export type InsertLesson = Omit<Lesson, 'id'>;
-export type InsertUserProgress = Omit<UserProgress, 'id'>;
-export type InsertProject = Omit<Project, 'id' | 'createdAt' | 'publishedAt'>;
+const RuntimeRulesSchema = z
+  .object({
+    outputContains: z.array(z.string()).optional(),
+    outputMatches: z.string().optional(),
+    variableExists: z.array(z.string()).optional(),
+    functionCalled: z.array(z.string()).optional(),
+    acceptsUserInput: z.boolean().optional(),
+    outputIncludesInput: z.boolean().optional(),
+  })
+  .strict();
+
+const TestSpecSchema = z
+  .object({
+    input: z.string().optional(),
+    expectedOutput: z.string(),
+    description: z.string().optional(),
+    mode: z.enum(['output', 'rules']).optional(),
+    astRules: AstRulesSchema.optional(),
+    runtimeRules: RuntimeRulesSchema.optional(),
+    /** Hard cap; on overshoot the worker is terminated and the test fails. */
+    timeoutMs: z.number().int().positive().optional(),
+    /** Cap on captured stdout in bytes. Excess is truncated with a marker. */
+    maxStdout: z.number().int().positive().optional(),
+  })
+  .strict()
+  .superRefine((data, ctx) => {
+    // mode: 'rules' is a contract that the engine should evaluate astRules
+    // and/or runtimeRules. Without either, the engine silently falls back to
+    // output-mode and the lesson author gets nothing they asked for. Reject.
+    if (data.mode === 'rules' && !data.astRules && !data.runtimeRules) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "mode: 'rules' requires astRules and/or runtimeRules",
+      });
+    }
+  });
+
+const StepValidationSchema = z
+  .object({
+    type: z.enum(['output', 'variable', 'function', 'exact']),
+    expected: z.unknown().optional(),
+  })
+  .strict();
+
+const StepSchema = z
+  .object({
+    id: z.string().min(1),
+    title: z.string().min(1),
+    description: z.string(),
+    initialCode: z.string(),
+    solution: z.string(),
+    hints: z.array(z.string()),
+    tests: z.array(TestSpecSchema).optional(),
+    validation: StepValidationSchema.optional(),
+  })
+  .strict();
+
+export const UserSchema = z
+  .object({
+    id: z.string().min(1),
+    username: z.string().min(1),
+  })
+  .strict();
+
+export const LessonSchema = z
+  .object({
+    id: z.string().min(1),
+    title: z.string().min(1),
+    description: z.string(),
+    order: z.number().int().nonnegative(),
+    intro: z.string().optional(),
+    learningObjectives: z.array(z.string()).optional(),
+    goalDescription: z.string().optional(),
+    previewCode: z.string().optional(),
+    content: z.object({
+      introduction: z.string(),
+      steps: z.array(StepSchema).min(1),
+    }),
+    prerequisites: z.array(z.string()).optional(),
+    difficulty: z.string().optional(),
+    estimatedTime: z.number().int().positive().optional(),
+  })
+  .strict();
+
+export const UserProgressSchema = z
+  .object({
+    id: z.string().min(1),
+    userId: z.string().min(1),
+    lessonId: z.string().min(1),
+    currentStep: z.number().int().nonnegative(),
+    completed: z.boolean(),
+    code: z.string().optional(),
+  })
+  .strict();
+
+const ProjectFileSchema = z
+  .object({
+    path: z.string().min(1),
+    content: z.string(),
+  })
+  .strict();
+
+const ProjectAssetSchema = z
+  .object({
+    id: z.string().min(1),
+    name: z.string().min(1),
+    type: z.enum(['image', 'sound', 'other']),
+    path: z.string().min(1),
+    dataUrl: z.string(),
+  })
+  .strict();
+
+export const ProjectSchema = z
+  .object({
+    id: z.string().min(1),
+    userId: z.string().min(1),
+    name: z.string().min(1),
+    template: z.string().min(1),
+    description: z.string().optional(),
+    published: z.boolean(),
+    createdAt: z.coerce.date(),
+    publishedAt: z.coerce.date().optional(),
+    thumbnailDataUrl: z.string().optional(),
+    files: z.array(ProjectFileSchema),
+    assets: z.array(ProjectAssetSchema),
+  })
+  .strict();
+
+export type User = z.infer<typeof UserSchema>;
+export type Lesson = z.infer<typeof LessonSchema>;
+export type LessonStep = z.infer<typeof StepSchema>;
+export type LessonTestSpec = z.infer<typeof TestSpecSchema>;
+export type LessonAstRules = z.infer<typeof AstRulesSchema>;
+export type LessonRuntimeRules = z.infer<typeof RuntimeRulesSchema>;
+export type UserProgress = z.infer<typeof UserProgressSchema>;
+export type Project = z.infer<typeof ProjectSchema>;
+export type ProjectAsset = z.infer<typeof ProjectAssetSchema>;
+export type ProjectFile = z.infer<typeof ProjectFileSchema>;
+
+export const InsertUserSchema = UserSchema.omit({ id: true });
+export const InsertLessonSchema = LessonSchema.omit({ id: true });
+export const InsertUserProgressSchema = UserProgressSchema.omit({ id: true });
+export const InsertProjectSchema = ProjectSchema.omit({
+  id: true,
+  createdAt: true,
+  publishedAt: true,
+});
+
+export type InsertUser = z.infer<typeof InsertUserSchema>;
+export type InsertLesson = z.infer<typeof InsertLessonSchema>;
+export type InsertUserProgress = z.infer<typeof InsertUserProgressSchema>;
+export type InsertProject = z.infer<typeof InsertProjectSchema>;
 
 // Visual Game Builder Types
 export interface GameConfig {

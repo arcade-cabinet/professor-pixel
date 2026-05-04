@@ -4,6 +4,7 @@ import { Play, Pause, RefreshCw, Download, Maximize, Minimize, X } from 'lucide-
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { compilePythonGame } from '@lib/pygame/runtime/compiler';
+import { getPyodide } from '@lib/python/pyodide-singleton';
 
 interface PygameRunnerProps {
   selectedComponents?: Record<string, string>;
@@ -38,44 +39,8 @@ export default function PygameRunner({
     setError(null);
     
     try {
-      // Load Pyodide if not already loaded
-      if (!window.pyodide) {
-        const script = document.createElement('script');
-        script.src = 'https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js';
-        script.async = true;
-        
-        await new Promise((resolve, reject) => {
-          script.onload = resolve;
-          script.onerror = reject;
-          document.body.appendChild(script);
-        });
-        
-        // Wait for Pyodide to be available
-        await new Promise(resolve => {
-          const checkInterval = setInterval(() => {
-            if (window.loadPyodide) {
-              clearInterval(checkInterval);
-              resolve(true);
-            }
-          }, 100);
-        });
-        
-        if (!window.loadPyodide) {
-          throw new Error('Pyodide script loaded but window.loadPyodide is undefined');
-        }
-        window.pyodide = await window.loadPyodide({
-          indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.24.1/full/',
-        });
-        
-        // Skip pygame installation - we'll use our mock implementation
-        // pygame-ce cannot be installed in browser due to binary dependencies
-      }
-      
-      pyodideRef.current = window.pyodide;
-      
-      // Setup canvas bridge for pygame
+      pyodideRef.current = await getPyodide();
       await setupCanvasBridge();
-      
       setIsLoading(false);
     } catch (err) {
       const errorMsg = `Failed to initialize Pyodide: ${err}`;

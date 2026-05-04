@@ -1,69 +1,90 @@
 [
   {
     "id": "lesson-1",
-    "title": "Python Basics",
-    "description": "Variables, data types, print, and input",
+    "title": "Variables and print",
+    "description": "Store data in variables and show messages on screen",
     "order": 1,
-    "intro": "🐍 Welcome to Python programming! In this lesson, you'll learn the fundamental building blocks: variables, data types, and how to interact with users. These are the core concepts that every programmer needs to master.",
+    "intro": "Welcome! Every program needs to remember things and tell us what's going on. Variables remember; print shows.",
     "learningObjectives": [
-      "Create and use variables to store different types of data",
-      "Work with strings, numbers, and booleans",
-      "Use print() to display messages and information",
-      "Get user input with input() function",
-      "Convert between different data types"
+      "Create variables to store strings and numbers",
+      "Use print() to display messages",
+      "Combine variables and text in output"
     ],
-    "goalDescription": "Master the basics of Python by creating an interactive program that collects and displays user information!",
-    "previewCode": "name = input('Enter your name: ')\\nage = int(input('Enter your age: '))\\nprint(f'Hello {name}, you are {age} years old!')",
+    "goalDescription": "Print a friendly greeting using at least one variable.",
+    "previewCode": "name = 'Pixel'\nprint('Hi,', name)",
     "content": {
-      "introduction": "Python is a powerful and beginner-friendly programming language. Let's start with the fundamentals that every Python programmer needs to know!",
+      "introduction": "Variables are labels for values. print() is how the program talks back.",
       "steps": [
         {
-          "id": "step-1",
-          "title": "Your First Python Message",
-          "description": "Let's start by displaying messages on screen. The print() function is used to show text output. Write any friendly greeting messages!",
-          "initialCode": "# Use the print() function to display at least 2 messages\\n# You can write any greeting or welcome messages you like!\\n",
-          "solution": "print('Hello, World!')\\nprint('Welcome to Python programming!')",
-          "hints": ["Use print() function to display text", "Put text inside quotes", "You can write any messages you want", "Try using at least 2 print statements"],
+          "id": "lesson-1-step-1",
+          "title": "Print a message",
+          "description": "Use print() to display 'Hello, world!'",
+          "initialCode": "# Print a hello message\n",
+          "solution": "print('Hello, world!')",
+          "hints": [
+            "Use the print() function",
+            "Put your text inside quotes",
+            "The whole line is print('Hello, world!')"
+          ],
           "tests": [
             {
+              "expectedOutput": "Hello, world!",
               "mode": "rules",
-              "expectedOutput": "Any greeting messages (this is just for reference)",
-              "description": "Should use print() function to display messages",
               "astRules": {
-                "requiredFunctions": ["print"],
                 "requiredConstructs": [
-                  { "type": "function_call", "name": "print", "minCount": 2 },
-                  { "type": "string_literal", "minCount": 2 }
+                  { "type": "function_call", "name": "print", "minCount": 1 }
                 ]
               },
               "runtimeRules": {
-                "outputContains": []
+                "outputContains": ["Hello"]
               }
             }
           ]
         },
         {
-          "id": "step-2", 
-          "title": "Creating Variables",
-          "description": "Variables store data that your program can use later. Create variables to store different types of information, then display them!",
-          "initialCode": "# Create at least 3 variables with different data types:\\n# - A string (text in quotes)\\n# - A number (integer or decimal)\\n# - A boolean (True or False)\\n# Then print each variable to see their values\\n",
-          "solution": "name = 'Python'\\nversion = 3.12\\nis_fun = True\\n\\nprint(name)\\nprint(version)\\nprint(is_fun)",
-          "hints": ["Variables store values using =", "Strings use quotes like 'text' or \"text\"", "Numbers don't need quotes", "Boolean values are True or False", "Use print() to display variables"],
+          "id": "lesson-1-step-2",
+          "title": "Store a name in a variable",
+          "description": "Make a variable named name with your favorite name, then print it.",
+          "initialCode": "# Set name to a string, then print it\n",
+          "solution": "name = 'Pixel'\nprint(name)",
+          "hints": [
+            "Use = to assign a value",
+            "Quotes around the name make it a string",
+            "Then print(name) shows what's stored"
+          ],
           "tests": [
             {
+              "expectedOutput": "",
               "mode": "rules",
-              "expectedOutput": "Any variable values (this is just for reference)",
-              "description": "Should create variables of different types and print them",
               "astRules": {
-                "requiredFunctions": ["print"],
                 "requiredConstructs": [
-                  { "type": "variable_assignment", "minCount": 3 },
-                  { "type": "function_call", "name": "print", "minCount": 3 },
+                  { "type": "variable_assignment", "name": "name", "minCount": 1 },
+                  { "type": "function_call", "name": "print", "minCount": 1 }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "lesson-1-step-3",
+          "title": "Combine words",
+          "description": "Print a greeting that uses your name variable in a sentence.",
+          "initialCode": "name = 'Pixel'\n# Print a sentence that includes name\n",
+          "solution": "name = 'Pixel'\nprint('Hi,', name, 'nice to meet you!')",
+          "hints": [
+            "print() can take multiple arguments separated by commas",
+            "It puts spaces between them automatically",
+            "Try print('Hi,', name, 'nice to meet you!')"
+          ],
+          "tests": [
+            {
+              "expectedOutput": "",
+              "mode": "rules",
+              "astRules": {
+                "requiredConstructs": [
+                  { "type": "function_call", "name": "print", "minCount": 1 },
                   { "type": "string_literal", "minCount": 1 }
                 ]
-              },
-              "runtimeRules": {
-                "outputContains": []
               }
             }
           ]
@@ -72,48 +93,70 @@
     },
     "prerequisites": [],
     "difficulty": "Beginner",
-    "estimatedTime": 25
+    "estimatedTime": 10
   },
   {
     "id": "lesson-2",
-    "title": "Control Flow",
-    "description": "if/else statements and comparison operators",
+    "title": "Numbers and math",
+    "description": "Do arithmetic and store the results",
     "order": 2,
-    "intro": "🔀 Time to make your programs smart! Control flow lets your code make decisions and respond differently based on conditions. You'll learn if/else statements and comparison operators.",
+    "intro": "Computers love math. Let's add, subtract, and store numbers.",
     "learningObjectives": [
-      "Use if statements to make decisions in code",
-      "Compare values with ==, !=, <, >, <=, >=",
-      "Combine conditions with and, or, not",
-      "Handle multiple conditions with elif",
-      "Create programs that respond to user input"
+      "Use +, -, *, / to compute",
+      "Store numeric results in variables",
+      "Print the result of a calculation"
     ],
-    "goalDescription": "Build intelligent programs that can make decisions and respond differently based on user input and conditions!",
-    "previewCode": "age = int(input('Enter age: '))\\nif age >= 18:\\n    print('You can vote!')\\nelse:\\n    print('Not old enough to vote yet')",
+    "goalDescription": "Compute and print the area of a rectangle.",
+    "previewCode": "width = 5\nheight = 3\nprint(width * height)",
     "content": {
-      "introduction": "Control flow allows your programs to make decisions. Instead of running the same code every time, you can create programs that respond intelligently to different situations!",
+      "introduction": "Python is a calculator. Variables can hold numbers too.",
       "steps": [
         {
-          "id": "step-1",
-          "title": "Your First if Statement",
-          "description": "Use an if statement to check a condition and only run code when the condition is true.",
-          "initialCode": "# Create a variable called score and set it to 85\\n# Use an if statement to check if score is greater than 80\\n# If true, print 'Great job!'\\n",
-          "solution": "score = 85\\nif score > 80:\\n    print('Great job!')",
-          "hints": ["Use if followed by a condition and colon :", "Indent the code inside the if block", "Use > to check if one number is greater than another"],
+          "id": "lesson-2-step-1",
+          "title": "Add two numbers",
+          "description": "Make two number variables and print their sum.",
+          "initialCode": "# Create two number variables and print their sum\n",
+          "solution": "a = 7\nb = 3\nprint(a + b)",
+          "hints": [
+            "Numbers don't need quotes",
+            "Use + between two variables to add them",
+            "print(a + b) shows the result"
+          ],
           "tests": [
             {
+              "expectedOutput": "10",
               "mode": "rules",
-              "expectedOutput": "Great job!",
-              "description": "Should print congratulations for high score",
               "astRules": {
-                "requiredFunctions": ["print"],
                 "requiredConstructs": [
-                  { "type": "variable_assignment", "minCount": 1 },
-                  { "type": "function_call", "name": "print", "minCount": 1 },
-                  { "type": "string_literal", "minCount": 1 }
+                  { "type": "variable_assignment", "minCount": 2 },
+                  { "type": "function_call", "name": "print", "minCount": 1 }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "lesson-2-step-2",
+          "title": "Rectangle area",
+          "description": "Set width and height, then print the area.",
+          "initialCode": "width = 5\nheight = 3\n# Print the area (width times height)\n",
+          "solution": "width = 5\nheight = 3\narea = width * height\nprint(area)",
+          "hints": [
+            "Multiplication is *",
+            "You can store the result in a third variable",
+            "Then print that variable"
+          ],
+          "tests": [
+            {
+              "expectedOutput": "15",
+              "mode": "rules",
+              "astRules": {
+                "requiredConstructs": [
+                  { "type": "function_call", "name": "print", "minCount": 1 }
                 ]
               },
               "runtimeRules": {
-                "outputContains": ["Great job!"]
+                "outputContains": ["15"]
               }
             }
           ]
@@ -122,6 +165,313 @@
     },
     "prerequisites": ["lesson-1"],
     "difficulty": "Beginner",
-    "estimatedTime": 30
+    "estimatedTime": 10
+  },
+  {
+    "id": "lesson-3",
+    "title": "Conditionals",
+    "description": "Make decisions in code with if / elif / else",
+    "order": 3,
+    "intro": "Programs make choices. if checks a condition; else handles the other case.",
+    "learningObjectives": [
+      "Write if statements",
+      "Compare numbers with >, <, ==",
+      "Branch with else"
+    ],
+    "goalDescription": "Print whether a number is positive or negative.",
+    "previewCode": "n = -3\nif n > 0:\n    print('positive')\nelse:\n    print('not positive')",
+    "content": {
+      "introduction": "if runs the code under it only when the condition is True. else covers the other case.",
+      "steps": [
+        {
+          "id": "lesson-3-step-1",
+          "title": "Pick the bigger number",
+          "description": "Set a and b to numbers; print the bigger one. Use if/else.",
+          "initialCode": "a = 8\nb = 12\n# Print the bigger one\n",
+          "solution": "a = 8\nb = 12\nif a > b:\n    print(a)\nelse:\n    print(b)",
+          "hints": [
+            "if a > b: starts a conditional",
+            "Indent the line under it with 4 spaces",
+            "Add else: for the other case"
+          ],
+          "tests": [
+            {
+              "expectedOutput": "12",
+              "mode": "rules",
+              "astRules": {
+                "requiredConstructs": [
+                  { "type": "if_statement", "minCount": 1 }
+                ]
+              },
+              "runtimeRules": {
+                "outputContains": ["12"]
+              }
+            }
+          ]
+        },
+        {
+          "id": "lesson-3-step-2",
+          "title": "Even or odd",
+          "description": "Set n to a number; print 'even' if n % 2 is 0, else 'odd'. Don't use eval to cheat.",
+          "initialCode": "n = 14\n# Use if/else to print 'even' or 'odd'\n",
+          "solution": "n = 14\nif n % 2 == 0:\n    print('even')\nelse:\n    print('odd')",
+          "hints": [
+            "% gives the remainder",
+            "0 remainder means even",
+            "if n % 2 == 0: ..."
+          ],
+          "tests": [
+            {
+              "expectedOutput": "even",
+              "mode": "rules",
+              "astRules": {
+                "requiredConstructs": [
+                  { "type": "if_statement", "minCount": 1 }
+                ],
+                "forbiddenConstructs": [
+                  { "type": "function_call", "name": "eval" }
+                ]
+              },
+              "runtimeRules": {
+                "outputContains": ["even"]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "prerequisites": ["lesson-2"],
+    "difficulty": "Beginner",
+    "estimatedTime": 12
+  },
+  {
+    "id": "lesson-4",
+    "title": "Loops",
+    "description": "Repeat actions with for and range",
+    "order": 4,
+    "intro": "Loops are how programs do the same thing many times without copy-paste.",
+    "learningObjectives": [
+      "Use for with range()",
+      "Loop over a list of values",
+      "Keep loops shallow (don't over-nest)"
+    ],
+    "goalDescription": "Print the numbers 1 through 5.",
+    "previewCode": "for i in range(1, 6):\n    print(i)",
+    "content": {
+      "introduction": "range(1, 6) gives 1, 2, 3, 4, 5. for loops over them, running the indented code each time.",
+      "steps": [
+        {
+          "id": "lesson-4-step-1",
+          "title": "Count to five",
+          "description": "Print the numbers 1 through 5, one per line.",
+          "initialCode": "# Print 1 to 5 on separate lines\n",
+          "solution": "for i in range(1, 6):\n    print(i)",
+          "hints": [
+            "for variable in range(start, stop):",
+            "stop is one past the last number you want",
+            "Indent print(i) under the for"
+          ],
+          "tests": [
+            {
+              "expectedOutput": "1\n2\n3\n4\n5",
+              "mode": "rules",
+              "astRules": {
+                "requiredConstructs": [
+                  { "type": "loop", "minCount": 1 },
+                  { "type": "function_call", "name": "range", "minCount": 1 }
+                ]
+              },
+              "runtimeRules": {
+                "outputContains": ["1", "5"]
+              },
+              "timeoutMs": 3000
+            }
+          ]
+        },
+        {
+          "id": "lesson-4-step-2",
+          "title": "Sum the first ten numbers",
+          "description": "Use a loop to compute 1 + 2 + ... + 10. Print the total. Keep your code flat — no loops inside loops.",
+          "initialCode": "total = 0\n# Loop 1..10 and add each to total, then print total\n",
+          "solution": "total = 0\nfor i in range(1, 11):\n    total = total + i\nprint(total)",
+          "hints": [
+            "Initialize total = 0 before the loop",
+            "Inside the loop: total = total + i",
+            "After the loop ends, print(total)"
+          ],
+          "tests": [
+            {
+              "expectedOutput": "55",
+              "mode": "rules",
+              "astRules": {
+                "requiredConstructs": [
+                  { "type": "loop", "minCount": 1 },
+                  { "type": "nesting_depth", "max": 3 }
+                ]
+              },
+              "runtimeRules": {
+                "outputContains": ["55"]
+              },
+              "timeoutMs": 3000
+            }
+          ]
+        }
+      ]
+    },
+    "prerequisites": ["lesson-3"],
+    "difficulty": "Beginner",
+    "estimatedTime": 12
+  },
+  {
+    "id": "lesson-5",
+    "title": "Functions",
+    "description": "Bundle reusable steps into named functions",
+    "order": 5,
+    "intro": "When you do the same thing twice, write a function. It takes inputs (parameters) and gives back a result (return).",
+    "learningObjectives": [
+      "Define functions with def",
+      "Use parameters",
+      "return a result"
+    ],
+    "goalDescription": "Write a function that doubles a number.",
+    "previewCode": "def double(n):\n    return n * 2\n\nprint(double(7))",
+    "content": {
+      "introduction": "def name(parameters): defines a function. return sends a value back to whoever called it.",
+      "steps": [
+        {
+          "id": "lesson-5-step-1",
+          "title": "Greet by name",
+          "description": "Define greet(name) that returns 'Hello, ' + name. Call it with 'Pixel' and print the result.",
+          "initialCode": "# Define greet(name) and print greet('Pixel')\n",
+          "solution": "def greet(name):\n    return 'Hello, ' + name\n\nprint(greet('Pixel'))",
+          "hints": [
+            "def greet(name): starts the function",
+            "Indent the return line",
+            "After the function, call it: print(greet('Pixel'))"
+          ],
+          "tests": [
+            {
+              "expectedOutput": "Hello, Pixel",
+              "mode": "rules",
+              "astRules": {
+                "requiredFunctions": ["greet"],
+                "requiredConstructs": [
+                  { "type": "parameter_count", "function": "greet", "min": 1, "max": 1 },
+                  { "type": "function_call", "name": "greet", "minCount": 1 }
+                ]
+              },
+              "runtimeRules": {
+                "outputContains": ["Hello", "Pixel"]
+              }
+            }
+          ]
+        },
+        {
+          "id": "lesson-5-step-2",
+          "title": "Add two numbers",
+          "description": "Define add(a, b) that returns a + b. Print add(7, 5).",
+          "initialCode": "# Define add(a, b) and print add(7, 5)\n",
+          "solution": "def add(a, b):\n    return a + b\n\nprint(add(7, 5))",
+          "hints": [
+            "def add(a, b): with two parameters",
+            "return a + b",
+            "Then print(add(7, 5))"
+          ],
+          "tests": [
+            {
+              "expectedOutput": "12",
+              "mode": "rules",
+              "astRules": {
+                "requiredFunctions": ["add"],
+                "requiredConstructs": [
+                  { "type": "parameter_count", "function": "add", "min": 2, "max": 2 },
+                  { "type": "function_call", "name": "add", "minCount": 1 }
+                ]
+              },
+              "runtimeRules": {
+                "outputContains": ["12"]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "prerequisites": ["lesson-4"],
+    "difficulty": "Beginner",
+    "estimatedTime": 15
+  },
+  {
+    "id": "lesson-6",
+    "title": "First Pygame draw",
+    "description": "Open a window, set a background, and draw a circle",
+    "order": 6,
+    "intro": "Time for graphics! Pygame is a library for games. We'll import it, set up a window, and draw a shape.",
+    "learningObjectives": [
+      "import pygame",
+      "Initialize a display surface",
+      "Use pygame.draw.circle"
+    ],
+    "goalDescription": "Open a Pygame window and draw a circle in the middle.",
+    "previewCode": "import pygame\npygame.init()\nscreen = pygame.display.set_mode((400, 300))\nscreen.fill((30, 30, 30))\npygame.draw.circle(screen, (255, 100, 200), (200, 150), 40)",
+    "content": {
+      "introduction": "Pygame's draw functions paint shapes onto a screen surface. We initialize the engine, create a screen, then draw.",
+      "steps": [
+        {
+          "id": "lesson-6-step-1",
+          "title": "Import and initialize",
+          "description": "Import pygame, call pygame.init(), and create a screen surface that's 400 by 300.",
+          "initialCode": "# Import pygame, init it, and create a 400x300 screen\n",
+          "solution": "import pygame\npygame.init()\nscreen = pygame.display.set_mode((400, 300))",
+          "hints": [
+            "import pygame at the top",
+            "pygame.init() turns on the engine",
+            "pygame.display.set_mode((width, height)) creates the window"
+          ],
+          "tests": [
+            {
+              "expectedOutput": "",
+              "mode": "rules",
+              "astRules": {
+                "requiredConstructs": [
+                  { "type": "imports_module", "name": "pygame", "minCount": 1 },
+                  { "type": "calls_method", "on": "pygame", "method": "init", "minCount": 1 },
+                  { "type": "calls_method", "on": "pygame.display", "method": "set_mode", "minCount": 1 }
+                ]
+              },
+              "timeoutMs": 4000
+            }
+          ]
+        },
+        {
+          "id": "lesson-6-step-2",
+          "title": "Draw a circle",
+          "description": "After setting up the screen, fill it with a dark color and draw a pink circle in the middle.",
+          "initialCode": "import pygame\npygame.init()\nscreen = pygame.display.set_mode((400, 300))\n# Fill the screen and draw a circle\n",
+          "solution": "import pygame\npygame.init()\nscreen = pygame.display.set_mode((400, 300))\nscreen.fill((30, 30, 30))\npygame.draw.circle(screen, (255, 100, 200), (200, 150), 40)",
+          "hints": [
+            "screen.fill((r, g, b)) paints the whole surface",
+            "pygame.draw.circle(surface, color, (x, y), radius)",
+            "(200, 150) is the middle of a 400x300 screen"
+          ],
+          "tests": [
+            {
+              "expectedOutput": "",
+              "mode": "rules",
+              "astRules": {
+                "requiredConstructs": [
+                  { "type": "imports_module", "name": "pygame", "minCount": 1 },
+                  { "type": "calls_method", "on": "screen", "method": "fill", "minCount": 1 },
+                  { "type": "calls_method", "on": "pygame.draw", "method": "circle", "minCount": 1 }
+                ]
+              },
+              "timeoutMs": 4000
+            }
+          ]
+        }
+      ]
+    },
+    "prerequisites": ["lesson-5"],
+    "difficulty": "Beginner",
+    "estimatedTime": 18
   }
 ]

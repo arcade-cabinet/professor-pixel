@@ -1,26 +1,36 @@
-export interface TestSpec {
-  expectedOutput: string;
-  input?: string;
-  mode?: 'rules' | 'output';
-  astRules?: any[];
-  runtimeRules?: any[];
+import type {
+  LessonAstRules,
+  LessonRuntimeRules,
+  LessonStep,
+  LessonTestSpec,
+} from '@lib/types/schema';
+
+export type TestSpec = LessonTestSpec;
+export type AstRules = LessonAstRules;
+export type RuntimeRules = LessonRuntimeRules;
+
+export interface RuleResult {
+  /** Stable identifier for the rule, e.g. "ast.has_function:greet" */
+  id: string;
+  passed: boolean;
+  /** Friendly explanation surfaced to the student. */
+  message: string;
 }
 
-export interface RuleBasedSpec {
-  astRules?: any[];
-  runtimeRules?: any[];
+export interface GradeBreakdown {
+  ast: RuleResult[];
+  runtime: RuleResult[];
 }
 
 export interface GradeResult {
   passed: boolean;
+  /** 0..1 — fraction of rules that passed across all tests in the step. */
+  score: number;
   feedback: string;
   expectedOutput?: string;
   actualOutput?: string;
   errors?: string[];
-  details?: {
-    astResult?: { passed: boolean; errors: string[] };
-    runtimeResult?: { passed: boolean; errors: string[] };
-  };
+  partial?: GradeBreakdown;
 }
 
 export interface TestResult {
@@ -31,10 +41,25 @@ export interface TestResult {
   input?: string;
 }
 
+export interface CodeRunnerOptions {
+  input?: string;
+  /** Per-test hard cap; the runner terminates the worker on overshoot. */
+  timeoutMs?: number;
+  /** Per-test stdout cap; excess is truncated. */
+  maxStdout?: number;
+}
+
+export interface CodeRunner {
+  runSnippet: (args: { code: string } & CodeRunnerOptions) => Promise<{
+    output: string;
+    error: string | null;
+  }>;
+}
+
 export interface GradingContext {
   code: string;
-  step: any;
+  step: LessonStep;
   input?: string;
-  runner: any;
-  pyodide: any;
+  runner: CodeRunner;
+  pyodide: PyodideInstance | null;
 }
