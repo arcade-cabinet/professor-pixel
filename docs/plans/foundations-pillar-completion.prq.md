@@ -45,6 +45,7 @@ pr_target: feat/foundations-pillar-completion
 ## Docs restructure (the new layout)
 
 **Before** (current — flat, no pillar boundaries):
+
 ```text
 docs/
 ├── ARCHITECTURE.md   ← system-wide grab bag
@@ -57,6 +58,7 @@ docs/
 ```
 
 **After** (pillar-aligned):
+
 ```text
 docs/
 ├── README.md                 (NEW) — index page mapping pillar → file
