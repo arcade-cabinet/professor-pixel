@@ -14,9 +14,9 @@ Non-negotiables for code, design, and accessibility. If a rule here conflicts wi
 - **`strict: true`** is mandatory. The repo's `tsconfig.json` already enables it; never weaken it per file.
 - **No `any`.** `@typescript-eslint/no-explicit-any` is `"warn"` today; treat it as `"error"`. New code adding `any` will be rejected. Use `unknown` + a type guard, or fix the type.
 - **No `as` casts** except (a) narrowing `unknown` after a runtime check, (b) the `as const` assertion. Anything else needs a comment explaining why TS can't infer it.
-- **`noEmit: true`** — type-checking is the build for `tsc`. The actual JS output comes from Vite (client) and esbuild (server).
-- **Module boundaries.** Use the `@/` (client/src) and `@shared/` aliases — never relative paths that reach across the boundary.
-- **Schema-first.** Cross-boundary data is defined as a Zod schema in `shared/`; the TypeScript type is `z.infer<typeof Schema>`. Don't hand-write a type and a validator that can drift.
+- **`noEmit: true`** — type-checking is the build for `tsc`. The actual JS output comes from Vite.
+- **Module boundaries.** Use the `@/` (`./app/*`), `@lib/` (`./src/*`), and `@assets/` (`./app/assets/*`) aliases — never relative paths that reach across a domain boundary.
+- **Schema-first.** Cross-domain data is defined as a Zod schema in `src/types/` (or the relevant domain folder); the TypeScript type is `z.infer<typeof Schema>`. Don't hand-write a type and a validator that can drift. Migration from plain TS interfaces is in flight (see [`docs/STATE.md`](docs/STATE.md)).
 
 ## ESLint / Prettier
 
@@ -24,7 +24,7 @@ Non-negotiables for code, design, and accessibility. If a rule here conflicts wi
 - **Prettier is the formatter.** Settings: `printWidth: 100`, single quotes, 2-space indent, semicolons, `trailingComma: 'es5'`, LF line endings. Don't argue with Prettier — fix the config or accept it.
 - **No unused variables.** Allowed: prefix with `_` (e.g., `_unused`). The rule respects this.
 - **Naming convention.** camelCase for variables and functions, PascalCase for types and components, SCREAMING_SNAKE_CASE only for true compile-time constants.
-- **No `console.*`** in shipped client or server code except `console.error` for genuinely unexpected paths. Use a logger if/when one is introduced.
+- **No `console.*`** in shipped code except `console.error` for genuinely unexpected paths. Use `@lib/monitoring/console-logger` when an audit trail is needed.
 
 ## React
 
@@ -32,7 +32,7 @@ Non-negotiables for code, design, and accessibility. If a rule here conflicts wi
 - **`react-hooks/exhaustive-deps`** is `error`-level — fix the dependency array, don't suppress the lint.
 - **Keys must be stable.** Don't use array index for keys when the list reorders.
 - **Components stay small.** If a file is >300 lines or a component does >1 thing, split it. The "reader can hold it in their head" test is the gate.
-- **Accessibility primitives via Radix / shadcn.** Don't reinvent menus, dialogs, popovers, tooltips, etc. — they're in `client/src/components/ui/`.
+- **Accessibility primitives via Radix / shadcn.** Don't reinvent menus, dialogs, popovers, tooltips, etc. — they're in `app/components/ui/`.
 
 ## Accessibility (`jsx-a11y` + Testing Library)
 
@@ -63,10 +63,9 @@ Non-negotiables for code, design, and accessibility. If a rule here conflicts wi
 
 ## Security
 
-- **Never execute user-authored Python on the server.** It runs in Pyodide, in the browser, full stop. The seam is the PyGame simulator.
-- **No secrets in source.** `.env` is gitignored. Production secrets come from the deployment platform's secret store (see [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md)).
-- **Validate every API input** with the Zod schema from `shared/`. Trust nothing from the network.
-- **Sessions over `passport-local`** with a real session store in production (`connect-pg-simple` against Neon). `memorystore` is dev-only.
+- **There is no server.** User-authored Python runs in Pyodide, in the browser, full stop. The seam is the PyGame simulator.
+- **No secrets in source.** `.env` is gitignored. The current build has no required secrets — the SPA is fully static.
+- **Validate every untrusted input** at the boundary with Zod (or the equivalent runtime guard). Trust nothing from network fetches, postMessage, or `localStorage` reads.
 - **No `dangerouslySetInnerHTML`** with user-derived content. If it's unavoidable, sanitize with a vetted library and document why in a comment.
 
 ## Git & PRs

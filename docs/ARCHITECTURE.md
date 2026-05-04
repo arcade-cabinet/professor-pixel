@@ -11,156 +11,156 @@ domain: technical
 
 ## One-paragraph summary
 
-A React 18 + TypeScript single-page app served by a small Express + TypeScript API. The client speaks REST/JSON to the server through TanStack Query; both sides share types and Zod schemas from `shared/`. **All Python user code runs in the browser** via Pyodide; a custom PyGame simulator intercepts draw/event calls and renders them onto an HTML5 canvas. The current data layer is an **in-memory** `MemStorage` behind an `IStorage` interface — no database is wired up despite the `db:push` script that's left over from earlier scaffolding. The app is deployed as a **static SPA to GitHub Pages**; in dev the Express server hosts Vite middleware, and in prod the Express bundle is unused on Pages and present only for self-hosting / Replit.
+A React 18 + TypeScript single-page app, built with Vite. **No backend.** All persistence is browser-side (localStorage / sessionStorage / cookies); all Python user code runs in the browser via Pyodide; a custom PyGame simulator intercepts draw/event calls and renders them onto an HTML5 canvas. The app deploys as a **static SPA to GitHub Pages**. Lesson and asset content is shipped as static JSON / generated catalog files in `public/`.
 
 ## High-level diagram
 
 ```
-┌─────────────────────────────────────── Browser ─────────────────────────────────────────┐
+┌─────────────────────────────────── Browser (only runtime) ───────────────────────────────┐
 │                                                                                          │
 │   React SPA (Vite build)                                                                 │
 │   ├─ wouter            ── client routing                                                 │
-│   ├─ TanStack Query    ── server state, caching                                          │
+│   ├─ TanStack Query    ── async/cache layer over local storage + static JSON             │
 │   ├─ shadcn/ui + Radix ── interactive primitives                                         │
 │   ├─ Tailwind CSS      ── theme via CSS vars                                             │
 │   ├─ Monaco Editor     ── Python authoring                                               │
-│   ├─ Pixel             ── mascot, conversational UI                                      │
+│   ├─ Pixel mascot      ── conversational UI                                              │
 │   ├─ Universal Wizard  ── guided component-based game build                              │
 │   └─ Pyodide + PyGame Simulator ── runs user Python on a <canvas>                        │
 │                                                                                          │
-│                  │                                                                       │
-│                  │ fetch /api/* (JSON)                                                   │
-│                  ▼                                                                       │
-└─────────────────────────────────────────────────────────────────────────────────────────┘
-                   │
-┌─────────────────────────────────────── Express server ──────────────────────────────────┐
-│   server/index.ts        ── app factory, request logger, error handler                  │
-│   server/routes.ts       ── REST routes for lessons, progress, projects, gallery        │
-│   server/storage.ts      ── IStorage interface + MemStorage (in-memory) impl            │
-│   server/vite.ts         ── dev: mounts Vite middleware; prod: serves built SPA         │
-│                                                                                          │
-│   No database layer is wired up today. The IStorage seam is ready for one.              │
-└─────────────────────────────────────────────────────────────────────────────────────────┘
+│   Persistence: localStorage / sessionStorage / cookies                                   │
+│   Static content: GET /assets/catalog.json, /api/static/lessons.json (served from public)│
+└──────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
-## Modules
+## Repository layout
 
-### Client — `client/src/`
+Capacitor-style flat layout: one `app/`, one `src/`, one `public/` at the repo root. No client/server split, no monorepo.
+
+### `app/` — React TSX
+
+`.tsx` files only. Aliased as `@/*`.
 
 | Path | Role |
 |------|------|
-| `main.tsx`, `App.tsx` | React entry; wires the QueryClient, Toaster, error boundaries, and `wouter` Switch routes |
-| `pages/` | `home`, `lesson`, `not-found`, plus dev/test pages (`AssetLibraryTest`, `PygamePreviewTest`, `PersistenceTest`) |
-| `components/` | Feature components (universal wizard, Pixel presence, code editor, asset browser, error boundary, …) |
-| `components/ui/` | shadcn/ui primitives (button, dialog, popover, …) — generated, hand-extended sparingly |
-| `hooks/` | Reusable React hooks |
-| `lib/` | Pure logic: PyGame simulator, code grading, asset library, persistence, error tracking, analytics |
-| `lib/python/` | Pyodide bootstrap and Python-side helpers |
-| `lib/pygame-components/` | Component definitions used by the wizard (paddle, sprite, platform, …) |
-| `lib/grading/` | Rule-based grader (output-mode + AST-rules mode) |
-| `lib/asset-library/` | Asset browsing and binding |
-| `types/` | Client-only TS types |
-| `index.css` | Theme tokens (`--background`, `--foreground`, …) |
+| `main.tsx`, `App.tsx` | React entry; QueryClient, Toaster, error boundaries, `wouter` routes. |
+| `pages/` | Top-level routes (`home`, `lesson`, `not-found`) plus `_dev/` (asset-library, persistence, pygame-preview). |
+| `components/editor/` | WYSIWYG game editor — canvas, palette, code panel, properties. |
+| `components/pixel/` | Pixel mascot — presence, menu, minimized state, minimize animation. |
+| `components/pygame/` | Pygame runtime UI — runner, live preview, interactive canvas, component selector. |
+| `components/wizard/` | Universal Wizard — universal, dialogue-engine, layout-manager, code-runner, asset-browser, with-preview. |
+| `components/ui/` | shadcn/ui primitives. |
+| `assets/pixel/` | Bundled mascot portraits — imported as `@assets/pixel/*.png`. |
 
-### Server — `server/`
+### `src/` — TypeScript logic
 
-| File | Role |
+`.ts` files only. Aliased as `@lib/*`. Decomposed by domain — no `lib/` junk drawer.
+
+| Path | Role |
 |------|------|
-| `index.ts` | Express app factory; JSON + urlencoded middleware; per-request `/api/*` logger; centralised error handler |
-| `routes.ts` | REST: `GET /api/lessons`, `GET /api/lessons/:id`, `GET/PATCH /api/progress`, project CRUD, gallery publish/unpublish |
-| `storage.ts` | `IStorage` interface + `MemStorage` Map-backed implementation (users, lessons, progress, projects) |
-| `vite.ts` | Dev: spins up Vite in middleware mode bound to the same HTTP server; prod: `serveStatic` from `dist/public` |
+| `assets/` | Asset registry. `catalog.ts` lazily fetches `/assets/catalog.json`; `manager.ts` indexes; `downloader.ts` fetches Pyodide-side assets; `curated-themes.ts` for theme bundles. |
+| `errors/` | `educational.ts` (Python-error → friendly explanation), `tracker.ts` (analytics), `global-handler.ts` (window error/unhandledrejection). |
+| `grading/` | Rule-based grader (output mode + AST-rules mode). |
+| `hooks/` | Reusable React hooks (debug, device-type, edge-swipe, editor-history, health-monitor, input-bridge, media-query, orientation, retry-query, toast). |
+| `monitoring/` | Console logger, health monitor, performance monitor. |
+| `net/` | TanStack Query client (`query-client.ts`), `data.ts`, `retry.ts`, `update-bridge.ts`. |
+| `python/` | Pyodide bootstrap (`runner.ts`) + Python error handler. |
+| `pygame/components/` | PyGame component library. Two parallel layers: canvas-rendering primitives (`types.ts` + ball/paddle/sprite/etc.) and gameplay systems (`system-types.ts` + combat/movement/world/ui-systems/). |
+| `pygame/runtime/` | Simulator, compiler, 3D support, test components. |
+| `pygame/templates/` | Game-type templates (platformer, pong, shooter, breakout, collecting). |
+| `storage/` | `local.ts`, `mode.ts`, `persistence.ts` (versioned wizard/session state with debounce + migration), `session-history.ts`, `client.ts` (the unified `ClientStorage`). |
+| `types/` | Cross-domain types — `schema.ts` (User/Lesson/Project/UserProgress) and `pyodide.d.ts` (ambient Pyodide globals). |
+| `utils/` | `cn.ts` (Tailwind merge). |
+| `wizard/` | Wizard types, building blocks, code generator, dialog, game templates, scene generator, constants. |
 
-### Shared — `shared/`
+Every directory exposes a barrel `index.ts`.
 
-| File | Role |
-|------|------|
-| `schema.ts` | TypeScript interfaces (`User`, `Lesson`, `UserProgress`, `Project`, `InsertProject`, …) — **plain TS today, no Zod schemas yet** |
-| `storage-client.ts` | Client-side helpers that wrap fetch calls against the API |
+### `public/` — Static assets
 
-> **Migration note.** `STANDARDS.md` requires Zod-first cross-boundary types. `shared/schema.ts` predates that rule — converting it to Zod schemas (with `z.infer` re-exports) is tracked in [`STATE.md`](STATE.md).
+Served as-is by Vite. `assets/catalog.json` is generated.
 
-### Workspace packages — `packages/`
+### `tests/`
 
-| Package | Purpose |
-|---------|---------|
-| `code-sandbox` | Reusable Python-in-browser execution helpers |
-| `shared-types` | TS types shared with future workspaces (kept minimal) |
-| `tutor-core` | Tutor/grader logic intended for reuse by other apps |
-
-These packages are **internal** — not published. They compile alongside the main app and exist to keep concern boundaries crisp.
-
-### `apps/mobile/`
-
-Reserved directory for a future mobile companion. **Currently empty**; ignore until populated.
-
-### `assets/` and `client/public/assets/`
-
-| Path | Used for |
+| Path | Runtime |
 |------|---------|
-| `assets/` (root) | Source-of-truth game-template artwork, fonts, sounds. Pixel mascot art lives here. Includes `generate_assets.py` and `generate_sounds.py`. |
-| `client/public/assets/` | Subset served to the browser at runtime, organised by category (`backgrounds`, `characters`, `enemies`, `items`, `tiles`, `vehicles`, `effects`, `audio`, `misc`). |
+| `setup/common.ts` | Global setup (jsdom, jest-dom matchers). |
+| `helpers/test-utils.ts` | RTL helpers and storage mocks. |
+| `unit/` | Pure-logic tests (Vitest, jsdom). |
+| `integration/` | Multi-module tests (Vitest, jsdom, longer timeout). |
+| `component/` | React component tests in real Chromium (Vitest browser via @vitest/browser + Playwright). |
+| `e2e/` | Playwright. |
+
+### `scripts/`
+
+| Path | Role |
+|------|------|
+| `build-asset-catalog.mjs` | Walks `public/assets/` and writes `public/assets/catalog.json`. Wired into `predev` and `prebuild`. |
+| `asset-generator/` | Build-side Python generators + raw PNG/sound source + theme catalogs. **Never bundled.** Source for the assets that get refined into `public/assets/`. |
+
+### Aliases
+
+- `@/*` → `./app/*` (TSX)
+- `@lib/*` → `./src/*` (TS logic)
+- `@assets/*` → `./app/assets/*` (bundled images imported into the bundle)
 
 ## Data flow
 
 ### Lesson view
 
 1. User visits `/lesson/:lessonId`.
-2. `LessonPage` issues `GET /api/lessons/:id` via TanStack Query.
-3. `MemStorage` returns the lesson.
-4. The Monaco editor renders `initialCode`; the PyGame simulator stands by.
-5. On **Run**, Python is sent to Pyodide (in-browser); PyGame draw calls are intercepted and painted on the canvas.
-6. On **Check**, the rule-based grader evaluates output and/or AST rules, returning structured feedback.
+2. `LessonPage` issues a query that resolves through `ClientStorage` (lessons are loaded from `/api/static/lessons.json` — a static file in `public/`).
+3. The Monaco editor renders `initialCode`; the PyGame simulator stands by.
+4. On **Run**, Python is sent to Pyodide; PyGame draw calls are intercepted and painted on the canvas.
+5. On **Check**, the rule-based grader evaluates output and/or AST rules and returns structured feedback.
 
 ### Wizard flow
 
-1. User starts at `/wizard` (or `/game-wizard` with `flowType="game-dev"`).
+1. User starts at `/wizard`.
 2. The Universal Wizard loads a JSON-driven flow keyed by game type (platformer, RPG, dungeon, …).
 3. Pixel walks the user through A/B choices; the wizard composes pre-built components (Title Screen → Gameplay → End Credits).
-4. Persistence (`localStorage` + project store) tracks step, choices, and assembled scenes.
+4. Persistence (`@lib/storage/persistence`) tracks active flow path, current node, session actions, and selected components in localStorage with versioned migration and debounced writes; session UI state lives in sessionStorage.
 5. Live preview compiles the assembly and runs it in the same Pyodide+canvas seam used by lessons.
 6. On export, the project is zipped (README + runnable PyGame source) and downloaded.
 
-### Auth
+### Asset catalog
 
-A `mock-user-id` is currently stamped into progress writes (`server/routes.ts`). Real `passport-local` sessions are scaffolded in `package.json` deps but not wired into the route layer yet.
+1. `scripts/build-asset-catalog.mjs` runs as `predev`/`prebuild`, walking `public/assets/` and emitting `public/assets/catalog.json` (sprites + sounds + backgrounds, with category and tag inference from file paths and names).
+2. `@lib/assets/catalog` lazily fetches the JSON on first access and caches the typed result.
+3. `@lib/assets/manager`'s singleton `assetManager` fires `ready()` on first construction; consumers needing strict ordering `await assetManager.ready()`.
 
 ## Build pipeline
 
 ```
-src ── tsc (npm run check) ── type errors gate everything else
-   ├─ client (Vite) ───────────────► dist/public/        (static SPA)
-   └─ server (esbuild bundle) ─────► dist/index.js       (Node ESM, externals preserved)
+src + app + public ── tsc (npm run check) ── type errors gate everything else
+                   └─ vite build ─────────► dist/   (static SPA + bundled assets)
 ```
 
-- **Dev:** `npm run dev` → `tsx server/index.ts` → Express mounts Vite middleware on the same port. HMR works through the same HTTP server.
-- **Prod:** `npm run build` → Vite builds the SPA, esbuild bundles the Express server. `npm start` runs the bundled server, which serves the static SPA from `dist/public/`.
-- **GitHub Pages deploy:** the Pages workflow builds `vite` only with a computed `--base="$BASE"`, copies `index.html` to `404.html` for SPA routing, and uploads `dist/public/`. **The Express server is not deployed to Pages.**
+- **Dev:** `npm run dev` → `predev` regenerates the catalog → Vite dev server on **port 5173**, HMR.
+- **Prod:** `npm run build` → `prebuild` regenerates the catalog → tsc → `vite build` → `dist/`.
+- **GitHub Pages:** the Pages workflow runs `vite build` with a computed `--base="$BASE"`, copies `index.html` to `404.html` for SPA routing, and uploads `dist/`.
 
 ## Deployment surfaces
 
 | Surface | What runs | How |
 |---------|-----------|-----|
-| GitHub Pages | Static SPA (`dist/public/`) | `.github/workflows/deploy.yml` on `push: main` |
-| Replit / self-host | Full stack (Express + SPA) | `npm run build && npm start` |
+| GitHub Pages | Static SPA (`dist/`) | `.github/workflows/cd.yml` on `push: main` |
+| Local preview | Static SPA (`dist/`) | `npm run preview` |
 
 See [`DEPLOYMENT.md`](DEPLOYMENT.md) for environment specifics.
 
 ## Boundaries and rules of thumb
 
-- **`client/` never imports from `server/`** and vice versa. Cross-cutting types live in `shared/`. The `@/`, `@shared/`, and `@assets/` aliases enforce this in IDE and at build time.
-- **Python never runs on the server.** Pyodide is the seam. The PyGame simulator is the only code that knows about both Python output and the canvas.
-- **Server state is owned by TanStack Query.** Components don't `fetch` directly. Mutations invalidate the relevant query keys.
-- **Storage is behind `IStorage`.** When a real DB is introduced, only `server/storage.ts` should change; routes shouldn't notice.
-- **Replit dev plugins are dev-only.** They're guarded by `process.env.NODE_ENV !== 'production'` checks and `REPL_ID` presence.
+- **`app/` holds TSX; `src/` holds TS.** No mixing. `app/` may import from `src/` (via `@lib/*`) but `src/` never imports from `app/`.
+- **Python never runs outside Pyodide.** The PyGame simulator is the only code that knows about both Python output and the canvas.
+- **Async UI state goes through TanStack Query.** Components don't `fetch` directly.
+- **Storage is behind `@lib/storage/persistence`.** Versioned, migrated, debounced. Components call `saveWizardState` / `loadWizardState` / `saveSessionState`.
+- **Replit dev plugins are dev-only.** Guarded by `NODE_ENV !== 'production'` and `REPL_ID` presence in `vite.config.ts`.
 
 ## Known debt (snapshot)
 
-- `shared/schema.ts` is plain TS — no Zod yet (target state per `STANDARDS.md`).
-- `MemStorage` resets on every server restart; persistence is browser-side only via `localStorage` and the export flow.
-- Auth uses a `mock-user-id`; passport setup is dependency-only.
-- Three test runners coexist (Vitest + Playwright + Selenium); Selenium is frozen and should be retired once Playwright coverage is equivalent. See [`TESTING.md`](TESTING.md).
-- `db:push` script and `connect-pg-simple` dep are leftovers from a database direction that wasn't taken; either wire it up or remove. Tracked in [`STATE.md`](STATE.md).
+- `src/types/schema.ts` is plain TS — no Zod yet. Migration tracked in [`STATE.md`](STATE.md).
+- The two parallel pygame-component layers (`types.ts` canvas primitives vs. `system-types.ts` gameplay systems) need to be unified or have their split documented in `STATE.md`.
+- React 18 + Vite 5 will be bumped to React 19 + Vite 8 + Vitest 4 in a follow-up PR.
 
 ## See also
 
@@ -168,4 +168,3 @@ See [`DEPLOYMENT.md`](DEPLOYMENT.md) for environment specifics.
 - [`TESTING.md`](TESTING.md) — test strategy, test ID conventions, runners
 - [`DEPLOYMENT.md`](DEPLOYMENT.md) — environments, secrets, deploy steps
 - [`STATE.md`](STATE.md) — what's done, what's next
-- [`../STANDARDS.md`](../STANDARDS.md) — code, design, a11y non-negotiables

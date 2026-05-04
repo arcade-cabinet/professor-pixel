@@ -11,34 +11,30 @@ domain: context
 
 ## Active
 
-### Documentation overhaul (this branch: `docs/standards-overhaul`)
+### Capacitor-style layout + browser-only deploy (this branch: `feat/foundations-and-asset-library`)
 
-Bringing the repo up to the standard-repo profile. In progress on the open PR.
+Strip the Express/Drizzle/passport scaffolding, flatten the tree to a single `app/` + `src/` + `public/` at the repo root, replace the 3137-line static asset registry with a build-time catalog, and reorganise tests into Vitest projects + Playwright e2e.
 
-- [x] `CLAUDE.md` — profile-driven (ts-library + python-lib + mobile-android + nas-assets + standard-repo)
-- [x] `README.md` — quick start, stack, doc index
-- [x] `AGENTS.md` — operating protocols, workflow
-- [x] `STANDARDS.md` — TS/lint/a11y/security non-negotiables
-- [x] `CHANGELOG.md` — Keep a Changelog format, themed v0.1.0 history
-- [x] `docs/ARCHITECTURE.md`
-- [x] `docs/DESIGN.md`
-- [x] `docs/TESTING.md` (supersedes `TESTING_GUIDE.md`)
-- [x] `docs/DEPLOYMENT.md`
-- [x] `docs/STATE.md` (this file)
-- [x] `docs/playtests/` — `playtest-*.md` moved, frontmatter added, index README written
-- [x] `.github/dependabot.yml` — npm + actions, weekly, minor/patch grouped
-- [x] `release-please-config.json` + manifest
-- [x] `.github/workflows/release.yml` — release-please + signed build artefact
-- [x] Audit `ci.yml` / rename `deploy.yml` → `cd.yml`, bump `actions/checkout@v6`, add concurrency
-- [x] Remove `replit.md`, `TESTING_GUIDE.md` (content migrated)
+- [x] R1 — Delete `apps/` + `packages/` (zero-usage workspaces).
+- [x] R2 — Delete `server/`, `shared/` (split into `src/`), Selenium tests, and server-runtime deps.
+- [x] R3 — Merge three `public/` directories into one.
+- [x] R4 — Move `client/index.html` to repo root; update `vite.config.ts`.
+- [x] R5 — Split `client/src/` into `src/` (`.ts`) + `app/` (`.tsx`) with proper domain folders.
+- [x] R6 — Bulk-rewrite imports via perl across `app/`, `src/`, `tests/`.
+- [x] R7 — Move root `assets/` into `app/assets/pixel/` (bundled portraits) + `scripts/asset-generator/` (build-side generators).
+- [x] R8 — Replace `_kenney-*.ts` / `_curated-*.ts` with `scripts/build-asset-catalog.mjs` + `@lib/assets/catalog`.
+- [x] R9 — Reorganise tests into `unit` / `integration` / `component` (Vitest browser) / `e2e` (Playwright); declare Vitest projects.
+- [x] R10 — Close out remaining tsc errors (168 → 0).
+- [x] R11 — Update docs to reflect new layout (this commit).
 
 ## Done (recent milestones)
 
 | Milestone | When | Notes |
 |-----------|------|-------|
-| Initial development complete (v1.0.0 baseline) | 2025-09 | See [`CHANGELOG.md`](../CHANGELOG.md) for the themed summary |
+| Documentation overhaul to standard-repo profile | 2026-05 | See [`CHANGELOG.md`](../CHANGELOG.md) |
+| Initial development complete (v1.0.0 baseline) | 2025-09 | Themed v0.1.0 history in `CHANGELOG.md` |
 | Multi-resolution Playwright suite | 2025-09 | 7 viewports, runtime-error detection wired in |
-| Universal wizard with JSON-driven flows | 2025-09 | Replaced Yarn dialogue files; supports 7 game types |
+| Universal wizard with JSON-driven flows | 2025-09 | 7 game types |
 | WYSIWYG editor with drag-and-drop | 2025-09 | Component property inspector, code view, live preview |
 | Project export (zip + README) | 2025-09 | Runnable PyGame source on disk |
 | GitHub Pages deploy workflow | 2025-09 | Static SPA deploys on `push: main` |
@@ -47,26 +43,26 @@ Bringing the repo up to the standard-repo profile. In progress on the open PR.
 
 Sized roughly so any one item is a single PR.
 
-### Standards alignment (follow-on from this PR)
+### Toolchain bumps (next PR after this one lands)
 
-- **Add `npm test`/`test:e2e`/`test:backend` scripts.** Today everything goes through `npx`.
-- **Wire Vitest + Playwright into `ci.yml`.** The build step already runs; tests don't.
-- **Bump `actions/checkout@v4` → `@v6`** across workflows once release.yml lands.
-- **Convert `shared/schema.ts` to Zod.** TypeScript interfaces today; the standard is Zod-first with `z.infer` re-exports.
-- **Treat `@typescript-eslint/no-explicit-any` as `error`** (currently `warn`). Fix existing `any`s in the same PR.
+- **`pnpm` 10.33** — replace npm.
+- **TypeScript 6.0.3** — major version bump.
+- **Biome 2.4.14** — replace ESLint + Prettier.
+- **Vite 8 + Vitest 4 + @vitest/browser 4** — single coordinated bump.
+- **React 19** — concurrent mode and new error boundaries.
 
-### Backend
+### Type / schema cleanup
 
-- **Decide the database story.** `db:push` script + `connect-pg-simple` dep are leftovers without a chosen DB. Either wire Drizzle + Neon (and document migrations) or remove the script and dep.
-- **Wire real auth.** `passport-local` and `express-session` are in deps; the route layer still stamps a `mock-user-id`. Connect them and remove the mock.
-- **Health endpoint.** `/healthz` returning 200 + version. Used by future CD checks and uptime monitors.
+- **Convert `src/types/schema.ts` to Zod.** TypeScript interfaces today; the standard is Zod-first with `z.infer` re-exports.
+- **Unify the parallel pygame-component layers.** `src/pygame/components/types.ts` (canvas-rendering primitives) and `src/pygame/components/system-types.ts` (gameplay systems with variants/category) share names but have different shapes. Either merge or document the seam.
+- **Treat `@typescript-eslint/no-explicit-any` as `error`** (currently `warn`). Fix existing `any`s in the same PR. Likely subsumed by the Biome migration.
+- **Re-enable Vitest coverage thresholds** (90/85/90/90 lines/branches/functions/statements).
 
-### Frontend / UX
+### Test logic catch-up
 
-- **Retire the Selenium suite** once Playwright covers all its remaining cases.
+- **Make integration + component tests blocking in CI.** They're advisory today because pre-existing tests need to catch up with the R5/R6 module renames and the SessionActions / persistence shape changes.
 - **Visual regression baseline** (Playwright screenshots, per-project).
-- **`@axe-playwright` accessibility checks** in the e2e suite.
-- **Mobile companion app** under `apps/mobile/`. Empty today; deferred until web platform stabilises.
+- **`@axe-core/playwright` accessibility checks** in the e2e suite.
 
 ### Pyodide / PyGame
 

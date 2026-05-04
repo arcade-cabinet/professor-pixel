@@ -33,7 +33,7 @@ Pixel is a cyberpunk-styled guide who is **always present** but **never in the w
 
 ### Behaviour
 
-- Pixel is a `PixelPresence` overlay (`client/src/components/pixel-presence.tsx`) — minimisable, draggable, never modal. The user can shrink her without losing her.
+- Pixel is a `PixelPresence` overlay (`app/components/pixel/presence.tsx`) — minimisable, draggable, never modal. The user can shrink her without losing her.
 - Pixel reacts to events: idle wave, success cheer, error sympathy, hint nudge. Reactions are short and respect `prefers-reduced-motion`.
 - Pixel narrates the wizard flow but **doesn't narrate the editor.** When the user is heads-down coding, she gets out of the way.
 

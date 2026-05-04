@@ -23,24 +23,26 @@ Operating protocols for human and AI contributors. Tooling-specific entry points
 
 ## Architecture in one paragraph
 
-A React SPA (Vite, wouter, shadcn/ui, TanStack Query) talks to an Express API (TypeScript, passport-local sessions, Drizzle ORM over Neon Postgres). Shared types and Zod schemas live in `shared/`. Python user code runs **in the browser** via Pyodide; a custom PyGame simulator intercepts draw calls and renders to a `<canvas>`. The Replit dev plugins (`@replit/vite-plugin-*`) are dev-only ergonomics. Three test runners coexist: Vitest (unit), Playwright (e2e — the source of truth), Selenium (legacy, frozen). See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
+A React SPA (Vite 5, wouter, shadcn/ui, TanStack Query) — **no backend**. All persistence is browser-side (localStorage / sessionStorage / cookies). Python user code runs in the browser via Pyodide; a custom PyGame simulator intercepts draw calls and renders to a `<canvas>`. The Replit dev plugins (`@replit/vite-plugin-*`) are dev-only ergonomics. Vitest 3 owns unit / integration / component tests (the latter via `@vitest/browser` + Playwright); Playwright owns e2e. See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
 ## Working areas
 
+Capacitor-style flat layout: one `app/`, one `src/`, one `public/` at the repo root.
+
 | Path | Purpose | Owner concerns |
 |------|---------|----------------|
-| `client/` | React SPA: pages, wizard, editor, mascot | UX, accessibility, perf |
-| `server/` | Express API, sessions, dev middleware | API contracts, auth |
-| `shared/` | Cross-cutting types and Zod schemas | Single source of truth — change here first |
-| `apps/mobile/` | Mobile companion | Layout, native bridges |
-| `packages/` | Internal workspace packages | Boundary discipline |
-| `assets/` | Game-template assets the wizard composes | Licensing, naming |
-| `tests/` | `tests/e2e/` (Playwright), `tests/integration/`, `tests/unit/`, `tests/selenium/` (legacy) | Coverage, flakiness budget |
+| `app/` | React TSX (`.tsx` only): pages, wizard, editor, mascot, ui primitives | UX, accessibility, perf |
+| `src/` | Non-TSX TS logic: assets, errors, grading, hooks, monitoring, net, python, pygame, storage, types, utils, wizard | Decomposition discipline |
+| `public/` | Static assets served as-is. `assets/catalog.json` is generated. | Asset provenance, naming |
+| `tests/` | `setup/`, `helpers/`, `unit/`, `integration/`, `component/`, `e2e/` | Layer choice, flakiness budget |
+| `scripts/` | `build-asset-catalog.mjs` + `asset-generator/` (Python source generators, never bundled) | Build tooling |
 | `docs/` | All project documentation | Currency — update with the change |
+
+Aliases: `@/*` → `./app/*`, `@lib/*` → `./src/*`, `@assets/*` → `./app/assets/*`.
 
 ## Patterns
 
-**API contracts.** Define the Zod schema in `shared/`, derive both the TypeScript type and runtime validator from it. Validate at the server boundary; trust the type internally. No untyped JSON crossing the wire.
+**Cross-domain types.** Define types in `src/types/schema.ts` (or the relevant domain folder under `src/`). Convert to Zod when migrating — `z.infer<typeof Schema>` is the target shape. No untyped data crossing module boundaries.
 
 **State.** Server state goes through TanStack Query — no manual fetch in components. Local UI state stays in React. Don't introduce Redux/MobX/Zustand without a written reason and a migration plan.
 
@@ -50,7 +52,7 @@ A React SPA (Vite, wouter, shadcn/ui, TanStack Query) talks to an Express API (T
 
 **Routing.** `wouter` only. Don't add another router.
 
-**Python execution.** All user-authored Python runs through Pyodide. Never `eval` or send Python to the server. The PyGame simulator is the seam between user code and the canvas.
+**Python execution.** All user-authored Python runs through Pyodide. There is no server, so it physically cannot run anywhere else — but never `eval` it on the host either. The PyGame simulator is the seam between user code and the canvas.
 
 **Testing seams.** Every interactive element gets a `data-testid` of the form `{action}-{target}` (e.g. `button-select-jump`, `input-jump-force`). Dynamic elements use `{type}-{description}-{id}`. E2E tests rely on these — don't remove them.
 
