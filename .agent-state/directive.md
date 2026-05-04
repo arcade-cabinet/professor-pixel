@@ -69,8 +69,8 @@ Source: docs/plans/stabilization-pillar.prq.md (sha256: bb22562bdb395b8f1a31d47a
 Started: 2026-05-04T20:02:27Z
 Branch: feat/stabilization-pillar
 
-- [ ] S1 Restore page banner — top-level `<header>` rendered on all viewports; `responsive-wizard.test.tsx` passes
-- [ ] S2 Flip component CI to blocking — drop `continue-on-error` from the component step in `.github/workflows/ci.yml`; PR CI green
+- [x] S1 Restore page banner — top-level `<header>` rendered on all viewports; `responsive-wizard.test.tsx` passes
+- [x] S2 Flip component CI to blocking — drop `continue-on-error` from the component step in `.github/workflows/ci.yml`; PR CI green
 - [ ] S3 Unify or document the pygame-component type seam — `src/pygame/components/types.ts` vs `system-types.ts`; `npm run check` clean
 - [ ] S4 Grader e2e via worker — new `tests/component/grader-e2e.test.tsx` runs each lesson's `solution` through the worker, asserts `score === 1.0` for every step
 - [ ] SD.1 Update `docs/STATE.md` — move stabilized items from Next → Done; refresh; queue `no-explicit-any` cleanup as a separate PRQ at 209-instance impact
