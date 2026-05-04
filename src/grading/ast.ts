@@ -53,7 +53,6 @@ try:
     tree = ast.parse(code)
 except SyntaxError as exc:
     add("ast.parse", False, f"Syntax error on line {exc.lineno}: {exc.msg}")
-    json.dumps(results)
 else:
     nodes = list(ast.walk(tree))
 
@@ -263,5 +262,5 @@ else:
             f"Did not use {kind}{':'+name if name else ''}" if ok else
             f"Must NOT use {kind}{':'+name if name else ''}")
 
-    json.dumps(results)
+json.dumps(results)
 `;
