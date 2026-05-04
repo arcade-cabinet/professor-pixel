@@ -2,4 +2,5 @@
 // Edit by hand only to add `export type { ... }` aliases or rename collisions.
 
 export * from './error-handler';
+export * from './pyodide-singleton';
 export * from './runner';

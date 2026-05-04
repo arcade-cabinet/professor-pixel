@@ -26,7 +26,7 @@ Branch: feat/foundations-pillar-completion
 
 ### Pillar 2 — Pyodide runtime
 
-- [ ] T2.1 Singleton Pyodide bootstrap — `src/python/pyodide-singleton.ts` exports `getPyodide()`; runner.tsx + pygame-preview.tsx call it; no script-tag injection
+- [x] T2.1 Singleton Pyodide bootstrap — `src/python/pyodide-singleton.ts` exports `getPyodide()`; runner.tsx + pygame-preview.tsx call it; no script-tag injection
 - [ ] T2.2 Wire Pyodide into lesson page — replace `null` stubs in `app/pages/lesson.tsx`; Run/Check live; component test passes
 - [ ] T2.3 Vendor Pyodide locally + version bump — `pyodide` dep, postinstall to `public/pyodide/`, no CDN refs, boots offline
 - [ ] T2.4 Move Pyodide into Web Worker — `src/python/worker.ts` + Comlink; `while True:` rejects within timeout; UI stays responsive
