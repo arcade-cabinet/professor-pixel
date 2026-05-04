@@ -17,19 +17,42 @@ const ConstructTypeSchema = z.enum([
   'loop',
   'string_literal',
   'f_string',
+  'imports_module',
+  'defines_class',
+  'calls_method',
+  'parameter_count',
+  'nesting_depth',
 ]);
 
-const RequiredConstructSchema = z.object({
-  type: ConstructTypeSchema,
-  name: z.string().optional(),
-  minCount: z.number().int().nonnegative().optional(),
-  maxCount: z.number().int().nonnegative().optional(),
-});
+const RequiredConstructSchema = z
+  .object({
+    type: ConstructTypeSchema,
+    name: z.string().optional(),
+    /** For imports_module: optional sub-attribute, e.g. {module: 'pygame', from: 'event'} */
+    from: z.string().optional(),
+    /** For defines_class: required base class name (e.g. {baseClass: 'Sprite'}) */
+    baseClass: z.string().optional(),
+    /** For defines_class: minimum number of methods on the class */
+    minMethods: z.number().int().nonnegative().optional(),
+    /** For calls_method: receiver name (e.g. {on: 'screen', method: 'fill'}) */
+    on: z.string().optional(),
+    /** For calls_method: method name */
+    method: z.string().optional(),
+    /** For parameter_count: function name + min/max parameter count */
+    function: z.string().optional(),
+    min: z.number().int().nonnegative().optional(),
+    max: z.number().int().nonnegative().optional(),
+    minCount: z.number().int().nonnegative().optional(),
+    maxCount: z.number().int().nonnegative().optional(),
+  })
+  .strict();
 
-const ForbiddenConstructSchema = z.object({
-  type: ConstructTypeSchema,
-  name: z.string().optional(),
-});
+const ForbiddenConstructSchema = z
+  .object({
+    type: ConstructTypeSchema,
+    name: z.string().optional(),
+  })
+  .strict();
 
 const AstRulesSchema = z
   .object({

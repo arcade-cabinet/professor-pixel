@@ -1,167 +1,124 @@
 import { validateAst } from './ast';
 import { validateRuntime } from './runtime';
-import type { GradeResult, GradingContext, TestSpec } from './types';
+import type { GradeResult, GradingContext, RuleResult, TestSpec } from './types';
 
-export async function gradeCode(context: GradingContext, preExecutionResult?: { output: string; error: string }): Promise<GradeResult> {
+/**
+ * Grade a step against its tests. Returns a single GradeResult with
+ * - passed: true iff every rule across every test passed
+ * - score: passed_rules / total_rules across all tests (0..1)
+ * - partial: per-pillar (ast, runtime) RuleResult[] for rendering per-rule UI
+ *
+ * If the code crashed at execution, every rule short-circuits to a single
+ * "syntax/runtime error" failure with the traceback in feedback.
+ */
+export async function gradeCode(
+  context: GradingContext,
+  preExecutionResult?: { output: string; error: string | null },
+): Promise<GradeResult> {
   const { code, step, input, runner, pyodide } = context;
 
-  console.log("🎯 Starting grading for step:", step?.id);
+  let actualOutput: string;
+  let executionError: string | null = null;
 
-  try {
-    let actualOutput: string;
-    let executionError: string | null = null;
+  if (preExecutionResult) {
+    actualOutput = preExecutionResult.output;
+    executionError = preExecutionResult.error;
+  } else {
+    const result = await runner.runSnippet({ code, input });
+    actualOutput = result.output;
+    executionError = result.error;
+  }
 
-    // Use pre-execution result if provided to avoid double execution
-    if (preExecutionResult) {
-      if (preExecutionResult.error) {
-        return {
-          passed: false,
-          feedback: `🐛 Your code has an error. Please fix it before checking.\n\nError: ${preExecutionResult.error}`,
-          actualOutput: preExecutionResult.error,
-          errors: [preExecutionResult.error]
-        };
-      }
-      actualOutput = preExecutionResult.output;
-    } else {
-      // Execute code to get output (fallback if no pre-execution result)
-      const executionResult = await runner.runSnippet({ 
-        code, 
-        input 
-      });
-
-      if (executionResult.error) {
-        return {
-          passed: false,
-          feedback: `🐛 Your code has an error. Please fix it before checking.\n\nError: ${executionResult.error}`,
-          actualOutput: executionResult.error,
-          errors: [executionResult.error]
-        };
-      }
-
-      actualOutput = executionResult.output;
-    }
-
-    // Check if step has tests
-    if (!step.tests || step.tests.length === 0) {
-      return {
-        passed: true,
-        feedback: "✅ Code executed successfully!",
-        actualOutput
-      };
-    }
-
-    // Grade each test
-    const testResults = [];
-    let allTestsPassed = true;
-
-    for (let i = 0; i < step.tests.length; i++) {
-      const test: TestSpec = step.tests[i];
-      
-      // Check if this test uses rule-based grading
-      if (test.mode === 'rules' && (test.astRules || test.runtimeRules)) {
-        const gradeResult = await gradeWithRules(code, test, actualOutput, pyodide, input);
-        testResults.push({
-          testIndex: i,
-          passed: gradeResult.passed,
-          expectedOutput: test.expectedOutput,
-          actualOutput,
-          input: test.input
-        });
-        
-        if (!gradeResult.passed) {
-          allTestsPassed = false;
-        }
-      } else {
-        // Use traditional exact output matching
-        const expectedNormalized = test.expectedOutput.trim().replace(/\s+/g, ' ');
-        const actualNormalized = actualOutput.trim().replace(/\s+/g, ' ');
-        const testPassed = actualNormalized === expectedNormalized;
-        
-        testResults.push({
-          testIndex: i,
-          passed: testPassed,
-          expectedOutput: test.expectedOutput,
-          actualOutput,
-          input: test.input
-        });
-        
-        if (!testPassed) {
-          allTestsPassed = false;
-        }
-      }
-    }
-
-    // Generate feedback based on test results
-    let feedback = "";
-    if (allTestsPassed) {
-      feedback = "✅ Perfect! Your code passes all tests.";
-    } else {
-      const failedTests = testResults.filter(t => !t.passed);
-      if (failedTests.length === 1) {
-        feedback = `❌ Test failed. Expected: "${failedTests[0].expectedOutput}" but got: "${failedTests[0].actualOutput}"`;
-      } else {
-        feedback = `❌ ${failedTests.length} out of ${testResults.length} tests failed. Check the expected output carefully.`;
-      }
-    }
-
-    return {
-      passed: allTestsPassed,
-      feedback,
-      expectedOutput: step.tests[0]?.expectedOutput || "",
-      actualOutput
-    };
-
-  } catch (error) {
-    console.error("🚨 Grading error:", error);
+  if (executionError) {
     return {
       passed: false,
-      feedback: `Grading failed: ${error instanceof Error ? error.message : String(error)}`,
-      actualOutput: "",
-      errors: [error instanceof Error ? error.message : String(error)]
+      score: 0,
+      feedback: `Your code has an error. Fix it before checking.\n\n${executionError}`,
+      actualOutput: executionError,
+      errors: [executionError],
+      partial: { ast: [], runtime: [] },
     };
   }
-}
 
-async function gradeWithRules(
-  code: string, 
-  test: TestSpec, 
-  actualOutput: string, 
-  pyodide: any, 
-  input?: string
-): Promise<{ passed: boolean; feedback: string }> {
-  try {
-    console.log("🔍 Grading with rules:", { astRules: test.astRules, runtimeRules: test.runtimeRules });
-
-    // Validate AST if rules provided
-    let astResult = { passed: true, errors: [] as string[] };
-    if (test.astRules && test.astRules.length > 0) {
-      astResult = await validateAst(code, test.astRules, pyodide);
-    }
-
-    // Validate runtime if rules provided
-    let runtimeResult = { passed: true, errors: [] as string[] };
-    if (test.runtimeRules && test.runtimeRules.length > 0) {
-      runtimeResult = await validateRuntime(actualOutput, test.runtimeRules, input);
-    }
-
-    const overallPassed = astResult.passed && runtimeResult.passed;
-    const allErrors = [...astResult.errors, ...runtimeResult.errors];
-
-    let feedback = "";
-    if (overallPassed) {
-      feedback = "✅ Perfect! Your code meets all requirements.";
-    } else {
-      feedback = `❌ Your code needs some improvements:\n${allErrors.map(error => `• ${error}`).join('\n')}`;
-    }
-
-    console.log("🎯 Rule-based grading result:", { passed: overallPassed, feedback });
-    return { passed: overallPassed, feedback };
-
-  } catch (error) {
-    console.error("🚨 Rule-based grading error:", error);
+  const tests = step.tests ?? [];
+  if (tests.length === 0) {
     return {
-      passed: false,
-      feedback: `Rule validation failed: ${error instanceof Error ? error.message : String(error)}`
+      passed: true,
+      score: 1,
+      feedback: 'Code executed successfully.',
+      actualOutput,
+      partial: { ast: [], runtime: [] },
     };
   }
+
+  const astAll: RuleResult[] = [];
+  const runtimeAll: RuleResult[] = [];
+  let exactPasses = 0;
+  let exactTotal = 0;
+
+  for (const test of tests) {
+    if (test.mode === 'rules' && (test.astRules || test.runtimeRules)) {
+      const astResults = await validateAst(code, test.astRules, pyodide);
+      const runtimeResults = await validateRuntime(
+        actualOutput,
+        test.runtimeRules,
+        input,
+        pyodide,
+      );
+      astAll.push(...astResults);
+      runtimeAll.push(...runtimeResults);
+    } else {
+      // Legacy "match the expected output literally" path. Counts as a single
+      // rule for scoring purposes.
+      exactTotal += 1;
+      if (matchesExpectedOutput(actualOutput, test)) exactPasses += 1;
+    }
+  }
+
+  const allRules = [...astAll, ...runtimeAll];
+  const totalRules = allRules.length + exactTotal;
+  const passedRules = allRules.filter((r) => r.passed).length + exactPasses;
+  const passed = totalRules > 0 && passedRules === totalRules;
+  const score = totalRules === 0 ? 1 : passedRules / totalRules;
+
+  return {
+    passed,
+    score,
+    feedback: buildFeedback(passed, score, allRules, exactPasses, exactTotal, tests),
+    expectedOutput: tests[0]?.expectedOutput ?? '',
+    actualOutput,
+    partial: { ast: astAll, runtime: runtimeAll },
+  };
 }
+
+function matchesExpectedOutput(actual: string, test: TestSpec): boolean {
+  const norm = (s: string) => s.trim().replace(/\s+/g, ' ');
+  return norm(actual) === norm(test.expectedOutput);
+}
+
+function buildFeedback(
+  passed: boolean,
+  score: number,
+  rules: RuleResult[],
+  exactPasses: number,
+  exactTotal: number,
+  tests: TestSpec[],
+): string {
+  if (passed) return 'Perfect — your code passes every check.';
+
+  const failed = rules.filter((r) => !r.passed);
+  const exactFailed = exactTotal - exactPasses;
+  const lines: string[] = [];
+  const pct = Math.round(score * 100);
+  lines.push(`You're ${pct}% there. Address the items below:`);
+  for (const rule of failed.slice(0, 5)) {
+    lines.push(`• ${rule.message}`);
+  }
+  if (exactFailed > 0) {
+    const first = tests.find((t) => t.mode !== 'rules');
+    if (first) lines.push(`• Output didn't match expected: "${first.expectedOutput}"`);
+  }
+  return lines.join('\n');
+}
+
+export type { GradeResult, GradingContext, RuleResult, TestSpec } from './types';

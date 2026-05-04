@@ -1,17 +1,9 @@
-// Export all grading functionality
 export * from './types';
 export * from './ast';
 export * from './runtime';
 export * from './engine';
 
-// Legacy exports for backwards compatibility
-export interface TestResult {
-  testIndex: number;
-  passed: boolean;
-  expectedOutput: string;
-  actualOutput: string;
-  input?: string;
-}
+import type { TestResult } from './types';
 
 export interface GradingResult {
   passed: boolean;
@@ -20,25 +12,26 @@ export interface GradingResult {
   actualOutput?: string;
 }
 
+/** Legacy aggregator for callers that pre-compute TestResult[] without the engine. */
 export function gradeTests(testResults: TestResult[]): GradingResult {
-  const allTestsPassed = testResults.every(t => t.passed);
-  let feedback = "";
-
-  if (allTestsPassed) {
-    feedback = "✅ Perfect! Your code passes all tests.";
-  } else {
-    const failedTests = testResults.filter(t => !t.passed);
-    if (failedTests.length === 1) {
-      feedback = `❌ Test failed. Expected: "${failedTests[0].expectedOutput}" but got: "${failedTests[0].actualOutput}"`;
-    } else {
-      feedback = `❌ ${failedTests.length} out of ${testResults.length} tests failed. Check the expected output carefully.`;
-    }
+  const allPassed = testResults.every((t) => t.passed);
+  if (allPassed) {
+    return {
+      passed: true,
+      feedback: 'Perfect — your code passes every test.',
+      expectedOutput: testResults[0]?.expectedOutput ?? '',
+      actualOutput: testResults[0]?.actualOutput ?? '',
+    };
   }
-
+  const failed = testResults.filter((t) => !t.passed);
+  const feedback =
+    failed.length === 1
+      ? `Test failed. Expected: "${failed[0].expectedOutput}" but got: "${failed[0].actualOutput}"`
+      : `${failed.length} of ${testResults.length} tests failed.`;
   return {
-    passed: allTestsPassed,
+    passed: false,
     feedback,
-    expectedOutput: testResults[0]?.expectedOutput || "",
-    actualOutput: testResults[0]?.actualOutput || ""
+    expectedOutput: testResults[0]?.expectedOutput ?? '',
+    actualOutput: testResults[0]?.actualOutput ?? '',
   };
 }

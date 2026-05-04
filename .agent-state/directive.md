@@ -40,8 +40,8 @@ Branch: feat/foundations-pillar-completion
 
 ### Pillar 5 — AST-based feedback
 
-- [ ] T5.1 Expand AST rule vocabulary — `imports_module`, `defines_class`, `calls_method`, `parameter_count`, `nesting_depth`, `not_uses`
-- [ ] T5.2 Partial credit + structural diff — `GradeResult.score`, `partial`, `diffSolution`; UI renders score per rule
+- [x] T5.1 Expand AST rule vocabulary — `imports_module`, `defines_class`, `calls_method`, `parameter_count`, `nesting_depth`, `not_uses`
+- [x] T5.2 Partial credit + structural diff — `GradeResult.score`, `partial`, `diffSolution`; UI renders score per rule
 - [ ] T5.3 Resource caps in runtime tests — `timeoutMs`, `maxStdout`; runaway loop fails fast, worker recycled
 
 ### Pillar 0 — Docs restructure (frontmatter-headed pillars)
