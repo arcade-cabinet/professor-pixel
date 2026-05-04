@@ -1,7 +1,7 @@
 import { useParams, useLocation } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useState, useEffect, useMemo } from "react";
-import { queryClient, apiRequest } from "@lib/net/query-client";
+import { queryClient } from "@lib/net/query-client";
 import { motion, AnimatePresence } from "framer-motion";
 import Header from "@/components/header";
 import CodeEditor from "@/components/editor/code-editor";
@@ -11,7 +11,10 @@ import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Sparkles, ChevronRight, ChevronLeft, Trophy, Heart, Code2, Zap, BookOpen, Rocket } from "lucide-react";
 import type { Lesson, UserProgress } from "@lib/types/schema";
-import { createPythonRunner, type PythonRunner, type ExecutionResult, type ExecutionContext } from "@lib/python/runner";
+import { createPythonRunner, type ExecutionResult, type ExecutionContext } from "@lib/python/runner";
+import { getPyodide } from "@lib/python/pyodide-singleton";
+import { loadLessons } from "@lib/lessons";
+import { getClientStorage } from "@lib/storage/mode";
 import { gradeCode, type GradingContext } from "@lib/grading";
 
 // Import Pixel images
@@ -87,40 +90,63 @@ export default function LessonEnhanced() {
     actualOutput?: string;
   } | null>(null);
 
-  // Pyodide temporarily disabled
-  const pyodide = null;
-  const pyodideLoading = false;
-  const pyodideError = null;
-  const executeWithEnhancedErrors = async (code: string, context: ExecutionContext): Promise<ExecutionResult> => ({ output: "", hasError: false });
+  // Pyodide loads lazily via the page-singleton; runner.tsx + pygame-preview
+  // share the same instance (T2.1).
+  const {
+    data: pyodide,
+    isLoading: pyodideLoading,
+    error: pyodideError,
+  } = useQuery({
+    queryKey: ["pyodide"],
+    queryFn: () => getPyodide(),
+    staleTime: Infinity,
+  });
+
+  // No-op enhanced-error path; the educational error transformer in
+  // src/errors/educational.ts is wired through the grader, not here.
+  const executeWithEnhancedErrors = async (
+    _code: string,
+    _context: ExecutionContext,
+  ): Promise<ExecutionResult> => ({ output: "", hasError: false });
   const isEnhancedReady = false;
-  
-  // Create PythonRunner instance when pyodide is ready
+
   const pythonRunner = useMemo(() => {
     if (!pyodide) return null;
     return createPythonRunner(pyodide, {
       executeWithEnhancedErrors,
-      isEnhancedReady
+      isEnhancedReady,
     });
-  }, [pyodide, executeWithEnhancedErrors, isEnhancedReady]);
+  }, [pyodide]);
 
-  const { data: lesson, isLoading: lessonLoading } = useQuery<Lesson>({
-    queryKey: ["/api/lessons", lessonId],
+  const { data: lesson, isLoading: lessonLoading } = useQuery<Lesson | undefined>({
+    queryKey: ["lessons", lessonId],
+    queryFn: async () => {
+      const lessons = await loadLessons();
+      return lessons.find((l) => l.id === lessonId);
+    },
     enabled: !!lessonId,
   });
 
-  const { data: progress } = useQuery<UserProgress | null>({
-    queryKey: ["/api/progress", lessonId],
+  const { data: progress } = useQuery<UserProgress | undefined>({
+    queryKey: ["progress", lessonId],
+    queryFn: async () => {
+      if (!lessonId) return undefined;
+      const userId = "local-user"; // single-user offline app
+      return getClientStorage().getUserProgressForLesson(userId, lessonId);
+    },
     enabled: !!lessonId,
   });
 
   const updateProgressMutation = useMutation({
     mutationFn: async (data: { currentStep?: number; completed?: boolean; code?: string }) => {
-      return apiRequest("PUT", `/api/progress/${lessonId}`, data);
+      if (!lessonId) return;
+      const userId = "local-user";
+      return getClientStorage().updateUserProgress(userId, lessonId, data);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/progress", lessonId] });
-      queryClient.invalidateQueries({ queryKey: ["/api/progress"] });
-    }
+      queryClient.invalidateQueries({ queryKey: ["progress", lessonId] });
+      queryClient.invalidateQueries({ queryKey: ["progress"] });
+    },
   });
 
   const currentStep = lesson?.content.steps[currentStepIndex];
@@ -194,7 +220,7 @@ export default function LessonEnhanced() {
             step: currentStep,
             input: inputValues,
             runner: pythonRunner,
-            pyodide
+            pyodide: pyodide ?? null,
           };
 
           const gradeResult = await gradeCode(gradingContext, result);
