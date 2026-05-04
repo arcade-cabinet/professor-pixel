@@ -4,7 +4,9 @@
  * approach gets dropped in favor of a vendored `public/pyodide/` (see T2.3).
  */
 
-const CDN_FALLBACK_URL = 'https://cdn.jsdelivr.net/pyodide/v0.24.1/full/';
+// Falls back to the CDN only if the vendored copy is missing — the version
+// must match the `pyodide` package pinned in package.json (currently 0.29.3).
+const CDN_FALLBACK_URL = 'https://cdn.jsdelivr.net/pyodide/v0.29.3/full/';
 
 export class PyodideLoadError extends Error {
   constructor(message: string, options?: { cause?: unknown }) {
