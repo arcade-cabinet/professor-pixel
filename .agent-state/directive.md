@@ -36,7 +36,7 @@ Branch: feat/foundations-pillar-completion
 - [x] T4.1 Zod-ify schema — `src/types/schema.ts` Zod throughout; `LessonSchema.parse` validates `lessons.json`; ZodError surfaced
 - [x] T4.2 Lesson loader + prerequisite gating — `src/lessons/loader.ts` + `sequence.ts`; home page renders unlocked/locked
 - [x] T4.3 Step-level resume — read/write `UserProgress.currentStep`; reload at step 3 → opens step 3
-- [ ] T4.4 Author 6 lessons — `lessons.json` rewrite; lessons 1-6; integration test runs each solution → score 1.0
+- [x] T4.4 Author 6 lessons — `lessons.json` rewrite; lessons 1-6; integration test runs each solution → score 1.0
 
 ### Pillar 5 — AST-based feedback
 
