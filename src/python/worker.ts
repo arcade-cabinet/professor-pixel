@@ -23,13 +23,38 @@ export interface RunResult {
   error: string | null;
 }
 
+// Default mirrors worker-runner.ts; main thread's RunOptions.maxStdout overrides per-call.
+const DEFAULT_MAX_STDOUT = 64 * 1024;
+
 class WorkerRunner {
   private bootstrap: Promise<PyodideInstance> | null = null;
   private stdoutBuffer: string[] = [];
   private stderrBuffer: string[] = [];
+  private stdoutBytes = 0;
+  private stdoutCap = DEFAULT_MAX_STDOUT;
+  private stdoutTruncated = false;
 
   async ready(): Promise<void> {
     await this.getPyodide();
+  }
+
+  private appendStdout(s: string): void {
+    if (this.stdoutTruncated) return;
+    if (this.stdoutBytes + s.length <= this.stdoutCap) {
+      this.stdoutBuffer.push(s);
+      this.stdoutBytes += s.length;
+      return;
+    }
+    // Take just the slice that fits, then mark truncated and drop the rest.
+    // Keeping the partial keeps the start-of-output anchor for debugging while
+    // still capping bytes flowing across Comlink.
+    const remaining = this.stdoutCap - this.stdoutBytes;
+    if (remaining > 0) {
+      this.stdoutBuffer.push(s.slice(0, remaining));
+      this.stdoutBytes = this.stdoutCap;
+    }
+    this.stdoutTruncated = true;
+    this.stdoutBuffer.push(`\n[output truncated — exceeded ${this.stdoutCap} bytes]`);
   }
 
   private async getPyodide(): Promise<PyodideInstance> {
@@ -40,7 +65,7 @@ class WorkerRunner {
         };
         return mod.loadPyodide({
           indexURL: PYODIDE_BASE,
-          stdout: (s: string) => this.stdoutBuffer.push(s),
+          stdout: (s: string) => this.appendStdout(s),
           stderr: (s: string) => this.stderrBuffer.push(s),
         });
       })();
@@ -48,10 +73,13 @@ class WorkerRunner {
     return this.bootstrap;
   }
 
-  async runSnippet(code: string, input?: string): Promise<RunResult> {
+  async runSnippet(code: string, input?: string, maxStdout?: number): Promise<RunResult> {
     const pyodide = await this.getPyodide();
     this.stdoutBuffer = [];
     this.stderrBuffer = [];
+    this.stdoutBytes = 0;
+    this.stdoutCap = maxStdout ?? DEFAULT_MAX_STDOUT;
+    this.stdoutTruncated = false;
 
     // Always (re)install builtins.input. If the caller passed `input`, lines
     // come from a StringIO buffer; otherwise input() raises EOFError immediately.

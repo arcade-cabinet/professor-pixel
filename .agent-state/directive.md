@@ -104,7 +104,7 @@ Branch: feat/modernization-pillar
 
 - [ ] M4.1 Cold-start budget — perf timer on `getPyodide()`; budget documented in `docs/pillars/02-runtime.md`; dev HUD overlay
 - [ ] M4.2 Frame-rate test — simulator with realistic component count holds <16.67ms mean frame time over 2s
-- [ ] M4.3 Worker-side stdout truncation — enforce `maxStdout` in worker stdout callback; `clipResult` becomes verification
+- [x] M4.3 Worker-side stdout truncation — enforce `maxStdout` in worker stdout callback; `clipResult` becomes verification (`verifyClippedResult`)
 
 ### M5 — Grader instrumentation
 
