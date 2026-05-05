@@ -108,7 +108,7 @@ Branch: feat/modernization-pillar
 
 ### M5 — Grader instrumentation
 
-- [ ] M5.1 Real `functionCalled` instrumentation — worker `runWithCallTracking` API; engine uses real counts
+- [x] M5.1 Real `functionCalled` instrumentation — worker uses Python's `sys.settrace` to count call events for names in `trackFunctions`; engine collects names across step's tests and threads the result through validateRuntime; `runtime.functionCalled:<name>` rule now passes only on count > 0
 - [x] M5.2 Real `acceptsUserInput` instrumentation — worker monkey-patch counts `builtins.input()` calls into `__pp_input_calls`; RunResult exposes `inputCalls`; engine threads through to validateRuntime; rule passes only if `inputCalls > 0` (not "test provided input")
 
 ### M6 — Content + STATE.md

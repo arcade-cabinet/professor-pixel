@@ -47,6 +47,8 @@ export interface CodeRunnerOptions {
   timeoutMs?: number;
   /** Per-test stdout cap; excess is truncated. */
   maxStdout?: number;
+  /** Function names to count via worker-side sys.settrace. */
+  trackFunctions?: string[];
 }
 
 export interface CodeRunner {
@@ -55,6 +57,8 @@ export interface CodeRunner {
     error: string | null;
     /** Number of times the snippet called `input()`. Worker-only — non-worker runners may report 0. */
     inputCalls: number;
+    /** Per-function call counts for any names passed in `CodeRunnerOptions.trackFunctions`. */
+    functionCalls: Record<string, number>;
   }>;
 }
 

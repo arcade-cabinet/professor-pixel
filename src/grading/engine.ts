@@ -14,27 +14,38 @@ import type { GradeResult, GradingContext, RuleResult, TestSpec } from './types'
  */
 export async function gradeCode(
   context: GradingContext,
-  preExecutionResult?: { output: string; error: string | null; inputCalls?: number }
+  preExecutionResult?: {
+    output: string;
+    error: string | null;
+    inputCalls?: number;
+    functionCalls?: Record<string, number>;
+  }
 ): Promise<GradeResult> {
   const { code, step, input, runner, pyodide } = context;
 
   let actualOutput: string;
   let executionError: string | null = null;
   let inputCalls = 0;
+  let functionCalls: Record<string, number> = {};
 
   if (preExecutionResult) {
     actualOutput = preExecutionResult.output;
     executionError = preExecutionResult.error;
     inputCalls = preExecutionResult.inputCalls ?? 0;
+    functionCalls = preExecutionResult.functionCalls ?? {};
   } else {
     // Step caps: take the *minimum* timeout across all rule-mode tests so a
     // single fast test doesn't get a generous cap meant for a slower one.
     const stepCaps = collectStepCaps(step.tests ?? []);
+    // Collect every functionCalled name across the step's tests so the worker
+    // tracer wraps them all in one pass (one runSnippet, not one per name).
+    const trackFunctions = collectTrackFunctions(step.tests ?? []);
     try {
-      const result = await runner.runSnippet({ code, input, ...stepCaps });
+      const result = await runner.runSnippet({ code, input, ...stepCaps, trackFunctions });
       actualOutput = result.output;
       executionError = result.error;
       inputCalls = result.inputCalls;
+      functionCalls = result.functionCalls;
     } catch (err) {
       if (err instanceof PythonTimeoutError) {
         return {
@@ -91,7 +102,8 @@ export async function gradeCode(
         test.runtimeRules,
         input,
         pyodide,
-        inputCalls
+        inputCalls,
+        functionCalls
       );
       astAll.push(...astResults);
       runtimeAll.push(...runtimeResults);
@@ -136,6 +148,16 @@ function collectStepCaps(tests: TestSpec[]): { timeoutMs?: number; maxStdout?: n
     }
   }
   return { timeoutMs, maxStdout };
+}
+
+function collectTrackFunctions(tests: TestSpec[]): string[] {
+  const seen = new Set<string>();
+  for (const t of tests) {
+    for (const name of t.runtimeRules?.functionCalled ?? []) {
+      seen.add(name);
+    }
+  }
+  return [...seen];
 }
 
 function buildFeedback(

@@ -6,9 +6,9 @@ import type { LessonStep } from '@lib/types/schema';
 
 const stubRunner = {
   runSnippet: async ({ code }: { code: string; input?: string }) => {
-    if (code.includes('boom')) return { output: '', error: 'NameError: boom', inputCalls: 0 };
-    if (code.includes('print')) return { output: 'hi\n', error: null, inputCalls: 0 };
-    return { output: '', error: null, inputCalls: 0 };
+    if (code.includes('boom')) return { output: '', error: 'NameError: boom', inputCalls: 0, functionCalls: {} };
+    if (code.includes('print')) return { output: 'hi\n', error: null, inputCalls: 0, functionCalls: {} };
+    return { output: '', error: null, inputCalls: 0, functionCalls: {} };
   },
 };
 
@@ -125,7 +125,7 @@ describe('gradeCode', () => {
     const recordingRunner = {
       runSnippet: async (args: { code: string; timeoutMs?: number }) => {
         calls.push({ timeoutMs: args.timeoutMs });
-        return { output: 'hi\n', error: null, inputCalls: 0 };
+        return { output: 'hi\n', error: null, inputCalls: 0, functionCalls: {} };
       },
     };
     const stepCaps: LessonStep = {

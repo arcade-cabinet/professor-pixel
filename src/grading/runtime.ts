@@ -16,7 +16,8 @@ export async function validateRuntime(
   rules: RuntimeRules | undefined,
   input: string | undefined,
   pyodide: PyodideInstance | null,
-  inputCalls: number = 0
+  inputCalls: number = 0,
+  functionCalls: Record<string, number> = {}
 ): Promise<RuleResult[]> {
   if (!rules) return [];
   const results: RuleResult[] = [];
@@ -60,16 +61,17 @@ export async function validateRuntime(
     });
   }
 
-  // functionCalled is a runtime check that requires instrumentation. Without
-  // a tracer, we approximate by looking for the function name in stdout (the
-  // common authoring pattern is to print results from the called function).
-  // The AST rule calls_method gives the structural check.
+  // functionCalled now uses real call counts from the worker's sys.settrace
+  // tracer (engine collects every name from the step's tests and passes them
+  // as `trackFunctions` to runSnippet). A function that's defined but never
+  // called returns 0 here and fails the rule.
   for (const name of rules.functionCalled ?? []) {
-    const ok = output.includes(name) || (pyodide ? pyodide.globals.get(name) !== undefined : false);
+    const count = functionCalls[name] ?? 0;
+    const ok = count > 0;
     results.push({
       id: `runtime.functionCalled:${name}`,
       passed: ok,
-      message: ok ? `${name}() appears called` : `Make sure ${name}() runs`,
+      message: ok ? `${name}() called ${count}× ` : `Make sure ${name}() runs`,
     });
   }
 

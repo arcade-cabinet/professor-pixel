@@ -23,6 +23,8 @@ export interface RunResult {
   error: string | null;
   /** Number of times the user code called `input()`. Zero if the snippet never read stdin. */
   inputCalls: number;
+  /** Per-function call counts for any names passed in `runSnippet`'s `trackFunctions` arg. */
+  functionCalls: Record<string, number>;
 }
 
 // Default mirrors worker-runner.ts; main thread's RunOptions.maxStdout overrides per-call.
@@ -75,7 +77,12 @@ class WorkerRunner {
     return this.bootstrap;
   }
 
-  async runSnippet(code: string, input?: string, maxStdout?: number): Promise<RunResult> {
+  async runSnippet(
+    code: string,
+    input?: string,
+    maxStdout?: number,
+    trackFunctions?: string[]
+  ): Promise<RunResult> {
     const pyodide = await this.getPyodide();
     this.stdoutBuffer = [];
     this.stderrBuffer = [];
@@ -89,9 +96,11 @@ class WorkerRunner {
     // either silently returning '' past EOF or hanging waiting for stdin.
     pyodide.globals.set('__pp_input__', input ?? '');
     pyodide.globals.set('__pp_has_input__', input !== undefined);
+    pyodide.globals.set('__pp_track_names__', JSON.stringify(trackFunctions ?? []));
     pyodide.runPython(`
-import builtins, io
+import builtins, io, json, sys
 __pp_input_calls = 0
+__pp_func_calls = {name: 0 for name in json.loads(__pp_track_names__)}
 if __pp_has_input__:
     _pp_buf = io.StringIO(__pp_input__ + ('' if __pp_input__.endswith('\\n') else '\\n'))
     def __pp_input(prompt=''):
@@ -107,25 +116,56 @@ else:
         __pp_input_calls += 1
         raise EOFError('EOF when reading a line')
 builtins.input = __pp_input
+
+# Function-call tracking via sys.settrace. The trace function is called on
+# every Python frame entry; if the frame's code object's name matches a tracked
+# name, increment the counter. Cheap (a dict lookup per call) and observes the
+# student's actual calls without source rewriting.
+if __pp_func_calls:
+    def __pp_tracer(frame, event, arg):
+        if event == 'call':
+            name = frame.f_code.co_name
+            if name in __pp_func_calls:
+                __pp_func_calls[name] += 1
+        return None  # don't enable line-level trace
+    sys.settrace(__pp_tracer)
+else:
+    sys.settrace(None)
 `);
 
+    let runErr: string | null = null;
     try {
       await pyodide.runPythonAsync(code);
-      return {
-        output: this.stdoutBuffer.join(''),
-        error: this.stderrBuffer.length ? this.stderrBuffer.join('') : null,
-        inputCalls: Number(pyodide.globals.get('__pp_input_calls') ?? 0),
-      };
     } catch (err) {
-      // Pyodide wraps Python tracebacks in a JS Error.
-      const message = err instanceof Error ? err.message : String(err);
-      return {
-        output: this.stdoutBuffer.join(''),
-        error: message,
-        inputCalls: Number(pyodide.globals.get('__pp_input_calls') ?? 0),
-      };
+      runErr = err instanceof Error ? err.message : String(err);
     }
+    // Always tear down the tracer so a subsequent snippet (or our own postlude)
+    // doesn't pay the per-call overhead.
+    pyodide.runPython('import sys; sys.settrace(None)');
+
+    return {
+      output: this.stdoutBuffer.join(''),
+      error:
+        runErr ?? (this.stderrBuffer.length ? this.stderrBuffer.join('') : null),
+      inputCalls: Number(pyodide.globals.get('__pp_input_calls') ?? 0),
+      functionCalls: extractFunctionCalls(pyodide),
+    };
   }
+}
+
+function extractFunctionCalls(pyodide: PyodideInstance): Record<string, number> {
+  const raw = pyodide.globals.get('__pp_func_calls');
+  if (!raw) return {};
+  // PyProxy of a Python dict — convert via toJs and ensure the values are numbers.
+  const toJs = (raw as { toJs?: (opts?: { dict_converter?: typeof Object.fromEntries }) => unknown })
+    .toJs;
+  if (typeof toJs !== 'function') return {};
+  const obj = toJs.call(raw, { dict_converter: Object.fromEntries }) as Record<string, unknown>;
+  const out: Record<string, number> = {};
+  for (const [k, v] of Object.entries(obj)) {
+    out[k] = Number(v);
+  }
+  return out;
 }
 
 const runner = new WorkerRunner();

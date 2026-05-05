@@ -15,6 +15,11 @@ export interface RunOptions {
   timeoutMs?: number;
   /** Cap on captured stdout to prevent the worker shipping megabytes back. */
   maxStdout?: number;
+  /**
+   * Function names to instrument with sys.settrace. The worker returns
+   * `RunResult.functionCalls[name]` for each — zero if defined but not called.
+   */
+  trackFunctions?: string[];
 }
 
 const DEFAULT_TIMEOUT_MS = 5000;
@@ -46,7 +51,7 @@ export class WorkerPythonRunner {
 
     try {
       const result = await Promise.race([
-        remote.runSnippet(opts.code, opts.input, maxStdout),
+        remote.runSnippet(opts.code, opts.input, maxStdout, opts.trackFunctions),
         timeoutPromise,
       ]);
       if (timer) clearTimeout(timer);
@@ -125,6 +130,7 @@ function verifyClippedResult(result: RunResult, maxStdout: number): RunResult {
       `\n[output truncated — main-thread fallback at ${maxStdout} bytes]`,
     error: result.error,
     inputCalls: result.inputCalls,
+    functionCalls: result.functionCalls,
   };
 }
 
