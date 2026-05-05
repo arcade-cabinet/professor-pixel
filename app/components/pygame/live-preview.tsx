@@ -15,6 +15,7 @@ import {
   Split,
 } from 'lucide-react';
 import { cn } from '@lib/utils/cn';
+import { getEducationalError } from '@lib/errors/educational';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useToast } from '@lib/hooks/use-toast';
 import {
@@ -156,12 +157,16 @@ export default function PygameLivePreview({
           isPlaying: true,
         }));
       } catch (error) {
-        const errorMessage =
-          error instanceof Error ? error.message : 'Failed to execute pygame code';
+        // Don't pipe the raw exception text into the kid-facing overlay —
+        // route through the educational mapper so "TypeError: …" becomes a
+        // teaching message. The raw text is still logged to console for devs.
+        const raw = error instanceof Error ? error.message : 'Failed to execute pygame code';
+        console.error('[live-preview]', raw);
+        const friendly = getEducationalError(raw);
         setState((prev) => ({
           ...prev,
           isLoading: false,
-          error: errorMessage,
+          error: friendly.friendlyMessage,
           isPlaying: false,
         }));
 

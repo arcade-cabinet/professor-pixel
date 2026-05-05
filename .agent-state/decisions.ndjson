@@ -67,3 +67,4 @@
 {"ts": "2026-05-05T05:21:35.803Z", "sha": "0d3c0afb1f2e", "subject": "fix(player-experience): address 11 CodeRabbit round-3 findings on PR #25", "decision": null, "why": null, "resolves": ["P10.1", "P10.2", "P10.3", "P10.4", "P10.5", "P10.6", "P10.7", "P10.8", "P10.9", "P10.10", "P10.11"], "overrides": []}
 {"ts": "2026-05-05T05:23:21.448Z", "sha": "d134307443cc", "subject": "fix(dialogue-engine): depend on failedFlowPaths Set, not Set.prototype.has", "decision": null, "why": null, "resolves": ["P10.12"], "overrides": []}
 {"ts":"2026-05-05T05:47:37.313Z","sha":"946c51486f45","subject":"fix(player-experience): address CR R4 findings on PR #25","decision":null,"why":null,"resolves":["P10.13","P10.14","P10.15","P10.16","P10.17"],"overrides":[]}
+{"ts":"2026-05-05T06:17:33.378Z","sha":"1c64157f2bb7","subject":"refactor: simplify CR-fix code; normalize trailing decisions resolves arrays","decision":null,"why":null,"resolves":["P10.18 P10.19"],"overrides":[]}

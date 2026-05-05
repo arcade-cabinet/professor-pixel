@@ -30,6 +30,7 @@ import PixelMinimizeAnimation from '@/components/pixel/minimize-animation';
 import PixelMinimized from '@/components/pixel/minimized';
 import PygameComponentSelector from '@/components/pygame/component-selector';
 import { GameAsset, AssetType } from '@lib/assets/types';
+import { useToast } from '@lib/hooks/use-toast';
 import { assetManager } from '@lib/assets/manager';
 import { ICON_SIZES, STYLES } from '@lib/wizard/constants';
 import { exportProjectAsZip, shareOrDownload } from '@lib/pygame/runtime/exporter';
@@ -69,6 +70,7 @@ export default function UniversalWizard({
   } = useWizardDialogue({ flowType });
 
   const [, setLocation] = useLocation();
+  const { toast } = useToast();
 
   // Device state management
   const [deviceState, setDeviceState] = useState<DeviceState>(detectDevice());
@@ -612,17 +614,20 @@ export default function UniversalWizard({
             selectedAssets,
             title: sessionActions.gameName || 'My Pygame Game',
           });
-          await shareOrDownload(exported);
-          const toast =
-            (window as Window & { toast?: (msg: unknown) => void }).toast || console.log;
-          toast('Game exported successfully!');
+          const action = await shareOrDownload(exported);
+          if (action !== 'cancelled') {
+            toast({
+              title: 'Game exported!',
+              description: `Saved as ${exported.filename}.`,
+            });
+          }
         } catch (error) {
           console.error('Error during export:', error);
-
-          // Show an error message to the user
-          const toast =
-            (window as Window & { toast?: (msg: unknown) => void }).toast || console.log;
-          toast('Failed to export game. Please try again.');
+          toast({
+            title: "Couldn't export your game",
+            description: 'Something went wrong saving the ZIP — try again in a moment.',
+            variant: 'destructive',
+          });
         }
       } else if (option.action === 'tweakDifficulty') {
         // Adjust game difficulty settings
@@ -798,16 +803,21 @@ export default function UniversalWizard({
             title: sessionActions.gameName || 'My Pygame Game',
           })
             .then(async (exported) => {
-              await shareOrDownload(exported);
-              const toast =
-                (window as Window & { toast?: (msg: unknown) => void }).toast || console.log;
-              toast('Game exported successfully!');
+              const action = await shareOrDownload(exported);
+              if (action !== 'cancelled') {
+                toast({
+                  title: 'Game exported!',
+                  description: `Saved as ${exported.filename}.`,
+                });
+              }
             })
             .catch((error) => {
               console.error('Export from PixelMenu failed:', error);
-              const toast =
-                (window as Window & { toast?: (msg: unknown) => void }).toast || console.log;
-              toast('Failed to export game. Please try again.');
+              toast({
+                title: "Couldn't export your game",
+                description: 'Something went wrong saving the ZIP — try again in a moment.',
+                variant: 'destructive',
+              });
             });
           break;
         case 'viewProgress':

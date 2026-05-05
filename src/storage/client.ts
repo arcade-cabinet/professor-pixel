@@ -6,6 +6,7 @@ import {
   type InsertProject,
   LessonSchema,
 } from '@lib/types/schema';
+import { isQuotaExceeded } from '@lib/storage/persistence';
 
 // Client-side storage adapter for GitHub Pages compatibility
 // Uses static JSON files for lessons and LocalStorage for user data
@@ -24,15 +25,34 @@ export class ClientStorage {
   private initializeLocalStorage() {
     if (typeof window === 'undefined') return;
 
-    // Initialize empty collections if they don't exist
-    if (!localStorage.getItem(ClientStorage.STORAGE_KEYS.USERS)) {
-      localStorage.setItem(ClientStorage.STORAGE_KEYS.USERS, JSON.stringify({}));
-    }
-    if (!localStorage.getItem(ClientStorage.STORAGE_KEYS.PROGRESS)) {
-      localStorage.setItem(ClientStorage.STORAGE_KEYS.PROGRESS, JSON.stringify({}));
-    }
-    if (!localStorage.getItem(ClientStorage.STORAGE_KEYS.PROJECTS)) {
-      localStorage.setItem(ClientStorage.STORAGE_KEYS.PROJECTS, JSON.stringify({}));
+    // Wrap each setItem so a quota error on first init (Safari private mode,
+    // full disk on Chromebooks) doesn't bubble out of the constructor and
+    // white-screen the page.
+    const safeInit = (key: string) => {
+      if (localStorage.getItem(key)) return;
+      try {
+        localStorage.setItem(key, JSON.stringify({}));
+      } catch (err) {
+        this.handleStorageError(err as Error, `initializeLocalStorage(${key})`);
+      }
+    };
+    safeInit(ClientStorage.STORAGE_KEYS.USERS);
+    safeInit(ClientStorage.STORAGE_KEYS.PROGRESS);
+    safeInit(ClientStorage.STORAGE_KEYS.PROJECTS);
+  }
+
+  // Mirror src/storage/persistence.ts handleStorageError. Surfaces a kid-
+  // friendly toast when the host page exposes one; never throws.
+  private handleStorageError(error: Error, operation: string): void {
+    console.error(`ClientStorage operation failed (${operation}):`, error);
+    if (typeof window === 'undefined') return;
+    if (isQuotaExceeded(error)) {
+      const winWithToast = window as Window & { toast?: (msg: unknown) => void };
+      if (typeof winWithToast.toast === 'function') {
+        winWithToast.toast(
+          "Looks like your saved games are full! Open the menu to clear old data, or your browser's site settings."
+        );
+      }
     }
   }
 
@@ -44,7 +64,13 @@ export class ClientStorage {
 
   private saveToLocalStorage<T>(key: string, data: T): void {
     if (typeof window === 'undefined') return;
-    localStorage.setItem(key, JSON.stringify(data));
+    try {
+      localStorage.setItem(key, JSON.stringify(data));
+    } catch (err) {
+      // Quota-exceeded, Safari private mode, full disk — never let it bubble
+      // out and trip the React error boundary mid-wizard.
+      this.handleStorageError(err as Error, `saveToLocalStorage(${key})`);
+    }
   }
 
   private generateId(): string {

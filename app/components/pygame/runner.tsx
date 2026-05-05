@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/card';
 import { compilePythonGame } from '@lib/pygame/runtime/compiler';
 import { getPyodide, recoverPyodide } from '@lib/python/pyodide-singleton';
 import type { GameAsset } from '@lib/assets/types';
+import { getEducationalError, type EducationalError } from '@lib/errors/educational';
 
 interface PygameRunnerProps {
   selectedComponents?: Record<string, string>;
@@ -31,7 +32,10 @@ export default function PygameRunner({
   const animationFrameRef = useRef<number | undefined>(undefined);
   const [isRunning, setIsRunning] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  // We hold both the friendly mapped message (shown to the kid) and the raw
+  // exception text (tucked behind a "Show details" disclosure). Keeping them
+  // paired lets us never have to choose between teaching tone and debuggability.
+  const [error, setError] = useState<EducationalError | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   // Initialize Pyodide. setupCanvasBridge is intentionally NOT in deps:
@@ -48,10 +52,11 @@ export default function PygameRunner({
       await setupCanvasBridge();
       setIsLoading(false);
     } catch (err) {
-      const errorMsg = `Failed to initialize Pyodide: ${err}`;
-      setError(errorMsg);
+      const raw = err instanceof Error ? err.message : String(err);
+      const friendly = getEducationalError(raw);
+      setError(friendly);
       setIsLoading(false);
-      if (onError) onError(errorMsg);
+      if (onError) onError(raw);
     }
   }, [onError]);
 
@@ -301,7 +306,7 @@ MockPygame.key.get_pressed = lambda: global_key_state
     }
 
     if (!pyodideRef.current) {
-      setError('Pyodide not initialized');
+      setError(getEducationalError('Pyodide not initialized'));
       return;
     }
 
@@ -319,9 +324,9 @@ MockPygame.key.get_pressed = lambda: global_key_state
       // Run the game with our pygame mock
       await pyodideRef.current.runPythonAsync(browserCode);
     } catch (err) {
-      const errorMsg = `Game execution error: ${err}`;
-      setError(errorMsg);
-      if (onError) onError(errorMsg);
+      const raw = err instanceof Error ? err.message : String(err);
+      setError(getEducationalError(raw));
+      if (onError) onError(raw);
     } finally {
       setIsRunning(false);
     }
@@ -442,12 +447,16 @@ MockPygame.key.get_pressed = lambda: global_key_state
             </div>
           ) : error ? (
             <div className="text-center max-w-md text-white" data-testid="runner-error-panel">
-              <p className="font-bold mb-2 text-2xl">😟 Something went wrong</p>
-              <p className="text-sm mb-4 opacity-80 break-words">{error}</p>
+              <p className="font-bold mb-2 text-2xl">😟 {error.friendlyMessage}</p>
+              <p className="text-sm mb-4 opacity-80 break-words">{error.explanation}</p>
               <p className="text-sm mb-4">
                 Don&apos;t worry — this kind of thing happens. Click below to reset the Python
                 runtime and try again. Your wizard progress is safe.
               </p>
+              <details className="text-left text-xs opacity-70 mb-4">
+                <summary className="cursor-pointer hover:opacity-100">Show details</summary>
+                <pre className="mt-2 whitespace-pre-wrap break-words">{error.originalError}</pre>
+              </details>
               <Button
                 onClick={async () => {
                   recoverPyodide();
