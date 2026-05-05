@@ -510,7 +510,7 @@ Branch: feat/post-launcher-consolidation (after PR #30 squash-merges)
 - [x] C2.1 PR #16 (jsdom 27→29) squash-merged into main
 - [x] C2.2 PR #18 (@types/node 20→25) squash-merged into main after dependabot rebase; merged into the launcher branch via merge commit 67765d4
 - [x] C2.3 react-resizable-panels 2→4 — only `app/components/ui/resizable.tsx` touched the v2 names (PanelGroup, PanelResizeHandle); v4 renamed those to Group + Separator. Updated the shadcn wrapper to use the new primitive names but kept the consumer-facing exports (ResizablePanelGroup, ResizableHandle) unchanged so no other call sites need rewriting. Closes Dependabot PR #14 (we land the bump on our launcher branch instead of merging the dep PR; the dep PR can be closed)
-- [ ] C2.4 PR #24 bundle (45 minor/patch) — triggered @dependabot rebase; will squash-merge once green
+- [x] C2.4 PR #24 bundle (45 minor/patch updates) squash-merged into main on 2026-05-05; will fold into launcher branch via `git merge origin/main` before final squash
 - [x] C2.5 pnpm overrides for transitive vulns (lodash@<4.18.0 → ^4.18.0, yaml@<2.8.3 → ^2.8.3, glob@>=10.2.0 <10.5.0 → ^10.5.0) + direct @playwright/test 1.55.0 → ^1.59.1 bump. Resolutions verified: lodash@4.18.1, yaml@2.8.4, glob@10.5.0. Closes the remaining Dependabot alerts that aren't covered by C2.1–C2.4 PRs
 
 ### C3 — Capacitor shell

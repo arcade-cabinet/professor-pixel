@@ -47,17 +47,31 @@ function getDeviceCapabilities(): DeviceCapabilities {
     navigator.maxTouchPoints > 0 ||
     ((navigator as Navigator & { msMaxTouchPoints?: number }).msMaxTouchPoints ?? 0) > 0;
 
-  // Detect foldable devices. Two reachable cases:
-  //   - Unfolded: tall/wide aspect ratio (Galaxy Z Fold rotated, Surface Duo
-  //     spanned across its hinge). width > 768, aspectRatio > 2.1.
-  //   - Folded:  narrow (<= 768px) but unusually tall pixel-ratio combo that
-  //     the major foldables ship with. We key off height >= 800 to filter
-  //     ordinary phones from foldables in their folded state.
+  // Detect foldable devices. Three signals, in order of trust:
+  //   1. CSS Viewport Segments API: matchMedia('(horizontal-viewport-segments: 2)')
+  //      is the real foldable-detection API on supported browsers
+  //      (Edge/Chrome on Surface Duo; Samsung Internet on Z Fold).
+  //      Returns true ONLY when the viewport actually spans a hinge —
+  //      this is the ground-truth signal.
+  //   2. Hinged-tablet heuristic: covers Galaxy Fold / Surface Duo
+  //      unfolded mid-range where the segments API isn't available.
+  //   3. Wide-aspect heuristic: catches landscape unfolded foldables.
+  //
+  // We deliberately do NOT key off `height >= 800 + pixelRatio >= 2.5`
+  // for the folded outer-screen case. That heuristic falsely matches
+  // every modern flagship slab phone (iPhone 14 Pro: 393×852 @ DPR 3,
+  // Pixel 8: 412×915 @ DPR 2.625). The folded outer screen of a Z Fold
+  // has a very narrow width (~375) AND extreme aspect ratio (>2.2);
+  // even those numbers overlap with the iPhone 14 Pro Max. Without a
+  // hardware-truth signal, treat folded-outer as a regular phone — the
+  // launcher's mobile layout already handles it correctly.
   const aspectRatio = Math.max(width, height) / Math.min(width, height);
+  const hasViewportSegments =
+    typeof window.matchMedia === 'function' &&
+    window.matchMedia('(horizontal-viewport-segments: 2), (vertical-viewport-segments: 2)').matches;
   const isUnfoldedFoldable = isTouchDevice && width > 768 && aspectRatio > 2.1;
-  const isHingedTablet = isTouchDevice && width > 820 && width < 1024 && height > 1000; // Galaxy Fold, Surface Duo unfolded
-  const isFoldedFoldable = isTouchDevice && width <= 768 && height >= 800 && pixelRatio >= 2.5; // Z Fold/Flip outer screen
-  const isFoldable = isUnfoldedFoldable || isHingedTablet || isFoldedFoldable;
+  const isHingedTablet = isTouchDevice && width > 820 && width < 1024 && height > 1000;
+  const isFoldable = hasViewportSegments || isUnfoldedFoldable || isHingedTablet;
 
   // Determine device type based on screen size and capabilities
   let deviceType: DeviceType;
