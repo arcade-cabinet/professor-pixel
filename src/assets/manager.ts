@@ -43,14 +43,22 @@ export class AssetManager {
 
   // Hydrate registry from /assets/catalog.json. Idempotent — call before any
   // read API on a fresh instance, or use the awaiting accessors below.
+  // On failure, the cached hydration promise is cleared so the next ready()
+  // call re-attempts the fetch (e.g. a kid's offline laptop coming back online,
+  // or a test that stubs fetch after this module has already initialized).
   async ready(): Promise<void> {
     if (!this.hydration) {
-      this.hydration = loadCatalog().then((catalog) => {
-        for (const sprite of catalog.sprites) this.assets.set(sprite.id, sprite);
-        for (const sound of catalog.sounds) this.assets.set(sound.id, sound);
-        for (const bg of catalog.backgrounds) this.assets.set(bg.id, bg);
-        this.loadStatus.total = this.assets.size;
-      });
+      this.hydration = loadCatalog()
+        .then((catalog) => {
+          for (const sprite of catalog.sprites) this.assets.set(sprite.id, sprite);
+          for (const sound of catalog.sounds) this.assets.set(sound.id, sound);
+          for (const bg of catalog.backgrounds) this.assets.set(bg.id, bg);
+          this.loadStatus.total = this.assets.size;
+        })
+        .catch((err) => {
+          this.hydration = null;
+          throw err;
+        });
     }
     return this.hydration;
   }
@@ -341,8 +349,14 @@ export function getAssetManager(): AssetManager {
   if (!assetManagerInstance) {
     assetManagerInstance = new AssetManager();
     // Fire-and-forget hydration. Callers that need a guaranteed-ready manager
-    // should `await assetManager.ready()` explicitly.
-    void assetManagerInstance.ready();
+    // should `await assetManager.ready()` explicitly. We attach a no-op
+    // .catch so a hydration failure (e.g. catalog.json 404 in tests, or
+    // the network down on a kid's Chromebook) doesn't surface as an
+    // unhandled-rejection. Failures are already observable via the next
+    // explicit await on .ready() — this just keeps the boot path quiet.
+    assetManagerInstance.ready().catch((err) => {
+      console.warn('[asset-manager] eager hydration failed; will retry on next ready()', err);
+    });
   }
   return assetManagerInstance;
 }

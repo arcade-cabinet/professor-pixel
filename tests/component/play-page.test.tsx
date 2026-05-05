@@ -22,10 +22,7 @@ import '@testing-library/jest-dom/vitest';
 import { Router, Route } from 'wouter';
 import { memoryLocation } from 'wouter/memory-location';
 import PlayPage from '@/pages/play';
-import {
-  __clearAllOpfsProjectsForTests,
-  saveOpfsProject,
-} from '@lib/storage/opfs-projects';
+import { __clearAllOpfsProjectsForTests, saveOpfsProject } from '@lib/storage/opfs-projects';
 import { __resetOpfsRoutingForTests } from '@lib/storage/projects';
 
 // Snapshot for the "ready" path — needs at least one selectedComponent

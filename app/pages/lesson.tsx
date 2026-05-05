@@ -750,9 +750,9 @@ export default function LessonEnhanced() {
               </Button>
 
               <div className="flex items-center gap-2">
-                {lesson.content.steps.map((_, index) => (
+                {lesson.content.steps.map((step, index) => (
                   <div
-                    key={index}
+                    key={step.id ?? `step-${index}`}
                     className={`w-2 h-2 rounded-full transition-all ${
                       index === currentStepIndex
                         ? 'w-8 bg-purple-500'

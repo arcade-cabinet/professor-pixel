@@ -88,8 +88,7 @@ export default function PlayPage() {
       // string compilePythonGame would emit; the persisted path just
       // skips the recompile.
       try {
-        const pythonCode =
-          snapshot.gamePy ?? compilePythonGame(selectedComponents, selectedAssets);
+        const pythonCode = snapshot.gamePy ?? compilePythonGame(selectedComponents, selectedAssets);
         setState({
           kind: 'ready',
           pythonCode,
@@ -197,10 +196,7 @@ export default function PlayPage() {
             </Button>
           </Link>
           <Link href={`/wizard?resume=${projectId}`}>
-            <Button
-              className="bg-purple-600 hover:bg-purple-700"
-              data-testid="button-edit-game"
-            >
+            <Button className="bg-purple-600 hover:bg-purple-700" data-testid="button-edit-game">
               <Pencil className="mr-2 h-4 w-4" />
               {strings.play.keepBuilding}
             </Button>

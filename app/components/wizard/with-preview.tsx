@@ -17,17 +17,11 @@ interface WizardWithPreviewProps {
 
 export default function WizardWithPreview({ pyodide, className }: WizardWithPreviewProps) {
   const { toast } = useToast();
-  const {
-    dialogueState,
-    sessionActions,
-    isLoading,
-    handleOptionSelect,
-    advance,
-    setSessionActions,
-  } = useWizardDialogue({
-    flowType: 'game-dev',
-    initialNodeId: 'start',
-  });
+  const { dialogueState, sessionActions, handleOptionSelect, advance, setSessionActions } =
+    useWizardDialogue({
+      flowType: 'game-dev',
+      initialNodeId: 'start',
+    });
 
   const [livePreviewChoices, setLivePreviewChoices] = useState<GameChoice[]>([]);
   const [showComparison, _setShowComparison] = useState(false);
@@ -184,6 +178,7 @@ export default function WizardWithPreview({ pyodide, className }: WizardWithPrev
                     <AnimatePresence mode="wait">
                       {currentNode.options.map((option, index) => (
                         <motion.div
+                          // biome-ignore lint/suspicious/noArrayIndexKey: dialogue options can have duplicate text within a node; nodeId+index is the only stable identity
                           key={`${dialogueState.currentNodeId}-option-${index}`}
                           initial={{ opacity: 0, x: -20 }}
                           animate={{ opacity: 1, x: 0 }}
@@ -218,7 +213,8 @@ export default function WizardWithPreview({ pyodide, className }: WizardWithPrev
                   <div className="flex flex-wrap gap-2">
                     {sessionActions.livePreviewChoices.map((choice, index) => (
                       <Badge
-                        key={index}
+                        // biome-ignore lint/suspicious/noArrayIndexKey: choices are append-only with possibly-repeating type/name pairs
+                        key={`${choice.type}-${choice.name}-${index}`}
                         variant="secondary"
                         className="bg-white/80 dark:bg-gray-800/80"
                       >

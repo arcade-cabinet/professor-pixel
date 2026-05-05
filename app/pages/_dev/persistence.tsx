@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   saveWizardState,
@@ -25,7 +25,7 @@ export default function PersistenceTest() {
   const [preferences, setPreferences] = useState<UserPreferences | null>(null);
   const [testCookie, setTestCookie] = useState<string | null>(null);
 
-  const refreshStates = () => {
+  const refreshStates = useCallback(() => {
     const wizState = loadWizardState();
     const sessState = loadSessionState();
     const prefs = loadUserPreferences();
@@ -35,7 +35,7 @@ export default function PersistenceTest() {
     setSessionState(sessState);
     setPreferences(prefs);
     setTestCookie(cookie);
-  };
+  }, []);
 
   useEffect(() => {
     refreshStates();

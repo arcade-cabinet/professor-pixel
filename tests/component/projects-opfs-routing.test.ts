@@ -21,10 +21,7 @@ import {
   renameWizardProject,
   saveWizardProject,
 } from '@lib/storage/projects';
-import {
-  __clearAllOpfsProjectsForTests,
-  listOpfsProjects,
-} from '@lib/storage/opfs-projects';
+import { __clearAllOpfsProjectsForTests, listOpfsProjects } from '@lib/storage/opfs-projects';
 
 // `updatedAt` is required by PersistedWizardState even though the zod
 // schema marks it optional — the type is what saveWizardProject takes.

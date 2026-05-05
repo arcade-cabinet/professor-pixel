@@ -58,7 +58,7 @@ export default function WizardOptionHandler({
     >
       {options.map((option, index) => (
         <OptionButton
-          key={index}
+          key={option.text}
           option={option}
           index={index}
           onSelect={() => {

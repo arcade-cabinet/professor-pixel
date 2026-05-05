@@ -14,67 +14,70 @@ interface DeviceCapabilities {
   pixelRatio: number;
 }
 
-export function useDeviceType(): DeviceCapabilities {
-  const [capabilities, setCapabilities] = useState<DeviceCapabilities>(() => {
-    return getDeviceCapabilities();
-  });
+// Module-level: pure function over the global `window`, no closure state.
+// Hoisting it out of the hook stops Biome flagging it as a missing
+// useEffect dep — and also avoids the per-render allocation.
+function getDeviceCapabilities(): DeviceCapabilities {
+  const width = window.innerWidth;
+  const height = window.innerHeight;
+  const pixelRatio = window.devicePixelRatio || 1;
 
-  function getDeviceCapabilities(): DeviceCapabilities {
-    const width = window.innerWidth;
-    const height = window.innerHeight;
-    const pixelRatio = window.devicePixelRatio || 1;
+  // Check if touch device
+  const isTouchDevice =
+    'ontouchstart' in window ||
+    navigator.maxTouchPoints > 0 ||
+    ((navigator as Navigator & { msMaxTouchPoints?: number }).msMaxTouchPoints ?? 0) > 0;
 
-    // Check if touch device
-    const isTouchDevice =
-      'ontouchstart' in window ||
-      navigator.maxTouchPoints > 0 ||
-      ((navigator as Navigator & { msMaxTouchPoints?: number }).msMaxTouchPoints ?? 0) > 0;
+  // Detect foldable devices (wider aspect ratio when unfolded)
+  const aspectRatio = Math.max(width, height) / Math.min(width, height);
+  const isFoldable =
+    isTouchDevice &&
+    width > 768 &&
+    (aspectRatio > 2.1 || // Unfolded state
+      (width > 820 && width < 1024 && height > 1000)); // Galaxy Fold, Surface Duo
 
-    // Detect foldable devices (wider aspect ratio when unfolded)
-    const aspectRatio = Math.max(width, height) / Math.min(width, height);
-    const isFoldable =
-      isTouchDevice &&
-      width > 768 &&
-      (aspectRatio > 2.1 || // Unfolded state
-        (width > 820 && width < 1024 && height > 1000)); // Galaxy Fold, Surface Duo
+  // Determine device type based on screen size and capabilities
+  let deviceType: DeviceType;
+  let isMobile = false;
+  let isTablet = false;
+  let isDesktop = false;
 
-    // Determine device type based on screen size and capabilities
-    let deviceType: DeviceType;
-    let isMobile = false;
-    let isTablet = false;
-    let isDesktop = false;
-
-    if (isFoldable) {
-      deviceType = 'foldable';
-      // Foldables can behave like tablets or mobile depending on state
-      if (width < 768) {
-        isMobile = true; // Folded state
-      } else {
-        isTablet = true; // Unfolded state
-      }
-    } else if (width < 768) {
-      deviceType = 'mobile';
-      isMobile = true;
-    } else if (width >= 768 && width < 1024 && isTouchDevice) {
-      deviceType = 'tablet';
-      isTablet = true;
+  if (isFoldable) {
+    deviceType = 'foldable';
+    // Foldables can behave like tablets or mobile depending on state
+    if (width < 768) {
+      isMobile = true; // Folded state
     } else {
-      deviceType = 'desktop';
-      isDesktop = true;
+      isTablet = true; // Unfolded state
     }
-
-    return {
-      deviceType,
-      isMobile,
-      isTablet,
-      isDesktop,
-      isFoldable,
-      screenWidth: width,
-      screenHeight: height,
-      isTouchDevice,
-      pixelRatio,
-    };
+  } else if (width < 768) {
+    deviceType = 'mobile';
+    isMobile = true;
+  } else if (width >= 768 && width < 1024 && isTouchDevice) {
+    deviceType = 'tablet';
+    isTablet = true;
+  } else {
+    deviceType = 'desktop';
+    isDesktop = true;
   }
+
+  return {
+    deviceType,
+    isMobile,
+    isTablet,
+    isDesktop,
+    isFoldable,
+    screenWidth: width,
+    screenHeight: height,
+    isTouchDevice,
+    pixelRatio,
+  };
+}
+
+export function useDeviceType(): DeviceCapabilities {
+  const [capabilities, setCapabilities] = useState<DeviceCapabilities>(() =>
+    getDeviceCapabilities()
+  );
 
   useEffect(() => {
     const handleResize = () => {
@@ -94,7 +97,7 @@ export function useDeviceType(): DeviceCapabilities {
       window.removeEventListener('resize', handleResize);
       window.removeEventListener('orientationchange', handleResize);
     };
-  }, [getDeviceCapabilities]);
+  }, []);
 
   return capabilities;
 }

@@ -136,7 +136,7 @@ export default function PygameWysiwygEditor({
       // so the next canvas tap doesn't keep placing the same thing.
       setArmedComponentId(null);
     },
-    [snapToGrid]
+    [snapToGrid, setPlacedComponents]
   );
 
   // Tap-to-arm a palette item. Tapping the same item again disarms it.
@@ -158,7 +158,7 @@ export default function PygameWysiwygEditor({
         )
       );
     },
-    [snapToGrid]
+    [snapToGrid, setPlacedComponents]
   );
 
   const handleComponentDelete = useCallback(
@@ -168,7 +168,7 @@ export default function PygameWysiwygEditor({
         setSelectedComponentId(null);
       }
     },
-    [selectedComponentId]
+    [selectedComponentId, setPlacedComponents]
   );
 
   // P4 — on compact layouts, opening the properties panel for the user
@@ -194,7 +194,7 @@ export default function PygameWysiwygEditor({
         )
       );
     },
-    []
+    [setPlacedComponents]
   );
 
   const handlePlay = () => setIsPlaying(true);

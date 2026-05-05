@@ -35,7 +35,7 @@ const SNAPSHOT_FILE = 'wizard-state.json';
 // synchronously after the first hit. The probe itself touches
 // navigator.storage.getDirectory() which is cheap but async.
 let opfsAvailableCache: boolean | null = null;
-async function useOpfs(): Promise<boolean> {
+async function shouldUseOpfs(): Promise<boolean> {
   if (opfsAvailableCache !== null) return opfsAvailableCache;
   opfsAvailableCache = await isOpfsProjectsAvailable();
   return opfsAvailableCache;
@@ -131,7 +131,7 @@ export interface WizardProjectSnapshot {
 }
 
 export async function listWizardProjects(): Promise<Project[]> {
-  if (await useOpfs()) {
+  if (await shouldUseOpfs()) {
     const items = await listOpfsProjects();
     // listOpfsProjects already returns newest-update-first; preserve.
     return Promise.all(items.map(opfsItemToProject));
@@ -163,7 +163,7 @@ export async function saveWizardProject(
   snapshot: WizardProjectSnapshot,
   existingId?: string
 ): Promise<Project> {
-  if (await useOpfs()) {
+  if (await shouldUseOpfs()) {
     return saveWizardProjectOpfs(snapshot, existingId);
   }
   return saveWizardProjectLocalStorage(snapshot, existingId);
@@ -214,8 +214,9 @@ async function saveWizardProjectOpfs(
   // map fails loudly here instead of silently saving a snapshot that
   // crashes /play. Only compile when there are components — mid-wizard
   // saves are stored without game.py and surface as "unfinished" on /play.
-  const sessionActions = (snapshot.wizardState as { sessionActions?: unknown })
-    .sessionActions as { selectedComponents?: Record<string, string> } | undefined;
+  const sessionActions = (snapshot.wizardState as { sessionActions?: unknown }).sessionActions as
+    | { selectedComponents?: Record<string, string> }
+    | undefined;
   const selectedComponents = sessionActions?.selectedComponents ?? {};
   const assetIds = (snapshot.wizardState as { selectedAssetIds?: string[] }).selectedAssetIds ?? [];
   let gamePy: string | undefined;
@@ -320,7 +321,7 @@ async function saveWizardProjectLocalStorage(
 }
 
 export async function loadWizardProject(id: string): Promise<WizardProjectSnapshot | null> {
-  if (await useOpfs()) {
+  if (await shouldUseOpfs()) {
     const loaded = await loadOpfsProject(id);
     if (!loaded) {
       // OPFS doesn't have it; fall through to localStorage in case the
@@ -375,7 +376,7 @@ export async function loadWizardProject(id: string): Promise<WizardProjectSnapsh
 }
 
 export async function deleteWizardProject(id: string): Promise<void> {
-  if (await useOpfs()) {
+  if (await shouldUseOpfs()) {
     await deleteOpfsProject(id);
     publishStorageEvent({ type: 'projects.changed', reason: 'delete' });
     return;
@@ -398,7 +399,7 @@ export async function deleteWizardProject(id: string): Promise<void> {
  * that was deleted from another tab).
  */
 export async function cloneWizardProject(sourceId: string): Promise<Project> {
-  if (await useOpfs()) {
+  if (await shouldUseOpfs()) {
     const loaded = await loadOpfsProject(sourceId);
     if (!loaded) {
       throw new Error(`Project ${sourceId} not found`);
@@ -498,7 +499,7 @@ export async function renameWizardProject(id: string, newName: string): Promise<
   if (trimmed.length === 0) {
     throw new Error('Project name cannot be empty');
   }
-  if (await useOpfs()) {
+  if (await shouldUseOpfs()) {
     const loaded = await loadOpfsProject(id);
     if (!loaded) {
       throw new Error(`Project ${id} not found`);

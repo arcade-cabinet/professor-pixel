@@ -88,7 +88,10 @@ async function run(): Promise<MigrationResult> {
   try {
     parsed = JSON.parse(raw) as Record<string, Project>;
   } catch (err) {
-    console.warn('[opfs-migration] localStorage projects is corrupt; sentinel will mark migration done to avoid retry storms', err);
+    console.warn(
+      '[opfs-migration] localStorage projects is corrupt; sentinel will mark migration done to avoid retry storms',
+      err
+    );
     await writeSentinel();
     return { ran: true, migrated: 0, skipped: [] };
   }

@@ -59,8 +59,14 @@ globalThis.ResizeObserver = vi.fn().mockImplementation(() => ({
 
 // Mock fetch only in jsdom — component tests run in a real browser and need
 // real fetch (e.g. for the asset catalog bootstrap).
+//
+// Default impl returns a rejected promise: tests that don't opt in to a
+// specific mock should see fetch fail loudly rather than getting back
+// `undefined` and crashing on `.then`. Modules like src/assets/catalog.ts
+// fire .catch on the rejection and surface a console.warn — visible, but
+// not an unhandled-rejection that fails the whole vitest run.
 if (typeof window !== 'undefined' && window.navigator?.userAgent?.includes('jsdom')) {
-  globalThis.fetch = vi.fn();
+  globalThis.fetch = vi.fn(() => Promise.reject(new Error('fetch not mocked in this test')));
 }
 
 // Setup console error/warning suppression for expected errors in tests

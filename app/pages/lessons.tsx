@@ -97,7 +97,8 @@ export default function LessonsIndex() {
           </header>
           <ul className="space-y-3">
             {Array.from({ length: 4 }, (_, idx) => (
-              <li key={idx}>
+              // biome-ignore lint/suspicious/noArrayIndexKey: skeleton placeholders, fixed-length, no semantic identity
+              <li key={`skeleton-${idx}`}>
                 <Card className="flex items-center gap-4 p-4">
                   <Skeleton className="h-8 w-8 flex-shrink-0 rounded-full" />
                   <div className="min-w-0 flex-1 space-y-2">
