@@ -1,7 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useLocation } from 'wouter';
-import { loadWizardState } from '@lib/storage/persistence';
+import { useQuery, useMutation } from '@tanstack/react-query';
+import { loadWizardState, saveWizardState } from '@lib/storage/persistence';
+import { listWizardProjects, loadWizardProject, deleteWizardProject } from '@lib/storage/projects';
+import { queryClient } from '@lib/net/query-client';
 import UniversalWizard from '@/components/wizard/universal';
+import { Button } from '@/components/ui/button';
 
 const INTRO_SEEN_KEY = 'pp.hasSeenIntro';
 const LANDING_PATH_KEY = 'pp.lastLandingPath';
@@ -54,6 +58,33 @@ export default function Home() {
   const [showIntroCard, setShowIntroCard] = useState(false);
   const [skipChooser, setSkipChooser] = useState(false);
 
+  // P5 — My Games. ListWizardProjects reads from ClientStorage; if the wizard
+  // hasn't yet persisted any project (P5.3 work), the list is empty and we
+  // render an inviting placeholder rather than nothing.
+  const { data: projects } = useQuery({
+    queryKey: ['wizard-projects'],
+    queryFn: () => listWizardProjects(),
+  });
+
+  const deleteProjectMutation = useMutation({
+    mutationFn: (id: string) => deleteWizardProject(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['wizard-projects'] }),
+  });
+
+  const openProject = async (id: string) => {
+    const snapshot = await loadWizardProject(id);
+    if (!snapshot) {
+      setLocation('/wizard');
+      return;
+    }
+    // Hydrate the wizard state from the project so the wizard resumes where
+    // the kid left off, then route into the wizard. saveWizardState merges,
+    // so we explicitly write the snapshot's full state (replacing any prior
+    // singleton draft).
+    saveWizardState(snapshot.wizardState);
+    setSkipChooser(true);
+  };
+
   useEffect(() => {
     // Returning user — route them back to whatever surface they were using.
     // The lastPath check has to come BEFORE the persisted-wizard branch:
@@ -105,6 +136,55 @@ export default function Home() {
             Make your own games with Python — no install needed!
           </p>
         </header>
+
+        {projects && projects.length > 0 && (
+          <section
+            aria-label="My saved games"
+            className="mb-12 w-full"
+            data-testid="my-games-section"
+          >
+            <h2 className="mb-4 text-2xl font-bold text-purple-700 dark:text-purple-300">
+              My Games
+            </h2>
+            <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3">
+              {projects.map((project) => (
+                <li
+                  key={project.id}
+                  data-testid={`my-game-row-${project.id}`}
+                  className="rounded-xl bg-white p-4 shadow-md dark:bg-gray-800"
+                >
+                  <p className="font-bold text-gray-900 dark:text-gray-100 truncate">
+                    {project.name}
+                  </p>
+                  <p className="mt-1 text-xs text-gray-600 dark:text-gray-400">
+                    {new Date(project.createdAt).toLocaleDateString()}
+                  </p>
+                  <div className="mt-3 flex gap-2">
+                    <Button
+                      onClick={() => openProject(project.id)}
+                      data-testid={`my-game-open-${project.id}`}
+                      className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500"
+                    >
+                      Open
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        if (window.confirm(`Delete "${project.name}"? This can't be undone.`)) {
+                          deleteProjectMutation.mutate(project.id);
+                        }
+                      }}
+                      variant="outline"
+                      data-testid={`my-game-delete-${project.id}`}
+                      aria-label={`Delete ${project.name}`}
+                    >
+                      🗑️
+                    </Button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
 
         <section
           aria-label="Choose your path"

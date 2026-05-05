@@ -31,6 +31,7 @@ import PixelMinimized from '@/components/pixel/minimized';
 import PygameComponentSelector from '@/components/pygame/component-selector';
 import { GameAsset, AssetType } from '@lib/assets/types';
 import { useToast } from '@lib/hooks/use-toast';
+import { saveWizardProject } from '@lib/storage/projects';
 import { assetManager } from '@lib/assets/manager';
 import { ICON_SIZES, STYLES } from '@lib/wizard/constants';
 import { exportProjectAsZip, shareOrDownload } from '@lib/pygame/runtime/exporter';
@@ -144,6 +145,29 @@ export default function UniversalWizard({
       celebrationFiredRef.current = false;
     };
   }, [isWizardComplete]);
+
+  // P5.3 — promote the wizard's singleton draft into a real project entry the
+  // moment the kid "finishes" their game (gameAssembled). Without this the
+  // home page's My Games section stays empty forever and a second wizard run
+  // silently overwrites the first via the singleton wizard.state.v1 key.
+  // Once-per-mount: a single project per gameAssembled→true transition.
+  const projectSavedRef = useRef(false);
+  useEffect(() => {
+    if (!sessionActions.gameAssembled) return;
+    if (projectSavedRef.current) return;
+    projectSavedRef.current = true;
+    const draft = loadWizardState();
+    if (!draft) return;
+    saveWizardProject({
+      wizardState: draft,
+      name: sessionActions.gameName || draft.gameType || 'My Game',
+      template: sessionActions.gameType || draft.gameType || 'unknown',
+    }).catch((err) => {
+      // Saved-game failure is non-blocking — the game still runs from the
+      // wizard's in-memory state. Log + console; the kid can re-export later.
+      console.warn('Failed to save project to My Games:', err);
+    });
+  }, [sessionActions.gameAssembled, sessionActions.gameName, sessionActions.gameType]);
 
   // Rehydrate selectedAssets from persisted IDs on mount. The wizard stores
   // asset IDs (not full GameAsset objects) so the asset catalog stays the

@@ -59,7 +59,17 @@ export class ClientStorage {
   private getFromLocalStorage<T>(key: string): T {
     if (typeof window === 'undefined') return {} as T;
     const data = localStorage.getItem(key);
-    return data ? (JSON.parse(data) as T) : ({} as T);
+    if (!data) return {} as T;
+    try {
+      return JSON.parse(data) as T;
+    } catch (err) {
+      // Corrupted entry (truncated write, browser-extension tampering, etc.) —
+      // a SyntaxError out of an async queryFn would otherwise punt the page
+      // to the error boundary. Treat the slot as empty and let the caller
+      // overwrite on next save.
+      console.warn(`getFromLocalStorage: corrupt JSON in ${key}, treating as empty`, err);
+      return {} as T;
+    }
   }
 
   private saveToLocalStorage<T>(key: string, data: T): void {
