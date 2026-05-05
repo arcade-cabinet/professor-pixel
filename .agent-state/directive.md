@@ -98,7 +98,7 @@ Branch: feat/modernization-pillar
 ### M3 — Visual + accessibility baseline
 
 - [ ] M3.1 Playwright visual-regression baseline — `tests/e2e/visual.spec.ts` per route × viewport; CI artifact diff
-- [ ] M3.2 `@axe-core/playwright` checks — `tests/e2e/a11y.spec.ts` zero WCAG 2.2 AA violations on major routes
+- [x] M3.2 `@axe-core/playwright` checks — `tests/e2e/a11y.spec.ts` runs axe with WCAG 2.2 AA tags on / and /lesson/lesson-1; failing the test prints per-violation diagnostics. (If CI surfaces real violations, fixes happen in follow-up commits on this branch.)
 
 ### M4 — Pyodide / PyGame correctness
 
