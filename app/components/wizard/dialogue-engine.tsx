@@ -372,7 +372,11 @@ export function useWizardDialogue({
     loadedFlowPath,
     wizardData,
     isFlowLoading,
-    failedFlowPaths.has,
+    // The Set itself, not Set.prototype.has — the prototype method is a
+    // stable reference and would never re-fire this effect when a flow is
+    // marked failed. setFailedFlowPaths always allocates a new Set, so
+    // depending on the instance correctly invalidates the effect.
+    failedFlowPaths,
     dialogueState.currentNodeId,
   ]);
 
