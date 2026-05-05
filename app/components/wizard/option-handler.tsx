@@ -53,6 +53,8 @@ export default function WizardOptionHandler({
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: ANIMATIONS.DIALOGUE_TRANSITION.delay }}
       className={`${containerStyles} ${className}`}
+      role="group"
+      aria-label="Choose your next step"
     >
       {options.map((option, index) => (
         <OptionButton
@@ -145,6 +147,7 @@ export function OptionButton({
         variant={buttonVariant}
         size={buttonSize}
         data-testid={formatTestId('dialogue-option', index)}
+        aria-label={option.text}
       >
         <OptionContent
           text={option.text}

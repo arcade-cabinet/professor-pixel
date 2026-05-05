@@ -462,11 +462,15 @@ if 'global_key_state' in globals():
                 onClick={async () => {
                   recoverPyodide();
                   setError(null);
-                  setIsLoading(true);
+                  // initPyodide owns its own loading state. The finally
+                  // guarantees the spinner unblocks even if a future refactor
+                  // breaks initPyodide's internal isLoading reset.
                   try {
                     await initPyodide();
                   } catch {
-                    /* error already surfaced via setError inside initPyodide */
+                    // setError already fired inside initPyodide's catch.
+                  } finally {
+                    setIsLoading(false);
                   }
                 }}
                 data-testid="runner-recover-button"

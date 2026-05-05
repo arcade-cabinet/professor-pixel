@@ -546,7 +546,19 @@ export function DialogueText({ text, nodeId, dialogueStep, className = '' }: Dia
       animate={{ opacity: 1, y: 0 }}
       className={`text-center ${className}`}
     >
-      <p className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed">{text}</p>
+      <p
+        // P5 a11y — assertive live region so screen readers announce each new
+        // dialogue node as the wizard advances. Pixel speaking IS the primary
+        // content surface; falling silent on screen readers would gate the
+        // whole product. role="status" + aria-live="polite" balances
+        // announcement against interrupting the user mid-input.
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed"
+      >
+        {text}
+      </p>
     </motion.div>
   );
 }
@@ -571,7 +583,12 @@ export function DialogueBox({ text, className = '', variant = 'default' }: Dialo
       transition={{ delay: ANIMATIONS.FADE_IN.delay }}
     >
       <div className={`w-full ${baseStyles} ${paddingStyles}`}>
-        <p className={`text-center ${textSize} text-gray-700 dark:text-gray-300 leading-relaxed`}>
+        <p
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+          className={`text-center ${textSize} text-gray-700 dark:text-gray-300 leading-relaxed`}
+        >
           {text}
         </p>
       </div>

@@ -109,7 +109,9 @@ async function bootstrap(opts: BootstrapOptions): Promise<PyodideInstance> {
       stdout: opts.stdout,
       stderr: opts.stderr,
     });
-    window.pyodide = instance;
+    // window.pyodide is set by getPyodide()'s .then handler so the supersede
+    // guard there can prevent a stale post-recovery boot from clobbering a
+    // fresh one. Returning the instance here is enough; do not stash globals.
     return instance;
   } catch (cause) {
     throw new PyodideLoadError('Pyodide initialization failed', { cause });
@@ -119,9 +121,27 @@ async function bootstrap(opts: BootstrapOptions): Promise<PyodideInstance> {
 export function getPyodide(opts: BootstrapOptions = {}): Promise<PyodideInstance> {
   if (!bootstrapPromise) {
     const start = typeof performance !== 'undefined' ? performance.now() : Date.now();
-    bootstrapPromise = bootstrap(opts)
+    // Capture the promise identity so a recoverPyodide() that clears
+    // bootstrapPromise mid-flight can be detected. The .then below checks
+    // `myPromise === bootstrapPromise` — if not, recovery happened and the
+    // stale instance must NOT win the window.pyodide race.
+    let myPromise: Promise<PyodideInstance>;
+    myPromise = bootstrap(opts)
       .then((instance) => {
         const end = typeof performance !== 'undefined' ? performance.now() : Date.now();
+        // If we were superseded by recoverPyodide(), the cleared bootstrapPromise
+        // means a fresh boot is already in flight (or done). Drop this stale
+        // instance on the floor — don't write window.pyodide, don't record timing.
+        if (myPromise !== bootstrapPromise) {
+          throw new PyodideLoadError('Pyodide bootstrap superseded by recovery');
+        }
+        // Stash the instance globally for isPyodideReady() and consumers that
+        // read window.pyodide directly. Doing this in the .then (rather than
+        // inside bootstrap()) lets the supersede guard above prevent a stale
+        // post-recovery boot from overwriting a fresh one.
+        if (typeof window !== 'undefined') {
+          window.pyodide = instance;
+        }
         coldStartMs = end - start;
         if (coldStartMs > COLD_START_BUDGET_MS) {
           console.warn(
@@ -133,9 +153,14 @@ export function getPyodide(opts: BootstrapOptions = {}): Promise<PyodideInstance
         return instance;
       })
       .catch((err) => {
-        bootstrapPromise = null;
+        // Only clear bootstrapPromise if we're still the active one — otherwise
+        // we'd null out a fresh post-recovery boot.
+        if (myPromise === bootstrapPromise) {
+          bootstrapPromise = null;
+        }
         throw err;
       });
+    bootstrapPromise = myPromise;
   }
   return bootstrapPromise;
 }

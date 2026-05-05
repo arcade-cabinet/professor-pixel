@@ -52,6 +52,49 @@ describe('recoverPyodide', () => {
     expect(mod.getColdStartMs()).toBeNull();
   });
 
+  it('does not let a stale in-flight bootstrap overwrite window.pyodide after recovery', async () => {
+    // Simulate a slow bootstrap that's still resolving when the user clicks
+    // Try Again. The stale .then must NOT clobber the post-recovery instance.
+    let resolveSlow: (v: PyodideInstance) => void = () => undefined;
+    const slowInstance = { id: 'slow' } as unknown as PyodideInstance;
+    const fastInstance = { id: 'fast' } as unknown as PyodideInstance;
+
+    let callCount = 0;
+    const win = {
+      loadPyodide: vi.fn(() => {
+        callCount++;
+        if (callCount === 1) {
+          // First boot — slow, never resolves until we say so.
+          return new Promise<PyodideInstance>((resolve) => {
+            resolveSlow = resolve;
+          });
+        }
+        // Second (post-recovery) boot — resolves immediately.
+        return Promise.resolve(fastInstance);
+      }),
+    } as unknown as Window;
+    vi.stubGlobal('window', win);
+
+    const mod = await import('@lib/python/pyodide-singleton');
+
+    // Kick off the slow boot.
+    const slowPromise = mod.getPyodide();
+
+    // User clicks "Try again" before the slow boot resolves.
+    mod.recoverPyodide();
+
+    // Fresh boot kicks off and resolves to fastInstance.
+    const fastResult = await mod.getPyodide();
+    expect(fastResult).toBe(fastInstance);
+    expect((win as Window & { pyodide?: PyodideInstance }).pyodide).toBe(fastInstance);
+
+    // Now let the stale slow boot finish. It MUST throw (superseded), not
+    // overwrite window.pyodide.
+    resolveSlow(slowInstance);
+    await expect(slowPromise).rejects.toThrow(/superseded/);
+    expect((win as Window & { pyodide?: PyodideInstance }).pyodide).toBe(fastInstance);
+  });
+
   it('removes window.pyodide so isPyodideReady reflects the cleared state', async () => {
     const win = { loadPyodide: vi.fn(async () => fakeInstance) } as unknown as Window & {
       pyodide?: PyodideInstance;

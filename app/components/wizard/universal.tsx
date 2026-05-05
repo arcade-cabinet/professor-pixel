@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { useLocation } from 'wouter';
 import PixelMenu from '@/components/pixel/menu';
 import { UniversalWizardProps, DeviceState, UIState, WizardOption } from '@lib/wizard/types';
 import { detectDevice, getLayoutMode } from '@lib/wizard/utils';
@@ -65,6 +66,8 @@ export default function UniversalWizard({
     setSessionActions,
   } = useWizardDialogue({ flowType });
 
+  const [, setLocation] = useLocation();
+
   // Device state management
   const [deviceState, setDeviceState] = useState<DeviceState>(detectDevice());
 
@@ -118,6 +121,16 @@ export default function UniversalWizard({
   useEffect(() => {
     if (!isWizardComplete) return;
     if (celebrationFiredRef.current) return;
+    // P5 a11y — respect prefers-reduced-motion. Users who opt out of motion
+    // (vestibular sensitivity, focus disorders) get the CTA without the
+    // animated sparkle. The completion announcement still fires via the
+    // dialogue's aria-live region, so they don't lose the milestone.
+    if (typeof window !== 'undefined' && window.matchMedia) {
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        celebrationFiredRef.current = true;
+        return;
+      }
+    }
     celebrationFiredRef.current = true;
     setShowCelebration(true);
     const t = window.setTimeout(() => setShowCelebration(false), 2400);
@@ -792,9 +805,10 @@ export default function UniversalWizard({
         case 'viewProgress':
           // P8 will add the dedicated progress UI; until then, View Progress
           // routes to the lesson list, which IS the progress surface kids
-          // already understand. This is the same path home.tsx routes to
-          // for returning lesson-mode players.
-          window.location.assign('/lesson/lesson-1');
+          // already understand. SPA navigation via wouter — preserves the
+          // wizard's in-memory state (session, components, selected assets)
+          // so the kid can come right back without losing work.
+          setLocation('/lesson/lesson-1');
           break;
         case 'resetProgress':
           handleResetProgress();
@@ -817,6 +831,7 @@ export default function UniversalWizard({
       handleToggleTheme,
       sessionActions,
       selectedAssets,
+      setLocation,
     ]
   );
 

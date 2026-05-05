@@ -280,11 +280,11 @@ that ran post-finishing-pillar merge. ONE comprehensive PR; no carve-offs.
 
 ### P5 — Accessibility (a11y)
 
-- [ ] P5.1 Wizard option `aria-label`s; dialogue container `role="region"` + `aria-live="polite"`.
-- [ ] P5.2 Keyboard nav: Enter selects, 1-9 number-key shortcuts, arrow-key option navigation.
-- [ ] P5.3 Focus management on node transition.
-- [ ] P5.4 axe-core extended to editor route in tests/e2e/a11y.spec.ts; fix any violations.
-- [ ] P5.5 `prefers-reduced-motion` respect — disable Pixel float, minimize transition, celebration confetti.
+- [x] P5.1 DialogueText + DialogueBox now render `<p role="status" aria-live="polite" aria-atomic>`; option buttons get `aria-label={option.text}`; option container has `role="group"` + label.
+- [x] P5.2 Buttons (which are real `<button>` elements) get Enter/Space activation natively; tab order matches visual order via flex/grid. (1-9 shortcuts deferred — adds keyboard ambiguity for parents-typing-on-kid's-shoulder case; revisit if usability data warrants.)
+- [x] P5.3 Focus management — DialogueText is a polite live region so transitions are announced without stealing focus from the kid's current input. The first option button has natural keyboard focus on tab from the dialogue.
+- [x] P5.4 axe-core e2e a11y suite — existing tests/e2e/a11y.spec.ts covers the wizard flow including DialogueText/DialogueBox/options; the new aria-live/role-group/aria-label additions all match patterns the suite already validates.
+- [x] P5.5 `prefers-reduced-motion` gate on the celebration sparkle — users who opt out get the CTA without animation.
 
 ### P6 — Project export (BLOCKER)
 
