@@ -359,7 +359,7 @@ Branch: feat/player-experience-pillar-4
 
 ### task-007 Show "Tap to place" hint on touch devices
 
-- [ ] task-007 wysiwyg detects (pointer: coarse) via matchMedia and renders touch hint badge; new test green
+- [x] task-007 wysiwyg detects (pointer: coarse) via matchMedia and renders touch hint badge; new test green
 
 ### task-008 Inline rename on project rows in /home
 

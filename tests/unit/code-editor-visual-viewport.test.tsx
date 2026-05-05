@@ -51,9 +51,13 @@ afterEach(() => {
 });
 
 describe('CodeEditor — visualViewport keyboard inset (P4.6)', () => {
-  it('applies paddingBottom equal to keyboard height when soft keyboard opens', async () => {
-    // Window is 800px tall; viewport starts equal (no keyboard).
-    Object.defineProperty(window, 'innerHeight', { configurable: true, value: 800 });
+  it('caps wrapper maxHeight to visible viewport when soft keyboard opens', async () => {
+    // documentElement.clientHeight is the stable layout reference (800px);
+    // visualViewport starts equal (no keyboard).
+    Object.defineProperty(document.documentElement, 'clientHeight', {
+      configurable: true,
+      value: 800,
+    });
     const vv = installVisualViewportStub({ height: 800 });
 
     render(
@@ -68,8 +72,8 @@ describe('CodeEditor — visualViewport keyboard inset (P4.6)', () => {
     );
 
     const wrapper = screen.getByTestId('code-editor-wrapper');
-    // No keyboard yet — no inline padding should be applied.
-    expect(wrapper.style.paddingBottom).toBe('');
+    // No keyboard yet — no inline maxHeight should be applied.
+    expect(wrapper.style.maxHeight).toBe('');
 
     // Simulate soft keyboard opening: viewport shrinks by 320px.
     act(() => {
@@ -78,25 +82,32 @@ describe('CodeEditor — visualViewport keyboard inset (P4.6)', () => {
     });
 
     await waitFor(() => {
-      expect(wrapper.style.paddingBottom).toBe('320px');
+      // maxHeight subtracts the keyboard inset from 100dvh — the wrapper
+      // shrinks rather than growing by a paddingBottom (which would push
+      // the page taller without lifting Monaco).
+      expect(wrapper.style.maxHeight).toBe('calc(100dvh - 320px)');
+      expect(wrapper.style.overflow).toBe('hidden');
     });
 
-    // Keyboard closes — padding releases.
+    // Keyboard closes — maxHeight releases.
     act(() => {
       vv.height = 800;
       vv.dispatchEvent(new Event('resize'));
     });
 
     await waitFor(() => {
-      expect(wrapper.style.paddingBottom).toBe('');
+      expect(wrapper.style.maxHeight).toBe('');
     });
   });
 
   it('clamps a transient negative inset to zero (no upward layout shift)', async () => {
-    Object.defineProperty(window, 'innerHeight', { configurable: true, value: 800 });
+    Object.defineProperty(document.documentElement, 'clientHeight', {
+      configurable: true,
+      value: 800,
+    });
     // Viewport reports MORE than window height — a quirk seen on some
     // Android browsers during orientation change. Should not produce a
-    // negative padding (which would lift the layout into the chrome).
+    // negative inset (which would expand the layout).
     const vv = installVisualViewportStub({ height: 850 });
 
     render(
@@ -111,9 +122,9 @@ describe('CodeEditor — visualViewport keyboard inset (P4.6)', () => {
     );
 
     const wrapper = screen.getByTestId('code-editor-wrapper');
-    // Negative inset → clamp to 0 → no inline padding applied.
+    // Negative inset → clamp to 0 → no inline style applied.
     await waitFor(() => {
-      expect(wrapper.style.paddingBottom).toBe('');
+      expect(wrapper.style.maxHeight).toBe('');
     });
 
     // Sanity: still works when a real positive inset arrives.
@@ -122,7 +133,7 @@ describe('CodeEditor — visualViewport keyboard inset (P4.6)', () => {
       vv.dispatchEvent(new Event('resize'));
     });
     await waitFor(() => {
-      expect(wrapper.style.paddingBottom).toBe('200px');
+      expect(wrapper.style.maxHeight).toBe('calc(100dvh - 200px)');
     });
   });
 

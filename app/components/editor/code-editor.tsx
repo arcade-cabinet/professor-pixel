@@ -82,8 +82,20 @@ export default function CodeEditor({
   // window.innerHeight stays constant but window.visualViewport.height
   // shrinks by the keyboard's pixel height. Without compensation, the
   // bottom of Monaco (where the kid is typing) hides *behind* the
-  // keyboard. Track the delta so we can push paddingBottom on the
-  // outer wrapper, lifting the editor into the visible area.
+  // keyboard.
+  //
+  // We shrink the wrapper's max-height by the keyboard inset rather than
+  // padding-bottom on a mid-tree flex wrapper — the prior padding-bottom
+  // approach pushed the wrapper *taller*, growing the page rather than
+  // lifting Monaco above the keyboard. max-height shrinks the wrapper's
+  // own height and the flex-1 Monaco container shrinks with it,
+  // compressing the editor into the visible viewport. We also call
+  // scrollIntoView on the editor on first inset so the kid's caret
+  // lands in view rather than below it.
+  //
+  // Layout-height reference is documentElement.clientHeight (stable)
+  // rather than window.innerHeight (changes with iOS Safari URL-bar
+  // collapse, producing a wrong inset during URL-bar transitions).
   const [keyboardInset, setKeyboardInset] = useState(0);
 
   useEffect(() => {
@@ -92,11 +104,12 @@ export default function CodeEditor({
     const update = () => {
       // offsetTop accounts for split-keyboard / accessory-bar cases on iOS
       // where the visible viewport is offset from the layout viewport top.
-      // Subtracting visible height + offset from the window height gives
-      // the keyboard inset in CSS pixels; clamp to zero so a transient
-      // negative value (from a viewport quirk) doesn't pull the layout up.
-      const inset = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
-      setKeyboardInset(inset);
+      const layoutHeight = document.documentElement.clientHeight;
+      const inset = Math.max(0, layoutHeight - vv.height - vv.offsetTop);
+      // Functional setState with equality check suppresses redundant
+      // re-renders during normal page-scroll bursts on iOS, where vv.scroll
+      // fires every frame while the keyboard is up.
+      setKeyboardInset((prev) => (prev === inset ? prev : inset));
     };
     update();
     vv.addEventListener('resize', update);
@@ -106,6 +119,18 @@ export default function CodeEditor({
       vv.removeEventListener('scroll', update);
     };
   }, []);
+
+  // Bring the editor into view when the keyboard first opens. Without
+  // this, shrinking the wrapper alone leaves the kid's caret position
+  // unchanged but with less screen real estate — Monaco's autosize keeps
+  // the cursor at its previous coords, which is now off-screen.
+  useEffect(() => {
+    if (keyboardInset === 0) return;
+    const t = window.setTimeout(() => {
+      editorRef.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    }, 50);
+    return () => window.clearTimeout(t);
+  }, [keyboardInset]);
   const [inputValues, setInputValues] = useState('');
 
   useEffect(() => {
@@ -237,7 +262,18 @@ export default function CodeEditor({
   return (
     <div
       className="w-full md:w-1/2 flex flex-col"
-      style={keyboardInset > 0 ? { paddingBottom: keyboardInset } : undefined}
+      // While the soft keyboard is up, cap the wrapper's effective height
+      // to the visible viewport so the flex-1 Monaco container shrinks
+      // and stays within the kid's view. Without the cap, the wrapper
+      // keeps its original height and the editor extends behind the
+      // keyboard. The dvh unit is a safety net for browsers that don't
+      // expose visualViewport (the keyboardInset stays 0); modern Chrome
+      // and Safari respect dvh for the dynamic viewport.
+      style={
+        keyboardInset > 0
+          ? { maxHeight: `calc(100dvh - ${keyboardInset}px)`, overflow: 'hidden' }
+          : undefined
+      }
       data-testid="code-editor-wrapper"
     >
       <div className="code-editor-header">

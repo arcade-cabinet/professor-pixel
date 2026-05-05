@@ -10,6 +10,7 @@ import { cn } from '@lib/utils/cn';
 import { useViewport } from '@lib/hooks/use-viewport';
 
 import PygameEditorCanvas from './canvas';
+import TapToPlaceHint from './tap-to-place-hint';
 import PygameEditorPalette from './palette';
 import PygameEditorProperties from './properties';
 import PygameEditorCodePanel from './code-panel';
@@ -360,6 +361,10 @@ export default function PygameWysiwygEditor({
               </TabsList>
 
               <TabsContent value="visual" className="flex-1 p-2 sm:p-4">
+                <TapToPlaceHint
+                  isTouchPrimary={isTouchPrimary}
+                  armedComponentId={armedComponentId}
+                />
                 <PygameEditorCanvas
                   components={placedComponents}
                   selectedId={selectedComponentId}
