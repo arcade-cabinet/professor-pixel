@@ -15,11 +15,14 @@ import {
   ChevronLeft,
   Volume2,
   VolumeX,
+  HelpCircle,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import HelpModal from '@/components/help-modal';
 import { isAudioEnabled, setAudioEnabled, subscribeAudioEnabled } from '@lib/audio';
+import { strings } from '@lib/i18n';
 
 // Import Pixel images
 import pixelExcited from '@assets/pixel/Pixel_celebrating_victory_expression_24b7a377.png';
@@ -64,44 +67,49 @@ export default function PixelMenu({
   const [pixelImage, setPixelImage] = useState(pixelExcited);
   const [selectedTab, setSelectedTab] = useState<'actions' | 'history'>('actions');
   const [audioOn, setAudioOn] = useState(() => isAudioEnabled());
+  // P4.15 — controlled state for the Help/FAQ modal. Lives here (not in
+  // the parent surface) because the menu is the only entry point for
+  // now; task-016 will add a `?` keyboard shortcut that hoists this
+  // up if needed.
+  const [helpOpen, setHelpOpen] = useState(false);
 
   // Stay in sync with the audio enabled flag from any surface — the menu's
   // toggle, another tab, or future SDK callers. subscribeAudioEnabled fires
   // synchronously with the current value on first call.
   useEffect(() => subscribeAudioEnabled(setAudioOn), []);
 
-  // Mock session history if not provided
-  const defaultActions: SessionAction[] =
+  // Mock session history when no real actions are provided. The mock copy
+  // lives in the catalog so the empty-state surface stays auditable for
+  // reading-level + voice consistency the same as every other surface.
+  const actions: SessionAction[] =
     sessionActions.length > 0
       ? sessionActions
       : [
           {
             id: '1',
             type: 'game_created',
-            title: 'Created RPG Adventure',
-            description: 'Started building a fantasy RPG game',
+            title: strings.pixelMenu.mockHistory.gameCreatedTitle,
+            description: strings.pixelMenu.mockHistory.gameCreatedDescription,
             timestamp: new Date(Date.now() - 1000 * 60 * 30), // 30 mins ago
             icon: Gamepad2,
           },
           {
             id: '2',
             type: 'lesson_completed',
-            title: 'Completed Python Basics',
-            description: 'Learned variables and functions',
+            title: strings.pixelMenu.mockHistory.lessonCompletedTitle,
+            description: strings.pixelMenu.mockHistory.lessonCompletedDescription,
             timestamp: new Date(Date.now() - 1000 * 60 * 45), // 45 mins ago
             icon: BookOpen,
           },
           {
             id: '3',
             type: 'asset_selected',
-            title: 'Selected Character Sprites',
-            description: 'Added knight and wizard sprites',
+            title: strings.pixelMenu.mockHistory.assetSelectedTitle,
+            description: strings.pixelMenu.mockHistory.assetSelectedDescription,
             timestamp: new Date(Date.now() - 1000 * 60 * 15), // 15 mins ago
             icon: Trophy,
           },
         ];
-
-  const actions = sessionActions.length > 0 ? sessionActions : defaultActions;
 
   // Swipe handlers to close menu
   const swipeHandlers = useSwipeable({
@@ -130,10 +138,10 @@ export default function PixelMenu({
 
   const formatTime = (date: Date) => {
     const mins = Math.floor((Date.now() - date.getTime()) / (1000 * 60));
-    if (mins < 60) return `${mins}m ago`;
+    if (mins < 60) return strings.pixelMenu.history.minutesAgo(mins);
     const hours = Math.floor(mins / 60);
-    if (hours < 24) return `${hours}h ago`;
-    return `${Math.floor(hours / 24)}d ago`;
+    if (hours < 24) return strings.pixelMenu.history.hoursAgo(hours);
+    return strings.pixelMenu.history.daysAgo(Math.floor(hours / 24));
   };
 
   return (
@@ -164,7 +172,7 @@ export default function PixelMenu({
                     animate={{ x: 0, opacity: 1 }}
                     className="text-2xl font-bold text-gray-800 dark:text-gray-100"
                   >
-                    Pixel's Command Center
+                    {strings.pixelMenu.title}
                   </motion.h2>
                   <Button
                     onClick={onClose}
@@ -172,6 +180,7 @@ export default function PixelMenu({
                     size="icon"
                     className="rounded-full"
                     data-testid="close-pixel-menu"
+                    aria-label={strings.iconButtons.closePixelMenu}
                   >
                     <X className="h-5 w-5" />
                   </Button>
@@ -186,9 +195,10 @@ export default function PixelMenu({
                 >
                   <motion.img
                     src={pixelImage}
-                    alt="Pixel"
+                    alt={strings.pixelMenu.pixelAlt}
                     className="w-20 h-20 rounded-full shadow-lg"
                     style={{ imageRendering: 'crisp-edges' }}
+                    loading="lazy"
                     animate={{
                       rotate: [0, 5, -5, 0],
                       scale: [1, 1.05, 1],
@@ -200,9 +210,11 @@ export default function PixelMenu({
                     }}
                   />
                   <div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">Welcome back!</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      {strings.pixelMenu.welcome}
+                    </p>
                     <p className="font-medium text-gray-800 dark:text-gray-200">
-                      What would you like to do?
+                      {strings.pixelMenu.prompt}
                     </p>
                   </div>
                 </motion.div>
@@ -215,7 +227,7 @@ export default function PixelMenu({
                     size="sm"
                     className="flex-1"
                   >
-                    Quick Actions
+                    {strings.pixelMenu.tabs.actions}
                   </Button>
                   <Button
                     onClick={() => setSelectedTab('history')}
@@ -223,60 +235,76 @@ export default function PixelMenu({
                     size="sm"
                     className="flex-1"
                   >
-                    Session History
+                    {strings.pixelMenu.tabs.history}
                   </Button>
                 </div>
               </div>
 
-              {/* Content Area */}
-              <div className="flex-1 overflow-hidden px-6 pb-6">
+              {/* Content Area. Outer wrapper is flex-1 + overflow-y-auto so
+                  the grid SCROLLS on viewports too short to display all 7
+                  action buttons (P4.27). Inner motion.div drops h-full so
+                  rows take their natural height, lining up with the
+                  scroll surface. */}
+              <div className="flex-1 overflow-y-auto px-6 pb-6">
                 {selectedTab === 'actions' ? (
                   /* Quick Actions */
                   <motion.div
-                    className="grid grid-cols-2 gap-3 h-full"
+                    className="grid grid-cols-2 gap-3 auto-rows-min"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.2 }}
                   >
-                    <Card
-                      className="p-4 flex flex-col items-center justify-center hover:bg-purple-100 dark:hover:bg-purple-900/30 cursor-pointer transition-colors"
+                    <button
+                      type="button"
+                      className="rounded-lg border bg-card text-card-foreground shadow-sm p-4 flex flex-col items-center justify-center hover:bg-purple-100 dark:hover:bg-purple-900/30 cursor-pointer transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-1"
                       onClick={onChangeGame}
                       data-testid="change-game-button"
                     >
                       <Gamepad2 className="h-8 w-8 mb-2 text-purple-600 dark:text-purple-400" />
-                      <span className="text-sm font-medium text-center">Change Game</span>
-                    </Card>
+                      <span className="text-sm font-medium text-center">
+                        {strings.pixelMenu.actions.changeGame}
+                      </span>
+                    </button>
 
-                    <Card
-                      className="p-4 flex flex-col items-center justify-center hover:bg-blue-100 dark:hover:bg-blue-900/30 cursor-pointer transition-colors"
+                    <button
+                      type="button"
+                      className="rounded-lg border bg-card text-card-foreground shadow-sm p-4 flex flex-col items-center justify-center hover:bg-blue-100 dark:hover:bg-blue-900/30 cursor-pointer transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-1"
                       onClick={onSwitchLesson}
                       data-testid="switch-lesson-button"
                     >
                       <BookOpen className="h-8 w-8 mb-2 text-blue-600 dark:text-blue-400" />
-                      <span className="text-sm font-medium text-center">Switch Lesson</span>
-                    </Card>
+                      <span className="text-sm font-medium text-center">
+                        {strings.pixelMenu.actions.switchLesson}
+                      </span>
+                    </button>
 
-                    <Card
-                      className="p-4 flex flex-col items-center justify-center hover:bg-green-100 dark:hover:bg-green-900/30 cursor-pointer transition-colors"
+                    <button
+                      type="button"
+                      className="rounded-lg border bg-card text-card-foreground shadow-sm p-4 flex flex-col items-center justify-center hover:bg-green-100 dark:hover:bg-green-900/30 cursor-pointer transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-1"
                       onClick={onExportGame}
                       data-testid="export-game-button"
                     >
                       <Download className="h-8 w-8 mb-2 text-green-600 dark:text-green-400" />
-                      <span className="text-sm font-medium text-center">Export Game</span>
-                    </Card>
+                      <span className="text-sm font-medium text-center">
+                        {strings.pixelMenu.actions.exportGame}
+                      </span>
+                    </button>
 
-                    <Card
-                      className="p-4 flex flex-col items-center justify-center hover:bg-orange-100 dark:hover:bg-orange-900/30 cursor-pointer transition-colors"
+                    <button
+                      type="button"
+                      className="rounded-lg border bg-card text-card-foreground shadow-sm p-4 flex flex-col items-center justify-center hover:bg-orange-100 dark:hover:bg-orange-900/30 cursor-pointer transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-1"
                       onClick={onViewProgress}
                       data-testid="view-progress-button"
                     >
                       <TrendingUp className="h-8 w-8 mb-2 text-orange-600 dark:text-orange-400" />
-                      <span className="text-sm font-medium text-center">View Progress</span>
-                    </Card>
+                      <span className="text-sm font-medium text-center">
+                        {strings.pixelMenu.actions.viewProgress}
+                      </span>
+                    </button>
 
                     <button
                       type="button"
-                      className="p-4 flex flex-col items-center justify-center rounded-md border bg-card hover:bg-indigo-100 dark:hover:bg-indigo-900/30 cursor-pointer transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                      className="rounded-lg border bg-card text-card-foreground shadow-sm p-4 flex flex-col items-center justify-center hover:bg-indigo-100 dark:hover:bg-indigo-900/30 cursor-pointer transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-1"
                       onClick={() => {
                         const next = !audioOn;
                         setAudioEnabled(next);
@@ -284,7 +312,11 @@ export default function PixelMenu({
                       }}
                       data-testid="audio-toggle-button"
                       aria-pressed={audioOn}
-                      aria-label={audioOn ? 'Turn voice off' : 'Turn voice on'}
+                      aria-label={
+                        audioOn
+                          ? strings.pixelMenu.actions.voiceTurnOff
+                          : strings.pixelMenu.actions.voiceTurnOn
+                      }
                     >
                       {audioOn ? (
                         <Volume2 className="h-8 w-8 mb-2 text-indigo-600 dark:text-indigo-400" />
@@ -292,22 +324,43 @@ export default function PixelMenu({
                         <VolumeX className="h-8 w-8 mb-2 text-gray-500" />
                       )}
                       <span className="text-sm font-medium text-center">
-                        {audioOn ? 'Voice On' : 'Voice Off'}
+                        {audioOn
+                          ? strings.pixelMenu.actions.voiceOn
+                          : strings.pixelMenu.actions.voiceOff}
                       </span>
                     </button>
 
-                    <Card
-                      className="p-4 flex flex-col items-center justify-center hover:bg-pink-100 dark:hover:bg-pink-900/30 cursor-pointer transition-colors"
+                    <button
+                      type="button"
+                      className="rounded-lg border bg-card text-card-foreground shadow-sm p-4 flex flex-col items-center justify-center hover:bg-pink-100 dark:hover:bg-pink-900/30 cursor-pointer transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-1"
                       onClick={onReturnCurrent}
                       data-testid="return-current-button"
                     >
                       <Home className="h-8 w-8 mb-2 text-pink-600 dark:text-pink-400" />
-                      <span className="text-sm font-medium">Return to Current</span>
-                    </Card>
+                      <span className="text-sm font-medium">
+                        {strings.pixelMenu.actions.returnCurrent}
+                      </span>
+                    </button>
+
+                    {/* P4.15 — Help / FAQ launcher. Opens a focus-trapped modal
+                        with 6 common-question answers from the i18n catalog. */}
+                    <button
+                      type="button"
+                      className="rounded-lg border bg-card text-card-foreground shadow-sm p-4 flex flex-col items-center justify-center hover:bg-yellow-100 dark:hover:bg-yellow-900/30 cursor-pointer transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-1"
+                      onClick={() => setHelpOpen(true)}
+                      data-testid="help-button"
+                    >
+                      <HelpCircle className="h-8 w-8 mb-2 text-yellow-600 dark:text-yellow-400" />
+                      <span className="text-sm font-medium">{strings.help.title}</span>
+                    </button>
                   </motion.div>
                 ) : (
-                  /* Session History */
-                  <ScrollArea className="h-full">
+                  /* Session History — drop h-full so the outer
+                     overflow-y-auto wrapper handles scroll uniformly
+                     across tabs. Two stacked scroll containers were
+                     fighting on iOS Safari (touch hit-tested the
+                     outer first, leaving the inner unreachable). */
+                  <ScrollArea>
                     <motion.div
                       className="space-y-3"
                       initial={{ opacity: 0 }}
@@ -353,8 +406,8 @@ export default function PixelMenu({
                       {actions.length === 0 && (
                         <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                           <Clock className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                          <p>No actions yet this session</p>
-                          <p className="text-sm mt-2">Start creating to see your history!</p>
+                          <p>{strings.pixelMenu.history.empty}</p>
+                          <p className="text-sm mt-2">{strings.pixelMenu.history.emptyHint}</p>
                         </div>
                       )}
                     </motion.div>
@@ -370,13 +423,18 @@ export default function PixelMenu({
                 transition={{ delay: 0.5 }}
               >
                 <p className="text-xs text-gray-500 dark:text-gray-400">
-                  Swipe down or tap outside to close
+                  {strings.pixelMenu.swipeHint}
                 </p>
               </motion.div>
             </div>
           </motion.div>
         </motion.div>
       )}
+      {/* P4.15 — Help/FAQ modal lives outside the AnimatePresence open
+          gate so the modal can persist if the menu is dismissed (Radix
+          Dialog has its own portal + open state; rendering once keeps
+          focus management clean). */}
+      <HelpModal open={helpOpen} onOpenChange={setHelpOpen} />
     </AnimatePresence>
   );
 }

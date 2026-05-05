@@ -1,6 +1,6 @@
 # Continuous Work Directive — professor-pixel
 
-**Status:** RELEASED
+**Status:** ACTIVE
 **Owner:** jbogaty
 
 ## What CONTINUOUS means
@@ -320,3 +320,147 @@ that ran post-finishing-pillar merge. ONE comprehensive PR; no carve-offs.
 - [x] P10.3 docs/pillars/02-runtime.md — "Worker recovery" subsection added between Cold-start budget and PyGame simulator. Documents `recoverPyodide()` semantics (drops cached promise + window.pyodide + coldStartMs reset), the race-fix via promise identity guard, the runner.tsx user-facing "Try again" surface, and points at `tests/unit/pyodide-recover.test.ts` for the race coverage.
 - [x] P10.4 docs/playtests/ — Death/Respawn and Game Over Screen items annotated with "Engine-level enabled, content-design pending" markers in `platformer.md` and `analysis.md`. Honest framing: this PRQ closed the *engine prerequisites* (gameAssembled action gate, isWizardComplete derived state, runner.recover() + Try Again UI, wizard-completion CTA with Reset path) so a content author can land these scenes as flow-JSON edits without engine work. The remaining authoring is content-design, not engineering — same pattern as the finishing pillar's playtest sweep.
 - [x] P10.5 .agent-state/directive.md Status: ACTIVE → RELEASED. Player-experience pillar shipped end-to-end on `feat/player-experience-pillar`; all P1–P10 items closed.
+
+## Batch — player-experience-pillar-4 (batch-20260505-085602)
+
+Source: docs/plans/player-experience-pillar-4.prq.md (sha256: 4c560229754f5eaa068cd39641fe8088634c1e77be231dfb378c5e53d06ae768)
+Started: 2026-05-05T08:56:02Z
+Branch: feat/player-experience-pillar-4
+
+### task-001 i18n string catalog with English source-of-truth + hook + per-page migration
+
+- [x] task-001a src/i18n/{strings,index,use-strings}.ts catalog scaffold + chrome banners + home + not-found migrated
+- [x] task-001b lessons.tsx migrated to strings catalog
+- [x] task-001c lesson.tsx migrated to strings catalog
+- [x] task-001d profile.tsx migrated to strings catalog
+- [x] task-001e wizard/universal.tsx migrated to strings catalog
+- [x] task-001f pixel/menu.tsx migrated to strings catalog
+- [x] task-001g floating-feedback.tsx migrated to strings catalog
+
+### task-002 Add preconnect + script preload for Pyodide CDN to index.html
+
+- [x] task-002 index.html preloads the vendored loader (/pyodide/pyodide.js — same path src/python/pyodide-singleton.ts requests) and preconnects to cdn.jsdelivr.net for the CDN fallback path
+
+### task-003 Wizard step history stack + back button
+
+- [x] task-003 universal.tsx has history stack + Back button; pop restores prior UI; new test green
+
+### task-004 Save wizard state to localStorage after each step
+
+- [x] task-004 saveWizardState fires per step-advance; new persistence test verifies mid-wizard refresh resume
+
+### task-005 Pointer events on live-preview + WYSIWYG canvas
+
+- [x] task-005 canvas surfaces accept pointerdown/touchstart; new test asserts handler runs on pointer events
+
+### task-006 Use window.visualViewport to keep code editor visible when soft keyboard opens
+
+- [x] task-006 code-panel adjusts paddingBottom on visualViewport resize; new test stubs visualViewport
+
+### task-007 Show "Tap to place" hint on touch devices
+
+- [x] task-007 wysiwyg detects (pointer: coarse) via matchMedia and renders touch hint badge; new test green
+
+### task-008 Inline rename on project rows in /home
+
+- [x] task-008 home.tsx Edit button → inline input; renameWizardProject in projects.ts; new test green
+
+### task-009 Save canvas snapshot at project save, render on /home cards
+
+- [x] task-009 thumbnail data URL stored in project schema; rendered on home cards via SafeImage; backwards-compatible loader
+
+### task-010 Brief "Saved" toast on successful auto-save
+
+- [x] task-010 universal.tsx fires a toast once per real save; test asserts exactly one fire per mutation
+
+### task-011 Block creating a duplicate-named project; offer overwrite
+
+- [x] task-011 saveWizardProject duplicate-name guard; idempotent same-state save; rename/overwrite prompt for divergent state
+
+### task-012 Live thumbnail of selected character/background while still on the picker step
+
+- [x] task-012 asset-browser shows inline preview on selection; test verifies preview updates without advance
+
+### task-013 Replace text loader with a Skeleton row matching the lesson card shape
+
+- [x] task-013 lessons.tsx loading state uses Skeleton inside LessonsShell; banners still render during load
+
+### task-014 Style "Next Lesson" as primary, show next lesson thumbnail/title
+
+- [x] task-014 lesson.tsx completion modal restructured; "You finished them all" branch on last lesson
+
+### task-015 PixelMenu-attached "?" button opens FAQ modal
+
+- [x] task-015 help-modal.tsx with 6 FAQ entries; PixelMenu Help entry; keyboard-accessible (Escape + focus trap)
+
+### task-016 ? keyboard shortcut to toggle hint panel
+
+- [x] task-016 floating-feedback global keydown for ? gated against input/textarea; listener cleaned up on unmount
+
+### task-017 "Export Game" button → downloadable ZIP with code + assets
+
+- [x] task-017 src/export/zip.ts builds runnable bundle (main.py + assets + README); home.tsx Export button triggers download
+
+### task-018 "Remix" button on project rows → clones with -remix-N suffix
+
+- [x] task-018 cloneWizardProject in projects.ts; home.tsx Remix button + activeProjectId hand-off
+
+### task-019 Trim, length-cap, non-empty check on profile name
+
+- [x] task-019 profile.tsx rejects empty/whitespace and >24 char names with toast
+
+### task-020 Warn when approaching localStorage limit
+
+- [x] task-020 src/storage/quota.ts using navigator.storage.estimate w/ fallback; warning toast above 80% once per session
+
+### task-021 "Reset Code" button restores lesson starter code with confirm
+
+- [x] task-021 code-editor.tsx Reset button (lesson context only) + confirm dialog
+
+### task-022 Ctrl+Space in editor requests next hint from the floating feedback panel
+
+- [x] task-022 Monaco addAction for Ctrl+Space wired to floating-feedback via custom event; native autocomplete preserved on alternate key
+
+### task-023 Apply consistent focus-visible ring class across editor / palette / pixel-menu
+
+- [x] task-023 palette + canvas + pixel-menu add focus-visible:ring-2 ring-purple-400 ring-offset-1 to clickable elements
+
+### task-024 Audit + add aria-label to every icon-only button
+
+- [x] task-024 every icon-only button has aria-label or sr-only sibling; grep audit clean
+
+### task-025 Add loading="lazy" on lesson Pixel images
+
+- [x] task-025 below-fold mascot images set loading=lazy in lesson.tsx and avatar-display.tsx
+
+### task-026 Cross-tab sync of saved-project mutations
+
+- [x] task-026 src/storage/broadcast.ts publishes invalidation events; home.tsx subscribes and invalidates queries; no infinite loop
+
+### task-027 max-h-[80vh] overflow-y-auto on PixelMenu modal
+
+- [x] task-027 menu modal overflow classes set; mobile viewport scrolls instead of clipping
+
+### task-028 Replace technical pause-overlay text with kid-friendly "Game paused"
+
+- [x] task-028 live-preview pause overlay reads "Game paused — press Space to play"
+
+### task-029 Local undo stack for component placements (Ctrl+Z / Ctrl+Shift+Z)
+
+- [x] task-029 wysiwyg useReducer over placements; Ctrl+Z and Ctrl+Shift+Z handlers tested
+
+### task-030 Audit Monaco theme colors for WCAG AA against editor background
+
+- [x] task-030 Monaco theme tokens hit AA contrast on light + dark; chosen palette + ratios noted in code comment
+
+### task-031 "Expected output" + tooltip explanation
+
+- [x] task-031 live-preview comparison badge + tooltip routed via useStrings()
+
+### task-032 Optional pronouns dropdown + emoji picker on /profile
+
+- [x] task-032 schema extended with optional pronouns/avatarEmoji; profile.tsx controls; backwards-compat load test
+
+### task-033 Editor header shows an offline pill when navigator is offline
+
+- [x] task-033 src/hooks/use-online-status.ts shared hook; banner consumes it; new OfflinePill mounted on lesson editor

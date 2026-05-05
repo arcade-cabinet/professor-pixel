@@ -64,12 +64,14 @@ export default function PygameComponentSelector({
           <CardContent>
             <div className="grid md:grid-cols-2 gap-6">
               {/* Variant A */}
-              <motion.div
+              <motion.button
+                type="button"
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => handleVariantSelect('A')}
+                aria-pressed={selectedVariant === 'A'}
                 className={cn(
-                  'cursor-pointer rounded-lg border-2 p-6 transition-colors',
+                  'cursor-pointer rounded-lg border-2 p-6 transition-colors text-left w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2',
                   selectedVariant === 'A'
                     ? 'border-purple-500 bg-purple-50'
                     : 'border-gray-200 hover:border-purple-200'
@@ -99,15 +101,17 @@ export default function PygameComponentSelector({
                     </ul>
                   </div>
                 </div>
-              </motion.div>
+              </motion.button>
 
               {/* Variant B */}
-              <motion.div
+              <motion.button
+                type="button"
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => handleVariantSelect('B')}
+                aria-pressed={selectedVariant === 'B'}
                 className={cn(
-                  'cursor-pointer rounded-lg border-2 p-6 transition-colors',
+                  'cursor-pointer rounded-lg border-2 p-6 transition-colors text-left w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2',
                   selectedVariant === 'B'
                     ? 'border-pink-500 bg-pink-50'
                     : 'border-gray-200 hover:border-pink-200'
@@ -135,7 +139,7 @@ export default function PygameComponentSelector({
                     </ul>
                   </div>
                 </div>
-              </motion.div>
+              </motion.button>
             </div>
 
             {/* Action buttons */}

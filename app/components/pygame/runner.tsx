@@ -8,6 +8,7 @@ import { getPyodide, recoverPyodide } from '@lib/python/pyodide-singleton';
 import type { GameAsset } from '@lib/assets/types';
 import { getEducationalError, type EducationalError } from '@lib/errors/educational';
 import { loadWizardState } from '@lib/storage/persistence';
+import { strings } from '@lib/i18n';
 
 interface PygameRunnerProps {
   selectedComponents?: Record<string, string>;
@@ -434,12 +435,26 @@ MockPygame.key.get_pressed = lambda: global_key_state
               Export
             </Button>
 
-            <Button onClick={toggleFullscreen} variant="outline" size="sm">
+            <Button
+              onClick={toggleFullscreen}
+              variant="outline"
+              size="sm"
+              aria-label={
+                isFullscreen
+                  ? strings.iconButtons.runnerExitFullscreen
+                  : strings.iconButtons.runnerEnterFullscreen
+              }
+            >
               {isFullscreen ? <Minimize className="w-4 h-4" /> : <Maximize className="w-4 h-4" />}
             </Button>
 
             {onClose && (
-              <Button onClick={onClose} variant="ghost" size="sm">
+              <Button
+                onClick={onClose}
+                variant="ghost"
+                size="sm"
+                aria-label={strings.iconButtons.runnerClose}
+              >
                 <X className="w-4 h-4" />
               </Button>
             )}

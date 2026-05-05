@@ -12,6 +12,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { GameAsset, AssetType, AssetFilter, AssetSelection } from '@lib/assets/types';
 import { assetManager } from '@lib/assets/manager';
+import { strings } from '@lib/i18n';
 
 interface AssetBrowserProps {
   onSelect?: (asset: GameAsset) => void;
@@ -41,6 +42,14 @@ export default function AssetBrowserWizard({
   const [_hoveredAsset, setHoveredAsset] = useState<GameAsset | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [currentPage, setCurrentPage] = useState(1);
+  // P4.12 — single-select preview state: in single-select mode the first
+  // tap on an asset *previews* it (banner above the grid shows what they
+  // picked) without advancing the wizard. A second tap on the same card
+  // OR the explicit "Use this one" button calls onSelect and advances.
+  // This gives kids a beat to see what they chose before locking in,
+  // and lets them swap selection by tapping a different card. Multi-
+  // select mode is unchanged — the existing toggle-set behaviour stands.
+  const [previewAsset, setPreviewAsset] = useState<GameAsset | null>(null);
   const itemsPerPage = 20;
 
   // Get suggested assets based on game type
@@ -83,10 +92,16 @@ export default function AssetBrowserWizard({
     return filteredAssets.slice(startIndex, startIndex + itemsPerPage);
   }, [filteredAssets, currentPage]);
 
-  // Reset page when filters change
+  // Reset page AND clear the single-select preview when filters change.
+  // Without the preview reset, a kid who taps an asset to preview, then
+  // changes the search query / tab / category / page, sees a banner for
+  // an asset that's no longer in the visible grid — confusing and
+  // inconsistent with "first tap previews the thing you can see". The
+  // empty-deps regression on the page reset is also fixed here.
   useEffect(() => {
     setCurrentPage(1);
-  }, []);
+    setPreviewAsset(null);
+  }, [searchQuery, selectedTab, selectedCategory, assetType]);
 
   // Handle asset selection
   const handleAssetClick = useCallback(
@@ -107,17 +122,32 @@ export default function AssetBrowserWizard({
           onMultiSelect(assets);
         }
       } else {
-        if (onSelect) {
-          onSelect(asset);
+        // P4.12 — first tap previews, second tap on same card confirms.
+        // The kid gets a clear "this is what I picked" banner before
+        // the wizard advances, and can switch by tapping a different
+        // asset. If onSelect is missing (defensive — always supplied
+        // in the wizard's wiring), fall through with a no-op.
+        if (previewAsset?.id === asset.id) {
+          if (onSelect) onSelect(asset);
+        } else {
+          setPreviewAsset(asset);
         }
       }
     },
-    [multiSelect, selectedAssets, onSelect, onMultiSelect]
+    [multiSelect, selectedAssets, onSelect, onMultiSelect, previewAsset]
   );
+
+  // Confirm the previewed asset (button in the preview banner).
+  const handleConfirmPreview = useCallback(() => {
+    if (previewAsset && onSelect) {
+      onSelect(previewAsset);
+    }
+  }, [previewAsset, onSelect]);
 
   // Render asset card
   const renderAssetCard = (asset: GameAsset) => {
     const isSelected = selectedAssets.has(asset.id);
+    const isPreviewed = !multiSelect && previewAsset?.id === asset.id;
     const isSuggested =
       suggestedAssets &&
       (suggestedAssets.player?.id === asset.id ||
@@ -134,8 +164,18 @@ export default function AssetBrowserWizard({
               data-testid={`asset-card-${asset.id}`}
               className={`
                 relative cursor-pointer transition-all hover:scale-105 hover:shadow-lg
-                ${isSelected ? 'ring-2 ring-purple-500' : ''}
-                ${isSuggested ? 'ring-2 ring-yellow-400' : ''}
+                ${
+                  // Single ring per card. Selection (multi-select) and
+                  // preview (single-select) take precedence over Pixel's
+                  // suggestion highlight so the kid sees what they
+                  // picked first; the yellow "Pixel recommends" hint
+                  // shows when nothing is selected.
+                  isSelected || isPreviewed
+                    ? 'ring-2 ring-purple-500'
+                    : isSuggested
+                      ? 'ring-2 ring-yellow-400'
+                      : ''
+                }
                 ${viewMode === 'grid' ? 'p-2' : 'p-3 flex items-center space-x-3'}
               `}
               onClick={() => handleAssetClick(asset)}
@@ -264,7 +304,13 @@ export default function AssetBrowserWizard({
             </Button>
 
             {!embedded && onClose && (
-              <Button variant="ghost" size="sm" onClick={onClose} data-testid="button-close">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onClose}
+                data-testid="button-close"
+                aria-label={strings.iconButtons.closeAssetBrowser}
+              >
                 <X className="w-4 h-4" />
               </Button>
             )}
@@ -326,6 +372,56 @@ export default function AssetBrowserWizard({
             </Tabs>
           )}
         </div>
+
+        {/* P4.12 — Inline preview banner for single-select. Shows the kid
+            what they tapped before they confirm. Tapping the card again or
+            this button advances the wizard; tapping a different asset just
+            updates the banner. */}
+        {!multiSelect && previewAsset && (
+          <div
+            data-testid="asset-preview-banner"
+            aria-live="polite"
+            aria-atomic="true"
+            className="mx-4 mb-2 flex items-center gap-3 rounded-lg border border-purple-300 bg-purple-50 p-3 dark:border-purple-700 dark:bg-purple-950"
+          >
+            <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded bg-white dark:bg-gray-800">
+              {(previewAsset.type === 'sprite' || previewAsset.type === 'background') &&
+              previewAsset.thumbnail ? (
+                <img
+                  src={previewAsset.thumbnail}
+                  alt=""
+                  data-testid="asset-preview-image"
+                  className="h-full w-full object-contain"
+                />
+              ) : (
+                <div className="text-2xl">
+                  {previewAsset.type === 'sound'
+                    ? '🔊'
+                    : previewAsset.type === 'music'
+                      ? '🎵'
+                      : '📦'}
+                </div>
+              )}
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="truncate font-semibold" data-testid="asset-preview-name">
+                {previewAsset.name}
+              </p>
+              <p className="truncate text-xs text-gray-600 dark:text-gray-400">
+                {previewAsset.description}
+              </p>
+            </div>
+            <Button
+              size="sm"
+              onClick={handleConfirmPreview}
+              data-testid="button-confirm-preview"
+              className="shrink-0"
+            >
+              <Check className="mr-1 h-4 w-4" />
+              Use this one
+            </Button>
+          </div>
+        )}
 
         {/* Asset grid */}
         <ScrollArea className="flex-1 p-4">

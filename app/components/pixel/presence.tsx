@@ -297,7 +297,8 @@ export default function PixelPresence({ onNavigate, currentPath = '/' }: PixelPr
                       alt="Pixel"
                       className="w-full h-full object-cover"
                       style={{ imageRendering: 'crisp-edges' }}
-                      data-testid="pixel-avatar"
+                      loading="lazy"
+                      data-testid="pixel-expanded-avatar"
                     />
                   </div>
                   <div className="flex-1">

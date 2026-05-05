@@ -123,6 +123,45 @@ describe('PygameLivePreview — Pause / Resume (P6)', () => {
     await waitFor(() => expect(screen.queryByTestId('paused-overlay')).not.toBeInTheDocument());
   });
 
+  it('canvas accepts onPointerDown for unified mouse + touch interaction (P4.5)', async () => {
+    const onInteraction = vi.fn();
+    render(
+      <PygameLivePreview
+        choices={[sampleChoice]}
+        pyodide={mockPyodide}
+        onInteraction={onInteraction}
+      />
+    );
+
+    const pauseBtn = await screen.findByTestId('button-play-pause-preview');
+    await waitFor(() => expect(pauseBtn).toHaveTextContent(/pause/i));
+
+    const canvas = screen.getByTestId('canvas-main-preview');
+    // getBoundingClientRect in jsdom returns 0/0/0/0 by default; clientX/Y of
+    // 50/30 still produces a deterministic offset for pygame coordinates.
+    fireEvent.pointerDown(canvas, {
+      pointerType: 'touch',
+      pointerId: 1,
+      clientX: 50,
+      clientY: 30,
+    });
+
+    await waitFor(() => {
+      expect(onInteraction).toHaveBeenCalledWith(
+        'click',
+        expect.objectContaining({ x: 50, y: 30 })
+      );
+    });
+
+    // The pyodide-dispatch leg is a separate failure surface — a regression
+    // that early-returns before runPython would still fire onInteraction
+    // through the same try-block, so assert it independently to lock down
+    // the pygame click delivery path.
+    expect(mockPyodide.runPython).toHaveBeenCalledWith(
+      expect.stringContaining('handle_click(50, 30)')
+    );
+  });
+
   it('does not pause when P is pressed inside an editable target', async () => {
     render(
       <div>

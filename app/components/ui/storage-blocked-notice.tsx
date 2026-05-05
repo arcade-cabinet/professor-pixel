@@ -14,6 +14,7 @@
 import { useEffect, useState } from 'react';
 import { AlertTriangle, X } from 'lucide-react';
 import { isStorageBlocked } from '@lib/storage/private-mode';
+import { strings } from '@lib/i18n';
 
 const DISMISS_KEY = 'pp.storageBlockedDismissed';
 
@@ -56,11 +57,8 @@ export default function StorageBlockedNotice() {
     >
       <AlertTriangle className="h-4 w-4 flex-shrink-0 mt-0.5" aria-hidden="true" />
       <div className="flex-1">
-        <p className="font-bold">Pixel can't save your progress here</p>
-        <p>
-          Your browser is in private mode or has storage turned off, so games and lessons won't
-          stick around if you refresh. Open a normal browser window to save your work.
-        </p>
+        <p className="font-bold">{strings.chrome.storageBlocked.title}</p>
+        <p>{strings.chrome.storageBlocked.message}</p>
       </div>
       <button
         type="button"
@@ -68,7 +66,7 @@ export default function StorageBlockedNotice() {
           writeDismissed();
           setDismissed(true);
         }}
-        aria-label="Dismiss"
+        aria-label={strings.chrome.storageBlocked.dismissLabel}
         data-testid="storage-blocked-dismiss"
         className="rounded p-1 hover:bg-amber-200 dark:hover:bg-amber-800"
       >

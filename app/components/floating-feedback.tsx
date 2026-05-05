@@ -14,6 +14,7 @@ import {
 import { useState, useEffect } from 'react';
 import { useToast } from '@lib/hooks/use-toast';
 import { motion, AnimatePresence } from 'framer-motion';
+import { strings } from '@lib/i18n';
 
 interface FloatingFeedbackProps {
   step: {
@@ -49,6 +50,51 @@ export default function FloatingFeedback({
   const [justCopied, setJustCopied] = useState(false);
   const { toast } = useToast();
 
+  // P4.16 — `?` keyboard shortcut toggles the hint panel. Gated so the
+  // shortcut is ignored while a kid is typing in an input/textarea or
+  // a contenteditable surface (Monaco's textarea, the rename input on
+  // /home, the search box in the asset browser, etc.). The shortcut
+  // also yields when a modifier is held so it can't conflict with
+  // browser shortcuts (Cmd+? / Shift+?). The listener is bound to the
+  // document and cleaned up on unmount; multiple FloatingFeedback
+  // instances should never be on screen simultaneously, but if they
+  // were, both would toggle — that's a more visible bug than silently
+  // losing the shortcut.
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== '?') return;
+      // metaKey blocks Cmd+? on macOS. We deliberately do NOT block
+      // altKey: on Windows/Linux non-US layouts (German, Scandinavian)
+      // the `?` glyph is produced via AltGr, which browsers surface
+      // as both ctrlKey and altKey true. event.key is layout-resolved
+      // so we receive the literal '?' regardless. Blocking altKey
+      // would silently kill the shortcut for non-US users.
+      if (event.metaKey) return;
+      const t = event.target as HTMLElement | null;
+      if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) {
+        return;
+      }
+      event.preventDefault();
+      setIsVisible((v) => !v);
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, []);
+
+  // P4.22 — Ctrl+Space inside Monaco fires a `pp:request-hint` custom
+  // event (see code-editor.tsx). The panel responds by becoming
+  // visible (in case the kid had dismissed it). Same listener can
+  // also be triggered from anywhere else that wants to surface the
+  // hint — e.g., a future "?" floating button on the wizard surface.
+  useEffect(() => {
+    // React already bails out of re-renders when setState is called with
+    // the current value, so plain setIsVisible(true) is sufficient — the
+    // earlier functional form here was theatre.
+    const onRequestHint = () => setIsVisible(true);
+    document.addEventListener('pp:request-hint', onRequestHint);
+    return () => document.removeEventListener('pp:request-hint', onRequestHint);
+  }, []);
+
   useEffect(() => {
     if (showNext) {
       // Celebrate when step is completed
@@ -73,13 +119,13 @@ export default function FloatingFeedback({
       setJustCopied(true);
       setTimeout(() => setJustCopied(false), 2000);
       toast({
-        title: 'Solution copied!',
-        description: 'The solution has been copied to your clipboard.',
+        title: strings.floatingFeedback.copySuccessTitle,
+        description: strings.floatingFeedback.copySuccessDescription,
       });
     } catch (_err) {
       toast({
-        title: 'Failed to copy',
-        description: 'Please try selecting and copying the text manually.',
+        title: strings.floatingFeedback.copyErrorTitle,
+        description: strings.floatingFeedback.copyErrorDescription,
         variant: 'destructive',
       });
     }
@@ -88,8 +134,8 @@ export default function FloatingFeedback({
   const handleApplySolution = () => {
     onApplySolution(step.solution);
     toast({
-      title: 'Solution applied!',
-      description: 'The solution has been added to the code editor.',
+      title: strings.floatingFeedback.applyTitle,
+      description: strings.floatingFeedback.applyDescription,
     });
   };
 
@@ -140,7 +186,9 @@ export default function FloatingFeedback({
                 </motion.div>
                 <div className="flex-1">
                   <h4 className="text-lg font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                    {showNext ? 'Excellent Work! 🎉' : 'Step Guidance'}
+                    {showNext
+                      ? strings.floatingFeedback.headingComplete
+                      : strings.floatingFeedback.headingGuidance}
                   </h4>
                 </div>
               </motion.div>
@@ -152,6 +200,7 @@ export default function FloatingFeedback({
                   onClick={() => setIsVisible(false)}
                   className="h-8 w-8 p-0 hover:bg-muted rounded-full transition-all"
                   data-testid="button-dismiss-feedback"
+                  aria-label={strings.floatingFeedback.dismissAriaLabel}
                 >
                   <X className="h-5 w-5" />
                 </Button>
@@ -168,12 +217,12 @@ export default function FloatingFeedback({
                 <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} className="space-y-3">
                   <div className="flex items-center gap-2 text-success">
                     <CheckCircle className="h-5 w-5" />
-                    <span className="font-semibold">Step Completed!</span>
+                    <span className="font-semibold">{strings.floatingFeedback.stepCompleted}</span>
                   </div>
                   <p className="text-base text-muted-foreground leading-relaxed">
                     {isLastStep
-                      ? "Amazing job! You've mastered all the concepts in this lesson. Ready to complete it?"
-                      : "Great progress! You're ready to tackle the next challenge."}
+                      ? strings.floatingFeedback.encouragementLast
+                      : strings.floatingFeedback.encouragementNext}
                   </p>
                 </motion.div>
               ) : (
@@ -214,12 +263,16 @@ export default function FloatingFeedback({
                       {isLastStep ? (
                         <>
                           <Trophy className="h-5 w-5 mr-2" />
-                          <span className="text-base font-semibold">Complete Lesson</span>
+                          <span className="text-base font-semibold">
+                            {strings.floatingFeedback.completeLesson}
+                          </span>
                           <Zap className="h-4 w-4 ml-1 group-hover:animate-pulse" />
                         </>
                       ) : (
                         <>
-                          <span className="text-base font-semibold">Next Step</span>
+                          <span className="text-base font-semibold">
+                            {strings.floatingFeedback.nextStep}
+                          </span>
                           <ArrowRight className="h-5 w-5 ml-2 group-hover:translate-x-1 transition-transform" />
                         </>
                       )}
@@ -235,7 +288,9 @@ export default function FloatingFeedback({
                     data-testid="button-show-solution"
                   >
                     <Code className="h-4 w-4 mr-2" />
-                    {showSolution ? 'Hide Solution' : 'Show Solution'}
+                    {showSolution
+                      ? strings.floatingFeedback.hideSolution
+                      : strings.floatingFeedback.showSolution}
                   </Button>
                 </motion.div>
               </div>
@@ -271,12 +326,12 @@ export default function FloatingFeedback({
                           {justCopied ? (
                             <>
                               <CheckCircle className="h-4 w-4 text-success" />
-                              <span>Copied!</span>
+                              <span>{strings.floatingFeedback.copied}</span>
                             </>
                           ) : (
                             <>
                               <Copy className="h-4 w-4" />
-                              <span>Copy Solution</span>
+                              <span>{strings.floatingFeedback.copySolution}</span>
                             </>
                           )}
                         </Button>
@@ -291,7 +346,7 @@ export default function FloatingFeedback({
                           data-testid="button-apply-solution"
                         >
                           <Code className="h-4 w-4" />
-                          Apply to Editor
+                          {strings.floatingFeedback.applyToEditor}
                         </Button>
                       </motion.div>
                     </div>

@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, ArrowLeft } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -35,6 +35,7 @@ import { saveWizardProject } from '@lib/storage/projects';
 import { assetManager } from '@lib/assets/manager';
 import { ICON_SIZES, STYLES } from '@lib/wizard/constants';
 import { exportProjectAsZip, shareOrDownload } from '@lib/pygame/runtime/exporter';
+import { strings } from '@lib/i18n';
 import {
   saveSessionState,
   loadSessionState,
@@ -68,6 +69,8 @@ export default function UniversalWizard({
     handleOptionSelect,
     advance,
     setSessionActions,
+    goBack,
+    canGoBack,
   } = useWizardDialogue({ flowType });
 
   const [, setLocation] = useLocation();
@@ -178,20 +181,110 @@ export default function UniversalWizard({
       return null;
     })()
   );
+  // Identity slice of the most recent toasted save. The save effect
+  // re-runs on every dep change (gameAssembled / gameName / gameType),
+  // including StrictMode double-invokes and ancillary deps that don't
+  // really mean a new save. Toasting on every fire would spam "Saved!"
+  // multiple times for one logical user action. Comparing a hash of
+  // the just-saved payload to the last toasted hash drops the
+  // duplicates without needing to instrument every dep.
+  const lastToastedSaveKeyRef = useRef<string | null>(null);
+
   useEffect(() => {
     if (!sessionActions.gameAssembled) return;
     const draft = loadWizardState();
     if (!draft) return;
-    saveWizardProject(
-      {
-        wizardState: draft,
-        name: sessionActions.gameName || draft.gameType || 'My Game',
-        template: sessionActions.gameType || draft.gameType || 'unknown',
-      },
-      savedProjectIdRef.current ?? undefined
-    )
+    // Capture a thumbnail data URL from whichever wizard-owned canvas is
+    // currently mounted. We query for the testid the live-preview canvas
+    // exposes — the WYSIWYG editor canvas uses a different testid, so we
+    // try both. toDataURL can throw on tainted canvases (cross-origin
+    // imagery without CORS); if it does, omit the thumbnail rather than
+    // failing the whole save.
+    //
+    // Two correctness gates here:
+    // 1. The gameAssembled flip and the canvas mount run in the same
+    //    React commit batch, so a synchronous querySelector inside this
+    //    effect almost always returns null on the first fire — the
+    //    canvas hasn't painted yet. Defer the capture into a
+    //    requestAnimationFrame so the DOM has reached the post-commit
+    //    paint phase before we read it.
+    // 2. The source canvas is 800x600 in production; a JPEG q=0.7 of
+    //    that comes out around 80–160KB base64-encoded, and engaged
+    //    kids end up with 10+ projects, blowing through the 5–10MB
+    //    localStorage budget. Resize through an offscreen canvas to
+    //    320x180 before toDataURL so each thumbnail is ~5–15KB.
+    const captureThumbnail = (): Promise<string | undefined> =>
+      new Promise((resolve) => {
+        requestAnimationFrame(() => {
+          try {
+            const canvas = (document.querySelector('[data-testid="canvas-main-preview"]') ||
+              document.querySelector('[data-testid="place-canvas"]')) as HTMLCanvasElement | null;
+            if (!(canvas instanceof HTMLCanvasElement)) {
+              resolve(undefined);
+              return;
+            }
+            // Skip capture for an unrendered (zero-dimension) canvas.
+            if (canvas.width === 0 || canvas.height === 0) {
+              resolve(undefined);
+              return;
+            }
+            const off = document.createElement('canvas');
+            off.width = 320;
+            off.height = 180;
+            const ctx = off.getContext('2d');
+            if (!ctx) {
+              resolve(undefined);
+              return;
+            }
+            ctx.drawImage(canvas, 0, 0, 320, 180);
+            resolve(off.toDataURL('image/jpeg', 0.7));
+          } catch (err) {
+            console.warn('[universal] thumbnail capture skipped:', err);
+            resolve(undefined);
+          }
+        });
+      });
+
+    // Sequence: capture then save. The capture is fast (one rAF +
+    // a synchronous drawImage) and short-circuits to undefined on
+    // failure modes, so awaiting it doesn't introduce a meaningful
+    // delay before the save lands. Hoist the captured URL into the
+    // outer scope so the fallback create path can re-use it without
+    // re-running rAF (the canvas may have unmounted between the
+    // primary save and the fallback retry).
+    let capturedThumbnail: string | undefined;
+    captureThumbnail()
+      .then((thumbnailDataUrl) => {
+        capturedThumbnail = thumbnailDataUrl;
+        return saveWizardProject(
+          {
+            wizardState: draft,
+            name: sessionActions.gameName || draft.gameType || strings.wizard.defaultGameName,
+            template: sessionActions.gameType || draft.gameType || 'unknown',
+            thumbnailDataUrl,
+          },
+          savedProjectIdRef.current ?? undefined
+        );
+      })
       .then((project) => {
         savedProjectIdRef.current = project.id;
+        // P4.10 — brief "Saved" toast so the kid knows their work landed.
+        // Dedupe by hashing the saved payload's identity slice: if the
+        // project id + name + template are unchanged from the last
+        // toast'd save, this fire was a no-op (StrictMode double-invoke
+        // or a sessionActions re-derive with no real mutation) —
+        // silently absorb. Only a state-changing save surfaces UI noise.
+        // Keying on project.id (not currentNodeId) avoids cross-project
+        // suppression when two distinct projects share name + template.
+        const saveKey = `${project.id}|${project.name}|${project.template}`;
+        if (lastToastedSaveKeyRef.current !== saveKey) {
+          lastToastedSaveKeyRef.current = saveKey;
+          toast({
+            title: strings.wizard.save.toastTitle,
+            description: strings.wizard.save.toastDescription,
+            duration: 1500,
+          });
+        }
       })
       .catch(async (err) => {
         // If the existingId path failed (stale id — someone deleted the row
@@ -202,10 +295,20 @@ export default function UniversalWizard({
           try {
             const project = await saveWizardProject({
               wizardState: draft,
-              name: sessionActions.gameName || draft.gameType || 'My Game',
+              name: sessionActions.gameName || draft.gameType || strings.wizard.defaultGameName,
               template: sessionActions.gameType || draft.gameType || 'unknown',
+              thumbnailDataUrl: capturedThumbnail,
             });
             savedProjectIdRef.current = project.id;
+            const saveKey = `${project.id}|${project.name}|${project.template}`;
+            if (lastToastedSaveKeyRef.current !== saveKey) {
+              lastToastedSaveKeyRef.current = saveKey;
+              toast({
+                title: strings.wizard.save.toastTitle,
+                description: strings.wizard.save.toastDescription,
+                duration: 1500,
+              });
+            }
             return;
           } catch (fallbackErr) {
             console.warn('Failed to save project to My Games (fallback):', fallbackErr);
@@ -300,7 +403,7 @@ export default function UniversalWizard({
     // Check if the current node has an action
     if (currentNode.action === 'openWYSIWYGEditor') {
       // Minimize when opening editor
-      const message = "You've got this! I'm here if you need me!";
+      const message = strings.wizard.minimizeMessages.youGotThis;
       setUiState((prev) => ({
         ...prev,
         wysiwygEditorOpen: true,
@@ -473,7 +576,7 @@ export default function UniversalWizard({
         return;
       } else if (option.action === 'openWYSIWYGEditor') {
         // Open the pro editor with all selected components and assets
-        const message = "You've got this! I'm here if you need me!";
+        const message = strings.wizard.minimizeMessages.youGotThis;
         setUiState((prev) => ({
           ...prev,
           wysiwygEditorOpen: true,
@@ -503,7 +606,7 @@ export default function UniversalWizard({
         // Handle minimize from option. actionParams is Record<string, unknown>.
         const message =
           (option.actionParams?.message as string | undefined) ||
-          'Have fun creating! Click me if you need help!';
+          strings.wizard.minimizeMessages.haveFun;
         setUiState((prev) => ({
           ...prev,
           isMinimizing: true,
@@ -511,7 +614,7 @@ export default function UniversalWizard({
         }));
       } else if (option.action === 'buildGame') {
         // When entering game builder
-        const message = 'Have fun creating! Click me if you need help!';
+        const message = strings.wizard.minimizeMessages.haveFun;
         setUiState((prev) => ({
           ...prev,
           isMinimizing: true,
@@ -683,20 +786,20 @@ export default function UniversalWizard({
           const exported = await exportProjectAsZip({
             selectedComponents: sessionActions.selectedComponents || {},
             selectedAssets,
-            title: sessionActions.gameName || 'My Pygame Game',
+            title: sessionActions.gameName || strings.wizard.defaultExportTitle,
           });
           const action = await shareOrDownload(exported);
           if (action !== 'cancelled') {
             toast({
-              title: 'Game exported!',
-              description: `Saved as ${exported.filename}.`,
+              title: strings.wizard.export.successTitle,
+              description: strings.wizard.export.successDescription(exported.filename),
             });
           }
         } catch (error) {
           console.error('Error during export:', error);
           toast({
-            title: "Couldn't export your game",
-            description: 'Something went wrong saving the ZIP — try again in a moment.',
+            title: strings.wizard.export.errorTitle,
+            description: strings.wizard.export.errorDescription,
             variant: 'destructive',
           });
         }
@@ -720,7 +823,7 @@ export default function UniversalWizard({
 
       // Check for lesson completion
       if (option.text && (option.text.includes('complete') || option.text.includes('finished'))) {
-        const message = "Great job! I'll watch from here while you practice!";
+        const message = strings.wizard.minimizeMessages.lessonComplete;
         setUiState((prev) => ({
           ...prev,
           isMinimizing: true,
@@ -764,6 +867,27 @@ export default function UniversalWizard({
           />
         )}
 
+        {/* Back button — only renders once the kid has navigated forward at
+            least once. Pops the in-memory back-stack so they can revisit a
+            prior choice without restarting the whole wizard. Hidden on the
+            terminal completion node (the wizard run is over there; "Back"
+            from "your game is ready" is confusing). */}
+        {canGoBack && !isWizardComplete && (
+          <div className="flex justify-start">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={goBack}
+              data-testid="wizard-back-button"
+              aria-label={strings.wizard.back.ariaLabel}
+              className="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
+            >
+              <ArrowLeft className="h-4 w-4 mr-1" />
+              {strings.wizard.back.label}
+            </Button>
+          </div>
+        )}
+
         {showOptions && currentNode.options && currentNode.options.length > 0 && (
           <WizardOptionHandler
             options={currentNode.options}
@@ -797,10 +921,10 @@ export default function UniversalWizard({
               type="button"
               onClick={handlePlayGame}
               data-testid="play-game-cta"
-              aria-label="Play your game"
+              aria-label={strings.wizard.play.ariaLabel}
               className="h-auto w-full rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 px-6 py-4 text-lg font-bold text-white shadow-lg transition-transform hover:scale-105 hover:from-purple-700 hover:to-pink-700 focus:outline-none focus:ring-4 focus:ring-purple-300"
             >
-              ▶ Play your game!
+              {strings.wizard.play.cta}
             </Button>
           </div>
         )}
@@ -815,15 +939,13 @@ export default function UniversalWizard({
     isWizardComplete,
     handlePlayGame,
     showCelebration,
+    canGoBack,
+    goBack,
   ]);
 
   // Reset progress handler
   const handleResetProgress = useCallback(() => {
-    if (
-      window.confirm(
-        'Are you sure you want to reset your progress? This will clear all saved wizard data.'
-      )
-    ) {
+    if (window.confirm(strings.wizard.reset.progressConfirm)) {
       clearWizardState();
       window.location.reload();
     }
@@ -831,11 +953,7 @@ export default function UniversalWizard({
 
   // Clear all data handler
   const handleClearAllData = useCallback(() => {
-    if (
-      window.confirm(
-        'Are you sure you want to clear ALL data including preferences? This action cannot be undone.'
-      )
-    ) {
+    if (window.confirm(strings.wizard.reset.allDataConfirm)) {
       clearAllData();
       window.location.reload();
     }
@@ -871,22 +989,22 @@ export default function UniversalWizard({
           exportProjectAsZip({
             selectedComponents: sessionActions.selectedComponents || {},
             selectedAssets,
-            title: sessionActions.gameName || 'My Pygame Game',
+            title: sessionActions.gameName || strings.wizard.defaultExportTitle,
           })
             .then(async (exported) => {
               const action = await shareOrDownload(exported);
               if (action !== 'cancelled') {
                 toast({
-                  title: 'Game exported!',
-                  description: `Saved as ${exported.filename}.`,
+                  title: strings.wizard.export.successTitle,
+                  description: strings.wizard.export.successDescription(exported.filename),
                 });
               }
             })
             .catch((error) => {
               console.error('Export from PixelMenu failed:', error);
               toast({
-                title: "Couldn't export your game",
-                description: 'Something went wrong saving the ZIP — try again in a moment.',
+                title: strings.wizard.export.errorTitle,
+                description: strings.wizard.export.errorDescription,
                 variant: 'destructive',
               });
             });
@@ -1214,17 +1332,15 @@ export default function UniversalWizard({
       <Dialog open={gameNameDialogOpen} onOpenChange={setGameNameDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Name Your Game</DialogTitle>
-            <DialogDescription>
-              Give your game a unique name that captures its essence!
-            </DialogDescription>
+            <DialogTitle>{strings.wizard.nameDialog.title}</DialogTitle>
+            <DialogDescription>{strings.wizard.nameDialog.description}</DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <Input
               id="game-name"
               value={tempGameName}
               onChange={(e) => setTempGameName(e.target.value)}
-              placeholder="Enter your game name..."
+              placeholder={strings.wizard.nameDialog.placeholder}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && tempGameName.trim()) {
                   // Save the game name
@@ -1293,7 +1409,7 @@ export default function UniversalWizard({
               }}
               disabled={!tempGameName.trim()}
             >
-              Create Game
+              {strings.wizard.nameDialog.submit}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -17,26 +17,86 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@lib/hooks/use-toast';
-import { loadProfile, saveProfile, clearProfile, InvalidProfileError } from '@lib/storage/profile';
+import {
+  loadProfile,
+  saveProfile,
+  clearProfile,
+  InvalidProfileError,
+  PROFILE_NAME_MAX_LENGTH,
+  type PlayerProfile,
+} from '@lib/storage/profile';
 import { getClientStorage } from '@lib/storage/mode';
 import { loadLessons } from '@lib/lessons';
 import type { Lesson, UserProgress } from '@lib/types/schema';
 import SafeImage from '@/components/ui/safe-image';
 import pixelHappy from '@assets/pixel/Pixel_happy_excited_expression_22a41625.png';
+import { strings } from '@lib/i18n';
 
 const ONBOARDING_KEY = 'pp.onboardingComplete';
 
 export default function Profile() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [profile, setProfile] = useState(() => loadProfile());
+  const [profile, setProfile] = useState<PlayerProfile | null>(() => loadProfile());
   const [nameDraft, setNameDraft] = useState(profile?.name ?? '');
   const [confirmingSwitch, setConfirmingSwitch] = useState(false);
+  // P4.32 — pronouns + emoji avatar drafts. Initial values from the
+  // existing profile; "" means "not set" (saveProfile clears the field
+  // when the trimmed value is empty AND no existing value would be
+  // carried over). The "custom" radio is implicit: any value not in
+  // PRONOUN_PRESETS is treated as a custom string and rendered in the
+  // text input.
+  const [pronounsDraft, setPronounsDraft] = useState<string>(profile?.pronouns ?? '');
+  const [emojiDraft, setEmojiDraft] = useState<string>(profile?.avatarEmoji ?? '');
 
   // Keep the form in sync if profile changes (e.g., after a switch-user wipe).
   useEffect(() => {
     setNameDraft(profile?.name ?? '');
+    setPronounsDraft(profile?.pronouns ?? '');
+    setEmojiDraft(profile?.avatarEmoji ?? '');
   }, [profile]);
+
+  // Pronoun presets — common kid-friendly options plus a "Custom" escape
+  // hatch. The catalog references this list via index, but the strings
+  // themselves are user-facing labels not localized text (they're the
+  // English-language pronouns being chosen). If we ever add Spanish,
+  // a different preset list will live alongside.
+  const PRONOUN_PRESETS = ['', 'she/her', 'he/him', 'they/them', 'CUSTOM'];
+  const isCustomPronouns = pronounsDraft.length > 0 && !PRONOUN_PRESETS.includes(pronounsDraft);
+  const pronounsRadioValue =
+    pronounsDraft === '' ? '' : isCustomPronouns ? 'CUSTOM' : pronounsDraft;
+
+  // Emoji palette — small, kid-friendly set. A kid wanting something
+  // off-list can paste into the system emoji picker via mobile
+  // keyboard, but the curated palette is the primary affordance.
+  const AVATAR_EMOJI = ['🦊', '🐼', '🐢', '🦄', '🐙', '🦖', '🐝', '🌟', '🚀', '🎮'];
+
+  const handleSaveExpression = () => {
+    try {
+      const next = saveProfile({
+        name: profile?.name ?? nameDraft,
+        // null clears, undefined leaves alone, string sets.
+        pronouns: pronounsDraft.trim().length === 0 ? null : pronounsDraft.trim(),
+        avatarEmoji: emojiDraft.length === 0 ? null : emojiDraft,
+      });
+      setProfile(next);
+      toast({
+        title: strings.profile.expressionSection.savedToast,
+        description: strings.profile.expressionSection.savedDescription,
+      });
+    } catch (err) {
+      if (err instanceof InvalidProfileError) {
+        // Same path as name save — surface the constraint to the kid.
+        toast({
+          title: strings.profile.nameSection.invalidTitle,
+          description: strings.profile.nameSection.invalidDescription,
+          variant: 'destructive',
+        });
+        return;
+      }
+      throw err;
+    }
+  };
 
   const { data: lessons } = useQuery<Lesson[]>({
     queryKey: ['lessons'],
@@ -58,14 +118,30 @@ export default function Profile() {
     try {
       const next = saveProfile(nameDraft);
       setProfile(next);
-      toast({ title: 'Saved!', description: `Pixel will call you ${next.name}.` });
+      toast({
+        title: strings.profile.nameSection.savedToast,
+        description: strings.profile.nameSection.savedDescription(next.name),
+      });
     } catch (err) {
       if (err instanceof InvalidProfileError) {
-        toast({
-          title: 'Pick a name first',
-          description: 'Pixel needs at least one letter.',
-          variant: 'destructive',
-        });
+        // Two distinct destructive toasts — empty input vs too-long
+        // input — so the kid sees what specifically went wrong instead
+        // of one generic "Pick a name first" message that doesn't
+        // explain a 50-character paste being rejected.
+        const trimmedLength = nameDraft.trim().length;
+        if (trimmedLength === 0) {
+          toast({
+            title: strings.profile.nameSection.invalidTitle,
+            description: strings.profile.nameSection.invalidDescription,
+            variant: 'destructive',
+          });
+        } else {
+          toast({
+            title: strings.profile.nameSection.tooLongTitle,
+            description: strings.profile.nameSection.tooLongDescription(PROFILE_NAME_MAX_LENGTH),
+            variant: 'destructive',
+          });
+        }
         return;
       }
       throw err;
@@ -89,8 +165,8 @@ export default function Profile() {
     } catch (err) {
       console.error('Failed to clear lesson progress:', err);
       toast({
-        title: "Couldn't switch users",
-        description: 'Try again — your stuff is still safe.',
+        title: strings.profile.switchUser.errorTitle,
+        description: strings.profile.switchUser.errorBody,
         variant: 'destructive',
       });
       return;
@@ -108,8 +184,8 @@ export default function Profile() {
     setProfile(null);
     setConfirmingSwitch(false);
     toast({
-      title: 'All set!',
-      description: 'Tell Pixel your name on the next screen.',
+      title: strings.profile.switchUser.successTitle,
+      description: strings.profile.switchUser.successBody,
     });
   };
 
@@ -119,29 +195,31 @@ export default function Profile() {
         <header className="text-center">
           <SafeImage
             src={pixelHappy}
-            alt="Pixel waving"
+            alt={strings.profile.pixelAlt}
             fallbackEmoji="👋"
             className="mx-auto h-24 w-24"
             data-testid="profile-pixel-image"
           />
           <h1 className="mt-2 bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-3xl font-bold text-transparent">
-            Your Profile
+            {strings.profile.pageTitle}
           </h1>
         </header>
 
         <Card className="p-6 bg-white/90 dark:bg-gray-800/90">
-          <h2 className="mb-3 text-xl font-bold text-gray-900 dark:text-gray-100">Your name</h2>
+          <h2 className="mb-3 text-xl font-bold text-gray-900 dark:text-gray-100">
+            {strings.profile.nameSection.heading}
+          </h2>
           <p className="mb-3 text-sm text-gray-700 dark:text-gray-300">
-            Pixel uses this to say hi. You can change it anytime.
+            {strings.profile.nameSection.body}
           </p>
           <div className="flex flex-col gap-3 sm:flex-row">
             <Input
               value={nameDraft}
               onChange={(e) => setNameDraft(e.target.value)}
-              maxLength={32}
-              aria-label="Your name"
+              maxLength={PROFILE_NAME_MAX_LENGTH}
+              aria-label={strings.profile.nameSection.ariaLabel}
               data-testid="profile-name-input"
-              placeholder="Type your name"
+              placeholder={strings.profile.nameSection.placeholder}
               className="flex-1"
             />
             <Button
@@ -150,31 +228,155 @@ export default function Profile() {
               data-testid="profile-save-name"
               className="bg-gradient-to-r from-purple-500 to-pink-500"
             >
-              Save name
+              {strings.profile.nameSection.save}
             </Button>
           </div>
           {profile && (
             <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-              Hi {profile.name}! You started on{' '}
-              {profile.createdAt
-                ? new Date(profile.createdAt).toLocaleDateString()
-                : 'your first day'}
-              .
+              {strings.profile.nameSection.since(
+                profile.name,
+                profile.createdAt
+                  ? new Date(profile.createdAt).toLocaleDateString()
+                  : strings.profile.nameSection.sinceFallbackDate
+              )}
             </p>
           )}
         </Card>
 
+        {/* P4.32 — optional pronouns + emoji avatar */}
         <Card className="p-6 bg-white/90 dark:bg-gray-800/90">
           <h2 className="mb-3 text-xl font-bold text-gray-900 dark:text-gray-100">
-            Lessons you've finished
+            {strings.profile.expressionSection.heading}
+          </h2>
+          <p className="mb-4 text-sm text-gray-700 dark:text-gray-300">
+            {strings.profile.expressionSection.body}
+          </p>
+
+          <fieldset className="mb-4">
+            <legend className="mb-2 text-sm font-semibold text-gray-800 dark:text-gray-200">
+              {strings.profile.expressionSection.pronounsLabel}
+            </legend>
+            <div className="flex flex-wrap gap-3">
+              {PRONOUN_PRESETS.map((preset) => {
+                const label =
+                  preset === ''
+                    ? strings.profile.expressionSection.pronounsNone
+                    : preset === 'CUSTOM'
+                      ? strings.profile.expressionSection.pronounsCustom
+                      : preset;
+                const checked = pronounsRadioValue === preset;
+                return (
+                  <label
+                    key={preset || 'none'}
+                    className={`cursor-pointer rounded-md border px-3 py-1 text-sm focus-within:ring-2 focus-within:ring-purple-400 focus-within:ring-offset-1 ${
+                      checked
+                        ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/30'
+                        : 'border-gray-300 dark:border-gray-700'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="pronouns"
+                      value={preset}
+                      checked={checked}
+                      onChange={() => {
+                        if (preset === 'CUSTOM') {
+                          // Keep any existing custom string; if switching from
+                          // a preset, start blank so the input has focus to fill.
+                          if (!isCustomPronouns) setPronounsDraft('');
+                        } else {
+                          setPronounsDraft(preset);
+                        }
+                      }}
+                      className="sr-only"
+                      data-testid={`pronouns-radio-${preset || 'none'}`}
+                    />
+                    {label}
+                  </label>
+                );
+              })}
+            </div>
+            {pronounsRadioValue === 'CUSTOM' && (
+              <Input
+                value={pronounsDraft}
+                onChange={(e) => setPronounsDraft(e.target.value)}
+                placeholder={strings.profile.expressionSection.pronounsCustomPlaceholder}
+                aria-label={strings.profile.expressionSection.pronounsCustomAriaLabel}
+                data-testid="pronouns-custom-input"
+                className="mt-2"
+                maxLength={32}
+              />
+            )}
+          </fieldset>
+
+          <fieldset className="mb-4">
+            <legend className="mb-2 text-sm font-semibold text-gray-800 dark:text-gray-200">
+              {strings.profile.expressionSection.avatarLabel}
+            </legend>
+            <div className="flex flex-wrap gap-2">
+              {AVATAR_EMOJI.map((emoji) => {
+                const selected = emojiDraft === emoji;
+                return (
+                  <button
+                    key={emoji}
+                    type="button"
+                    onClick={() => setEmojiDraft(selected ? '' : emoji)}
+                    aria-label={strings.profile.expressionSection.avatarAriaLabel(emoji)}
+                    aria-pressed={selected}
+                    data-testid={`avatar-emoji-${emoji}`}
+                    className={`flex h-10 w-10 items-center justify-center rounded-md border text-2xl transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-1 ${
+                      selected
+                        ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/30'
+                        : 'border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800'
+                    }`}
+                  >
+                    {emoji}
+                  </button>
+                );
+              })}
+              {emojiDraft && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setEmojiDraft('')}
+                  data-testid="avatar-clear"
+                >
+                  {strings.profile.expressionSection.avatarClear}
+                </Button>
+              )}
+            </div>
+          </fieldset>
+
+          <Button
+            onClick={handleSaveExpression}
+            data-testid="profile-save-expression"
+            className="bg-gradient-to-r from-purple-500 to-pink-500"
+            // Guard: with no profile, saveProfile would throw on the
+            // empty-name branch and surface a confusing "Pick a name
+            // first" toast for an unrelated user action. Match the
+            // rename button's pattern and require the profile to exist.
+            disabled={
+              !profile ||
+              (pronounsDraft === (profile.pronouns ?? '') &&
+                emojiDraft === (profile.avatarEmoji ?? ''))
+            }
+          >
+            {strings.profile.expressionSection.saveButton}
+          </Button>
+        </Card>
+
+        <Card className="p-6 bg-white/90 dark:bg-gray-800/90">
+          <h2 className="mb-3 text-xl font-bold text-gray-900 dark:text-gray-100">
+            {strings.profile.completedSection.heading}
           </h2>
           {completedTitles.length === 0 ? (
             <p className="text-sm text-gray-700 dark:text-gray-300">
-              No lessons finished yet — head to the{' '}
+              {strings.profile.completedSection.empty.prefix}
               <Link href="/lessons" className="text-purple-700 underline dark:text-purple-300">
-                lessons page
-              </Link>{' '}
-              to start one!
+                {strings.profile.completedSection.empty.link}
+              </Link>
+              {strings.profile.completedSection.empty.suffix}
             </p>
           ) : (
             <ul className="list-inside list-disc space-y-1 text-sm text-gray-800 dark:text-gray-200">
@@ -189,11 +391,12 @@ export default function Profile() {
 
         <Card className="border-2 border-amber-300 bg-amber-50 p-6 dark:border-amber-700 dark:bg-amber-900/30">
           <h2 className="mb-2 text-lg font-bold text-amber-900 dark:text-amber-100">
-            Sharing this device?
+            {strings.profile.switchUser.heading}
           </h2>
           <p className="mb-3 text-sm text-amber-800 dark:text-amber-200">
-            Click <strong>Switch user</strong> to clear the name and lesson progress so someone else
-            can start fresh. Saved games stay so siblings can show each other what they made.
+            {strings.profile.switchUser.bodyPrefix}
+            <strong>{strings.profile.switchUser.bodyEmphasis}</strong>
+            {strings.profile.switchUser.bodySuffix}
           </p>
           {!confirmingSwitch ? (
             <Button
@@ -201,7 +404,7 @@ export default function Profile() {
               onClick={() => setConfirmingSwitch(true)}
               data-testid="profile-switch-user"
             >
-              Switch user
+              {strings.profile.switchUser.button}
             </Button>
           ) : (
             <div
@@ -213,7 +416,7 @@ export default function Profile() {
                 id="switch-confirm-label"
                 className="text-sm font-bold text-red-800 dark:text-red-200"
               >
-                Clear name + lesson progress for this device?
+                {strings.profile.switchUser.confirmTitle}
               </p>
               <div className="mt-2 flex gap-2">
                 <Button
@@ -222,7 +425,7 @@ export default function Profile() {
                   onClick={handleSwitchUser}
                   data-testid="profile-switch-confirm"
                 >
-                  Yes, switch user
+                  {strings.profile.switchUser.confirmYes}
                 </Button>
                 <Button
                   size="sm"
@@ -230,7 +433,7 @@ export default function Profile() {
                   onClick={() => setConfirmingSwitch(false)}
                   data-testid="profile-switch-cancel"
                 >
-                  Keep my stuff
+                  {strings.profile.switchUser.confirmNo}
                 </Button>
               </div>
             </div>
@@ -243,10 +446,10 @@ export default function Profile() {
               a real button produces nested interactives, which trip
               keyboard + screen-reader heuristics. */}
           <Button asChild variant="outline" data-testid="profile-back-home">
-            <Link href="/">Back to Home</Link>
+            <Link href="/">{strings.profile.nav.home}</Link>
           </Button>
           <Button asChild variant="outline" data-testid="profile-go-lessons">
-            <Link href="/lessons">Go to Lessons</Link>
+            <Link href="/lessons">{strings.profile.nav.lessons}</Link>
           </Button>
         </div>
       </div>

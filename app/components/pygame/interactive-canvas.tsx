@@ -151,28 +151,33 @@ export default function InteractiveGameCanvas({
     });
   };
 
-  // Handle entity deletion
-  const handleDeleteEntity = (entityId: string) => {
-    if (!scene) return;
+  // Handle entity deletion. Wrapped in useCallback so the keydown effect's
+  // dep array is stable and we don't churn the listener every render
+  // (folded forward from task-023 review).
+  const handleDeleteEntity = useCallback(
+    (entityId: string) => {
+      if (!scene) return;
 
-    const updatedScene: Scene = {
-      ...scene,
-      entities: scene.entities.filter((e) => e.id !== entityId),
-    };
+      const updatedScene: Scene = {
+        ...scene,
+        entities: scene.entities.filter((e) => e.id !== entityId),
+      };
 
-    const updatedConfig: GameConfig = {
-      ...gameConfig,
-      scenes: gameConfig.scenes.map((s) => (s.id === currentScene ? updatedScene : s)),
-    };
+      const updatedConfig: GameConfig = {
+        ...gameConfig,
+        scenes: gameConfig.scenes.map((s) => (s.id === currentScene ? updatedScene : s)),
+      };
 
-    onConfigChange(updatedConfig);
-    setSelectedEntity(null);
+      onConfigChange(updatedConfig);
+      setSelectedEntity(null);
 
-    toast({
-      title: 'Entity Deleted',
-      description: 'Entity removed from the scene',
-    });
-  };
+      toast({
+        title: 'Entity Deleted',
+        description: 'Entity removed from the scene',
+      });
+    },
+    [scene, gameConfig, currentScene, onConfigChange, toast]
+  );
 
   // Handle entity movement
   const handleMoveEntity = (entityId: string, newPosition: { x: number; y: number }) => {
@@ -313,8 +318,12 @@ export default function InteractiveGameCanvas({
           {scene?.entities.map((entity) => (
             <div
               key={entity.id}
+              role="button"
+              tabIndex={isPlaying ? -1 : 0}
+              aria-label={`Entity ${entity.name}`}
+              aria-pressed={!isPlaying && selectedEntity === entity.id}
               className={cn(
-                'absolute border rounded transition-all',
+                'absolute border rounded transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-1',
                 selectedEntity === entity.id
                   ? 'border-primary ring-2 ring-primary/20'
                   : 'border-muted-foreground/30 hover:border-muted-foreground',
@@ -328,6 +337,12 @@ export default function InteractiveGameCanvas({
                 zIndex: entity.layer || 0,
               }}
               onClick={() => !isPlaying && setSelectedEntity(entity.id)}
+              onKeyDown={(e) => {
+                if (!isPlaying && (e.key === 'Enter' || e.key === ' ')) {
+                  e.preventDefault();
+                  setSelectedEntity(entity.id);
+                }
+              }}
               onMouseDown={(e) => {
                 if (!isPlaying && e.button === 0) {
                   const startX = e.clientX;

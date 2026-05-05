@@ -63,4 +63,17 @@ describe('Lessons page — error + empty branches', () => {
     expect(screen.getByTestId('lessons-empty-skip')).toBeInTheDocument();
     expect(screen.getByText(/no lessons available yet/i)).toBeInTheDocument();
   });
+
+  it('renders a Skeleton row layout while lessons are loading (P4.13)', () => {
+    // Don't resolve loadLessons — leave React Query in pending state so
+    // the loading branch renders. The skeleton container marks itself
+    // aria-busy so AT users know to wait, and renders four placeholder
+    // rows shaped like the real lesson cards (icon-circle + 2 text bars)
+    // to prime the eye for the list and prevent layout shift on arrival.
+    vi.mocked(loadLessons).mockImplementation(() => new Promise(() => {}));
+    renderWithProviders();
+    const skeleton = screen.getByTestId('lessons-loading-skeleton');
+    expect(skeleton).toBeInTheDocument();
+    expect(skeleton).toHaveAttribute('aria-busy', 'true');
+  });
 });

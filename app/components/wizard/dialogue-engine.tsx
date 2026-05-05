@@ -50,7 +50,9 @@ export function useWizardDialogue({
       return {
         currentNodeId: persistedState.currentNodeId,
         currentNode: null,
-        dialogueStep: 0,
+        // Restore mid-multiStep position if persisted; defaults to 0 for
+        // plain nodes or when no prior step was saved.
+        dialogueStep: persistedState.dialogueStep ?? 0,
         carouselIndex: 0,
         showAllChoices: false,
       };
@@ -90,7 +92,10 @@ export function useWizardDialogue({
   const [isFlowLoading, setIsFlowLoading] = useState(false);
   const [failedFlowPaths, setFailedFlowPaths] = useState<Set<string>>(new Set());
 
-  // Persist state changes
+  // Persist state changes. `dialogueStep` is in the dependency array so a
+  // kid parked mid-multiStep (slide 2 of a 4-slide tutorial node) who hits
+  // refresh lands back on slide 2, not slide 0. Without this, refresh
+  // would silently rewind their progress through the in-node sequence.
   useEffect(() => {
     if (!hasLoadedPersistedState) {
       // Don't persist on initial load
@@ -103,12 +108,19 @@ export function useWizardDialogue({
       version: '1.0.0',
       activeFlowPath: loadedFlowPath,
       currentNodeId: dialogueState.currentNodeId,
+      dialogueStep: dialogueState.dialogueStep,
       gameType: sessionActions.gameType,
       selectedGameType: sessionActions.selectedGameType,
       sessionActions: sessionActions,
       updatedAt: new Date().toISOString(),
     });
-  }, [dialogueState.currentNodeId, sessionActions, loadedFlowPath, hasLoadedPersistedState]);
+  }, [
+    dialogueState.currentNodeId,
+    dialogueState.dialogueStep,
+    sessionActions,
+    loadedFlowPath,
+    hasLoadedPersistedState,
+  ]);
 
   // P3.2 — Pixel speaks the current node text when it changes (audio off by
   // default, gated on `pp.audioEnabled`). Cancels any in-flight speech first
@@ -380,15 +392,48 @@ export function useWizardDialogue({
     dialogueState.currentNodeId,
   ]);
 
+  // First-load restore guard: when wizardData arrives and the kid's
+  // currentNodeId came from persisted state, we preserve the persisted
+  // dialogueStep instead of slamming it to 0. After the very first
+  // resolution, subsequent currentNodeId changes are real navigations
+  // (handleOptionSelect, navigateToNode, goBack) and SHOULD reset the
+  // step counter — re-entering a multiStep node mid-session always
+  // starts the kid at slide 0 of the in-node sequence. This ref is the
+  // one-shot toggle that keeps the restore-vs-reset behaviors distinct.
+  const isFirstNodeResolutionRef = useRef(true);
+
   // Update current node when ID changes
   useEffect(() => {
     if (wizardData && dialogueState.currentNodeId) {
       const node = wizardData[dialogueState.currentNodeId];
       if (node) {
+        const isFirst = isFirstNodeResolutionRef.current;
+        const persistedStep = persistedStateRef.current?.dialogueStep;
+        // Only restore the persisted step if the resolved node IS multiStep
+        // AND the index is within range. A non-multiStep node always renders
+        // at step 0 — accepting a non-zero stale value would let
+        // getCurrentText be called with dialogueStep=2 on a plain node and
+        // render an empty bubble. Flow JSON edits between sessions can also
+        // shrink a multiStep array, in which case the stale index is also
+        // invalid and falls through to 0.
+        // Disk-resident value — must be a non-negative integer within
+        // the current multiStep array. A non-integer (e.g. 1.5) or
+        // negative would slip past `< length` and either index off the
+        // end of the array (undefined) or pull a step the kid never
+        // saw. Flow JSON edits between sessions can also shrink the
+        // array, in which case the stale index falls through to 0.
+        const stepInRange =
+          typeof persistedStep === 'number' &&
+          Number.isInteger(persistedStep) &&
+          persistedStep >= 0 &&
+          node.multiStep != null &&
+          persistedStep < node.multiStep.length;
+        const restoreStep = isFirst && stepInRange ? persistedStep : 0;
+        if (isFirst) isFirstNodeResolutionRef.current = false;
         setDialogueState((prev) => ({
           ...prev,
           currentNode: node,
-          dialogueStep: 0,
+          dialogueStep: restoreStep,
           carouselIndex: 0,
           showAllChoices: false,
         }));
@@ -396,12 +441,55 @@ export function useWizardDialogue({
     }
   }, [dialogueState.currentNodeId, wizardData]);
 
+  // Per-session back-stack of prior nodeIds. In-memory only — persisted
+  // state already restores `currentNodeId` on refresh, so reviving the
+  // back-stack across reloads would let the kid press Back into a node
+  // their session never actually visited (the prior browsing trail).
+  // Cleared whenever the wizard reaches a structurally-terminal completion
+  // so a fresh run starts with no Back affordance.
+  const historyRef = useRef<string[]>([]);
+  const [historyDepth, setHistoryDepth] = useState(0);
+
+  // historyRef stores raw node IDs. When the kid switches to a
+  // different flow (loadedFlowPath changes) those IDs no longer exist
+  // in the new wizardData — pressing Back would route to a missing
+  // node and crash the renderer. Reset on flow change.
+  useEffect(() => {
+    historyRef.current = [];
+    setHistoryDepth(0);
+  }, [loadedFlowPath]);
+
   // Navigation functions
-  const navigateToNode = useCallback((nodeId: string) => {
-    setDialogueState((prev) => ({
-      ...prev,
-      currentNodeId: nodeId,
-    }));
+  //
+  // The back-stack push happens BEFORE the setState call rather than
+  // inside the updater. React 19 strict mode invokes state updaters
+  // twice in dev to surface impure logic — a `historyRef.current.push`
+  // inside the updater would double-push and the kid sees Back land on
+  // the same node twice. Reading `dialogueState.currentNodeId` from the
+  // closure is fine because navigateToNode runs from event handlers
+  // where the latest render is current.
+  const navigateToNode = useCallback(
+    (nodeId: string, options?: { skipHistory?: boolean }) => {
+      const prevId = dialogueState.currentNodeId;
+      // Self-navigation (re-entering the same node) is a no-op for the
+      // back-stack — pushing the same id would let Back re-stick the kid
+      // on the page they're already on.
+      if (!options?.skipHistory && prevId && prevId !== nodeId) {
+        historyRef.current.push(prevId);
+        setHistoryDepth(historyRef.current.length);
+      }
+      setDialogueState((prev) => ({ ...prev, currentNodeId: nodeId }));
+    },
+    [dialogueState.currentNodeId]
+  );
+
+  const goBack = useCallback(() => {
+    if (historyRef.current.length === 0) return;
+    const previousNodeId = historyRef.current.pop()!;
+    setHistoryDepth(historyRef.current.length);
+    // Use the skipHistory flag so going Back doesn't itself add an entry —
+    // otherwise Back-then-Back would cycle between two nodes forever.
+    setDialogueState((prev) => ({ ...prev, currentNodeId: previousNodeId }));
   }, []);
 
   const handleOptionSelect = useCallback(
@@ -540,6 +628,8 @@ export function useWizardDialogue({
     handleOptionSelect,
     advance,
     setSessionActions,
+    goBack,
+    canGoBack: historyDepth > 0,
   };
 }
 
