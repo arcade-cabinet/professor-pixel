@@ -14,6 +14,7 @@
 import type { Project } from '@lib/types/schema';
 import { getClientStorage } from '@lib/storage/mode';
 import { type PersistedWizardState, persistedWizardStateSchema } from '@lib/storage/persistence';
+import { publishStorageEvent } from '@lib/storage/broadcast';
 
 const ANON_USER_ID = 'anonymous-user';
 const SNAPSHOT_FILE = 'wizard-state.json';
@@ -88,7 +89,7 @@ export async function saveWizardProject(
   }
 
   if (resolvedId) {
-    return storage.updateProject(resolvedId, {
+    const updated = await storage.updateProject(resolvedId, {
       name: snapshot.name,
       template: snapshot.template,
       // Only include thumbnailDataUrl if the caller supplied one. Sending
@@ -101,8 +102,10 @@ export async function saveWizardProject(
       files: [fileEntry],
       assets: [],
     });
+    publishStorageEvent({ type: 'projects.changed', reason: 'update' });
+    return updated;
   }
-  return storage.createProject({
+  const created = await storage.createProject({
     userId: ANON_USER_ID,
     name: snapshot.name,
     template: snapshot.template,
@@ -112,6 +115,8 @@ export async function saveWizardProject(
     files: [fileEntry],
     assets: [],
   });
+  publishStorageEvent({ type: 'projects.changed', reason: 'create' });
+  return created;
 }
 
 export async function loadWizardProject(id: string): Promise<WizardProjectSnapshot | null> {
@@ -145,6 +150,7 @@ export async function loadWizardProject(id: string): Promise<WizardProjectSnapsh
 export async function deleteWizardProject(id: string): Promise<void> {
   const storage = getClientStorage();
   await storage.deleteProject(id);
+  publishStorageEvent({ type: 'projects.changed', reason: 'delete' });
 }
 
 /**
@@ -175,7 +181,7 @@ export async function cloneWizardProject(sourceId: string): Promise<Project> {
     n += 1;
   }
   const cloneName = `${baseName} — Remix ${n}`;
-  return storage.createProject({
+  const cloned = await storage.createProject({
     userId: ANON_USER_ID,
     name: cloneName,
     template: source.template,
@@ -185,6 +191,8 @@ export async function cloneWizardProject(sourceId: string): Promise<Project> {
     files: source.files.map((f) => ({ ...f })),
     assets: source.assets.map((a) => ({ ...a })),
   });
+  publishStorageEvent({ type: 'projects.changed', reason: 'clone' });
+  return cloned;
 }
 
 /**
@@ -200,5 +208,7 @@ export async function renameWizardProject(id: string, newName: string): Promise<
     throw new Error('Project name cannot be empty');
   }
   const storage = getClientStorage();
-  return storage.updateProject(id, { name: trimmed });
+  const updated = await storage.updateProject(id, { name: trimmed });
+  publishStorageEvent({ type: 'projects.changed', reason: 'rename' });
+  return updated;
 }

@@ -11,6 +11,7 @@ import {
 } from '@lib/storage/projects';
 import { exportSavedProject, slugify } from '@lib/pygame/runtime/exporter';
 import { shouldWarnQuota, markQuotaWarned } from '@lib/storage/quota';
+import { subscribeStorageEvents } from '@lib/storage/broadcast';
 import { queryClient } from '@lib/net/query-client';
 import UniversalWizard from '@/components/wizard/universal';
 import { Button } from '@/components/ui/button';
@@ -235,6 +236,18 @@ export default function Home() {
       }
     })();
   }, [setLocation, toast]);
+
+  // P4.26 — Cross-tab sync. When another tab saves/deletes/renames a
+  // project, invalidate the projects query so the My Games list
+  // refreshes here without a manual reload. The subscriber drops the
+  // tab's own messages (loop avoidance lives in broadcast.ts).
+  useEffect(() => {
+    return subscribeStorageEvents((event) => {
+      if (event.type === 'projects.changed') {
+        queryClient.invalidateQueries({ queryKey: ['wizard-projects'] });
+      }
+    });
+  }, []);
 
   const dismissIntro = () => {
     writeHasSeenIntro();

@@ -61,10 +61,14 @@ describe('lazy-loading mascot images (P4.25)', () => {
 
   it('pixel/presence.tsx EXPANDED-mode avatar is lazy (corner-mode default stays eager)', () => {
     const src = read('app/components/pixel/presence.tsx');
-    // The expanded-mode <img> sits inside `w-20 h-20 rounded-full overflow-hidden border-2 border-purple-500/30`.
-    // Match the surrounding token + a loading="lazy" on the same JSX block.
-    const expandedMatch = src.match(/border-purple-500\/30[\s\S]{0,200}<img[\s\S]*?\/>/);
-    expect(expandedMatch, 'expanded-mode <img> not found near sentinel class').not.toBeNull();
+    // Anchor on a stable testid set on the expanded-mode <img> rather
+    // than a CSS class — restyling the surrounding div doesn't break
+    // the test, and the failure message is informative.
+    const expandedMatch = src.match(/<img[^>]*data-testid="pixel-expanded-avatar"[^>]*\/>/s);
+    expect(
+      expandedMatch,
+      'expanded-mode <img data-testid="pixel-expanded-avatar"> missing — did the testid drift?'
+    ).not.toBeNull();
     expect(expandedMatch![0]).toMatch(/loading="lazy"/);
   });
 

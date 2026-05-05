@@ -47,8 +47,10 @@ export interface StorageEstimate {
 }
 
 type EstimateImpl = () => Promise<StorageEstimate>;
+type MeasureBytesImpl = () => number | null;
 
 let estimateImpl: EstimateImpl | undefined;
+let measureBytesImpl: MeasureBytesImpl | undefined;
 
 /**
  * Test seam — let suites stub the estimate without poking at globals.
@@ -56,6 +58,16 @@ let estimateImpl: EstimateImpl | undefined;
  */
 export function setEstimateImpl(impl: EstimateImpl | undefined): void {
   estimateImpl = impl;
+}
+
+/**
+ * Test seam for the localStorage byte-count path. Folded forward from
+ * task-025 review: the prior tests had to allocate multi-MB strings
+ * to exercise the threshold. Now suites can return any number from
+ * a stub without real heap allocation.
+ */
+export function setMeasureBytesImpl(impl: MeasureBytesImpl | undefined): void {
+  measureBytesImpl = impl;
 }
 
 async function defaultEstimate(): Promise<StorageEstimate> {
@@ -144,7 +156,8 @@ export async function shouldWarnQuota(): Promise<boolean> {
       // protects against repeat-toasting on this code path.
     }
   }
-  const bytes = measureLocalStorageBytes();
+  const measure = measureBytesImpl ?? measureLocalStorageBytes;
+  const bytes = measure();
   if (bytes !== null && bytes >= LOCAL_STORAGE_WARN_BYTES) return true;
   const ratio = await getUsageRatio();
   if (ratio === null) return false;

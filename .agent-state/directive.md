@@ -435,7 +435,7 @@ Branch: feat/player-experience-pillar-4
 
 ### task-026 Cross-tab sync of saved-project mutations
 
-- [ ] task-026 src/storage/broadcast.ts publishes invalidation events; home.tsx subscribes and invalidates queries; no infinite loop
+- [x] task-026 src/storage/broadcast.ts publishes invalidation events; home.tsx subscribes and invalidates queries; no infinite loop
 
 ### task-027 max-h-[80vh] overflow-y-auto on PixelMenu modal
 

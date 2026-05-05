@@ -11,21 +11,23 @@ import {
   shouldWarnQuota,
   markQuotaWarned,
   setEstimateImpl,
+  setMeasureBytesImpl,
   _resetQuotaWarning,
 } from '@lib/storage/quota';
 
 beforeEach(() => {
   _resetQuotaWarning();
   setEstimateImpl(undefined);
-  // shouldWarnQuota now also probes localStorage byte size; clear it
-  // so accumulation from a previous suite doesn't put us over the
-  // 4MB threshold and cross-contaminate the threshold tests.
+  setMeasureBytesImpl(undefined);
+  // shouldWarnQuota also probes localStorage byte size; clear it so
+  // accumulation from a previous suite doesn't cross-contaminate.
   localStorage.clear();
 });
 
 afterEach(() => {
   _resetQuotaWarning();
   setEstimateImpl(undefined);
+  setMeasureBytesImpl(undefined);
   localStorage.clear();
 });
 
@@ -72,23 +74,21 @@ describe('quota monitoring (P4.20)', () => {
   });
 
   it('warns via the localStorage byte-count fallback when ≥ 4MB used', async () => {
-    // Folded forward from task-022 review: the byte-count path was
-    // untested. Stuff a string whose UTF-16 byte size crosses the 4MB
-    // threshold (each char = 2 bytes), confirming shouldWarnQuota fires
-    // even when the estimate API is unavailable (Safari, private mode).
-    // 2.25M chars * 2 bytes = 4.5 MB — comfortably over 4 MB without
-    // doubling heap allocation for no signal.
-    const big = 'a'.repeat(2_250_000);
-    localStorage.setItem('pp.bigKey', big);
+    // Use the bytes-impl seam (folded forward from task-025 review)
+    // so we don't allocate multi-MB strings just to cross a number.
+    setMeasureBytesImpl(() => 4.5 * 1024 * 1024);
     expect(await shouldWarnQuota()).toBe(true);
   });
 
   it('localStorage threshold respects the session-once gate', async () => {
-    const big = 'a'.repeat(2_250_000); // ~4.5 MB UTF-16
-    localStorage.setItem('pp.bigKey', big);
+    setMeasureBytesImpl(() => 4.5 * 1024 * 1024);
     expect(await shouldWarnQuota()).toBe(true);
     markQuotaWarned();
-    // Even though localStorage is still over budget, we don't re-warn.
+    expect(await shouldWarnQuota()).toBe(false);
+  });
+
+  it('does NOT warn when bytes are below the 4MB threshold', async () => {
+    setMeasureBytesImpl(() => 3 * 1024 * 1024); // 3 MB < 4 MB
     expect(await shouldWarnQuota()).toBe(false);
   });
 });
