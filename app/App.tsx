@@ -11,6 +11,7 @@ import NotFound from '@/pages/not-found';
 import Home from '@/pages/home';
 import LessonPage from '@/pages/lesson';
 import LessonsIndex from '@/pages/lessons';
+import PlayPage from '@/pages/play';
 import Profile from '@/pages/profile';
 import PixelPresence from '@/components/pixel/presence';
 import UniversalWizard from '@/components/wizard/universal';
@@ -65,6 +66,14 @@ function Router() {
         component={() => (
           <PageErrorBoundary context="Game Development Wizard">
             <UniversalWizard flowType="game-dev" />
+          </PageErrorBoundary>
+        )}
+      />
+      <Route
+        path="/play/:projectId"
+        component={() => (
+          <PageErrorBoundary context="Play Page">
+            <PlayPage />
           </PageErrorBoundary>
         )}
       />

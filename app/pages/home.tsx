@@ -406,9 +406,16 @@ export default function Home() {
                     </p>
                     <div className="mt-3 flex gap-2">
                       <Button
+                        onClick={() => setLocation(`/play/${project.id}`)}
+                        data-testid={`my-game-play-${project.id}`}
+                        className="flex-1 bg-gradient-to-r from-green-500 to-emerald-500"
+                      >
+                        {strings.home.project.play ?? '▶ Play'}
+                      </Button>
+                      <Button
                         onClick={() => openProject(project.id)}
                         data-testid={`my-game-open-${project.id}`}
-                        className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500"
+                        variant="outline"
                       >
                         {strings.home.project.open}
                       </Button>
