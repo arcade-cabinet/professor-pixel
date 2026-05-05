@@ -18,6 +18,7 @@ import { Card } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import OfflineBanner from '@/components/offline-banner';
 import { loadLessons, statusFor } from '@lib/lessons';
 import { getClientStorage } from '@lib/storage/mode';
 import { loadProfile, saveProfile } from '@lib/storage/profile';
@@ -139,6 +140,7 @@ export default function LessonsIndex() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-50 dark:from-gray-900 dark:to-purple-950 px-4 py-8">
+      <OfflineBanner className="-mx-4 -mt-8 mb-4" />
       <main className="mx-auto max-w-4xl">
         <header className="mb-8 text-center">
           <h1 className="bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-4xl font-bold text-transparent">

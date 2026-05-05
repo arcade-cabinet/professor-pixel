@@ -7,6 +7,7 @@ import { queryClient } from '@lib/net/query-client';
 import UniversalWizard from '@/components/wizard/universal';
 import { Button } from '@/components/ui/button';
 import AudioToggle from '@/components/audio-toggle';
+import OfflineBanner from '@/components/offline-banner';
 import { useToast } from '@lib/hooks/use-toast';
 
 const INTRO_SEEN_KEY = 'pp.hasSeenIntro';
@@ -169,6 +170,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-50 dark:from-gray-900 dark:to-purple-950">
+      <OfflineBanner />
       <div className="absolute right-4 top-4 z-10">
         <AudioToggle />
       </div>
