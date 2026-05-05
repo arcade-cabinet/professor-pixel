@@ -105,4 +105,18 @@ describe('AssetBrowserWizard preview-before-advance (P4.12)', () => {
     expect(onSelect).toHaveBeenCalledTimes(1);
     expect(onSelect).toHaveBeenCalledWith(expect.objectContaining({ id: 'sprite-wizard' }));
   });
+
+  it('clears the preview banner when the search query changes (P4.12 review fold)', () => {
+    // Without this reset the banner would keep advertising an asset that's
+    // no longer in the visible grid. Stale-state UX trap fixed in the
+    // commit folding the task-012 review findings.
+    const onSelect = vi.fn();
+    render(<AssetBrowserWizard onSelect={onSelect} embedded />);
+
+    fireEvent.click(screen.getByTestId('asset-card-sprite-knight'));
+    expect(screen.getByTestId('asset-preview-banner')).toBeInTheDocument();
+
+    fireEvent.change(screen.getByTestId('input-search'), { target: { value: 'wizard' } });
+    expect(screen.queryByTestId('asset-preview-banner')).not.toBeInTheDocument();
+  });
 });

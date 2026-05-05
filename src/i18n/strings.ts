@@ -221,6 +221,12 @@ export const strings = {
       continueNext: 'Continue to Next Lesson',
       buildGame: "I'm Ready to Build a Game!",
       viewAll: 'View All Lessons',
+      // P4.14 — when a kid finishes the LAST lesson, the modal pivots
+      // from "next lesson" to a celebration. The wizard becomes the
+      // primary CTA (build a game with what you learned!); the lesson
+      // index demotes to a secondary outline button.
+      finishedAllHeading: 'You finished them all! 🏆',
+      finishedAllBody: "You've cleared every lesson. Now build something amazing.",
     },
   },
 

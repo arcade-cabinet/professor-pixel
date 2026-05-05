@@ -91,10 +91,16 @@ export default function AssetBrowserWizard({
     return filteredAssets.slice(startIndex, startIndex + itemsPerPage);
   }, [filteredAssets, currentPage]);
 
-  // Reset page when filters change
+  // Reset page AND clear the single-select preview when filters change.
+  // Without the preview reset, a kid who taps an asset to preview, then
+  // changes the search query / tab / category / page, sees a banner for
+  // an asset that's no longer in the visible grid — confusing and
+  // inconsistent with "first tap previews the thing you can see". The
+  // empty-deps regression on the page reset is also fixed here.
   useEffect(() => {
     setCurrentPage(1);
-  }, []);
+    setPreviewAsset(null);
+  }, [searchQuery, selectedTab, selectedCategory, assetType]);
 
   // Handle asset selection
   const handleAssetClick = useCallback(
@@ -157,9 +163,18 @@ export default function AssetBrowserWizard({
               data-testid={`asset-card-${asset.id}`}
               className={`
                 relative cursor-pointer transition-all hover:scale-105 hover:shadow-lg
-                ${isSelected ? 'ring-2 ring-purple-500' : ''}
-                ${isPreviewed ? 'ring-2 ring-purple-500' : ''}
-                ${isSuggested ? 'ring-2 ring-yellow-400' : ''}
+                ${
+                  // Single ring per card. Selection (multi-select) and
+                  // preview (single-select) take precedence over Pixel's
+                  // suggestion highlight so the kid sees what they
+                  // picked first; the yellow "Pixel recommends" hint
+                  // shows when nothing is selected.
+                  isSelected || isPreviewed
+                    ? 'ring-2 ring-purple-500'
+                    : isSuggested
+                      ? 'ring-2 ring-yellow-400'
+                      : ''
+                }
                 ${viewMode === 'grid' ? 'p-2' : 'p-3 flex items-center space-x-3'}
               `}
               onClick={() => handleAssetClick(asset)}
@@ -358,6 +373,8 @@ export default function AssetBrowserWizard({
         {!multiSelect && previewAsset && (
           <div
             data-testid="asset-preview-banner"
+            aria-live="polite"
+            aria-atomic="true"
             className="mx-4 mb-2 flex items-center gap-3 rounded-lg border border-purple-300 bg-purple-50 p-3 dark:border-purple-700 dark:bg-purple-950"
           >
             <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded bg-white dark:bg-gray-800">

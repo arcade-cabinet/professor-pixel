@@ -387,7 +387,7 @@ Branch: feat/player-experience-pillar-4
 
 ### task-014 Style "Next Lesson" as primary, show next lesson thumbnail/title
 
-- [ ] task-014 lesson.tsx completion modal restructured; "You finished them all" branch on last lesson
+- [x] task-014 lesson.tsx completion modal restructured; "You finished them all" branch on last lesson
 
 ### task-015 PixelMenu-attached "?" button opens FAQ modal
 

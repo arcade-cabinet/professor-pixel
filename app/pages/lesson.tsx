@@ -451,61 +451,112 @@ export default function LessonEnhanced() {
               exit={{ scale: 0.9, opacity: 0 }}
               className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl max-w-md w-full p-6"
             >
-              <div className="text-center mb-6">
-                <motion.img
-                  src={pixelCelebrating}
-                  alt={strings.lesson.pixelAlt.celebrating}
-                  className="w-24 h-24 mx-auto mb-4"
-                  animate={{ y: [0, -10, 0], rotate: [0, 5, -5, 0] }}
-                  transition={{ duration: 2, repeat: Infinity }}
-                />
-                <h2 className="text-2xl font-bold mb-2 bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-                  {strings.lesson.completion.heading}
-                </h2>
-                <p className="text-gray-600 dark:text-gray-400">{pixelDialogue}</p>
-              </div>
+              {(() => {
+                // P4.14 — split the modal into two paths so visual hierarchy
+                // matches the kid's actual next step. With a next lesson:
+                // "Continue" is the gradient primary, "Build Game" demotes
+                // to outline (alt path), "View All" is a tertiary text link.
+                // No next lesson: pivot to a celebration; the wizard
+                // becomes primary, lesson index demotes to outline.
+                const nextId = getNextLessonId(lessonId!);
+                const hasNext = !!nextId;
+                return (
+                  <>
+                    <div className="text-center mb-6">
+                      <motion.img
+                        src={pixelCelebrating}
+                        alt={strings.lesson.pixelAlt.celebrating}
+                        className="w-24 h-24 mx-auto mb-4"
+                        animate={{ y: [0, -10, 0], rotate: [0, 5, -5, 0] }}
+                        transition={{ duration: 2, repeat: Infinity }}
+                      />
+                      <h2
+                        data-testid="completion-heading"
+                        className="text-2xl font-bold mb-2 bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent"
+                      >
+                        {hasNext
+                          ? strings.lesson.completion.heading
+                          : strings.lesson.completion.finishedAllHeading}
+                      </h2>
+                      <p className="text-gray-600 dark:text-gray-400">
+                        {hasNext ? pixelDialogue : strings.lesson.completion.finishedAllBody}
+                      </p>
+                    </div>
 
-              <div className="space-y-3">
-                {getNextLessonId(lessonId!) && (
-                  <Button
-                    onClick={() => {
-                      const nextId = getNextLessonId(lessonId!);
-                      if (nextId) setLocation(`/lesson/${nextId}`);
-                      setShowCompletionOptions(false);
-                    }}
-                    className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
-                    size="lg"
-                  >
-                    <BookOpen className="w-5 h-5 mr-2" />
-                    {strings.lesson.completion.continueNext}
-                  </Button>
-                )}
-
-                <Button
-                  onClick={() => {
-                    setLocation('/wizard');
-                    setShowCompletionOptions(false);
-                  }}
-                  className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white"
-                  size="lg"
-                >
-                  <Rocket className="w-5 h-5 mr-2" />
-                  {strings.lesson.completion.buildGame}
-                </Button>
-
-                <Button
-                  onClick={() => {
-                    setLocation('/');
-                    setShowCompletionOptions(false);
-                  }}
-                  variant="outline"
-                  className="w-full"
-                  size="lg"
-                >
-                  <Trophy className="w-5 h-5 mr-2" />
-                  {strings.lesson.completion.viewAll}
-                </Button>
-              </div>
+                    <div className="space-y-3">
+                      {hasNext ? (
+                        <>
+                          <Button
+                            data-testid="completion-primary"
+                            onClick={() => {
+                              if (nextId) setLocation(`/lesson/${nextId}`);
+                              setShowCompletionOptions(false);
+                            }}
+                            className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
+                            size="lg"
+                          >
+                            <BookOpen className="w-5 h-5 mr-2" />
+                            {strings.lesson.completion.continueNext}
+                          </Button>
+                          <Button
+                            data-testid="completion-secondary"
+                            onClick={() => {
+                              setLocation('/wizard');
+                              setShowCompletionOptions(false);
+                            }}
+                            variant="outline"
+                            className="w-full"
+                            size="lg"
+                          >
+                            <Rocket className="w-5 h-5 mr-2" />
+                            {strings.lesson.completion.buildGame}
+                          </Button>
+                          <Button
+                            data-testid="completion-tertiary"
+                            onClick={() => {
+                              setLocation('/lessons');
+                              setShowCompletionOptions(false);
+                            }}
+                            variant="ghost"
+                            className="w-full"
+                          >
+                            <Trophy className="w-4 h-4 mr-2" />
+                            {strings.lesson.completion.viewAll}
+                          </Button>
+                        </>
+                      ) : (
+                        <>
+                          <Button
+                            data-testid="completion-primary"
+                            onClick={() => {
+                              setLocation('/wizard');
+                              setShowCompletionOptions(false);
+                            }}
+                            className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
+                            size="lg"
+                          >
+                            <Rocket className="w-5 h-5 mr-2" />
+                            {strings.lesson.completion.buildGame}
+                          </Button>
+                          <Button
+                            data-testid="completion-secondary"
+                            onClick={() => {
+                              setLocation('/lessons');
+                              setShowCompletionOptions(false);
+                            }}
+                            variant="outline"
+                            className="w-full"
+                            size="lg"
+                          >
+                            <Trophy className="w-5 h-5 mr-2" />
+                            {strings.lesson.completion.viewAll}
+                          </Button>
+                        </>
+                      )}
+                    </div>
+                  </>
+                );
+              })()}
             </motion.div>
           </motion.div>
         )}
