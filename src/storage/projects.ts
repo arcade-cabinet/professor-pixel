@@ -13,7 +13,7 @@
 
 import type { Project } from '@lib/types/schema';
 import { getClientStorage } from '@lib/storage/mode';
-import type { PersistedWizardState } from '@lib/storage/persistence';
+import { type PersistedWizardState, persistedWizardStateSchema } from '@lib/storage/persistence';
 
 const ANON_USER_ID = 'anonymous-user';
 const SNAPSHOT_FILE = 'wizard-state.json';
@@ -79,9 +79,17 @@ export async function loadWizardProject(id: string): Promise<WizardProjectSnapsh
   const file = project.files.find((f) => f.path === SNAPSHOT_FILE);
   if (!file) return null;
   try {
-    const wizardState = JSON.parse(file.content) as PersistedWizardState;
+    const raw = JSON.parse(file.content) as unknown;
+    // Validate via the canonical schema so a corrupt or schema-drifted
+    // snapshot fails closed (treated as "no resumable state") instead of
+    // propagating untrusted shape into the wizard.
+    const result = persistedWizardStateSchema.safeParse(raw);
+    if (!result.success) {
+      console.warn('[projects] wizard snapshot failed schema validation', result.error.issues);
+      return null;
+    }
     return {
-      wizardState,
+      wizardState: result.data as PersistedWizardState,
       name: project.name,
       template: project.template,
     };

@@ -26,19 +26,16 @@ export default function NotFound() {
           building!
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
-          <Link href="/">
-            <Button
-              className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90"
-              data-testid="not-found-home"
-            >
-              Back to Home
-            </Button>
-          </Link>
-          <Link href="/lessons">
-            <Button variant="outline" className="w-full" data-testid="not-found-lessons">
-              Go to Lessons
-            </Button>
-          </Link>
+          <Button
+            asChild
+            className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90"
+            data-testid="not-found-home"
+          >
+            <Link href="/">Back to Home</Link>
+          </Button>
+          <Button asChild variant="outline" className="w-full" data-testid="not-found-lessons">
+            <Link href="/lessons">Go to Lessons</Link>
+          </Button>
         </div>
       </Card>
     </div>

@@ -156,7 +156,28 @@ export default function UniversalWizard({
   // instead of being silently dropped. Without this, gameAssembled toggling
   // off→on (e.g., kid edits name and re-completes) would either create a
   // duplicate or — under the old once-per-mount guard — be discarded.
-  const savedProjectIdRef = useRef<string | null>(null);
+  //
+  // Initial value comes from the hand-off key home.tsx writes when
+  // resuming a project — without that, opening a saved project whose
+  // restored state already has gameAssembled=true would silently create
+  // a duplicate row on the My Games list (Gemini review feedback).
+  const savedProjectIdRef = useRef<string | null>(
+    (() => {
+      if (typeof localStorage === 'undefined') return null;
+      try {
+        const id = localStorage.getItem('pp.activeProjectId');
+        if (id) {
+          // One-shot — clear so a fresh wizard start doesn't accidentally
+          // adopt a stale project id from a previous session.
+          localStorage.removeItem('pp.activeProjectId');
+          return id;
+        }
+      } catch {
+        // ignore
+      }
+      return null;
+    })()
+  );
   useEffect(() => {
     if (!sessionActions.gameAssembled) return;
     const draft = loadWizardState();

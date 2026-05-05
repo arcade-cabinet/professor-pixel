@@ -128,16 +128,25 @@ export default function PygameLivePreview({
     }
   }, [pyodide]);
 
-  // Render loop for canvas animation. Reads isPausedRef each frame so the
-  // pause toggle takes effect on the next animation tick without ripping
-  // down the loop and re-creating the closure.
+  // Render loop for canvas animation. While paused the loop fully exits
+  // (no zombie rAFs spinning each frame doing nothing) — togglePlayPause
+  // re-invokes startRenderLoop on resume to reschedule. Cancel any pre-
+  // existing frame before starting so re-entry can't stack overlapping
+  // loops.
   const startRenderLoop = useCallback((_canvas: HTMLCanvasElement) => {
+    if (animationFrameRef.current !== null) {
+      cancelAnimationFrame(animationFrameRef.current);
+      animationFrameRef.current = null;
+    }
     isActiveRef.current = true;
     const render = () => {
       if (!isActiveRef.current) return;
-      if (!isPausedRef.current) {
-        flushFrameBuffer();
+      if (isPausedRef.current) {
+        // Exit the loop entirely — resume will re-prime via startRenderLoop.
+        animationFrameRef.current = null;
+        return;
       }
+      flushFrameBuffer();
       animationFrameRef.current = requestAnimationFrame(render);
     };
     animationFrameRef.current = requestAnimationFrame(render);
@@ -225,12 +234,15 @@ export default function PygameLivePreview({
     if (state.isPlaying && state.isPaused) {
       isPausedRef.current = false;
       setState((prev) => ({ ...prev, isPaused: false }));
+      // The previous render() exited when isPausedRef flipped to true;
+      // resume re-primes a fresh rAF chain.
+      if (canvasRef.current) startRenderLoop(canvasRef.current);
       return;
     }
     if (canvasRef.current) {
       executePygameCode(canvasRef.current, choices);
     }
-  }, [state.isPlaying, state.isPaused, choices, executePygameCode]);
+  }, [state.isPlaying, state.isPaused, choices, executePygameCode, startRenderLoop]);
 
   // Handle reset
   const handleReset = useCallback(() => {
@@ -349,7 +361,14 @@ export default function PygameLivePreview({
     <div
       ref={previewWrapperRef}
       tabIndex={0}
-      className={cn('space-y-4 outline-none', className)}
+      className={cn(
+        // Tabbable so the P-key shortcut works; keep a visible focus
+        // indicator for keyboard users via :focus-visible (mouse focus
+        // stays clean). Removing the focus outline entirely would have
+        // been an a11y regression.
+        'space-y-4 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400',
+        className
+      )}
       data-testid="live-preview-wrapper"
     >
       {/* Main Preview Card */}

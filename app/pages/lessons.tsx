@@ -48,11 +48,12 @@ export default function LessonsIndex() {
     },
   });
 
-  // Progress fetch failure is the only one we throw to the boundary — without
-  // progress data the per-lesson row state is meaningless. Lessons-fetch
-  // failure has a kid-friendly in-page recovery branch below (with Refresh +
-  // Skip-to-wizard escape hatches), so we don't throw on that.
-  if (progressError) throw progressError;
+  // CR review feedback: progress fetch failure no longer throws to the
+  // boundary. Without progress data the per-lesson row state is just
+  // ungated (everything looks not-yet-started, which is harmless), and
+  // a friendly in-page error gives the kid a Refresh + Skip path. The
+  // boundary throw was a worse experience — full page crash for a
+  // recoverable storage hiccup.
 
   const progressByLesson = useMemo(() => {
     const m = new Map<string, UserProgress>();
@@ -78,7 +79,7 @@ export default function LessonsIndex() {
   // returned an empty list" (deploy ran but lessons.json is empty). Same
   // gradient + Pixel framing as the rest of the app; two recovery paths so
   // a kid is never stuck staring at a blank screen.
-  if (lessonsError) {
+  if (lessonsError || progressError) {
     return (
       <div
         className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-pink-50 dark:from-gray-900 dark:to-purple-950 px-4"

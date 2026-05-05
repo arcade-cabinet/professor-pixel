@@ -77,6 +77,24 @@ describe('wizard projects (P5)', () => {
     expect(await loadWizardProject('does-not-exist')).toBeNull();
   });
 
+  it('returns null when the stored snapshot fails schema validation', async () => {
+    // CR review feedback: loadWizardProject must validate the snapshot
+    // shape before handing it back to the wizard, otherwise corrupt or
+    // schema-drifted data flows untyped into the resume path. Plant a
+    // bad snapshot directly in storage and confirm the loader fails
+    // closed (returns null) rather than handing back the cast garbage.
+    const saved = await saveWizardProject(baseSnapshot);
+    const raw = JSON.parse(localStorage.getItem('pygame_academy_projects') ?? '{}');
+    raw[saved.id].files[0].content = JSON.stringify({ totally: 'not-a-wizard-state' });
+    localStorage.setItem('pygame_academy_projects', JSON.stringify(raw));
+    // The schema is permissive (most fields optional with passthrough), so
+    // this isn't a great failure case — but it pins the validation path.
+    // A more aggressive break: write content that isn't even an object.
+    raw[saved.id].files[0].content = JSON.stringify('not-an-object');
+    localStorage.setItem('pygame_academy_projects', JSON.stringify(raw));
+    expect(await loadWizardProject(saved.id)).toBeNull();
+  });
+
   it('rejects when saving with a stale existingId so callers can fall back', async () => {
     // The wizard's save effect uses this signal: if the kid had a project
     // saved during the current mount but it was deleted (manual delete from

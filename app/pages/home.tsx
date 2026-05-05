@@ -92,17 +92,39 @@ export default function Home() {
   });
 
   const openProject = async (id: string) => {
-    const snapshot = await loadWizardProject(id);
-    if (!snapshot) {
+    try {
+      const snapshot = await loadWizardProject(id);
+      if (!snapshot) {
+        setLocation('/wizard');
+        return;
+      }
+      // Hydrate the wizard state from the project so the wizard resumes
+      // where the kid left off, then route into the wizard. saveWizardState
+      // merges, so we explicitly write the snapshot's full state (replacing
+      // any prior singleton draft).
+      saveWizardState(snapshot.wizardState);
+      // Stash the project id under a hand-off key so the wizard can adopt
+      // it as savedProjectIdRef on mount — without this, a resumed game
+      // whose state already has gameAssembled=true would be saved as a
+      // duplicate project (Gemini review feedback).
+      try {
+        localStorage.setItem('pp.activeProjectId', id);
+      } catch {
+        // Quota or privacy mode — duplicate-on-resume is the worst case.
+      }
+      setSkipChooser(true);
+    } catch (err) {
+      // loadWizardProject reaches into ClientStorage which can throw on
+      // some edge browser states. Don't leave the click as an unhandled
+      // rejection — toast + fall through to the wizard's normal start.
+      console.error('Failed to open saved project:', err);
+      toast({
+        title: "Couldn't open that game",
+        description: 'Starting a fresh wizard instead.',
+        variant: 'destructive',
+      });
       setLocation('/wizard');
-      return;
     }
-    // Hydrate the wizard state from the project so the wizard resumes where
-    // the kid left off, then route into the wizard. saveWizardState merges,
-    // so we explicitly write the snapshot's full state (replacing any prior
-    // singleton draft).
-    saveWizardState(snapshot.wizardState);
-    setSkipChooser(true);
   };
 
   useEffect(() => {
@@ -180,7 +202,9 @@ export default function Home() {
                     {project.name}
                   </p>
                   <p className="mt-1 text-xs text-gray-600 dark:text-gray-400">
-                    {new Date(project.createdAt).toLocaleDateString()}
+                    {project.createdAt
+                      ? new Date(project.createdAt).toLocaleDateString()
+                      : 'Recently'}
                   </p>
                   <div className="mt-3 flex gap-2">
                     <Button

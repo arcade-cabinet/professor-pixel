@@ -124,7 +124,7 @@ function handleStorageError(error: Error, operation: string): void {
 // `version` and `updatedAt` are required at write time, but legacy payloads
 // (pre-migration) may be missing one or both. Mark optional so the migration
 // path can repair them rather than rejecting the whole record.
-const persistedWizardStateSchema = z
+export const persistedWizardStateSchema = z
   .object({
     version: z.string().optional(),
     activeFlowPath: z.string().nullable().optional(),

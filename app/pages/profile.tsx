@@ -77,16 +77,30 @@ export default function Profile() {
   // ClientStorage are NOT touched — the My Games list is intentionally
   // shared on a household device. (A kid with their own device should
   // bookmark their own profile URL.) Confirmed via a two-step button.
+  //
+  // Order of operations matters: the storage wipe is awaited FIRST so a
+  // failure leaves both profile and progress intact (CR feedback).
+  // Previously clearProfile() ran before the storage call, so a thrown
+  // clearUserProgress would leave the kid in a half-applied state with
+  // their name gone but the previous user's lesson progress still active.
   const handleSwitchUser = async () => {
+    try {
+      await getClientStorage().clearUserProgress('anonymous-user');
+    } catch (err) {
+      console.error('Failed to clear lesson progress:', err);
+      toast({
+        title: "Couldn't switch users",
+        description: 'Try again — your stuff is still safe.',
+        variant: 'destructive',
+      });
+      return;
+    }
     clearProfile();
     try {
       localStorage.removeItem(ONBOARDING_KEY);
     } catch {
       // ignore — onboarding flag is a hint, not load-bearing
     }
-    // Route progress wipe through the storage adapter so the keyspace stays
-    // owned by ClientStorage — no hard-coded localStorage key here.
-    await getClientStorage().clearUserProgress('anonymous-user');
     // Stale progress in the React Query cache would otherwise show the
     // outgoing kid's completed lessons until the cache turned over. Force
     // a refetch so the lessons-finished list re-renders empty immediately.
@@ -141,7 +155,11 @@ export default function Profile() {
           </div>
           {profile && (
             <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-              Hi {profile.name}! You started on {new Date(profile.createdAt).toLocaleDateString()}.
+              Hi {profile.name}! You started on{' '}
+              {profile.createdAt
+                ? new Date(profile.createdAt).toLocaleDateString()
+                : 'your first day'}
+              .
             </p>
           )}
         </Card>
@@ -220,16 +238,16 @@ export default function Profile() {
         </Card>
 
         <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
-          <Link href="/">
-            <Button variant="outline" data-testid="profile-back-home">
-              Back to Home
-            </Button>
-          </Link>
-          <Link href="/lessons">
-            <Button variant="outline" data-testid="profile-go-lessons">
-              Go to Lessons
-            </Button>
-          </Link>
+          {/* Use Button asChild + Link as the rendered element so the DOM
+              has a single interactive node per CTA — wouter Link wrapping
+              a real button produces nested interactives, which trip
+              keyboard + screen-reader heuristics. */}
+          <Button asChild variant="outline" data-testid="profile-back-home">
+            <Link href="/">Back to Home</Link>
+          </Button>
+          <Button asChild variant="outline" data-testid="profile-go-lessons">
+            <Link href="/lessons">Go to Lessons</Link>
+          </Button>
         </div>
       </div>
     </div>
