@@ -24,6 +24,9 @@ import {
   loadOpfsProject,
   saveOpfsProject,
 } from '@lib/storage/opfs-projects';
+import { compilePythonGame } from '@lib/pygame/runtime/compiler';
+import { assetManager } from '@lib/assets/manager';
+import type { GameAsset } from '@lib/assets/types';
 
 const ANON_USER_ID = 'anonymous-user';
 const SNAPSHOT_FILE = 'wizard-state.json';
@@ -115,6 +118,16 @@ export interface WizardProjectSnapshot {
    * gradient placeholder.
    */
   thumbnailDataUrl?: string;
+  /**
+   * Optional pre-compiled Python source (compilePythonGame output)
+   * persisted at save time so the launcher's /play route doesn't
+   * recompile on every load. Backwards-compatible: older projects
+   * predate this field, and /play falls back to compile-on-the-fly
+   * when it's absent. Mid-wizard saves with no chosen components
+   * persist no gamePy — the launcher renders the unfinished state
+   * for those.
+   */
+  gamePy?: string;
 }
 
 export async function listWizardProjects(): Promise<Project[]> {
@@ -199,11 +212,37 @@ async function saveWizardProjectOpfs(
     }
   }
 
+  // Compile + persist game.py at save time so /play doesn't have to
+  // recompile on every load. Side benefit: a kid's broken-shape choice
+  // map fails loudly here instead of silently saving a snapshot that
+  // crashes /play. Only compile when there are components — mid-wizard
+  // saves are stored without game.py and surface as "unfinished" on /play.
+  const sessionActions = (snapshot.wizardState as { sessionActions?: unknown })
+    .sessionActions as { selectedComponents?: Record<string, string> } | undefined;
+  const selectedComponents = sessionActions?.selectedComponents ?? {};
+  const assetIds = (snapshot.wizardState as { selectedAssetIds?: string[] }).selectedAssetIds ?? [];
+  let gamePy: string | undefined;
+  if (Object.keys(selectedComponents).length > 0) {
+    const selectedAssets = assetIds
+      .map((id) => assetManager.getAssetById(id))
+      .filter((a): a is GameAsset => Boolean(a));
+    try {
+      gamePy = compilePythonGame(selectedComponents, selectedAssets);
+    } catch (err) {
+      // Compile failure is a real bug — surface it loudly. Don't fall
+      // back to "save without game.py" because that hides regressions
+      // in the compiler. The wizard's auto-save path swallows this in
+      // its catch handler so the kid sees a save toast either way.
+      console.warn('[projects] compilePythonGame failed at save time', err);
+    }
+  }
+
   const meta = await saveOpfsProject({
     id: resolvedId,
     name: snapshot.name,
     template: snapshot.template,
     wizardState: snapshot.wizardState,
+    gamePy,
     thumbnailBlob,
   });
   publishStorageEvent({
@@ -307,6 +346,7 @@ export async function loadWizardProject(id: string): Promise<WizardProjectSnapsh
         name: loaded.meta.name,
         template: loaded.meta.template,
         thumbnailDataUrl,
+        gamePy: loaded.gamePy ?? undefined,
       };
     }
   }

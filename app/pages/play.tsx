@@ -66,8 +66,14 @@ export default function PlayPage() {
         setState({ kind: 'unfinished', title: snapshot.name });
         return;
       }
+      // Prefer the pre-compiled game.py persisted at save time. Falls
+      // back to compile-on-the-fly for older projects whose snapshots
+      // predate the gamePy field. Either way the result is the same
+      // string compilePythonGame would emit; the persisted path just
+      // skips the recompile.
       try {
-        const pythonCode = compilePythonGame(selectedComponents, selectedAssets);
+        const pythonCode =
+          snapshot.gamePy ?? compilePythonGame(selectedComponents, selectedAssets);
         setState({
           kind: 'ready',
           pythonCode,
