@@ -11,6 +11,7 @@ import NotFound from '@/pages/not-found';
 import Home from '@/pages/home';
 import LessonPage from '@/pages/lesson';
 import LessonsIndex from '@/pages/lessons';
+import Profile from '@/pages/profile';
 import PixelPresence from '@/components/pixel/presence';
 import UniversalWizard from '@/components/wizard/universal';
 import { DevHud } from '@/components/dev-hud';
@@ -64,6 +65,14 @@ function Router() {
         component={() => (
           <PageErrorBoundary context="Game Development Wizard">
             <UniversalWizard flowType="game-dev" />
+          </PageErrorBoundary>
+        )}
+      />
+      <Route
+        path="/profile"
+        component={() => (
+          <PageErrorBoundary context="Profile Page">
+            <Profile />
           </PageErrorBoundary>
         )}
       />

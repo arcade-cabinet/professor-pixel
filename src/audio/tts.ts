@@ -70,6 +70,9 @@ export interface SpeakOptions {
 
 export function speak(text: string, opts: SpeakOptions = {}): void {
   if (!isTTSAvailable()) return;
+  // Master audio toggle gates speak — without this, the global mute button
+  // can't actually silence Pixel mid-sentence. callers don't have to check.
+  if (!isAudioEnabled()) return;
   const cleaned = stripEmoji(text);
   if (!cleaned) return;
 
@@ -90,8 +93,10 @@ export function cancelSpeech(): void {
   window.speechSynthesis.cancel();
 }
 
-// Audio is opt-in — kids/parents may not want voice in classrooms or shared
-// spaces. We default OFF and persist the user's choice.
+// Master audio toggle. Default ON so first-visit kids hear Pixel and the
+// success chime — the chrome AudioToggle button gives one-click mute for
+// classroom / shared-space contexts. Persisted so the choice survives
+// refreshes.
 const AUDIO_KEY = 'pp.audioEnabled';
 
 /**
@@ -103,11 +108,12 @@ const AUDIO_KEY = 'pp.audioEnabled';
 const AUDIO_CHANGE_EVENT = 'pp:audio-changed';
 
 export function isAudioEnabled(): boolean {
-  if (typeof localStorage === 'undefined') return false;
+  if (typeof localStorage === 'undefined') return true;
   try {
-    return localStorage.getItem(AUDIO_KEY) === '1';
+    // Default ON — anything other than the explicit OFF sentinel means on.
+    return localStorage.getItem(AUDIO_KEY) !== '0';
   } catch {
-    return false;
+    return true;
   }
 }
 
@@ -115,9 +121,11 @@ export function setAudioEnabled(enabled: boolean): void {
   if (typeof localStorage === 'undefined') return;
   try {
     if (enabled) {
+      // Explicit '1' (instead of key removal) mirrors isSfxEnabled and keeps
+      // the key present so downstream debuggability tools can inspect it.
       localStorage.setItem(AUDIO_KEY, '1');
     } else {
-      localStorage.removeItem(AUDIO_KEY);
+      localStorage.setItem(AUDIO_KEY, '0');
       cancelSpeech();
     }
   } catch {

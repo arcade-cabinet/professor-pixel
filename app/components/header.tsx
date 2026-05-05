@@ -2,6 +2,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, Gamepad2, Trophy, Star } from 'lucide-react';
 import type { Lesson } from '@lib/types/schema';
 import { motion } from 'framer-motion';
+import AudioToggle from '@/components/audio-toggle';
 
 interface HeaderProps {
   lesson: Lesson;
@@ -70,6 +71,7 @@ export default function Header({ lesson, progress, onBack }: HeaderProps) {
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.3 }}
           >
+            <AudioToggle />
             <div className="flex items-center space-x-3 bg-white dark:bg-gray-800 rounded-full px-4 py-2 shadow-sm">
               <Trophy className="h-4 w-4 text-secondary" />
               <span className="text-sm text-muted-foreground">Progress</span>

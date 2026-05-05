@@ -7,6 +7,7 @@ import { compilePythonGame } from '@lib/pygame/runtime/compiler';
 import { getPyodide, recoverPyodide } from '@lib/python/pyodide-singleton';
 import type { GameAsset } from '@lib/assets/types';
 import { getEducationalError, type EducationalError } from '@lib/errors/educational';
+import { loadWizardState } from '@lib/storage/persistence';
 
 interface PygameRunnerProps {
   selectedComponents?: Record<string, string>;
@@ -37,6 +38,13 @@ export default function PygameRunner({
   // paired lets us never have to choose between teaching tone and debuggability.
   const [error, setError] = useState<EducationalError | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  // P9.3 — track how many times recovery has been attempted in this mount
+  // so we can flip to a "still failing" message after the first retry. The
+  // friendly first-attempt copy is reassuring; if recovery itself blew up
+  // (e.g., CDN down) the kid needs a different message + an offline-aware
+  // retry rather than the same "Try again" loop.
+  const recoveryAttemptsRef = useRef(0);
+  const [recoveryFailed, setRecoveryFailed] = useState(false);
 
   // Initialize Pyodide. setupCanvasBridge is intentionally NOT in deps:
   // it's a stable closure that doesn't reference reactive state (only refs +
@@ -445,6 +453,46 @@ MockPygame.key.get_pressed = lambda: global_key_state
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
               <p>Loading Pyodide...</p>
             </div>
+          ) : recoveryFailed ? (
+            // P9.3 — recovery itself failed. Almost always a network /
+            // CDN-down situation; the previous error overlay's "Try again"
+            // copy promised the runtime would reset. It didn't, so use a
+            // distinct headline and surface offline-awareness.
+            <div
+              className="text-center max-w-md text-white"
+              data-testid="runner-recovery-failed-panel"
+            >
+              <p className="font-bold mb-2 text-2xl">📡 Still couldn&apos;t reach Python</p>
+              <p className="text-sm mb-4 opacity-80 break-words">
+                {navigator.onLine === false
+                  ? 'Looks like your internet is off. Reconnect and tap below to try again.'
+                  : 'The Python runtime is on a CDN; it might be slow or unreachable right now. Try again in a moment, or come back later — your project is saved.'}
+              </p>
+              <Button
+                onClick={async () => {
+                  setRecoveryFailed(false);
+                  pyodideRef.current = null;
+                  setError(null);
+                  // Keep shared accounting — incrementing rather than
+                  // resetting means a subsequent failure here can't be
+                  // misinterpreted by the primary catch below as a fresh
+                  // "first try". Both paths increment.
+                  recoveryAttemptsRef.current += 1;
+                  await initPyodide();
+                  setIsLoading(false);
+                  // Same pattern as the primary handler — initPyodide
+                  // never throws, so we check pyodideRef to detect failure.
+                  if (pyodideRef.current === null) {
+                    setRecoveryFailed(true);
+                  }
+                }}
+                data-testid="runner-recovery-failed-retry"
+                className="bg-purple-600 hover:bg-purple-700"
+              >
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Try once more
+              </Button>
+            </div>
           ) : error ? (
             <div className="text-center max-w-md text-white" data-testid="runner-error-panel">
               <p className="font-bold mb-2 text-2xl">😟 {error.friendlyMessage}</p>
@@ -467,15 +515,29 @@ MockPygame.key.get_pressed = lambda: global_key_state
                   // looks populated.
                   pyodideRef.current = null;
                   setError(null);
-                  // initPyodide owns its own loading state. The finally
-                  // guarantees the spinner unblocks even if a future refactor
-                  // breaks initPyodide's internal isLoading reset.
-                  try {
-                    await initPyodide();
-                  } catch {
-                    // setError already fired inside initPyodide's catch.
-                  } finally {
-                    setIsLoading(false);
+                  recoveryAttemptsRef.current += 1;
+                  // P9.1 — wizard state is in localStorage and survives the
+                  // Python runtime drop, so the parent's selectedComponents
+                  // props rerender us with the same project data after
+                  // recovery. If the slot is empty (private mode, storage
+                  // cleared) we still fall through — there's nothing to
+                  // preserve and the kid's wizard state is the parent's
+                  // problem, not ours.
+                  const savedState = loadWizardState();
+                  if (!savedState) {
+                    console.warn('[runner] wizard state slot is empty post-recovery');
+                  }
+                  // initPyodide swallows its own rejection (it sets `error`
+                  // state inside its catch), so awaiting it never throws.
+                  // We have to check the ref state directly to know if the
+                  // attempt failed: if pyodideRef wasn't populated, the
+                  // bootstrap blew up. Threshold of 2 absorbs transient
+                  // CDN hiccups (DNS timeout, brief 503) that one retry
+                  // would resolve.
+                  await initPyodide();
+                  setIsLoading(false);
+                  if (pyodideRef.current === null && recoveryAttemptsRef.current >= 2) {
+                    setRecoveryFailed(true);
                   }
                 }}
                 data-testid="runner-recover-button"

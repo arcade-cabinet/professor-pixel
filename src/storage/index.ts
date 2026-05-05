@@ -4,4 +4,5 @@
 export * from './local';
 export * from './mode';
 export * from './persistence';
+export * from './projects';
 export * from './session-history';

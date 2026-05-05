@@ -51,8 +51,10 @@ describe('audio/tts — availability + enabled flag', () => {
     vi.unstubAllGlobals();
   });
 
-  it('isAudioEnabled returns false by default (privacy-respecting)', () => {
-    expect(isAudioEnabled()).toBe(false);
+  it('isAudioEnabled returns true by default (kid-product UX)', () => {
+    // Master toggle defaults ON so first-visit kids hear Pixel and SFX.
+    // Classroom/shared-space mute is one click in the chrome.
+    expect(isAudioEnabled()).toBe(true);
   });
 
   it('setAudioEnabled(true) persists, isAudioEnabled then returns true', () => {
@@ -83,6 +85,10 @@ describe('audio/tts — speak() routes to speechSynthesis', () => {
   beforeEach(() => {
     speakSpy = vi.fn();
     cancelSpy = vi.fn();
+    // P8 — speak() gates on isAudioEnabled() so the master mute toggle
+    // can silence Pixel mid-sentence. Tests that exercise the speech
+    // path must enable audio first.
+    setAudioEnabled(true);
     vi.stubGlobal('speechSynthesis', {
       speak: speakSpy,
       cancel: cancelSpy,

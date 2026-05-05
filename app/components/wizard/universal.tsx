@@ -31,6 +31,7 @@ import PixelMinimized from '@/components/pixel/minimized';
 import PygameComponentSelector from '@/components/pygame/component-selector';
 import { GameAsset, AssetType } from '@lib/assets/types';
 import { useToast } from '@lib/hooks/use-toast';
+import { saveWizardProject } from '@lib/storage/projects';
 import { assetManager } from '@lib/assets/manager';
 import { ICON_SIZES, STYLES } from '@lib/wizard/constants';
 import { exportProjectAsZip, shareOrDownload } from '@lib/pygame/runtime/exporter';
@@ -144,6 +145,76 @@ export default function UniversalWizard({
       celebrationFiredRef.current = false;
     };
   }, [isWizardComplete]);
+
+  // P5.3 — promote the wizard's singleton draft into a real project entry the
+  // moment the kid "finishes" their game (gameAssembled). Without this the
+  // home page's My Games section stays empty forever and a second wizard run
+  // silently overwrites the first via the singleton wizard.state.v1 key.
+  //
+  // Reviewer follow-up (P5 review issue #2): track the saved project's id in
+  // a ref so subsequent assembles within the same mount UPDATE the same row
+  // instead of being silently dropped. Without this, gameAssembled toggling
+  // off→on (e.g., kid edits name and re-completes) would either create a
+  // duplicate or — under the old once-per-mount guard — be discarded.
+  //
+  // Initial value comes from the hand-off key home.tsx writes when
+  // resuming a project — without that, opening a saved project whose
+  // restored state already has gameAssembled=true would silently create
+  // a duplicate row on the My Games list (Gemini review feedback).
+  const savedProjectIdRef = useRef<string | null>(
+    (() => {
+      if (typeof localStorage === 'undefined') return null;
+      try {
+        const id = localStorage.getItem('pp.activeProjectId');
+        if (id) {
+          // One-shot — clear so a fresh wizard start doesn't accidentally
+          // adopt a stale project id from a previous session.
+          localStorage.removeItem('pp.activeProjectId');
+          return id;
+        }
+      } catch {
+        // ignore
+      }
+      return null;
+    })()
+  );
+  useEffect(() => {
+    if (!sessionActions.gameAssembled) return;
+    const draft = loadWizardState();
+    if (!draft) return;
+    saveWizardProject(
+      {
+        wizardState: draft,
+        name: sessionActions.gameName || draft.gameType || 'My Game',
+        template: sessionActions.gameType || draft.gameType || 'unknown',
+      },
+      savedProjectIdRef.current ?? undefined
+    )
+      .then((project) => {
+        savedProjectIdRef.current = project.id;
+      })
+      .catch(async (err) => {
+        // If the existingId path failed (stale id — someone deleted the row
+        // out from under us, or storage was cleared), fall back to a fresh
+        // create so the kid still gets a saved game.
+        if (savedProjectIdRef.current) {
+          savedProjectIdRef.current = null;
+          try {
+            const project = await saveWizardProject({
+              wizardState: draft,
+              name: sessionActions.gameName || draft.gameType || 'My Game',
+              template: sessionActions.gameType || draft.gameType || 'unknown',
+            });
+            savedProjectIdRef.current = project.id;
+            return;
+          } catch (fallbackErr) {
+            console.warn('Failed to save project to My Games (fallback):', fallbackErr);
+            return;
+          }
+        }
+        console.warn('Failed to save project to My Games:', err);
+      });
+  }, [sessionActions.gameAssembled, sessionActions.gameName, sessionActions.gameType]);
 
   // Rehydrate selectedAssets from persisted IDs on mount. The wizard stores
   // asset IDs (not full GameAsset objects) so the asset catalog stays the

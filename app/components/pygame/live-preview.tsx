@@ -50,6 +50,11 @@ interface PygameLivePreviewProps {
 
 interface PreviewState {
   isPlaying: boolean;
+  // Distinct from !isPlaying — "paused" means the rAF loop is halted but the
+  // Pyodide globals + canvas state are intact. Resume just restarts rAF; it
+  // does NOT re-execute the kid's code. Switching from paused→stopped (Reset)
+  // tears everything down.
+  isPaused: boolean;
   isLoading: boolean;
   // Hold the full mapped EducationalError so the overlay can show the
   // friendly headline AND the contextual explanation/details — not just a
@@ -81,6 +86,7 @@ export default function PygameLivePreview({
 
   const [state, setState] = useState<PreviewState>({
     isPlaying: false,
+    isPaused: false,
     isLoading: false,
     error: null,
     fps: 60,
@@ -88,6 +94,18 @@ export default function PygameLivePreview({
     score: 0,
     lives: 3,
   });
+
+  // The render loop reads state.isPlaying via closure; we need an additional
+  // ref so we can flip "paused" without recreating the rAF callback. The rAF
+  // body checks isPausedRef.current each frame; flipping it stops scheduling
+  // without cancelling the in-flight frame.
+  const isPausedRef = useRef(false);
+  // Mount guard — the render() body always re-schedules itself, so an
+  // in-flight tick that lands AFTER stopRenderLoop() cancels its frame would
+  // otherwise schedule a new frame against a now-unmounted component and
+  // call flushFrameBuffer on a torn-down canvas. isActiveRef.current=false
+  // tells render() to bail without re-scheduling.
+  const isActiveRef = useRef(false);
 
   const [gameParams, setGameParams] = useState({
     speed: 5,
@@ -110,24 +128,29 @@ export default function PygameLivePreview({
     }
   }, [pyodide]);
 
-  // Render loop for canvas animation
-  const startRenderLoop = useCallback(
-    (_canvas: HTMLCanvasElement) => {
-      const render = () => {
-        // Flush pygame frame buffer to canvas
-        flushFrameBuffer();
-
-        // Continue animation if playing
-        if (state.isPlaying) {
-          animationFrameRef.current = requestAnimationFrame(render);
-        }
-      };
-
-      // Start the loop
+  // Render loop for canvas animation. While paused the loop fully exits
+  // (no zombie rAFs spinning each frame doing nothing) — togglePlayPause
+  // re-invokes startRenderLoop on resume to reschedule. Cancel any pre-
+  // existing frame before starting so re-entry can't stack overlapping
+  // loops.
+  const startRenderLoop = useCallback((_canvas: HTMLCanvasElement) => {
+    if (animationFrameRef.current !== null) {
+      cancelAnimationFrame(animationFrameRef.current);
+      animationFrameRef.current = null;
+    }
+    isActiveRef.current = true;
+    const render = () => {
+      if (!isActiveRef.current) return;
+      if (isPausedRef.current) {
+        // Exit the loop entirely — resume will re-prime via startRenderLoop.
+        animationFrameRef.current = null;
+        return;
+      }
+      flushFrameBuffer();
       animationFrameRef.current = requestAnimationFrame(render);
-    },
-    [state.isPlaying]
-  );
+    };
+    animationFrameRef.current = requestAnimationFrame(render);
+  }, []);
 
   // Generate and execute Python code when choices change
   const executePygameCode = useCallback(
@@ -154,12 +177,14 @@ export default function PygameLivePreview({
         }
 
         // Start render loop
+        isPausedRef.current = false;
         startRenderLoop(targetCanvas);
 
         setState((prev) => ({
           ...prev,
           isLoading: false,
           isPlaying: true,
+          isPaused: false,
         }));
       } catch (error) {
         // Don't pipe the raw exception text into the kid-facing overlay —
@@ -167,11 +192,13 @@ export default function PygameLivePreview({
         // teaching message. The raw text is still logged to console for devs.
         const raw = error instanceof Error ? error.message : 'Failed to execute pygame code';
         console.error('[live-preview]', raw);
+        isPausedRef.current = false;
         setState((prev) => ({
           ...prev,
           isLoading: false,
           error: getEducationalError(raw),
           isPlaying: false,
+          isPaused: false,
         }));
 
         // Show friendly error message
@@ -193,25 +220,39 @@ export default function PygameLivePreview({
     }
   }, []);
 
-  // Handle play/pause
+  // Handle play/pause. Three transitions:
+  //   stopped → playing: execute pygame code (sets isPlaying=true, isPaused=false)
+  //   playing → paused:  flip the rAF gate, keep Pyodide state intact
+  //   paused  → playing: flip the gate back, do NOT re-execute
+  // Reset (separate button) is the only path that tears down state.
   const togglePlayPause = useCallback(() => {
-    if (state.isPlaying) {
-      stopRenderLoop();
-      setState((prev) => ({ ...prev, isPlaying: false }));
-    } else {
-      if (canvasRef.current) {
-        executePygameCode(canvasRef.current, choices);
-      }
+    if (state.isPlaying && !state.isPaused) {
+      isPausedRef.current = true;
+      setState((prev) => ({ ...prev, isPaused: true }));
+      return;
     }
-  }, [state.isPlaying, choices, executePygameCode, stopRenderLoop]);
+    if (state.isPlaying && state.isPaused) {
+      isPausedRef.current = false;
+      setState((prev) => ({ ...prev, isPaused: false }));
+      // The previous render() exited when isPausedRef flipped to true;
+      // resume re-primes a fresh rAF chain.
+      if (canvasRef.current) startRenderLoop(canvasRef.current);
+      return;
+    }
+    if (canvasRef.current) {
+      executePygameCode(canvasRef.current, choices);
+    }
+  }, [state.isPlaying, state.isPaused, choices, executePygameCode, startRenderLoop]);
 
   // Handle reset
   const handleReset = useCallback(() => {
     stopRenderLoop();
     resetPygameState();
+    isPausedRef.current = false;
     setState((prev) => ({
       ...prev,
       isPlaying: false,
+      isPaused: false,
       score: 0,
       lives: 3,
       interactions: [],
@@ -268,9 +309,48 @@ export default function PygameLivePreview({
     }
   }, [choices, pyodide, executePygameCode]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // P key toggles pause when the canvas (or anything inside the preview card)
+  // is focused. We attach to the canvas wrapper so typing P in the code editor
+  // — which lives outside this component — never steals input. The editable-
+  // target guard is belt-and-suspenders: even within the preview, a kid
+  // focusing an input shouldn't trigger pause.
+  //
+  // Stable handler via ref: togglePlayPause changes identity whenever
+  // isPlaying/isPaused/choices flip, which would otherwise tear down and
+  // re-add the listener on every state update — a window where keydown
+  // events can be dropped. Bind once; read the latest callback through
+  // toggleRef each invocation.
+  const previewWrapperRef = useRef<HTMLDivElement>(null);
+  const toggleRef = useRef(togglePlayPause);
+  const isPlayingRef = useRef(state.isPlaying);
+  useEffect(() => {
+    toggleRef.current = togglePlayPause;
+    isPlayingRef.current = state.isPlaying;
+  }, [togglePlayPause, state.isPlaying]);
+  useEffect(() => {
+    const node = previewWrapperRef.current;
+    if (!node) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'p' && e.key !== 'P') return;
+      const target = e.target as HTMLElement | null;
+      if (
+        target &&
+        (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)
+      ) {
+        return;
+      }
+      if (!isPlayingRef.current) return;
+      e.preventDefault();
+      toggleRef.current();
+    };
+    node.addEventListener('keydown', onKey);
+    return () => node.removeEventListener('keydown', onKey);
+  }, []);
+
   // Cleanup on unmount
   useEffect(() => {
     return () => {
+      isActiveRef.current = false;
       stopRenderLoop();
       setCanvasContext(null);
       resetPygameState();
@@ -278,7 +358,19 @@ export default function PygameLivePreview({
   }, [stopRenderLoop]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <div className={cn('space-y-4', className)}>
+    <div
+      ref={previewWrapperRef}
+      tabIndex={0}
+      className={cn(
+        // Tabbable so the P-key shortcut works; keep a visible focus
+        // indicator for keyboard users via :focus-visible (mouse focus
+        // stays clean). Removing the focus outline entirely would have
+        // been an a11y regression.
+        'space-y-4 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400',
+        className
+      )}
+      data-testid="live-preview-wrapper"
+    >
       {/* Main Preview Card */}
       <Card className="overflow-hidden">
         <CardHeader className="pb-3">
@@ -319,6 +411,25 @@ export default function PygameLivePreview({
                 onClick={handleCanvasClick}
                 data-testid="canvas-main-preview"
               />
+
+              {/* Paused Overlay — sits above canvas while rAF gate is closed.
+                  Pyodide state is intact; clicking Resume (or pressing P)
+                  unfreezes from this exact frame. */}
+              {state.isPaused && !state.isLoading && (
+                <div
+                  className="absolute inset-0 bg-black/40 flex items-center justify-center"
+                  data-testid="paused-overlay"
+                  role="status"
+                  aria-live="polite"
+                >
+                  <div className="bg-white/90 dark:bg-gray-800/90 rounded-lg px-4 py-2 text-center">
+                    <p className="text-sm font-bold text-gray-900 dark:text-gray-100">⏸ Paused</p>
+                    <p className="text-xs text-gray-600 dark:text-gray-400">
+                      Press Resume (or P) to continue
+                    </p>
+                  </div>
+                </div>
+              )}
 
               {/* Loading Overlay */}
               {state.isLoading && (
@@ -375,14 +486,18 @@ export default function PygameLivePreview({
             <div className="flex items-center gap-2">
               <Button
                 size="sm"
-                variant={state.isPlaying ? 'default' : 'outline'}
+                variant={state.isPlaying && !state.isPaused ? 'default' : 'outline'}
                 onClick={togglePlayPause}
                 disabled={!pyodide || state.isLoading}
                 data-testid="button-play-pause-preview"
               >
-                {state.isPlaying ? (
+                {state.isPlaying && !state.isPaused ? (
                   <>
                     <Pause className="h-4 w-4 mr-1" /> Pause
+                  </>
+                ) : state.isPaused ? (
+                  <>
+                    <Play className="h-4 w-4 mr-1" /> Resume
                   </>
                 ) : (
                   <>

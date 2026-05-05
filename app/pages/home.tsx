@@ -1,7 +1,13 @@
 import { useEffect, useState } from 'react';
 import { useLocation } from 'wouter';
-import { loadWizardState } from '@lib/storage/persistence';
+import { useQuery, useMutation } from '@tanstack/react-query';
+import { loadWizardState, saveWizardState } from '@lib/storage/persistence';
+import { listWizardProjects, loadWizardProject, deleteWizardProject } from '@lib/storage/projects';
+import { queryClient } from '@lib/net/query-client';
 import UniversalWizard from '@/components/wizard/universal';
+import { Button } from '@/components/ui/button';
+import AudioToggle from '@/components/audio-toggle';
+import { useToast } from '@lib/hooks/use-toast';
 
 const INTRO_SEEN_KEY = 'pp.hasSeenIntro';
 const LANDING_PATH_KEY = 'pp.lastLandingPath';
@@ -53,6 +59,73 @@ export default function Home() {
   const [, setLocation] = useLocation();
   const [showIntroCard, setShowIntroCard] = useState(false);
   const [skipChooser, setSkipChooser] = useState(false);
+  // Inline confirm replaces window.confirm — that blocks the main thread on
+  // mobile Safari and is silently suppressed in some embedded contexts. We
+  // track which project is awaiting confirmation; clicking Delete on a
+  // different row swaps the target. Null = no pending confirmation.
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const { toast } = useToast();
+
+  // P5 — My Games. ListWizardProjects reads from ClientStorage; if the wizard
+  // hasn't yet persisted any project (P5.3 work), the list is empty and we
+  // render an inviting placeholder rather than nothing.
+  const { data: projects } = useQuery({
+    queryKey: ['wizard-projects'],
+    queryFn: () => listWizardProjects(),
+  });
+
+  const deleteProjectMutation = useMutation({
+    mutationFn: (id: string) => deleteWizardProject(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['wizard-projects'] });
+      setConfirmDeleteId(null);
+    },
+    onError: (err) => {
+      console.error('Failed to delete project:', err);
+      toast({
+        title: "Couldn't delete that game",
+        description: 'Try again in a moment.',
+        variant: 'destructive',
+      });
+      setConfirmDeleteId(null);
+    },
+  });
+
+  const openProject = async (id: string) => {
+    try {
+      const snapshot = await loadWizardProject(id);
+      if (!snapshot) {
+        setLocation('/wizard');
+        return;
+      }
+      // Hydrate the wizard state from the project so the wizard resumes
+      // where the kid left off, then route into the wizard. saveWizardState
+      // merges, so we explicitly write the snapshot's full state (replacing
+      // any prior singleton draft).
+      saveWizardState(snapshot.wizardState);
+      // Stash the project id under a hand-off key so the wizard can adopt
+      // it as savedProjectIdRef on mount — without this, a resumed game
+      // whose state already has gameAssembled=true would be saved as a
+      // duplicate project (Gemini review feedback).
+      try {
+        localStorage.setItem('pp.activeProjectId', id);
+      } catch {
+        // Quota or privacy mode — duplicate-on-resume is the worst case.
+      }
+      setSkipChooser(true);
+    } catch (err) {
+      // loadWizardProject reaches into ClientStorage which can throw on
+      // some edge browser states. Don't leave the click as an unhandled
+      // rejection — toast + fall through to the wizard's normal start.
+      console.error('Failed to open saved project:', err);
+      toast({
+        title: "Couldn't open that game",
+        description: 'Starting a fresh wizard instead.',
+        variant: 'destructive',
+      });
+      setLocation('/wizard');
+    }
+  };
 
   useEffect(() => {
     // Returning user — route them back to whatever surface they were using.
@@ -96,6 +169,9 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-50 dark:from-gray-900 dark:to-purple-950">
+      <div className="absolute right-4 top-4 z-10">
+        <AudioToggle />
+      </div>
       <main className="mx-auto flex min-h-screen max-w-4xl flex-col items-center justify-center px-4 py-8">
         <header className="mb-12 text-center">
           <h1 className="bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-5xl font-bold text-transparent">
@@ -105,6 +181,86 @@ export default function Home() {
             Make your own games with Python — no install needed!
           </p>
         </header>
+
+        {projects && projects.length > 0 && (
+          <section
+            aria-label="My saved games"
+            className="mb-12 w-full"
+            data-testid="my-games-section"
+          >
+            <h2 className="mb-4 text-2xl font-bold text-purple-700 dark:text-purple-300">
+              My Games
+            </h2>
+            <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3">
+              {projects.map((project) => (
+                <li
+                  key={project.id}
+                  data-testid={`my-game-row-${project.id}`}
+                  className="rounded-xl bg-white p-4 shadow-md dark:bg-gray-800"
+                >
+                  <p className="font-bold text-gray-900 dark:text-gray-100 truncate">
+                    {project.name}
+                  </p>
+                  <p className="mt-1 text-xs text-gray-600 dark:text-gray-400">
+                    {project.createdAt
+                      ? new Date(project.createdAt).toLocaleDateString()
+                      : 'Recently'}
+                  </p>
+                  <div className="mt-3 flex gap-2">
+                    <Button
+                      onClick={() => openProject(project.id)}
+                      data-testid={`my-game-open-${project.id}`}
+                      className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500"
+                    >
+                      Open
+                    </Button>
+                    <Button
+                      onClick={() => setConfirmDeleteId(project.id)}
+                      variant="outline"
+                      data-testid={`my-game-delete-${project.id}`}
+                      aria-label={`Delete ${project.name}`}
+                    >
+                      🗑️
+                    </Button>
+                  </div>
+                  {confirmDeleteId === project.id && (
+                    <div
+                      role="alertdialog"
+                      aria-labelledby={`confirm-${project.id}-label`}
+                      className="mt-3 rounded-lg border-2 border-red-300 bg-red-50 p-3 text-left dark:border-red-700 dark:bg-red-900/30"
+                    >
+                      <p
+                        id={`confirm-${project.id}-label`}
+                        className="text-sm font-bold text-red-800 dark:text-red-200"
+                      >
+                        Delete "{project.name}"? This can't be undone.
+                      </p>
+                      <div className="mt-2 flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => deleteProjectMutation.mutate(project.id)}
+                          disabled={deleteProjectMutation.isPending}
+                          data-testid={`my-game-confirm-delete-${project.id}`}
+                        >
+                          {deleteProjectMutation.isPending ? 'Deleting...' : 'Delete'}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setConfirmDeleteId(null)}
+                          data-testid={`my-game-cancel-delete-${project.id}`}
+                        >
+                          Keep
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
 
         <section
           aria-label="Choose your path"
