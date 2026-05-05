@@ -104,6 +104,26 @@ When multiple tests on a step declare different caps, the engine takes the **min
 
 A timed-out test produces `{passed: false, score: 0, feedback: "Your code took too long..."}`. The worker is recycled before the next snippet runs, so the next test starts from a clean Python heap.
 
+## Cold-start budget
+
+Pyodide loads ~10MB of JS + WASM + a Python stdlib zip on first call to `getPyodide()`. The budget for that boot:
+
+- **<3000ms** on a mid-tier laptop (warm cache, dev session)
+- **<8000ms** on a Chromebook (cold cache, throttled CPU)
+
+The singleton instruments cold-start with `performance.now()` and emits one of:
+
+- `console.info('Pyodide cold-start <N>ms')` — under budget
+- `console.warn('Pyodide cold-start <N>ms exceeds budget 8000ms')` — over budget
+
+The numeric reading is also exposed via `getColdStartMs()` for any HUD overlay that wants to render it. (Subsequent calls share the cached promise; only the first call to `getPyodide()` per page measures cold-start.)
+
+If the warning lands consistently in production, the answer is **not** to raise the budget. The candidates, in order of impact:
+
+1. Precache `python_stdlib.zip` in the service worker (largest single chunk).
+2. Pre-warm a worker on idle so user code lands on a hot Python heap.
+3. Strip unused stdlib modules at vendor time (currently we ship the full set).
+
 ## PyGame simulator
 
 Pygame proper can't run in the browser — it depends on SDL via C extensions. Instead, `src/pygame/runtime/simulator.ts` injects a Python module named `pygame` whose draw / event / display functions proxy to JavaScript and paint onto an HTML5 canvas. Lessons that `import pygame` get this simulator transparently.

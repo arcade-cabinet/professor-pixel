@@ -102,7 +102,7 @@ Branch: feat/modernization-pillar
 
 ### M4 — Pyodide / PyGame correctness
 
-- [ ] M4.1 Cold-start budget — perf timer on `getPyodide()`; budget documented in `docs/pillars/02-runtime.md`; dev HUD overlay
+- [x] M4.1 Cold-start budget — `performance.now()` instrumentation in `pyodide-singleton.ts`, `getColdStartMs()` accessor, console.info/warn against the 8000ms budget, budget + remediation hierarchy documented in `docs/pillars/02-runtime.md`. Dev HUD overlay deferred (UI component work; scoped to a separate PR).
 - [ ] M4.2 Frame-rate test — simulator with realistic component count holds <16.67ms mean frame time over 2s
 - [x] M4.3 Worker-side stdout truncation — enforce `maxStdout` in worker stdout callback; `clipResult` becomes verification (`verifyClippedResult`)
 

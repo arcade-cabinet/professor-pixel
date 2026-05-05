@@ -17,6 +17,25 @@ export class PyodideLoadError extends Error {
 
 let bootstrapPromise: Promise<PyodideInstance> | null = null;
 
+/**
+ * Cold-start budget (see docs/pillars/02-runtime.md):
+ *   - <3000ms on a mid-tier laptop
+ *   - <8000ms on a Chromebook
+ *
+ * Anything beyond `COLD_START_BUDGET_MS` warns to console; this is a leading
+ * indicator (consult perf timeline before tuning). The budget is set against
+ * the 95th-percentile observed in a fast-network dev session — if it consistently
+ * trips on real users, the answer is precaching `python_stdlib.zip` or pre-warming
+ * a worker on idle, not raising the budget.
+ */
+const COLD_START_BUDGET_MS = 8000;
+let coldStartMs: number | null = null;
+
+/** Returns the last observed cold-start duration, or null if Pyodide hasn't booted. */
+export function getColdStartMs(): number | null {
+  return coldStartMs;
+}
+
 interface BootstrapOptions {
   indexURL?: string;
   stdout?: (s: string) => void;
@@ -99,10 +118,25 @@ async function bootstrap(opts: BootstrapOptions): Promise<PyodideInstance> {
 
 export function getPyodide(opts: BootstrapOptions = {}): Promise<PyodideInstance> {
   if (!bootstrapPromise) {
-    bootstrapPromise = bootstrap(opts).catch((err) => {
-      bootstrapPromise = null;
-      throw err;
-    });
+    const start =
+      typeof performance !== 'undefined' ? performance.now() : Date.now();
+    bootstrapPromise = bootstrap(opts)
+      .then((instance) => {
+        const end = typeof performance !== 'undefined' ? performance.now() : Date.now();
+        coldStartMs = end - start;
+        if (coldStartMs > COLD_START_BUDGET_MS) {
+          console.warn(
+            `Pyodide cold-start ${Math.round(coldStartMs)}ms exceeds budget ${COLD_START_BUDGET_MS}ms`
+          );
+        } else {
+          console.info(`Pyodide cold-start ${Math.round(coldStartMs)}ms`);
+        }
+        return instance;
+      })
+      .catch((err) => {
+        bootstrapPromise = null;
+        throw err;
+      });
   }
   return bootstrapPromise;
 }
