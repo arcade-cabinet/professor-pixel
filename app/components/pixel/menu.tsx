@@ -240,12 +240,16 @@ export default function PixelMenu({
                 </div>
               </div>
 
-              {/* Content Area */}
-              <div className="flex-1 overflow-hidden px-6 pb-6">
+              {/* Content Area. Outer wrapper is flex-1 + overflow-y-auto so
+                  the grid SCROLLS on viewports too short to display all 7
+                  action buttons (P4.27). Inner motion.div drops h-full so
+                  rows take their natural height, lining up with the
+                  scroll surface. */}
+              <div className="flex-1 overflow-y-auto px-6 pb-6">
                 {selectedTab === 'actions' ? (
                   /* Quick Actions */
                   <motion.div
-                    className="grid grid-cols-2 gap-3 h-full"
+                    className="grid grid-cols-2 gap-3 auto-rows-min"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.2 }}

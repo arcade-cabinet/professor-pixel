@@ -439,7 +439,7 @@ Branch: feat/player-experience-pillar-4
 
 ### task-027 max-h-[80vh] overflow-y-auto on PixelMenu modal
 
-- [ ] task-027 menu modal overflow classes set; mobile viewport scrolls instead of clipping
+- [x] task-027 menu modal overflow classes set; mobile viewport scrolls instead of clipping
 
 ### task-028 Replace technical pause-overlay text with kid-friendly "Game paused"
 

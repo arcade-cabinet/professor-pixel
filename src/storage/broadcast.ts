@@ -49,6 +49,11 @@ const SENDER_ID =
     : `pp-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
 
 let channel: BroadcastChannel | null = null;
+// Track every active listener so _resetChannelForTests can detach
+// them defensively (folded forward from task-026 review). A test
+// that forgets to call its unsubscribe shouldn't leak ghost firings
+// onto the next test's channel instance.
+const activeListeners = new Set<(msg: MessageEvent<BroadcastEnvelope>) => void>();
 
 function getChannel(): BroadcastChannel | null {
   if (typeof BroadcastChannel === 'undefined') return null;
@@ -95,7 +100,11 @@ export function subscribeStorageEvents(handler: (event: StorageEvent) => void): 
     handler(env.event);
   };
   ch.addEventListener('message', onMessage);
-  return () => ch.removeEventListener('message', onMessage);
+  activeListeners.add(onMessage);
+  return () => {
+    ch.removeEventListener('message', onMessage);
+    activeListeners.delete(onMessage);
+  };
 }
 
 /**
@@ -107,12 +116,23 @@ export function subscribeStorageEvents(handler: (event: StorageEvent) => void): 
  */
 export function _resetChannelForTests(): void {
   if (channel) {
+    // Defensive: detach any listeners a forgetful test left attached
+    // before closing the channel, so the closed-but-not-GC'd instance
+    // can't fire ghost messages into the next test.
+    for (const listener of activeListeners) {
+      try {
+        channel.removeEventListener('message', listener);
+      } catch {
+        // ignore
+      }
+    }
     try {
       channel.close();
     } catch {
       // ignore
     }
   }
+  activeListeners.clear();
   channel = null;
 }
 
