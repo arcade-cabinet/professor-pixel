@@ -44,8 +44,16 @@ export const strings = {
       dismissLabel: 'Dismiss',
     },
     audioToggle: {
+      // aria-label / title — read by assistive tech and the OS tooltip;
+      // the imperative form ("Mute …") is what screen readers announce
+      // for the BUTTON STATE TRANSITION it's about to take.
       onLabel: 'Mute Pixel',
       offLabel: 'Unmute Pixel',
+      // Visible label that flips with state — present-tense, the kid
+      // can read "what is sound right now" rather than "what will the
+      // button do." Different concept from the imperative aria-label.
+      soundOnLabel: 'Sound on',
+      soundOffLabel: 'Sound off',
     },
     errorBoundary: {
       title: 'Hmm, something is blocked',

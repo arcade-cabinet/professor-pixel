@@ -472,7 +472,7 @@ Started: 2026-05-05T11:51:00Z
 
 ### task-001 audio-toggle i18n migration
 
-- [ ] task-001 audio-toggle.tsx labels move into strings.audioToggle catalog block; both aria-label (line 48) and visible "Sound on/off" (line 67); test asserts catalog has the keys
+- [x] task-001 audio-toggle.tsx labels move into strings.audioToggle catalog block; aria-label + visible "Sound on/off"; tests/unit/audio-toggle-i18n.test.ts asserts catalog wiring
 
 ### task-002 grading/ast.ts JSON.parse guard
 
