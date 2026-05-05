@@ -12,7 +12,7 @@ interface SpriteProperties {
   color?: string;
 }
 
-export const spriteComponent: PyGameComponent = {
+export const spriteComponent: PyGameComponent<SpriteProperties> = {
   type: 'sprite',
   id: 'sprite',
   name: 'Sprite',

@@ -47,7 +47,7 @@ interface HealthBarProperties {
   showText?: boolean;
 }
 
-export const scoreTextComponent: PyGameComponent = {
+export const scoreTextComponent: PyGameComponent<ScoreTextProperties> = {
   type: 'scoreText',
   id: 'scoreText',
   name: 'Score Text',
@@ -96,7 +96,7 @@ class ScoreText:
         screen.blit(text_surface, (self.x, self.y))`,
 };
 
-export const buttonComponent: PyGameComponent = {
+export const buttonComponent: PyGameComponent<ButtonProperties> = {
   type: 'button',
   id: 'button',
   name: 'Button',
@@ -169,7 +169,7 @@ class Button:
         screen.blit(text_surface, text_rect)`,
 };
 
-export const timerComponent: PyGameComponent = {
+export const timerComponent: PyGameComponent<TimerProperties> = {
   type: 'timer',
   id: 'timer',
   name: 'Timer',
@@ -249,7 +249,7 @@ class Timer:
         screen.blit(text_surface, (self.x, self.y))`,
 };
 
-export const healthBarComponent: PyGameComponent = {
+export const healthBarComponent: PyGameComponent<HealthBarProperties> = {
   type: 'healthBar',
   id: 'healthBar',
   name: 'Health Bar',

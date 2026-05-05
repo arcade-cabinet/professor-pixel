@@ -11,7 +11,7 @@ interface CollectibleProperties {
   respawns?: boolean;
 }
 
-export const collectibleComponent: PyGameComponent = {
+export const collectibleComponent: PyGameComponent<CollectibleProperties> = {
   type: 'collectible',
   id: 'collectible',
   name: 'Collectible',

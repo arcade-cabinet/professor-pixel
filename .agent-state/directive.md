@@ -142,9 +142,11 @@ Branch: feat/any-cleanup-pillar
 
 ### A4 — Component / editor refs
 
-- [ ] A4.1 code-editor.tsx — Monaco `useRef<any>` → `monaco.editor.IStandaloneCodeEditor | null`
-- [ ] A4.2 properties.tsx — 4 `any`s → discriminated-union over property kinds
-- [ ] A4.3 universal.tsx — wizard step payload `any` → `Record<string, unknown>`
+- [x] A4.1 code-editor.tsx — Monaco `useRef<any>` → typed via local MonacoEditorInstance/MonacoNamespace ambients (full `@types/monaco-editor` would be a runtime peer; we only need create/getValue/onDidChangeModelContent/dispose/addCommand surface). `(window as any).require` typed via AmdRequire ambient.
+- [x] A4.2 properties.tsx — Property descriptor `any` → `PropertyDefinition` from pygame/components/types; `value: any` callback typed as `ComponentPropertyValue` (string | number | boolean union); option iteration unwrapped to `{value, label}` tuple shape from PropertyDefinition.options
+- [x] A4.3 universal.tsx — `(option: any)` → `WizardOption`; `(opt: any) => opt.action` likewise; `(window as any).toast` → narrow Window cast; `asset as any` → `GameAsset & {category?}` extension cast; `(uiState.assetBrowserType as any)` → `AssetType` union from assets/types
+
+Cascade: pygame/components/registry now exports `AnyPyGameComponent` (preview/generateCode take `unknown`); each component file declares `PyGameComponent<XProperties>` for full call-site typing; the registry array casts through `as unknown as AnyPyGameComponent[]` because function-arg variance is invariant in strict mode
 
 ### A5 — pygame simulator + components
 

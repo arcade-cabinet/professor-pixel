@@ -11,7 +11,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import PixelMenu from '@/components/pixel/menu';
-import { UniversalWizardProps, DeviceState, UIState } from '@lib/wizard/types';
+import { UniversalWizardProps, DeviceState, UIState, WizardOption } from '@lib/wizard/types';
 import { detectDevice, getLayoutMode } from '@lib/wizard/utils';
 import { useWizardDialogue, DialogueText, getDialogueHelpers } from './dialogue-engine';
 import WizardOptionHandler, { ContinueButton } from './option-handler';
@@ -28,7 +28,7 @@ import AssetBrowserWizard from './asset-browser';
 import PixelMinimizeAnimation from '@/components/pixel/minimize-animation';
 import PixelMinimized from '@/components/pixel/minimized';
 import PygameComponentSelector from '@/components/pygame/component-selector';
-import { GameAsset } from '@lib/assets/types';
+import { GameAsset, AssetType } from '@lib/assets/types';
 import { assetManager } from '@lib/assets/manager';
 import { ICON_SIZES, STYLES } from '@lib/wizard/constants';
 import { compilePythonGame, downloadPythonFile } from '@lib/pygame/runtime/compiler';
@@ -291,7 +291,7 @@ export default function UniversalWizard({
 
   // Wrap handleOptionSelect to handle actions
   const handleOptionSelectWithAction = useCallback(
-    (option: any) => {
+    (option: WizardOption) => {
       console.log('handleOptionSelectWithAction called with option:', option);
       // For selectComponentVariant, handle the action first before dialogue navigation
       // This ensures the selection is saved properly without triggering flow changes
@@ -558,13 +558,13 @@ export default function UniversalWizard({
           console.log('Download triggered successfully');
 
           // Show a success message to the user
-          const toast = (window as any).toast || console.log;
+          const toast = ((window as Window & { toast?: (msg: unknown) => void }).toast) || console.log;
           toast('Game exported successfully!');
         } catch (error) {
           console.error('Error during export:', error);
 
           // Show an error message to the user
-          const toast = (window as any).toast || console.log;
+          const toast = ((window as Window & { toast?: (msg: unknown) => void }).toast) || console.log;
           toast('Failed to export game. Please try again.');
         }
       } else if (option.action === 'compileGameplayScene') {
@@ -743,13 +743,13 @@ export default function UniversalWizard({
             console.log('Download triggered successfully from PixelMenu');
 
             // Show success message if toast is available
-            const toast = (window as any).toast || console.log;
+            const toast = ((window as Window & { toast?: (msg: unknown) => void }).toast) || console.log;
             toast('Game exported successfully!');
           } catch (error) {
             console.error('Error during export from PixelMenu:', error);
 
             // Show error message if toast is available
-            const toast = (window as any).toast || console.log;
+            const toast = ((window as Window & { toast?: (msg: unknown) => void }).toast) || console.log;
             toast('Failed to export game. Please try again.');
           }
           break;
@@ -821,7 +821,7 @@ export default function UniversalWizard({
       // Store selected assets in session for later use
       assetsArray.forEach((asset) => {
         if (asset.type === 'sprite') {
-          const spriteAsset = asset as any;
+          const spriteAsset = asset as GameAsset & { category?: string };
           if (spriteAsset.category === 'characters') {
             assetManager.selectPlayerSprite(asset.id);
           } else if (spriteAsset.category === 'enemies') {
@@ -903,7 +903,9 @@ export default function UniversalWizard({
         {uiState.assetBrowserOpen && (
           <AssetBrowserWizard
             assetType={
-              uiState.assetBrowserType === 'all' ? undefined : (uiState.assetBrowserType as any)
+              uiState.assetBrowserType === 'all'
+                ? undefined
+                : (uiState.assetBrowserType as AssetType)
             }
             gameType={uiState.selectedGameType}
             onSelect={handleAssetSelection}
@@ -1098,7 +1100,7 @@ export default function UniversalWizard({
                   const currentNode = dialogueState.currentNode;
                   if (currentNode?.options) {
                     const promptOption = currentNode.options.find(
-                      (opt: any) => opt.action === 'promptGameName'
+                      (opt: WizardOption) => opt.action === 'promptGameName'
                     );
                     if (promptOption) {
                       handleOptionSelect(promptOption);
@@ -1133,7 +1135,7 @@ export default function UniversalWizard({
                   const currentNode = dialogueState.currentNode;
                   if (currentNode?.options) {
                     const promptOption = currentNode.options.find(
-                      (opt: any) => opt.action === 'promptGameName'
+                      (opt: WizardOption) => opt.action === 'promptGameName'
                     );
                     if (promptOption) {
                       handleOptionSelect(promptOption);

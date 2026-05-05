@@ -21,7 +21,7 @@ interface BackgroundProperties {
   tileMode?: boolean;
 }
 
-export const particleEffectComponent: PyGameComponent = {
+export const particleEffectComponent: PyGameComponent<ParticleEffectProperties> = {
   type: 'particleEffect',
   id: 'particleEffect',
   name: 'Particle Effect',
@@ -152,7 +152,7 @@ class ParticleEffect:
                     particle['size'])`,
 };
 
-export const backgroundComponent: PyGameComponent = {
+export const backgroundComponent: PyGameComponent<BackgroundProperties> = {
   type: 'background',
   id: 'background',
   name: 'Background',

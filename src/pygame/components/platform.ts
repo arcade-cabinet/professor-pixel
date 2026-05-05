@@ -12,7 +12,7 @@ interface PlatformProperties {
   moveRange?: number;
 }
 
-export const platformComponent: PyGameComponent = {
+export const platformComponent: PyGameComponent<PlatformProperties> = {
   type: 'platform',
   id: 'platform',
   name: 'Platform',

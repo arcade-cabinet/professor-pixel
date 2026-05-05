@@ -6,10 +6,40 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Play, RotateCcw, Keyboard, CheckCircle2, Target } from 'lucide-react';
 import { cn } from '@lib/utils/cn';
 
-// Monaco Editor types
+// Monaco Editor types — a minimal surface of the editor instance API we
+// actually consume. Full Monaco types would require @types/monaco-editor as a
+// runtime peer; we only need create() + getValue() + onDidChangeModelContent()
+// + dispose().
+interface MonacoEditorInstance {
+  getValue(): string;
+  setValue(value: string): void;
+  onDidChangeModelContent(handler: () => void): { dispose: () => void };
+  dispose(): void;
+  focus(): void;
+  getAction(id: string): { run: () => void } | null;
+  addCommand(keybinding: number, handler: () => void): void;
+}
+
+interface MonacoNamespace {
+  editor: {
+    create(
+      container: HTMLElement,
+      options: Record<string, unknown>,
+    ): MonacoEditorInstance;
+  };
+  KeyMod: { CtrlCmd: number; Shift: number; Alt: number };
+  KeyCode: { Enter: number; KeyR: number; [key: string]: number };
+}
+
+interface AmdRequire {
+  (deps: string[], cb: () => void): void;
+  config(opts: { paths: Record<string, string> }): void;
+}
+
 declare global {
   interface Window {
-    monaco: any;
+    monaco: MonacoNamespace;
+    require: AmdRequire;
   }
 }
 
@@ -49,7 +79,7 @@ export default function CodeEditor({
   currentStep,
 }: CodeEditorProps) {
   const editorRef = useRef<HTMLDivElement>(null);
-  const monacoEditorRef = useRef<any>(null);
+  const monacoEditorRef = useRef<MonacoEditorInstance | null>(null);
   const scriptLoadedRef = useRef<boolean>(false);
   const [inputValues, setInputValues] = useState('');
 
@@ -65,10 +95,10 @@ export default function CodeEditor({
     script.onload = () => {
       scriptLoadedRef.current = true;
       try {
-        (window as any).require.config({
+        window.require.config({
           paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.44.0/min/vs' },
         });
-        (window as any).require(['vs/editor/editor.main'], () => {
+        window.require(['vs/editor/editor.main'], () => {
           if (!editorRef.current || monacoEditorRef.current) {
             return;
           }

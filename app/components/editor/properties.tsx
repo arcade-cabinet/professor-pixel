@@ -16,10 +16,14 @@ import { Settings, Palette, Move, Code } from 'lucide-react';
 import { cn } from '@lib/utils/cn';
 import { PlacedComponent } from './wysiwyg';
 import { getComponentById } from '@lib/pygame/components/registry';
+import type {
+  ComponentPropertyValue,
+  PropertyDefinition,
+} from '@lib/pygame/components/types';
 
 interface PygameEditorPropertiesProps {
   component: PlacedComponent;
-  onPropertyChange: (id: string, property: string, value: any) => void;
+  onPropertyChange: (id: string, property: string, value: ComponentPropertyValue) => void;
   className?: string;
 }
 
@@ -31,7 +35,7 @@ export default function PygameEditorProperties({
   const componentDef = getComponentById(component.componentId);
   if (!componentDef) return null;
 
-  const renderPropertyControl = (prop: any) => {
+  const renderPropertyControl = (prop: PropertyDefinition) => {
     const value = component.properties[prop.name] ?? prop.default;
 
     switch (prop.type) {
@@ -87,9 +91,9 @@ export default function PygameEditorProperties({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {prop.options.map((option: string) => (
-                    <SelectItem key={option} value={option}>
-                      {option}
+                  {prop.options?.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
                     </SelectItem>
                   ))}
                 </SelectContent>

@@ -13,14 +13,14 @@ interface BallProperties {
   bounciness?: number;
 }
 
-export const ballComponent: PyGameComponent = {
+export const ballComponent: PyGameComponent<BallProperties> = {
   type: 'ball',
   id: 'ball',
   name: 'Ball',
   description: 'A bouncing physics object for pong/breakout games',
   wizardDescription:
     'A bouncy ball that can roll and bounce around! Perfect for games like Pong, Breakout, or any game where you need something that bounces off walls.',
-  properties: {} as Record<string, any>,
+  properties: {},
   defaultProperties: {
     x: 200,
     y: 100,

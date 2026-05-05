@@ -12,7 +12,7 @@ interface EnemyProperties {
   health?: number;
 }
 
-export const enemyComponent: PyGameComponent = {
+export const enemyComponent: PyGameComponent<EnemyProperties> = {
   type: 'enemy',
   id: 'enemy',
   name: 'Enemy',

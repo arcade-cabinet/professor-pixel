@@ -19,16 +19,72 @@ export type ComponentType =
   | 'timer'
   | 'healthBar';
 
-export interface PyGameComponent {
+/**
+ * Runtime type the property inspector + code generator round-trip. Components
+ * read/write strings, numbers, booleans, and option labels. Color is a hex
+ * string; positions are numbers.
+ */
+export type ComponentPropertyValue = string | number | boolean;
+
+/**
+ * Schema describing a single editable property the wizard surfaces. The
+ * inspector switches on `type` to render the correct control.
+ */
+export interface PropertyDefinition {
+  name: string;
+  label: string;
+  type: 'number' | 'string' | 'boolean' | 'color' | 'select';
+  default?: ComponentPropertyValue;
+  min?: number;
+  max?: number;
+  step?: number;
+  options?: Array<{ value: string; label: string }>;
+  description?: string;
+}
+
+/** Bag the wizard threads through the inspector — every property is one of
+ * the runtime types we know how to surface. */
+export type ComponentPropertyBag = Record<string, ComponentPropertyValue>;
+
+/**
+ * The component registry stores definitions parameterized over their props
+ * shape. Constraining to `object` rather than `ComponentPropertyBag` lets
+ * the per-component property interfaces (`BallProperties`, etc.) participate
+ * without each one having to declare an `[key: string]: ComponentPropertyValue`
+ * index signature; the wizard inspector treats unknown property values as
+ * `ComponentPropertyValue` at runtime.
+ */
+export interface PyGameComponent<P extends object = ComponentPropertyBag> {
   type: ComponentType;
   id: string;
   name: string;
   description: string;
   wizardDescription: string; // Friendly explanation for students
-  properties: Record<string, any>;
-  preview: (ctx: CanvasRenderingContext2D, props: any) => void;
-  generateCode: (props: any) => string;
-  defaultProperties: Record<string, any>;
+  properties: ComponentPropertyBag;
+  preview: (ctx: CanvasRenderingContext2D, props: P) => void;
+  generateCode: (props: P) => string;
+  defaultProperties: P;
+}
+
+/**
+ * Erased view of `PyGameComponent` used by registry / inspector code that
+ * holds heterogeneous components in one array. Function-argument
+ * contravariance prevents `PyGameComponent<X>` from assigning to
+ * `PyGameComponent<ComponentPropertyBag>`, so `AnyPyGameComponent` widens
+ * `preview` and `generateCode` to take `unknown` — the registry only ever
+ * forwards a component's own defaultProperties back through these callbacks,
+ * so the call sites cast through `unknown` at the boundary.
+ */
+export interface AnyPyGameComponent {
+  type: ComponentType;
+  id: string;
+  name: string;
+  description: string;
+  wizardDescription: string;
+  properties: ComponentPropertyBag;
+  preview: (ctx: CanvasRenderingContext2D, props: unknown) => void;
+  generateCode: (props: unknown) => string;
+  defaultProperties: ComponentPropertyBag;
 }
 
 // ============================================================================

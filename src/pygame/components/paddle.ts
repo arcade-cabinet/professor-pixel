@@ -12,7 +12,7 @@ interface PaddleProperties {
   controls?: 'arrows' | 'wasd' | 'mouse';
 }
 
-export const paddleComponent: PyGameComponent = {
+export const paddleComponent: PyGameComponent<PaddleProperties> = {
   type: 'paddle',
   id: 'paddle',
   name: 'Paddle',
