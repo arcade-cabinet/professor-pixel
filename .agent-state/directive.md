@@ -493,3 +493,38 @@ Started: 2026-05-05T11:51:00Z
 ### task-006 modernization-pillar status update
 
 - [x] task-006 modernization-pillar M4.2 boxes flipped to [x] with deviation footnote; frontmatter stays ACTIVE because other M-tasks (M1.1-M1.5, M2.1-M2.3, M3.1-M3.2, M4.1, M4.3, M5.1-M5.2, M6.1-M6.2) are still [ ] — pillar not closeable
+
+## Batch — post-launcher-consolidation (batch-20260505-142200)
+
+Source: docs/plans/post-launcher-consolidation.prq.md (sha256: c6b77d2a55371ca92d986f92daffcfce400fa36ea0f4d1136e0c6c7390032213)
+Started: 2026-05-05T19:22:00Z
+Branch: feat/post-launcher-consolidation (after PR #30 squash-merges)
+
+### C1 — Frame-rate test + simulator harness
+
+- [ ] C1.1 Extract createSimulator({canvas,ctx}) factory from src/pygame/runtime/simulator.ts; tests/unit/simulator-frame-rate.test.ts asserts mean per-frame cost <16.67ms over 120 synthesized 42-cmd frames
+- [ ] C1.2 Re-enable Vitest coverage thresholds at baseline 6/4/4/6 in vitest.config.ts; pnpm test:coverage:check wrapper validates emitted JSON
+
+### C2 — Direct-dep security bumps
+
+- [ ] C2.1 Review/merge Dependabot PR #16 (jsdom 27→29) after green CI
+- [ ] C2.2 Review/merge Dependabot PR #18 (@types/node 20→25) after green CI
+- [ ] C2.3 react-resizable-panels 2→4 with import/ref-type rewrite across editor + wizard layout-manager
+- [ ] C2.4 Review/merge Dependabot bundle PR #24 (45 minor/patch) after framer-motion 12.x + recharts 2.x audit
+- [ ] C2.5 Close remaining Dependabot alerts as "covered by overrides" with citation, OR bump if direct
+
+### C3 — Capacitor shell
+
+- [ ] C3.1 Install @capacitor/core, /cli, /android, /ios; npx cap init "Pixel's PyGame Palace" "com.arcadecabinet.professorpixel" --web-dir=dist; commit capacitor.config.ts + android/ + ios/
+- [ ] C3.2 SW registration guard: if (location.protocol !== 'capacitor:') registerPyodideCache() — fall back to in-memory cache inside Capacitor WebView
+- [ ] C3.3 Android signing: gitignored android/app/keystore/, committed signing.properties.example, docs/deployment/android.md
+- [ ] C3.4 iOS workflow: docs/deployment/ios.md (manual TestFlight loop, no CI auto-signing)
+- [ ] C3.5 .github/workflows/cd-mobile.yml builds debug APK on every push to main as workflow artifact; manual-trigger signed Play Store build behind ANDROID_KEYSTORE_BASE64 secret
+
+### C4 — Docs sweep (no errata files)
+
+- [ ] C4.1 docs/STATE.md flip "Next" entries done in PR #30; M2.2 + M4.2 → "In flight"; bump last_updated
+- [ ] C4.2 docs/architecture/launcher.md NEW (only new doc): OPFS layout, /play state machine, shouldUseOpfs() routing, launcher-vs-export split, SW atomic-write contract
+- [ ] C4.3 docs/architecture/pyodide.md add OPFS cache section with version-bump eviction protocol
+- [ ] C4.4 docs/deployment/README.md expand to cover web/PWA/mobile tracks, link per-OS docs from C3
+- [ ] C4.5 docs/plans/modernization-pillar.prq.md flip M2.2 + M4.2 once C1.x lands; ACTIVE → RELEASED if all M-tasks done; same for foundations-pillar-completion
