@@ -296,23 +296,35 @@ export const strings = {
 
   /* ─── Wizard (wizard/universal.tsx) ────────────────────────────────── */
   wizard: {
-    next: 'Next →',
-    back: '← Back',
-    skip: 'Skip',
-    finish: 'Finish',
-    save: 'Save',
-    saved: 'Saved',
-    saving: 'Saving…',
-    saveErrorTitle: "Couldn't save",
-    saveErrorBody: 'Pixel will keep trying — your work is still on this page.',
-    namePromptTitle: 'Pick a name for your game',
-    namePromptPlaceholder: 'My Awesome Game',
-    namePromptSave: 'Save and continue',
-    backToHome: '← Back home',
-    resetTitle: 'Start over?',
-    resetBody: 'This clears your wizard progress and starts fresh.',
-    resetConfirm: 'Yes, start over',
-    resetCancel: 'Keep going',
+    defaultGameName: 'My Game',
+    defaultExportTitle: 'My Pygame Game',
+    minimizeMessages: {
+      youGotThis: "You've got this! I'm here if you need me!",
+      haveFun: 'Have fun creating! Click me if you need help!',
+      lessonComplete: "Great job! I'll watch from here while you practice!",
+    },
+    play: {
+      ariaLabel: 'Play your game',
+      cta: '▶ Play your game!',
+    },
+    export: {
+      successTitle: 'Game exported!',
+      successDescription: (filename: string) => `Saved as ${filename}.`,
+      errorTitle: "Couldn't export your game",
+      errorDescription: 'Something went wrong saving the ZIP — try again in a moment.',
+    },
+    reset: {
+      progressConfirm:
+        'Are you sure you want to reset your progress? This will clear all saved wizard data.',
+      allDataConfirm:
+        'Are you sure you want to clear ALL data including preferences? This action cannot be undone.',
+    },
+    nameDialog: {
+      title: 'Name Your Game',
+      description: 'Give your game a unique name that captures its essence!',
+      placeholder: 'Enter your game name...',
+      submit: 'Create Game',
+    },
   },
 
   /* ─── Help modal (help-modal.tsx — task-015) ───────────────────────── */

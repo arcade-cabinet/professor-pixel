@@ -35,6 +35,7 @@ import { saveWizardProject } from '@lib/storage/projects';
 import { assetManager } from '@lib/assets/manager';
 import { ICON_SIZES, STYLES } from '@lib/wizard/constants';
 import { exportProjectAsZip, shareOrDownload } from '@lib/pygame/runtime/exporter';
+import { strings } from '@lib/i18n';
 import {
   saveSessionState,
   loadSessionState,
@@ -185,7 +186,7 @@ export default function UniversalWizard({
     saveWizardProject(
       {
         wizardState: draft,
-        name: sessionActions.gameName || draft.gameType || 'My Game',
+        name: sessionActions.gameName || draft.gameType || strings.wizard.defaultGameName,
         template: sessionActions.gameType || draft.gameType || 'unknown',
       },
       savedProjectIdRef.current ?? undefined
@@ -202,7 +203,7 @@ export default function UniversalWizard({
           try {
             const project = await saveWizardProject({
               wizardState: draft,
-              name: sessionActions.gameName || draft.gameType || 'My Game',
+              name: sessionActions.gameName || draft.gameType || strings.wizard.defaultGameName,
               template: sessionActions.gameType || draft.gameType || 'unknown',
             });
             savedProjectIdRef.current = project.id;
@@ -300,7 +301,7 @@ export default function UniversalWizard({
     // Check if the current node has an action
     if (currentNode.action === 'openWYSIWYGEditor') {
       // Minimize when opening editor
-      const message = "You've got this! I'm here if you need me!";
+      const message = strings.wizard.minimizeMessages.youGotThis;
       setUiState((prev) => ({
         ...prev,
         wysiwygEditorOpen: true,
@@ -503,7 +504,7 @@ export default function UniversalWizard({
         // Handle minimize from option. actionParams is Record<string, unknown>.
         const message =
           (option.actionParams?.message as string | undefined) ||
-          'Have fun creating! Click me if you need help!';
+          strings.wizard.minimizeMessages.haveFun;
         setUiState((prev) => ({
           ...prev,
           isMinimizing: true,
@@ -511,7 +512,7 @@ export default function UniversalWizard({
         }));
       } else if (option.action === 'buildGame') {
         // When entering game builder
-        const message = 'Have fun creating! Click me if you need help!';
+        const message = strings.wizard.minimizeMessages.haveFun;
         setUiState((prev) => ({
           ...prev,
           isMinimizing: true,
@@ -683,20 +684,20 @@ export default function UniversalWizard({
           const exported = await exportProjectAsZip({
             selectedComponents: sessionActions.selectedComponents || {},
             selectedAssets,
-            title: sessionActions.gameName || 'My Pygame Game',
+            title: sessionActions.gameName || strings.wizard.defaultExportTitle,
           });
           const action = await shareOrDownload(exported);
           if (action !== 'cancelled') {
             toast({
-              title: 'Game exported!',
-              description: `Saved as ${exported.filename}.`,
+              title: strings.wizard.export.successTitle,
+              description: strings.wizard.export.successDescription(exported.filename),
             });
           }
         } catch (error) {
           console.error('Error during export:', error);
           toast({
-            title: "Couldn't export your game",
-            description: 'Something went wrong saving the ZIP — try again in a moment.',
+            title: strings.wizard.export.errorTitle,
+            description: strings.wizard.export.errorDescription,
             variant: 'destructive',
           });
         }
@@ -720,7 +721,7 @@ export default function UniversalWizard({
 
       // Check for lesson completion
       if (option.text && (option.text.includes('complete') || option.text.includes('finished'))) {
-        const message = "Great job! I'll watch from here while you practice!";
+        const message = strings.wizard.minimizeMessages.lessonComplete;
         setUiState((prev) => ({
           ...prev,
           isMinimizing: true,
@@ -797,10 +798,10 @@ export default function UniversalWizard({
               type="button"
               onClick={handlePlayGame}
               data-testid="play-game-cta"
-              aria-label="Play your game"
+              aria-label={strings.wizard.play.ariaLabel}
               className="h-auto w-full rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 px-6 py-4 text-lg font-bold text-white shadow-lg transition-transform hover:scale-105 hover:from-purple-700 hover:to-pink-700 focus:outline-none focus:ring-4 focus:ring-purple-300"
             >
-              ▶ Play your game!
+              {strings.wizard.play.cta}
             </Button>
           </div>
         )}
@@ -819,11 +820,7 @@ export default function UniversalWizard({
 
   // Reset progress handler
   const handleResetProgress = useCallback(() => {
-    if (
-      window.confirm(
-        'Are you sure you want to reset your progress? This will clear all saved wizard data.'
-      )
-    ) {
+    if (window.confirm(strings.wizard.reset.progressConfirm)) {
       clearWizardState();
       window.location.reload();
     }
@@ -831,11 +828,7 @@ export default function UniversalWizard({
 
   // Clear all data handler
   const handleClearAllData = useCallback(() => {
-    if (
-      window.confirm(
-        'Are you sure you want to clear ALL data including preferences? This action cannot be undone.'
-      )
-    ) {
+    if (window.confirm(strings.wizard.reset.allDataConfirm)) {
       clearAllData();
       window.location.reload();
     }
@@ -871,22 +864,22 @@ export default function UniversalWizard({
           exportProjectAsZip({
             selectedComponents: sessionActions.selectedComponents || {},
             selectedAssets,
-            title: sessionActions.gameName || 'My Pygame Game',
+            title: sessionActions.gameName || strings.wizard.defaultExportTitle,
           })
             .then(async (exported) => {
               const action = await shareOrDownload(exported);
               if (action !== 'cancelled') {
                 toast({
-                  title: 'Game exported!',
-                  description: `Saved as ${exported.filename}.`,
+                  title: strings.wizard.export.successTitle,
+                  description: strings.wizard.export.successDescription(exported.filename),
                 });
               }
             })
             .catch((error) => {
               console.error('Export from PixelMenu failed:', error);
               toast({
-                title: "Couldn't export your game",
-                description: 'Something went wrong saving the ZIP — try again in a moment.',
+                title: strings.wizard.export.errorTitle,
+                description: strings.wizard.export.errorDescription,
                 variant: 'destructive',
               });
             });
@@ -1214,17 +1207,15 @@ export default function UniversalWizard({
       <Dialog open={gameNameDialogOpen} onOpenChange={setGameNameDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Name Your Game</DialogTitle>
-            <DialogDescription>
-              Give your game a unique name that captures its essence!
-            </DialogDescription>
+            <DialogTitle>{strings.wizard.nameDialog.title}</DialogTitle>
+            <DialogDescription>{strings.wizard.nameDialog.description}</DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <Input
               id="game-name"
               value={tempGameName}
               onChange={(e) => setTempGameName(e.target.value)}
-              placeholder="Enter your game name..."
+              placeholder={strings.wizard.nameDialog.placeholder}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && tempGameName.trim()) {
                   // Save the game name
@@ -1293,7 +1284,7 @@ export default function UniversalWizard({
               }}
               disabled={!tempGameName.trim()}
             >
-              Create Game
+              {strings.wizard.nameDialog.submit}
             </Button>
           </DialogFooter>
         </DialogContent>

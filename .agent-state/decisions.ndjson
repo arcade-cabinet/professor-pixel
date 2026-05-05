@@ -86,3 +86,4 @@
 {"ts":"2026-05-05T09:04:09.171Z","sha":"d54265950d02","subject":"feat(i18n): catalog scaffold + chrome banners + home + not-found (P4.1a)","decision":null,"why":null,"resolves":["task-001a of player-experience-pillar-4"],"overrides":[]}
 {"ts":"2026-05-05T09:12:14.063Z","sha":"a7fb42d84773","subject":"feat(i18n): lessons.tsx migrated + PR #28 feedback (P4.1b)","decision":null,"why":null,"resolves":["task-001b of player-experience-pillar-4"],"overrides":[]}
 {"ts":"2026-05-05T09:17:23.338Z","sha":"e83259de00a5","subject":"feat(i18n): lesson.tsx migrated to strings catalog (P4.1c)","decision":null,"why":null,"resolves":["task-001c of player-experience-pillar-4"],"overrides":[]}
+{"ts":"2026-05-05T09:20:17.122Z","sha":"a547bdb8690e","subject":"feat(i18n): profile.tsx migrated to strings catalog (P4.1d)","decision":null,"why":null,"resolves":["task-001d of player-experience-pillar-4"],"overrides":[]}
