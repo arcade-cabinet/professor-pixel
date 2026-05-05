@@ -5,5 +5,10 @@ description = "Add your description here"
 requires-python = ">=3.11"
 dependencies = [
     "numpy>=2.3.3",
-    "pillow>=11.3.0",
+    # Pillow 12.2.0 patches 6 CVEs flagged by Dependabot (PSD OOB write,
+    # PDF parsing infinite loop, font integer overflow, nested-list
+    # heap buffer overflow, FITS GZIP decompression bomb, PSD OOB write).
+    # Pillow is build-time only — used by the asset-generator scripts
+    # under scripts/asset-generator/, never bundled into the runtime app.
+    "pillow>=12.2.0",
 ]

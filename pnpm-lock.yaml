@@ -245,16 +245,16 @@ importers:
         version: 4.1.5(vitest@4.1.5)
       autoprefixer:
         specifier: ^10.4.20
-        version: 10.4.20(postcss@8.4.47)
+        version: 10.4.20(postcss@8.5.14)
       jsdom:
         specifier: ^27.0.0
-        version: 27.0.0(postcss@8.4.47)
+        version: 27.0.0(postcss@8.5.14)
       msw:
         specifier: ^2.11.2
         version: 2.11.2(@types/node@20.16.11)(typescript@6.0.3)
       postcss:
-        specifier: ^8.4.47
-        version: 8.4.47
+        specifier: ^8.5.14
+        version: 8.5.14
       tailwindcss:
         specifier: ^3.4.17
         version: 3.4.17
@@ -269,7 +269,7 @@ importers:
         version: 8.0.10(@types/node@20.16.11)(jiti@2.4.2)(yaml@2.6.0)
       vitest:
         specifier: ^4.1.5
-        version: 4.1.5(@types/node@20.16.11)(@vitest/browser-playwright@4.1.5)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(jsdom@27.0.0(postcss@8.4.47))(msw@2.11.2(@types/node@20.16.11)(typescript@6.0.3))(vite@8.0.10(@types/node@20.16.11)(jiti@2.4.2)(yaml@2.6.0))
+        version: 4.1.5(@types/node@20.16.11)(@vitest/browser-playwright@4.1.5)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(jsdom@27.0.0(postcss@8.5.14))(msw@2.11.2(@types/node@20.16.11)(typescript@6.0.3))(vite@8.0.10(@types/node@20.16.11)(jiti@2.4.2)(yaml@2.6.0))
 
 packages:
 
@@ -2581,10 +2581,6 @@ packages:
   postcss-value-parser@4.2.0:
     resolution: {integrity: sha512-1NNCs6uurfkVbeXG4S8JFT9t19m45ICnif8zWLd5oPSZ50QnwMfK+H3jv408d4jw/7Bttv5axS5IiHoLaVNHeQ==}
 
-  postcss@8.4.47:
-    resolution: {integrity: sha512-56rxCq7G/XfB4EkXq9Egn5GCqugWvDFjafDOThIdMBsI15iqPqR5r15TfSr1YPYeEI19YeaXMCbY6u88Y76GLQ==}
-    engines: {node: ^10 || ^12 || >=14}
-
   postcss@8.5.14:
     resolution: {integrity: sha512-SoSL4+OSEtR99LHFZQiJLkT59C5B1amGO1NzTwj7TT1qCUgUO6hxOvzkOYxD+vMrXBM3XJIKzokoERdqQq/Zmg==}
     engines: {node: ^10 || ^12 || >=14}
@@ -3379,9 +3375,9 @@ snapshots:
     dependencies:
       '@csstools/css-tokenizer': 3.0.4
 
-  '@csstools/css-syntax-patches-for-csstree@1.0.14(postcss@8.4.47)':
+  '@csstools/css-syntax-patches-for-csstree@1.0.14(postcss@8.5.14)':
     dependencies:
-      postcss: 8.4.47
+      postcss: 8.5.14
 
   '@csstools/css-tokenizer@3.0.4': {}
 
@@ -4451,7 +4447,7 @@ snapshots:
       '@vitest/mocker': 4.1.5(msw@2.11.2(@types/node@20.16.11)(typescript@6.0.3))(vite@8.0.10(@types/node@20.16.11)(jiti@2.4.2)(yaml@2.6.0))
       playwright: 1.55.0
       tinyrainbow: 3.1.0
-      vitest: 4.1.5(@types/node@20.16.11)(@vitest/browser-playwright@4.1.5)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(jsdom@27.0.0(postcss@8.4.47))(msw@2.11.2(@types/node@20.16.11)(typescript@6.0.3))(vite@8.0.10(@types/node@20.16.11)(jiti@2.4.2)(yaml@2.6.0))
+      vitest: 4.1.5(@types/node@20.16.11)(@vitest/browser-playwright@4.1.5)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(jsdom@27.0.0(postcss@8.5.14))(msw@2.11.2(@types/node@20.16.11)(typescript@6.0.3))(vite@8.0.10(@types/node@20.16.11)(jiti@2.4.2)(yaml@2.6.0))
     transitivePeerDependencies:
       - bufferutil
       - msw
@@ -4467,7 +4463,7 @@ snapshots:
       pngjs: 7.0.0
       sirv: 3.0.2
       tinyrainbow: 3.1.0
-      vitest: 4.1.5(@types/node@20.16.11)(@vitest/browser-playwright@4.1.5)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(jsdom@27.0.0(postcss@8.4.47))(msw@2.11.2(@types/node@20.16.11)(typescript@6.0.3))(vite@8.0.10(@types/node@20.16.11)(jiti@2.4.2)(yaml@2.6.0))
+      vitest: 4.1.5(@types/node@20.16.11)(@vitest/browser-playwright@4.1.5)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(jsdom@27.0.0(postcss@8.5.14))(msw@2.11.2(@types/node@20.16.11)(typescript@6.0.3))(vite@8.0.10(@types/node@20.16.11)(jiti@2.4.2)(yaml@2.6.0))
       ws: 8.20.0
     transitivePeerDependencies:
       - bufferutil
@@ -4487,7 +4483,7 @@ snapshots:
       obug: 2.1.1
       std-env: 4.1.0
       tinyrainbow: 3.1.0
-      vitest: 4.1.5(@types/node@20.16.11)(@vitest/browser-playwright@4.1.5)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(jsdom@27.0.0(postcss@8.4.47))(msw@2.11.2(@types/node@20.16.11)(typescript@6.0.3))(vite@8.0.10(@types/node@20.16.11)(jiti@2.4.2)(yaml@2.6.0))
+      vitest: 4.1.5(@types/node@20.16.11)(@vitest/browser-playwright@4.1.5)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(jsdom@27.0.0(postcss@8.5.14))(msw@2.11.2(@types/node@20.16.11)(typescript@6.0.3))(vite@8.0.10(@types/node@20.16.11)(jiti@2.4.2)(yaml@2.6.0))
     optionalDependencies:
       '@vitest/browser': 4.1.5(msw@2.11.2(@types/node@20.16.11)(typescript@6.0.3))(vite@8.0.10(@types/node@20.16.11)(jiti@2.4.2)(yaml@2.6.0))(vitest@4.1.5)
 
@@ -4536,7 +4532,7 @@ snapshots:
       sirv: 3.0.2
       tinyglobby: 0.2.15
       tinyrainbow: 3.1.0
-      vitest: 4.1.5(@types/node@20.16.11)(@vitest/browser-playwright@4.1.5)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(jsdom@27.0.0(postcss@8.4.47))(msw@2.11.2(@types/node@20.16.11)(typescript@6.0.3))(vite@8.0.10(@types/node@20.16.11)(jiti@2.4.2)(yaml@2.6.0))
+      vitest: 4.1.5(@types/node@20.16.11)(@vitest/browser-playwright@4.1.5)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(jsdom@27.0.0(postcss@8.5.14))(msw@2.11.2(@types/node@20.16.11)(typescript@6.0.3))(vite@8.0.10(@types/node@20.16.11)(jiti@2.4.2)(yaml@2.6.0))
 
   '@vitest/utils@4.1.5':
     dependencies:
@@ -4583,14 +4579,14 @@ snapshots:
       estree-walker: 3.0.3
       js-tokens: 10.0.0
 
-  autoprefixer@10.4.20(postcss@8.4.47):
+  autoprefixer@10.4.20(postcss@8.5.14):
     dependencies:
       browserslist: 4.24.2
       caniuse-lite: 1.0.30001677
       fraction.js: 4.3.7
       normalize-range: 0.1.2
       picocolors: 1.1.1
-      postcss: 8.4.47
+      postcss: 8.5.14
       postcss-value-parser: 4.2.0
 
   axe-core@4.11.4: {}
@@ -4714,10 +4710,10 @@ snapshots:
 
   cssesc@3.0.0: {}
 
-  cssstyle@5.3.0(postcss@8.4.47):
+  cssstyle@5.3.0(postcss@8.5.14):
     dependencies:
       '@asamuzakjp/css-color': 4.0.4
-      '@csstools/css-syntax-patches-for-csstree': 1.0.14(postcss@8.4.47)
+      '@csstools/css-syntax-patches-for-csstree': 1.0.14(postcss@8.5.14)
       css-tree: 3.1.0
     transitivePeerDependencies:
       - postcss
@@ -5039,10 +5035,10 @@ snapshots:
 
   js-tokens@4.0.0: {}
 
-  jsdom@27.0.0(postcss@8.4.47):
+  jsdom@27.0.0(postcss@8.5.14):
     dependencies:
       '@asamuzakjp/dom-selector': 6.5.5
-      cssstyle: 5.3.0(postcss@8.4.47)
+      cssstyle: 5.3.0(postcss@8.5.14)
       data-urls: 6.0.0
       decimal.js: 10.6.0
       html-encoding-sniffer: 4.0.0
@@ -5369,28 +5365,28 @@ snapshots:
 
   pngjs@7.0.0: {}
 
-  postcss-import@15.1.0(postcss@8.4.47):
+  postcss-import@15.1.0(postcss@8.5.14):
     dependencies:
-      postcss: 8.4.47
+      postcss: 8.5.14
       postcss-value-parser: 4.2.0
       read-cache: 1.0.0
       resolve: 1.22.8
 
-  postcss-js@4.0.1(postcss@8.4.47):
+  postcss-js@4.0.1(postcss@8.5.14):
     dependencies:
       camelcase-css: 2.0.1
-      postcss: 8.4.47
+      postcss: 8.5.14
 
-  postcss-load-config@4.0.2(postcss@8.4.47):
+  postcss-load-config@4.0.2(postcss@8.5.14):
     dependencies:
       lilconfig: 3.1.3
       yaml: 2.6.0
     optionalDependencies:
-      postcss: 8.4.47
+      postcss: 8.5.14
 
-  postcss-nested@6.2.0(postcss@8.4.47):
+  postcss-nested@6.2.0(postcss@8.5.14):
     dependencies:
-      postcss: 8.4.47
+      postcss: 8.5.14
       postcss-selector-parser: 6.1.2
 
   postcss-selector-parser@6.0.10:
@@ -5404,12 +5400,6 @@ snapshots:
       util-deprecate: 1.0.2
 
   postcss-value-parser@4.2.0: {}
-
-  postcss@8.4.47:
-    dependencies:
-      nanoid: 3.3.11
-      picocolors: 1.1.1
-      source-map-js: 1.2.1
 
   postcss@8.5.14:
     dependencies:
@@ -5737,11 +5727,11 @@ snapshots:
       normalize-path: 3.0.0
       object-hash: 3.0.0
       picocolors: 1.1.1
-      postcss: 8.4.47
-      postcss-import: 15.1.0(postcss@8.4.47)
-      postcss-js: 4.0.1(postcss@8.4.47)
-      postcss-load-config: 4.0.2(postcss@8.4.47)
-      postcss-nested: 6.2.0(postcss@8.4.47)
+      postcss: 8.5.14
+      postcss-import: 15.1.0(postcss@8.5.14)
+      postcss-js: 4.0.1(postcss@8.5.14)
+      postcss-load-config: 4.0.2(postcss@8.5.14)
+      postcss-nested: 6.2.0(postcss@8.5.14)
       postcss-selector-parser: 6.1.2
       resolve: 1.22.8
       sucrase: 3.35.0
@@ -5892,7 +5882,7 @@ snapshots:
       jiti: 2.4.2
       yaml: 2.6.0
 
-  vitest@4.1.5(@types/node@20.16.11)(@vitest/browser-playwright@4.1.5)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(jsdom@27.0.0(postcss@8.4.47))(msw@2.11.2(@types/node@20.16.11)(typescript@6.0.3))(vite@8.0.10(@types/node@20.16.11)(jiti@2.4.2)(yaml@2.6.0)):
+  vitest@4.1.5(@types/node@20.16.11)(@vitest/browser-playwright@4.1.5)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(jsdom@27.0.0(postcss@8.5.14))(msw@2.11.2(@types/node@20.16.11)(typescript@6.0.3))(vite@8.0.10(@types/node@20.16.11)(jiti@2.4.2)(yaml@2.6.0)):
     dependencies:
       '@vitest/expect': 4.1.5
       '@vitest/mocker': 4.1.5(msw@2.11.2(@types/node@20.16.11)(typescript@6.0.3))(vite@8.0.10(@types/node@20.16.11)(jiti@2.4.2)(yaml@2.6.0))
@@ -5919,7 +5909,7 @@ snapshots:
       '@vitest/browser-playwright': 4.1.5(msw@2.11.2(@types/node@20.16.11)(typescript@6.0.3))(playwright@1.55.0)(vite@8.0.10(@types/node@20.16.11)(jiti@2.4.2)(yaml@2.6.0))(vitest@4.1.5)
       '@vitest/coverage-v8': 4.1.5(@vitest/browser@4.1.5)(vitest@4.1.5)
       '@vitest/ui': 4.1.5(vitest@4.1.5)
-      jsdom: 27.0.0(postcss@8.4.47)
+      jsdom: 27.0.0(postcss@8.5.14)
     transitivePeerDependencies:
       - msw
 

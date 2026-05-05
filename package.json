@@ -110,7 +110,7 @@
     "autoprefixer": "^10.4.20",
     "jsdom": "^27.0.0",
     "msw": "^2.11.2",
-    "postcss": "^8.4.47",
+    "postcss": "^8.5.14",
     "tailwindcss": "^3.4.17",
     "ts-prune": "^0.10.3",
     "typescript": "6.0.3",
