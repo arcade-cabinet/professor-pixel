@@ -50,7 +50,9 @@ export function useWizardDialogue({
       return {
         currentNodeId: persistedState.currentNodeId,
         currentNode: null,
-        dialogueStep: 0,
+        // Restore mid-multiStep position if persisted; defaults to 0 for
+        // plain nodes or when no prior step was saved.
+        dialogueStep: persistedState.dialogueStep ?? 0,
         carouselIndex: 0,
         showAllChoices: false,
       };
@@ -90,7 +92,10 @@ export function useWizardDialogue({
   const [isFlowLoading, setIsFlowLoading] = useState(false);
   const [failedFlowPaths, setFailedFlowPaths] = useState<Set<string>>(new Set());
 
-  // Persist state changes
+  // Persist state changes. `dialogueStep` is in the dependency array so a
+  // kid parked mid-multiStep (slide 2 of a 4-slide tutorial node) who hits
+  // refresh lands back on slide 2, not slide 0. Without this, refresh
+  // would silently rewind their progress through the in-node sequence.
   useEffect(() => {
     if (!hasLoadedPersistedState) {
       // Don't persist on initial load
@@ -103,12 +108,19 @@ export function useWizardDialogue({
       version: '1.0.0',
       activeFlowPath: loadedFlowPath,
       currentNodeId: dialogueState.currentNodeId,
+      dialogueStep: dialogueState.dialogueStep,
       gameType: sessionActions.gameType,
       selectedGameType: sessionActions.selectedGameType,
       sessionActions: sessionActions,
       updatedAt: new Date().toISOString(),
     });
-  }, [dialogueState.currentNodeId, sessionActions, loadedFlowPath, hasLoadedPersistedState]);
+  }, [
+    dialogueState.currentNodeId,
+    dialogueState.dialogueStep,
+    sessionActions,
+    loadedFlowPath,
+    hasLoadedPersistedState,
+  ]);
 
   // P3.2 — Pixel speaks the current node text when it changes (audio off by
   // default, gated on `pp.audioEnabled`). Cancels any in-flight speech first
@@ -380,15 +392,36 @@ export function useWizardDialogue({
     dialogueState.currentNodeId,
   ]);
 
+  // First-load restore guard: when wizardData arrives and the kid's
+  // currentNodeId came from persisted state, we preserve the persisted
+  // dialogueStep instead of slamming it to 0. After the very first
+  // resolution, subsequent currentNodeId changes are real navigations
+  // (handleOptionSelect, navigateToNode, goBack) and SHOULD reset the
+  // step counter — re-entering a multiStep node mid-session always
+  // starts the kid at slide 0 of the in-node sequence. This ref is the
+  // one-shot toggle that keeps the restore-vs-reset behaviors distinct.
+  const isFirstNodeResolutionRef = useRef(true);
+
   // Update current node when ID changes
   useEffect(() => {
     if (wizardData && dialogueState.currentNodeId) {
       const node = wizardData[dialogueState.currentNodeId];
       if (node) {
+        const isFirst = isFirstNodeResolutionRef.current;
+        const persistedStep = persistedStateRef.current?.dialogueStep;
+        // Only restore the persisted step if the resolved node still has
+        // it within range — flow JSON edits between sessions could shrink
+        // a multiStep node, leaving a stale persisted index that would
+        // render an empty bubble.
+        const stepInRange =
+          typeof persistedStep === 'number' &&
+          (!node.multiStep || persistedStep < node.multiStep.length);
+        const restoreStep = isFirst && stepInRange ? persistedStep : 0;
+        if (isFirst) isFirstNodeResolutionRef.current = false;
         setDialogueState((prev) => ({
           ...prev,
           currentNode: node,
-          dialogueStep: 0,
+          dialogueStep: restoreStep,
           carouselIndex: 0,
           showAllChoices: false,
         }));

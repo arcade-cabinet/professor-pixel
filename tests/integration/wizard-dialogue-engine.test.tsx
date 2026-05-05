@@ -226,6 +226,125 @@ describe('useWizardDialogue (post-restructure dialogue-engine)', () => {
     });
   });
 
+  describe('mid-multiStep refresh resume (P4.4)', () => {
+    it('persists dialogueStep on advance', async () => {
+      const { result } = renderHook(() => useWizardDialogue());
+      await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+      act(() => result.current.handleOptionSelect({ text: 'Choose A', next: 'a' }));
+      await waitFor(() => expect(result.current.dialogueState.currentNodeId).toBe('a'));
+
+      act(() => result.current.advance());
+      // The save is debounced; flush by waiting for the call to land.
+      await waitFor(() => {
+        const calls = vi.mocked(persistence.saveWizardStateDebounced).mock.calls;
+        const latest = calls[calls.length - 1]?.[0];
+        expect(latest?.dialogueStep).toBe(1);
+      });
+    });
+
+    it('restores dialogueStep from persisted state on mount and does not reset to 0', async () => {
+      vi.mocked(persistence.loadWizardState).mockReturnValue({
+        version: '1',
+        currentNodeId: 'a',
+        dialogueStep: 2,
+        activeFlowPath: '/wizard-flow.json',
+        sessionActions: {
+          choices: [],
+          createdAssets: [],
+          gameType: null,
+          currentProject: null,
+          completedSteps: [],
+          unlockedEditor: false,
+        },
+        gameType: null,
+        selectedGameType: null,
+        updatedAt: new Date().toISOString(),
+      });
+
+      const { result } = renderHook(() => useWizardDialogue());
+      await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+      // The kid was on slide 2 of node 'a' (3-slide multiStep). After flow
+      // load, dialogueStep stays at 2 — no silent rewind to slide 0.
+      await waitFor(() => {
+        expect(result.current.dialogueState.currentNodeId).toBe('a');
+        expect(result.current.dialogueState.dialogueStep).toBe(2);
+      });
+    });
+
+    it('clamps an out-of-range persisted step to 0 when the flow shrank between sessions', async () => {
+      // Persisted step is 5, but node 'a' only has 3 multiStep entries.
+      vi.mocked(persistence.loadWizardState).mockReturnValue({
+        version: '1',
+        currentNodeId: 'a',
+        dialogueStep: 5,
+        activeFlowPath: '/wizard-flow.json',
+        sessionActions: {
+          choices: [],
+          createdAssets: [],
+          gameType: null,
+          currentProject: null,
+          completedSteps: [],
+          unlockedEditor: false,
+        },
+        gameType: null,
+        selectedGameType: null,
+        updatedAt: new Date().toISOString(),
+      });
+
+      const { result } = renderHook(() => useWizardDialogue());
+      await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+      await waitFor(() => {
+        expect(result.current.dialogueState.currentNodeId).toBe('a');
+        // Out of range → fall back to 0 rather than render an empty bubble.
+        expect(result.current.dialogueState.dialogueStep).toBe(0);
+      });
+    });
+
+    it('subsequent navigation after restore resets dialogueStep to 0 (one-shot guard)', async () => {
+      vi.mocked(persistence.loadWizardState).mockReturnValue({
+        version: '1',
+        currentNodeId: 'a',
+        dialogueStep: 2,
+        activeFlowPath: '/wizard-flow.json',
+        sessionActions: {
+          choices: [],
+          createdAssets: [],
+          gameType: null,
+          currentProject: null,
+          completedSteps: [],
+          unlockedEditor: false,
+        },
+        gameType: null,
+        selectedGameType: null,
+        updatedAt: new Date().toISOString(),
+      });
+
+      const { result } = renderHook(() => useWizardDialogue());
+      await waitFor(() => expect(result.current.isLoading).toBe(false));
+      await waitFor(() => expect(result.current.dialogueState.dialogueStep).toBe(2));
+
+      // After the initial restore, simulate that subsequent storage reads
+      // see an updated record (the flow-load effect re-checks
+      // loadWizardState() to keep state in sync; in production the
+      // debounced save would have updated it). Flip the mock so the next
+      // navigateToNode is not snapped back to the original 'a'/step=2.
+      vi.mocked(persistence.loadWizardState).mockReturnValue(null);
+
+      // Second visit to 'a' should start at step 0, not the stale
+      // persisted 2 — the one-shot guard ran during the first resolution.
+      act(() => result.current.navigateToNode('end'));
+      await waitFor(() => expect(result.current.dialogueState.currentNodeId).toBe('end'));
+      act(() => result.current.navigateToNode('a'));
+      await waitFor(() => {
+        expect(result.current.dialogueState.currentNodeId).toBe('a');
+        expect(result.current.dialogueState.dialogueStep).toBe(0);
+      });
+    });
+  });
+
   it('transitionToSpecializedFlow loads the specialized flow JSON', async () => {
     const { result } = renderHook(() => useWizardDialogue({ flowType: 'game-dev' }));
     await waitFor(() => expect(result.current.isLoading).toBe(false));

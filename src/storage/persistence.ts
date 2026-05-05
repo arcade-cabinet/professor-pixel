@@ -9,6 +9,14 @@ export interface PersistedWizardState {
   version: string;
   activeFlowPath?: string | null;
   currentNodeId?: string;
+  /**
+   * Position within a multiStep node. Persisted so a kid who refreshes
+   * mid-multiStep (e.g. parked on slide 2 of a 4-slide tutorial node)
+   * resumes on the same slide instead of restarting the node from step 0.
+   * Only meaningful for nodes whose `multiStep` array exists; for plain
+   * single-text nodes this is always 0.
+   */
+  dialogueStep?: number;
   gameType?: string | null;
   selectedGameType?: string | null;
   sessionActions?: SessionActions;
@@ -129,6 +137,7 @@ export const persistedWizardStateSchema = z
     version: z.string().optional(),
     activeFlowPath: z.string().nullable().optional(),
     currentNodeId: z.string().optional(),
+    dialogueStep: z.number().int().nonnegative().optional(),
     gameType: z.string().nullable().optional(),
     selectedGameType: z.string().nullable().optional(),
     sessionActions: z.record(z.string(), z.unknown()).optional(),

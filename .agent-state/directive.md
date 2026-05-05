@@ -347,7 +347,7 @@ Branch: feat/player-experience-pillar-4
 
 ### task-004 Save wizard state to localStorage after each step
 
-- [ ] task-004 saveWizardState fires per step-advance; new persistence test verifies mid-wizard refresh resume
+- [x] task-004 saveWizardState fires per step-advance; new persistence test verifies mid-wizard refresh resume
 
 ### task-005 Pointer events on live-preview + WYSIWYG canvas
 
