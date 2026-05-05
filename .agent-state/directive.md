@@ -202,3 +202,30 @@ Started: 2026-05-04T21:19:15Z
 - [x] D1 STATE.md — grader-followups moved Next → Done; Active flips to `feat/grader-followups-pillar` queued.
 - [x] D2 docs/pillars/04-grading.md — Worker-collected runtime metadata subsection added covering inspectGlobals, trackFunctions, and inputCalls; runtime-rules table descriptions updated to reflect actual instrumented behaviour (functionCalled and acceptsUserInput rows were stale).
 - [x] D3 docs/pillars/01-frontend.md — new "Debug surfaces" subsection between Component conventions and TypeScript discipline pointing at dev-hud.tsx and useDebugFlag.
+
+## Batch — wizard-coverage-simulator-pillar (batch-20260505-030239)
+
+Source: docs/plans/wizard-coverage-simulator-pillar.prq.md (sha256: 5af1dd2778cd4926ec9298e5a2063452a6752013cea3dcfa3dbbdadb94def4e8)
+Branch: feat/wizard-coverage-simulator-pillar
+Started: 2026-05-04T22:02:39Z
+
+### W1 — Coverage floor + ratchet doctrine
+
+- [ ] W1.1 vitest.config.ts coverage.thresholds = {statements:6, branches:4, functions:4, lines:6}; comment block documents ratchet doctrine.
+- [ ] W1.2 docs/pillars/01-frontend.md "Coverage" subsection.
+
+### W2 — Wizard dialogue integration tests
+
+- [ ] W2.1 tests/integration/wizard-dialogue-engine.test.tsx (recreated for post-restructure dialogue-engine.tsx).
+- [ ] W2.2 pnpm test:integration picks the new file up.
+
+### W3 — Simulator harness + frame-rate test
+
+- [ ] W3.1 tests/helpers/simulator-harness.ts: createFakeCanvasContext + controlledTime.
+- [ ] W3.2 src/pygame/runtime/simulator.ts: getCurrentFPS() probe.
+- [ ] W3.3 tests/unit/pygame-simulator.test.ts: drawCommand enqueue, flushFrameBuffer playback, M4.2 frame-rate band.
+
+### Docs
+
+- [ ] D1 STATE.md — wizard-coverage-simulator-pillar Next → Done.
+- [ ] D2 docs/pillars/02-runtime.md — simulator harness note.
