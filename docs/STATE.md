@@ -14,7 +14,7 @@ domain: context
 
 | Branch | PR | Status |
 |--------|----|----|
-| `feat/modernization-pillar-closeout` | #30 | CHANGES_REQUESTED → fold-forward batches 1+2+3+4 pushed; main merged in (PR #24 45-pkg bundle); pnpm overrides for 3 transitive vulns + @playwright/test bump; use-device-type isFoldable heuristic corrected; awaiting Vitest CI + CodeRabbit re-review |
+| `feat/modernization-pillar-closeout` | #30 | CHANGES_REQUESTED → 5 fold-forward batches pushed; main merged in (PR #24 45-pkg bundle); pygame-ce wheel vendored at install time + packageBaseUrl routed at /pyodide/ so loadPackage() never hits a CDN; launcher-e2e test passes against real WASM in CI; pnpm overrides + @playwright/test bump close 22→20 alerts; Android security hardening (trusted-ref guard on signed releases, late keystore decode, allowBackup off, real applicationId in test, gradle versionCode/Name as project properties); awaiting reviewer approval to dismiss stale CHANGES_REQUESTED |
 
 ## Done (recent milestones)
 

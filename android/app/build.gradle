@@ -1,5 +1,15 @@
 apply plugin: 'com.android.application'
 
+// Load signing.properties if present. The file is gitignored — CI writes it
+// just before assembleRelease, and devs only need it locally if they want to
+// build a real signed APK. assembleDebug never reads this and works with the
+// default debug keystore even when signing.properties is missing.
+def signingPropsFile = rootProject.file("app/signing.properties")
+def signingProps = new Properties()
+if (signingPropsFile.exists()) {
+    signingPropsFile.withInputStream { signingProps.load(it) }
+}
+
 android {
     namespace = "com.arcadecabinet.professorpixel"
     compileSdk = rootProject.ext.compileSdkVersion
@@ -19,10 +29,28 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    signingConfigs {
+        // The release block below references this only when signing.properties
+        // exists. If a dev runs `gradlew assembleRelease` without supplying
+        // signing.properties, the release build falls through to gradle's
+        // default behavior (which produces an unsigned APK) — fail fast at
+        // assemble time rather than hand someone an APK they can't upload.
+        if (signingPropsFile.exists()) {
+            release {
+                storeFile rootProject.file("app/${signingProps['storeFile']}")
+                storePassword signingProps['storePassword']
+                keyAlias signingProps['keyAlias']
+                keyPassword signingProps['keyPassword']
+            }
+        }
+    }
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            if (signingPropsFile.exists()) {
+                signingConfig signingConfigs.release
+            }
         }
     }
 }
