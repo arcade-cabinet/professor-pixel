@@ -17,20 +17,23 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 'lts/*'
-          cache: 'npm'
+          cache: 'pnpm'
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Type check
-        run: npm run check
+        run: pnpm check
 
       - name: Build full application
-        run: npm run build
+        run: pnpm build
         env:
           NODE_ENV: production
 
@@ -41,23 +44,26 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 'lts/*'
-          cache: 'npm'
+          cache: 'pnpm'
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       # Advisory until the codebase is brought into a clean state.
       # Tracked in docs/STATE.md ("Standards alignment").
       - name: ESLint
-        run: npx eslint .
+        run: pnpm exec eslint .
         continue-on-error: true
 
       - name: Prettier
-        run: npx prettier --check .
+        run: pnpm exec prettier --check .
         continue-on-error: true
 
   test:
@@ -67,26 +73,29 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 'lts/*'
-          cache: 'npm'
+          cache: 'pnpm'
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Install Playwright Chromium
-        run: npx playwright install --with-deps chromium
+        run: pnpm exec playwright install --with-deps chromium
 
       - name: Build asset catalog
-        run: npm run catalog
+        run: pnpm catalog
 
       - name: Run unit tests
-        run: npm run test:unit
+        run: pnpm test:unit
 
       - name: Run integration tests
-        run: npm run test:integration
+        run: pnpm test:integration
 
       - name: Run component tests (Vitest browser)
-        run: npm run test:component
+        run: pnpm test:component

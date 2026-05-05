@@ -83,7 +83,7 @@ Branch: feat/modernization-pillar
 
 ### M1 — Toolchain modernization
 
-- [ ] M1.1 pnpm 10 replaces npm — `packageManager` set, `pnpm-lock.yaml` committed, `package-lock.json` deleted, GitHub Actions use `pnpm/action-setup@v4` + `corepack enable`, `pnpm install --frozen-lockfile` is CI install
+- [x] M1.1 pnpm 10 replaces npm — `packageManager` set, `pnpm-lock.yaml` committed, `package-lock.json` deleted, GitHub Actions use `pnpm/action-setup@v4` + `corepack enable`, `pnpm install --frozen-lockfile` is CI install
 - [ ] M1.2 TypeScript 6.x bump — `pnpm check` clean, deprecated compiler options dropped, Pyodide ambient still resolves
 - [ ] M1.3 Vite 8 + Vitest 4 + @vitest/browser 4 — all dev/build/test scripts green, Pyodide worker import still works
 - [ ] M1.4 React 19 — `react`/`react-dom` at ^19.x, no deprecation warnings, forwardRef migrations applied

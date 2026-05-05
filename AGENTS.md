@@ -62,13 +62,13 @@ Aliases: `@/*` → `./app/*`, `@lib/*` → `./src/*`, `@assets/*` → `./app/ass
 2. **Update docs first** if the change alters behavior, contracts, or UX.
 3. **Write or update the failing test.** Vitest for logic, Playwright for user-visible behavior. Don't claim something works without a passing test that would have failed before.
 4. **Implement.** Keep the diff focused. No drive-by refactors.
-5. **Verify locally** before pushing — `npm run check`, the relevant test suite, and a manual sanity pass for UI changes.
+5. **Verify locally** before pushing — `pnpm check`, the relevant test suite, and a manual sanity pass for UI changes.
 6. **Commit with intent.** Conventional Commits. Body explains *why*, not *what* (the diff shows what).
 7. **Open a PR**, link any related issue, fill the checklist, wait for CI.
 
 ## Verification before claiming completion
 
-- `npm run check` exits 0
+- `pnpm check` exits 0
 - The test suite covering the change passes
 - For UI changes, you actually loaded the page in a browser and exercised the path
 - No new ESLint/Prettier complaints (`npx eslint .`, `npx prettier --check .`)
@@ -90,7 +90,7 @@ The following require explicit human approval each time, even for AI agents oper
 
 | Tool | Purpose |
 |------|---------|
-| `npm` | package manager (lockfile is `package-lock.json`) |
+| `pnpm` | package manager (lockfile is `pnpm-lock.yaml`) |
 | `tsx` | TypeScript execution for the dev server |
 | `vite` | client build + dev server (mounted as Express middleware in dev) |
 | `esbuild` | bundles the Express server for production |

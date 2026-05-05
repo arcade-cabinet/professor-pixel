@@ -27,16 +27,16 @@ Vitest 3 with native `projects` declares three classifications, each with the ru
 ```bash
 # Vitest projects (run from the workspace root)
 npm test                       # all Vitest projects
-npm run test:unit              # unit only
-npm run test:integration       # integration only
-npm run test:component         # component only — requires Playwright Chromium
-npm run test:watch             # watch mode (all projects)
-npm run test:ui                # browser-based runner UI
-npm run test:coverage          # coverage report
+pnpm test:unit              # unit only
+pnpm test:integration       # integration only
+pnpm test:component         # component only — requires Playwright Chromium
+pnpm test:watch             # watch mode (all projects)
+pnpm test:ui                # browser-based runner UI
+pnpm test:coverage          # coverage report
 
 # Playwright (e2e)
 npx playwright install --with-deps chromium   # one-time, or after Playwright upgrades
-npm run test:e2e                              # all projects
+pnpm test:e2e                              # all projects
 npx playwright test smoke-tests.spec.ts       # one suite
 npx playwright test --project=mobile-portrait # one viewport
 npx playwright test --headed                  # show browsers
@@ -143,14 +143,14 @@ If a Playwright spec needs to target an element that doesn't have a `data-testid
 `.github/workflows/ci.yml` runs:
 
 ```yaml
-- npm ci
-- npm run check                              # tsc
-- npm run build                              # production build
+- pnpm install --frozen-lockfile
+- pnpm check                              # tsc
+- pnpm build                              # production build
 - npx playwright install --with-deps chromium
-- npm run catalog                            # build asset catalog
-- npm run test:unit                          # blocking
-- npm run test:integration                   # advisory (until pre-existing tests catch up)
-- npm run test:component                     # advisory (until pre-existing tests catch up)
+- pnpm catalog                            # build asset catalog
+- pnpm test:unit                          # blocking
+- pnpm test:integration                   # advisory (until pre-existing tests catch up)
+- pnpm test:component                     # advisory (until pre-existing tests catch up)
 ```
 
 `test:e2e` lives in a separate workflow (Playwright traces are heavy artifacts).
@@ -159,11 +159,11 @@ If a Playwright spec needs to target an element that doesn't have a `data-testid
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
-| `Cannot find dependency 'jsdom'` | Fresh clone | `npm ci` (jsdom is a direct dep) |
+| `Cannot find dependency 'jsdom'` | Fresh clone | `pnpm install --frozen-lockfile` (jsdom is a direct dep) |
 | `browserType.launch: Executable doesn't exist` for component tests | Playwright Chromium not installed | `npx playwright install --with-deps chromium` |
 | Pyodide tests fail to load | Pyodide CDN unreachable | Mock at `window.loadPyodide` (see `src/types/pyodide.d.ts`) |
-| Playwright times out at startup | `npm run dev` slow / port 5173 busy | Increase `webServer.timeout` in `playwright.config.ts`; free port 5173 |
-| Asset catalog 404 in tests | `predev`/`prebuild` didn't run | `npm run catalog` |
+| Playwright times out at startup | `pnpm dev` slow / port 5173 busy | Increase `webServer.timeout` in `playwright.config.ts`; free port 5173 |
+| Asset catalog 404 in tests | `predev`/`prebuild` didn't run | `pnpm catalog` |
 
 ## Future enhancements
 

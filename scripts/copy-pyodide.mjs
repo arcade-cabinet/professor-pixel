@@ -19,7 +19,7 @@ const src = resolve(repoRoot, 'node_modules/pyodide');
 const dest = resolve(repoRoot, 'public/pyodide');
 
 if (!existsSync(src)) {
-  console.error(`[copy-pyodide] node_modules/pyodide is missing — run "npm install" first.`);
+  console.error(`[copy-pyodide] node_modules/pyodide is missing — run "pnpm install" first.`);
   process.exit(1);
 }
 

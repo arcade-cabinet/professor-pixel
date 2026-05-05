@@ -65,7 +65,7 @@ Configured in `vite.config.ts` and `tsconfig.json`:
 src + app + public
         │
         ▼
-   tsc (--noEmit, npm run check)   ← type errors gate everything else
+   tsc (--noEmit, pnpm check)   ← type errors gate everything else
         │
         ▼
    vite build                      ← bundles app/ + src/, copies public/
@@ -76,7 +76,7 @@ src + app + public
 
 | Hook | Command | Purpose |
 |------|---------|---------|
-| `postinstall` | `node scripts/copy-pyodide.mjs` | Vendor Pyodide into `public/pyodide/` after `npm install` |
+| `postinstall` | `node scripts/copy-pyodide.mjs` | Vendor Pyodide into `public/pyodide/` after `pnpm install` |
 | `predev` | catalog + copy-pyodide | Catalog regenerated; Pyodide vendored before dev server starts |
 | `prebuild` | catalog + copy-pyodide | Same, before production build |
 
