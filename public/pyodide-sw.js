@@ -27,7 +27,15 @@
 
 const PYODIDE_VERSION = '0.29.3';
 const OPFS_DIR = `pyodide-cache-v${PYODIDE_VERSION}`;
-const PYODIDE_PREFIX = '/pyodide/';
+// The SW's scope is whatever directory it was registered against —
+// `/` in dev, `/<repo>/` on GitHub Pages. We compute the pyodide
+// prefix from `self.registration.scope` lazily inside the fetch
+// handler (the registration object is guaranteed populated by the
+// time fetch events arrive). Same SW source works in both deployments
+// without a build-time template substitution.
+function pyodidePrefix() {
+  return `${new URL(self.registration.scope).pathname}pyodide/`;
+}
 
 self.addEventListener('install', (event) => {
   // Skip waiting so a fresh SW activates immediately on first install
@@ -67,17 +75,18 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
-  // Only intercept same-origin /pyodide/* GETs. Range requests get
+  // Only intercept same-origin <base>/pyodide/* GETs. Range requests get
   // forwarded to the network because OPFS doesn't natively serve
   // partial responses and Pyodide's wasm streaming compile may
   // negotiate ranges; letting it through to the (origin) static
   // server is fine because the file lives there too.
   if (url.origin !== self.location.origin) return;
-  if (!url.pathname.startsWith(PYODIDE_PREFIX)) return;
+  const prefix = pyodidePrefix();
+  if (!url.pathname.startsWith(prefix)) return;
   if (event.request.method !== 'GET') return;
   if (event.request.headers.get('range')) return;
 
-  event.respondWith(handlePyodideRequest(event.request, url));
+  event.respondWith(handlePyodideRequest(event.request, url, prefix));
 });
 
 // Allowlist of file extensions Pyodide actually requests. Anything else
@@ -99,8 +108,8 @@ function isAllowedFile(fileName) {
   return ALLOWED_EXTENSIONS.has(ext);
 }
 
-async function handlePyodideRequest(request, url) {
-  const fileName = url.pathname.slice(PYODIDE_PREFIX.length);
+async function handlePyodideRequest(request, url, prefix) {
+  const fileName = url.pathname.slice(prefix.length);
   if (!isAllowedFile(fileName)) {
     // Pass through to network; don't read or write OPFS for paths we
     // don't recognize. Pyodide only fetches flat .wasm / .js / .mjs /

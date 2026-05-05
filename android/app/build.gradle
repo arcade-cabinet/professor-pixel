@@ -30,11 +30,13 @@ android {
         }
     }
     signingConfigs {
-        // The release block below references this only when signing.properties
-        // exists. If a dev runs `gradlew assembleRelease` without supplying
-        // signing.properties, the release build falls through to gradle's
-        // default behavior (which produces an unsigned APK) — fail fast at
-        // assemble time rather than hand someone an APK they can't upload.
+        // Only register a release signingConfig when signing.properties is on
+        // disk. If a dev runs `gradlew assembleRelease` without supplying
+        // signing.properties, gradle emits an unsigned APK with a warning —
+        // not ideal, but better than reading from a non-existent file and
+        // failing the entire configuration phase (which would also break
+        // assembleDebug). CI guarantees the file is present via its
+        // "Write signing.properties" step before assembleRelease.
         if (signingPropsFile.exists()) {
             release {
                 storeFile rootProject.file("app/${signingProps['storeFile']}")
