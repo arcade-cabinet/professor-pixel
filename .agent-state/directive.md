@@ -203,29 +203,38 @@ Started: 2026-05-04T21:19:15Z
 - [x] D2 docs/pillars/04-grading.md — Worker-collected runtime metadata subsection added covering inspectGlobals, trackFunctions, and inputCalls; runtime-rules table descriptions updated to reflect actual instrumented behaviour (functionCalled and acceptsUserInput rows were stale).
 - [x] D3 docs/pillars/01-frontend.md — new "Debug surfaces" subsection between Component conventions and TypeScript discipline pointing at dev-hud.tsx and useDebugFlag.
 
-## Batch — wizard-coverage-simulator-pillar (batch-20260505-030239)
+## Batch — finishing-pillar (batch-20260505-030602)
 
-Source: docs/plans/wizard-coverage-simulator-pillar.prq.md (sha256: 5af1dd2778cd4926ec9298e5a2063452a6752013cea3dcfa3dbbdadb94def4e8)
-Branch: feat/wizard-coverage-simulator-pillar
-Started: 2026-05-04T22:02:39Z
+Source: docs/plans/finishing-pillar.prq.md (sha256: f60bbe0082347dde740ec12de635a85e75b045c7091c121a8bfe51d4ec2897b2)
+Branch: feat/finishing-pillar
+Started: 2026-05-04T22:06:02Z
 
-### W1 — Coverage floor + ratchet doctrine
+This is the comprehensive sweep — everything remaining in STATE.md → Next gets done in one PR. No more carve-offs.
 
-- [ ] W1.1 vitest.config.ts coverage.thresholds = {statements:6, branches:4, functions:4, lines:6}; comment block documents ratchet doctrine.
-- [ ] W1.2 docs/pillars/01-frontend.md "Coverage" subsection.
+### F1 — Coverage floor + ratchet doctrine
 
-### W2 — Wizard dialogue integration tests
+- [x] F1.1 vitest.config.ts coverage.thresholds = {statements:6, branches:4, functions:4, lines:6}; comment block documents ratchet doctrine. Verified passes against current baseline (6.07/4.55/4.24/6.08).
+- [x] F1.2 docs/pillars/01-frontend.md "Coverage" subsection added between Component conventions and Debug surfaces — pins the regression-guard framing and the ratchet rule.
 
-- [ ] W2.1 tests/integration/wizard-dialogue-engine.test.tsx (recreated for post-restructure dialogue-engine.tsx).
-- [ ] W2.2 pnpm test:integration picks the new file up.
+### F2 — Wizard dialogue integration tests
 
-### W3 — Simulator harness + frame-rate test
+- [ ] F2.1 tests/integration/wizard-dialogue-engine.test.tsx (recreated for post-restructure dialogue-engine.tsx) — flow load, option select, advance, persisted-state restore, transitionToSpecializedFlow.
 
-- [ ] W3.1 tests/helpers/simulator-harness.ts: createFakeCanvasContext + controlledTime.
-- [ ] W3.2 src/pygame/runtime/simulator.ts: getCurrentFPS() probe.
-- [ ] W3.3 tests/unit/pygame-simulator.test.ts: drawCommand enqueue, flushFrameBuffer playback, M4.2 frame-rate band.
+### F3 — Simulator harness + frame-rate test
 
-### Docs
+- [ ] F3.1 tests/helpers/simulator-harness.ts: createFakeCanvasContext + controlledTime.
+- [ ] F3.2 src/pygame/runtime/simulator.ts: getCurrentFPS() probe.
+- [ ] F3.3 tests/unit/pygame-simulator.test.ts: drawCommand enqueue, flushFrameBuffer playback, M4.2 frame-rate band.
 
-- [ ] D1 STATE.md — wizard-coverage-simulator-pillar Next → Done.
-- [ ] D2 docs/pillars/02-runtime.md — simulator harness note.
+### F4 — Playtest analysis fixes
+
+- [ ] F4.1 transitionToSpecializedFlow engine path — fix the bug analysis.md flagged; integration test asserts specialized flow loads.
+- [ ] F4.2 Remove single-option "continue" buttons — shouldShowContinue/shouldShowOptions in src/wizard/utils.ts route 1-item continue-pattern options to <ContinueButton>.
+- [ ] F4.3 Auto-advance after asset selection — handleOptionSelect in dialogue-engine.tsx; test for it.
+
+### F5 — Docs / state sweep
+
+- [ ] F5.1 docs/playtests/{platformer,dungeon,puzzle,rpg,racing,space}.md — annotate resolved CRITICAL WEAK POINTS with **CLOSED:** + commit ref.
+- [ ] F5.2 docs/playtests/analysis.md — same annotation treatment for PRIORITY FIXES.
+- [ ] F5.3 docs/STATE.md — finishing pillar Next → Done; Next becomes empty. Active flips to RELEASED.
+- [ ] F5.4 .agent-state/directive.md Status: ACTIVE → RELEASED.

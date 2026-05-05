@@ -74,6 +74,25 @@ export default defineConfig({
       reportsDirectory: './coverage',
       include: ['app/**/*.{ts,tsx}', 'src/**/*.{ts,tsx}'],
       exclude: ['**/index.ts', '**/*.d.ts', 'app/**/*.stories.tsx'],
+      // Coverage floor — a regression guard, NOT a goal.
+      //
+      // Ratchet doctrine: when a PR adds tests that move the needle, raise
+      // the matching threshold to the new floor in the same PR. Never lower
+      // a threshold without unanimous review; flapping floors are how
+      // coverage rules become decorative.
+      //
+      // Today's snapshot (unit project only — integration + component add
+      // more but aren't measured in this aggregate yet): statements 6.03%,
+      // branches 4.46%, functions 4.30%, lines 6.05%. The thresholds below
+      // sit just above those numbers so any regression fails CI; the work
+      // to actually push the percentages up is per-domain (wizard, pygame
+      // simulator, app components) and lives in subsequent PRQs.
+      thresholds: {
+        statements: 6,
+        branches: 4,
+        functions: 4,
+        lines: 6,
+      },
     },
   },
 });
