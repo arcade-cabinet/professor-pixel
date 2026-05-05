@@ -270,8 +270,15 @@ export default function LessonEnhanced() {
         updateProgressMutation.mutate({ code });
       }
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'An error occurred';
-      setError(errorMessage);
+      // Route runtime errors (Pyodide crash inside runSnippet, network blip
+      // fetching the lesson, etc.) through the educational mapper too — not
+      // just the grader-catch above. Otherwise a "TypeError: Cannot read
+      // properties of undefined" would still leak verbatim to the kid in
+      // the editor's error <pre>.
+      const raw = err instanceof Error ? err.message : 'An error occurred';
+      console.error('[lesson] executeCode failed:', raw);
+      const friendly = getEducationalError(raw);
+      setError(`${friendly.friendlyMessage} ${friendly.explanation}`);
       setPixelDialogue(getRandomDialogue(pixelDialogues.stepError));
       setPixelImage(pixelThinking);
     }
