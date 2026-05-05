@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom/vitest';
-import StorageBlockedNotice from '@/components/storage-blocked-notice';
+import StorageBlockedNotice from '@/components/ui/storage-blocked-notice';
 import { __resetStorageBlockedCache } from '@lib/storage/private-mode';
 
 beforeEach(() => {

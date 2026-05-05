@@ -18,8 +18,8 @@ import { Card } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import OfflineBanner from '@/components/offline-banner';
-import StorageBlockedNotice from '@/components/storage-blocked-notice';
+import OfflineBanner from '@/components/ui/offline-banner';
+import StorageBlockedNotice from '@/components/ui/storage-blocked-notice';
 import { loadLessons, statusFor } from '@lib/lessons';
 import { getClientStorage } from '@lib/storage/mode';
 import { loadProfile, saveProfile } from '@lib/storage/profile';
@@ -71,9 +71,9 @@ export default function LessonsIndex() {
 
   if (lessonsLoading || progressLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-pink-50 dark:from-gray-900 dark:to-purple-950">
+      <LessonsShell centered>
         <p className="text-gray-700 dark:text-gray-300">Loading lessons…</p>
-      </div>
+      </LessonsShell>
     );
   }
 
@@ -83,10 +83,7 @@ export default function LessonsIndex() {
   // a kid is never stuck staring at a blank screen.
   if (lessonsError || progressError) {
     return (
-      <div
-        className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-pink-50 dark:from-gray-900 dark:to-purple-950 px-4"
-        data-testid="lessons-error-state"
-      >
+      <LessonsShell centered data-testid="lessons-error-state">
         <Card className="max-w-md w-full p-8 bg-white/90 dark:bg-gray-800/90 text-center">
           <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
             We couldn&apos;t reach the lesson library
@@ -109,16 +106,13 @@ export default function LessonsIndex() {
             </Link>
           </div>
         </Card>
-      </div>
+      </LessonsShell>
     );
   }
 
   if (!lessons || lessons.length === 0) {
     return (
-      <div
-        className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-pink-50 dark:from-gray-900 dark:to-purple-950 px-4"
-        data-testid="lessons-empty-state"
-      >
+      <LessonsShell centered data-testid="lessons-empty-state">
         <Card className="max-w-md w-full p-8 bg-white/90 dark:bg-gray-800/90 text-center">
           <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
             No lessons available yet
@@ -135,14 +129,12 @@ export default function LessonsIndex() {
             </Button>
           </Link>
         </Card>
-      </div>
+      </LessonsShell>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-50 dark:from-gray-900 dark:to-purple-950 px-4 py-8">
-      <StorageBlockedNotice />
-      <OfflineBanner className="-mx-4 -mt-8 mb-4" />
+    <LessonsShell>
       <main className="mx-auto max-w-4xl">
         <header className="mb-8 text-center">
           <h1 className="bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-4xl font-bold text-transparent">
@@ -294,6 +286,35 @@ export default function LessonsIndex() {
           })}
         </ul>
       </main>
+    </LessonsShell>
+  );
+}
+
+// Shared chrome — keeps StorageBlockedNotice + OfflineBanner visible across
+// loading / error / empty / success branches so kids on a bad network or in
+// a private-mode browser see the cause as soon as a render happens, not only
+// when the success path eventually renders. Pulled out per CodeRabbit
+// PR-#27 review feedback.
+function LessonsShell({
+  children,
+  centered,
+  ...rest
+}: {
+  children: React.ReactNode;
+  centered?: boolean;
+} & React.HTMLAttributes<HTMLDivElement>) {
+  const layout = centered
+    ? 'min-h-screen flex flex-col bg-gradient-to-br from-purple-50 to-pink-50 dark:from-gray-900 dark:to-purple-950 px-4'
+    : 'min-h-screen bg-gradient-to-br from-purple-50 to-pink-50 dark:from-gray-900 dark:to-purple-950 px-4 py-8';
+  return (
+    <div className={layout} {...rest}>
+      <StorageBlockedNotice />
+      <OfflineBanner className={centered ? '' : '-mx-4 -mt-8 mb-4'} />
+      {centered ? (
+        <div className="flex-1 flex items-center justify-center">{children}</div>
+      ) : (
+        children
+      )}
     </div>
   );
 }

@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen, act } from '@testing-library/react';
 import '@testing-library/jest-dom/vitest';
-import OfflineBanner from '@/components/offline-banner';
+import OfflineBanner from '@/components/ui/offline-banner';
 
 // Q15 — banner subscribes to window online/offline events. We swap
 // navigator.onLine via Object.defineProperty (it's read-only by default

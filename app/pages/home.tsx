@@ -7,8 +7,8 @@ import { queryClient } from '@lib/net/query-client';
 import UniversalWizard from '@/components/wizard/universal';
 import { Button } from '@/components/ui/button';
 import AudioToggle from '@/components/audio-toggle';
-import OfflineBanner from '@/components/offline-banner';
-import StorageBlockedNotice from '@/components/storage-blocked-notice';
+import OfflineBanner from '@/components/ui/offline-banner';
+import StorageBlockedNotice from '@/components/ui/storage-blocked-notice';
 import { useToast } from '@lib/hooks/use-toast';
 
 const INTRO_SEEN_KEY = 'pp.hasSeenIntro';
