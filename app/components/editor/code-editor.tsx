@@ -120,12 +120,18 @@ export default function CodeEditor({
     };
   }, []);
 
-  // Bring the editor into view when the keyboard first opens. Without
-  // this, shrinking the wrapper alone leaves the kid's caret position
-  // unchanged but with less screen real estate — Monaco's autosize keeps
-  // the cursor at its previous coords, which is now off-screen.
+  // Bring the editor into view ONCE, when the keyboard first opens
+  // (transition from 0 → non-zero). Without the transition guard, every
+  // change in the inset value (which shifts mid-session as iOS scrolls
+  // the focused viewport) would re-fire scrollIntoView and fight the
+  // user's mid-scroll gesture. Tracking the previous value via a ref
+  // distinguishes "keyboard just opened" from "keyboard still open,
+  // viewport reflowed."
+  const prevInsetRef = useRef(0);
   useEffect(() => {
-    if (keyboardInset === 0) return;
+    const justOpened = prevInsetRef.current === 0 && keyboardInset > 0;
+    prevInsetRef.current = keyboardInset;
+    if (!justOpened) return;
     const t = window.setTimeout(() => {
       editorRef.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
     }, 50);
@@ -266,12 +272,21 @@ export default function CodeEditor({
       // to the visible viewport so the flex-1 Monaco container shrinks
       // and stays within the kid's view. Without the cap, the wrapper
       // keeps its original height and the editor extends behind the
-      // keyboard. The dvh unit is a safety net for browsers that don't
-      // expose visualViewport (the keyboardInset stays 0); modern Chrome
-      // and Safari respect dvh for the dynamic viewport.
+      // keyboard.
+      //
+      // Use document.documentElement.clientHeight (px) - keyboardInset (px)
+      // rather than calc(100dvh - Xpx). The inset is computed against
+      // clientHeight (line ~108), so mixing dvh — which tracks
+      // window.innerHeight after the iOS URL-bar settles — would put the
+      // cap baseline and the inset reference in different coordinate
+      // systems. During a URL-bar transition that mismatch produces a
+      // wrong effective height. Same-units math avoids the issue.
       style={
         keyboardInset > 0
-          ? { maxHeight: `calc(100dvh - ${keyboardInset}px)`, overflow: 'hidden' }
+          ? {
+              maxHeight: `${document.documentElement.clientHeight - keyboardInset}px`,
+              overflow: 'hidden',
+            }
           : undefined
       }
       data-testid="code-editor-wrapper"

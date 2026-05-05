@@ -363,7 +363,7 @@ Branch: feat/player-experience-pillar-4
 
 ### task-008 Inline rename on project rows in /home
 
-- [ ] task-008 home.tsx Edit button → inline input; renameWizardProject in projects.ts; new test green
+- [x] task-008 home.tsx Edit button → inline input; renameWizardProject in projects.ts; new test green
 
 ### task-009 Save canvas snapshot at project save, render on /home cards
 

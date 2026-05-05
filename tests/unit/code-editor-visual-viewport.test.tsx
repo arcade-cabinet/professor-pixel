@@ -82,10 +82,10 @@ describe('CodeEditor — visualViewport keyboard inset (P4.6)', () => {
     });
 
     await waitFor(() => {
-      // maxHeight subtracts the keyboard inset from 100dvh — the wrapper
-      // shrinks rather than growing by a paddingBottom (which would push
-      // the page taller without lifting Monaco).
-      expect(wrapper.style.maxHeight).toBe('calc(100dvh - 320px)');
+      // maxHeight is clientHeight - inset in px, keeping the cap baseline
+      // and the inset reference in the same coordinate system. 800 - 320
+      // = 480 visible CSS pixels for the wrapper.
+      expect(wrapper.style.maxHeight).toBe('480px');
       expect(wrapper.style.overflow).toBe('hidden');
     });
 
@@ -133,7 +133,8 @@ describe('CodeEditor — visualViewport keyboard inset (P4.6)', () => {
       vv.dispatchEvent(new Event('resize'));
     });
     await waitFor(() => {
-      expect(wrapper.style.maxHeight).toBe('calc(100dvh - 200px)');
+      // 800 - 200 = 600px visible.
+      expect(wrapper.style.maxHeight).toBe('600px');
     });
   });
 

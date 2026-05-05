@@ -89,6 +89,13 @@ export const strings = {
       openErrorBody: 'Starting a fresh wizard instead.',
       deleteErrorTitle: "Couldn't delete that game",
       deleteErrorBody: 'Try again in a moment.',
+      rename: 'Rename',
+      renameAriaLabel: (name: string) => `Rename ${name}`,
+      renameInputAriaLabel: (name: string) => `New name for ${name}`,
+      saveRename: 'Save',
+      cancelRename: 'Cancel',
+      renameErrorTitle: "Couldn't rename that game",
+      renameErrorBody: 'Try a different name and save again.',
     },
   },
 

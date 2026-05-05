@@ -103,3 +103,19 @@ export async function deleteWizardProject(id: string): Promise<void> {
   const storage = getClientStorage();
   await storage.deleteProject(id);
 }
+
+/**
+ * Rename a project in place — touches `name` only, leaving files / template /
+ * assets / thumbnail untouched. Used by the inline rename affordance on the
+ * /home project rows so a kid can fix a typo without opening the wizard.
+ *
+ * Throws if the project doesn't exist or the new name is empty after trim.
+ */
+export async function renameWizardProject(id: string, newName: string): Promise<Project> {
+  const trimmed = newName.trim();
+  if (trimmed.length === 0) {
+    throw new Error('Project name cannot be empty');
+  }
+  const storage = getClientStorage();
+  return storage.updateProject(id, { name: trimmed });
+}

@@ -4,6 +4,7 @@ import {
   saveWizardProject,
   loadWizardProject,
   deleteWizardProject,
+  renameWizardProject,
 } from '@lib/storage/projects';
 
 // Reset all client-storage state between tests so each one starts fresh —
@@ -93,6 +94,42 @@ describe('wizard projects (P5)', () => {
     raw[saved.id].files[0].content = JSON.stringify('not-an-object');
     localStorage.setItem('pygame_academy_projects', JSON.stringify(raw));
     expect(await loadWizardProject(saved.id)).toBeNull();
+  });
+
+  it('renames a project in place, preserving files and template (P4.8)', async () => {
+    const saved = await saveWizardProject(baseSnapshot);
+    expect(saved.name).toBe('Robot Quest');
+
+    const renamed = await renameWizardProject(saved.id, 'Robot Adventure');
+    expect(renamed.id).toBe(saved.id);
+    expect(renamed.name).toBe('Robot Adventure');
+    // Files and template are untouched — rename is name-only.
+    expect(renamed.template).toBe('platformer');
+    expect(renamed.files).toHaveLength(1);
+    expect(renamed.files[0].path).toBe('wizard-state.json');
+
+    // The list reflects the new name.
+    const list = await listWizardProjects();
+    expect(list[0].name).toBe('Robot Adventure');
+
+    // Snapshot still loads correctly with the new top-level name.
+    const loaded = await loadWizardProject(saved.id);
+    expect(loaded?.name).toBe('Robot Adventure');
+    expect(loaded?.wizardState.gameType).toBe('platformer');
+  });
+
+  it('trims whitespace from rename input and rejects empty names', async () => {
+    const saved = await saveWizardProject(baseSnapshot);
+
+    // Whitespace-only name is empty after trim — must reject so the kid
+    // sees an error toast instead of a silent rename to "" (which would
+    // render as a blank row).
+    await expect(renameWizardProject(saved.id, '   ')).rejects.toThrow(/empty/i);
+    await expect(renameWizardProject(saved.id, '')).rejects.toThrow(/empty/i);
+
+    // Surrounding whitespace is trimmed but a non-empty core is kept.
+    const renamed = await renameWizardProject(saved.id, '  Spacey Name  ');
+    expect(renamed.name).toBe('Spacey Name');
   });
 
   it('rejects when saving with a stale existingId so callers can fall back', async () => {

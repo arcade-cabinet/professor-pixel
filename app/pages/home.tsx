@@ -2,7 +2,12 @@ import { useEffect, useState } from 'react';
 import { useLocation } from 'wouter';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { loadWizardState, saveWizardState } from '@lib/storage/persistence';
-import { listWizardProjects, loadWizardProject, deleteWizardProject } from '@lib/storage/projects';
+import {
+  listWizardProjects,
+  loadWizardProject,
+  deleteWizardProject,
+  renameWizardProject,
+} from '@lib/storage/projects';
 import { queryClient } from '@lib/net/query-client';
 import UniversalWizard from '@/components/wizard/universal';
 import { Button } from '@/components/ui/button';
@@ -67,6 +72,12 @@ export default function Home() {
   // track which project is awaiting confirmation; clicking Delete on a
   // different row swaps the target. Null = no pending confirmation.
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  // Inline rename: when this matches a project id, that row swaps the
+  // name <p> for an <input> + Save / Cancel pair. Null = no row in
+  // rename mode. We keep the draft text as a separate slice rather than
+  // mutating the project list — react-query owns the canonical list.
+  const [renameId, setRenameId] = useState<string | null>(null);
+  const [renameDraft, setRenameDraft] = useState('');
   const { toast } = useToast();
 
   // P5 — My Games. ListWizardProjects reads from ClientStorage; if the wizard
@@ -91,6 +102,23 @@ export default function Home() {
         variant: 'destructive',
       });
       setConfirmDeleteId(null);
+    },
+  });
+
+  const renameProjectMutation = useMutation({
+    mutationFn: ({ id, name }: { id: string; name: string }) => renameWizardProject(id, name),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['wizard-projects'] });
+      setRenameId(null);
+      setRenameDraft('');
+    },
+    onError: (err) => {
+      console.error('Failed to rename project:', err);
+      toast({
+        title: strings.home.project.renameErrorTitle,
+        description: strings.home.project.renameErrorBody,
+        variant: 'destructive',
+      });
     },
   });
 
@@ -201,9 +229,61 @@ export default function Home() {
                   data-testid={`my-game-row-${project.id}`}
                   className="rounded-xl bg-white p-4 shadow-md dark:bg-gray-800"
                 >
-                  <p className="font-bold text-gray-900 dark:text-gray-100 truncate">
-                    {project.name}
-                  </p>
+                  {renameId === project.id ? (
+                    <form
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        renameProjectMutation.mutate({
+                          id: project.id,
+                          name: renameDraft,
+                        });
+                      }}
+                      className="flex flex-col gap-2"
+                    >
+                      <input
+                        type="text"
+                        value={renameDraft}
+                        onChange={(e) => setRenameDraft(e.target.value)}
+                        // eslint-disable-next-line jsx-a11y/no-autofocus
+                        autoFocus
+                        maxLength={64}
+                        aria-label={strings.home.project.renameInputAriaLabel(project.name)}
+                        data-testid={`my-game-rename-input-${project.id}`}
+                        className="w-full rounded-md border border-gray-300 px-2 py-1 text-sm font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-400 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100"
+                      />
+                      <div className="flex gap-2">
+                        <Button
+                          type="submit"
+                          size="sm"
+                          disabled={
+                            renameDraft.trim().length === 0 ||
+                            renameDraft.trim() === project.name ||
+                            renameProjectMutation.isPending
+                          }
+                          data-testid={`my-game-rename-save-${project.id}`}
+                          className="bg-gradient-to-r from-purple-500 to-pink-500"
+                        >
+                          {strings.home.project.saveRename}
+                        </Button>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            setRenameId(null);
+                            setRenameDraft('');
+                          }}
+                          data-testid={`my-game-rename-cancel-${project.id}`}
+                        >
+                          {strings.home.project.cancelRename}
+                        </Button>
+                      </div>
+                    </form>
+                  ) : (
+                    <p className="font-bold text-gray-900 dark:text-gray-100 truncate">
+                      {project.name}
+                    </p>
+                  )}
                   <p className="mt-1 text-xs text-gray-600 dark:text-gray-400">
                     {project.createdAt
                       ? new Date(project.createdAt).toLocaleDateString()
@@ -217,6 +297,19 @@ export default function Home() {
                     >
                       {strings.home.project.open}
                     </Button>
+                    {renameId !== project.id && (
+                      <Button
+                        onClick={() => {
+                          setRenameId(project.id);
+                          setRenameDraft(project.name);
+                        }}
+                        variant="outline"
+                        data-testid={`my-game-rename-${project.id}`}
+                        aria-label={strings.home.project.renameAriaLabel(project.name)}
+                      >
+                        ✏️
+                      </Button>
+                    )}
                     <Button
                       onClick={() => setConfirmDeleteId(project.id)}
                       variant="outline"
