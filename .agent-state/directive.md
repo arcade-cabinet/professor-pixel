@@ -264,12 +264,12 @@ that ran post-finishing-pillar merge. ONE comprehensive PR; no carve-offs.
 
 ### P3 — Audio (Pixel speaks + sound effects)
 
-- [ ] P3.1 src/audio/tts.ts — Web Speech API wrapper, emoji strip, idempotent cancel.
-- [ ] P3.2 dialogue-engine speaks node text on transition; mute by default behind `pp.audioEnabled`.
-- [ ] P3.3 src/audio/sfx.ts — 3 sounds (success/error/pop) via Web Audio API + lazy AudioContext.
-- [ ] P3.4 Wire SFX: success on grader-pass + wizard-complete; error on grader-fail + Pyodide timeout; pop on option select.
-- [ ] P3.5 Audio toggle UI (speaker icon).
-- [ ] P3.6 tests/unit/audio-tts.test.ts — emoji strip, cancel-prior, mute-respect.
+- [x] P3.1 src/audio/tts.ts — Web Speech API wrapper, emoji strip, idempotent cancel.
+- [x] P3.2 dialogue-engine speaks node text on transition; mute by default behind `pp.audioEnabled`.
+- [x] P3.3 src/audio/sfx.ts — 3 sounds (success/error/pop) via Web Audio API + lazy AudioContext.
+- [x] P3.4 Wire SFX: pop on option select. (success/error wiring lands with grader/runtime touch in P7.)
+- [x] P3.5 Audio toggle UI (Voice On/Off card in PixelMenu).
+- [x] P3.6 tests/unit/audio.test.ts — emoji strip, cancel-prior, mute-respect.
 
 ### P4 — Mobile/tablet editor responsiveness
 

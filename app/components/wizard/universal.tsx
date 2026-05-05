@@ -109,15 +109,23 @@ export default function UniversalWizard({
   // P1.4 — one-time celebration when the CTA first appears. We don't persist
   // across sessions; a fresh page load with an already-assembled game still
   // greets the kid (it's a positive reinforcement, not a one-shot achievement).
+  //
+  // StrictMode-safe: we reset the fired-ref in cleanup so the second
+  // dev-mode invoke can re-schedule, AND we explicitly clear the visible
+  // sparkle in cleanup so an interrupted timer never leaves it stuck on.
   const [showCelebration, setShowCelebration] = useState(false);
   const celebrationFiredRef = useRef(false);
   useEffect(() => {
-    if (isWizardComplete && !celebrationFiredRef.current) {
-      celebrationFiredRef.current = true;
-      setShowCelebration(true);
-      const t = window.setTimeout(() => setShowCelebration(false), 2400);
-      return () => window.clearTimeout(t);
-    }
+    if (!isWizardComplete) return;
+    if (celebrationFiredRef.current) return;
+    celebrationFiredRef.current = true;
+    setShowCelebration(true);
+    const t = window.setTimeout(() => setShowCelebration(false), 2400);
+    return () => {
+      window.clearTimeout(t);
+      setShowCelebration(false);
+      celebrationFiredRef.current = false;
+    };
   }, [isWizardComplete]);
 
   // Load and apply theme preference on mount
@@ -533,7 +541,6 @@ export default function UniversalWizard({
         option.action === 'compileEndScene' ||
         option.action === 'compileFullGame'
       ) {
-        // Compile the scene with selected components and assets
         const sceneType = option.action.includes('Gameplay')
           ? 'gameplay'
           : option.action.includes('End')
@@ -545,6 +552,10 @@ export default function UniversalWizard({
             ...prev.compiledScenes,
             [sceneType]: true,
           },
+          // P1 reviewer fix: full-game compile must flip gameAssembled so the
+          // structurally-terminal CTA path can fire when the next node has no
+          // options. Scene-level compiles don't yet count as assembled.
+          ...(sceneType === 'full' ? { gameAssembled: true } : {}),
         }));
       } else if (option.action === 'launchPyodidePreview') {
         // Launch Pyodide preview with compiled scene. actionParams is
@@ -595,34 +606,6 @@ export default function UniversalWizard({
             (window as Window & { toast?: (msg: unknown) => void }).toast || console.log;
           toast('Failed to export game. Please try again.');
         }
-      } else if (option.action === 'compileGameplayScene') {
-        // Compile gameplay scene from selected components
-        setSessionActions((prev) => ({
-          ...prev,
-          compiledScenes: {
-            ...prev.compiledScenes,
-            gameplay: true,
-          },
-        }));
-      } else if (option.action === 'compileEndScene') {
-        // Compile ending scene from selected components
-        setSessionActions((prev) => ({
-          ...prev,
-          compiledScenes: {
-            ...prev.compiledScenes,
-            ending: true,
-          },
-        }));
-      } else if (option.action === 'compileFullGame') {
-        // Compile all scenes into complete game
-        setSessionActions((prev) => ({
-          ...prev,
-          compiledScenes: {
-            ...prev.compiledScenes,
-            full: true,
-          },
-          gameAssembled: true,
-        }));
       } else if (option.action === 'tweakDifficulty') {
         // Adjust game difficulty settings
         console.log('Adjusting difficulty');

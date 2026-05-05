@@ -15,6 +15,7 @@ import {
   loadWizardState,
   PersistedWizardState,
 } from '@lib/storage/persistence';
+import { speak, isAudioEnabled, cancelSpeech } from '@lib/audio';
 
 interface UseWizardDialogueProps {
   initialNodeId?: string;
@@ -108,6 +109,22 @@ export function useWizardDialogue({
       updatedAt: new Date().toISOString(),
     });
   }, [dialogueState.currentNodeId, sessionActions, loadedFlowPath, hasLoadedPersistedState]);
+
+  // P3.2 — Pixel speaks the current node text when it changes (audio off by
+  // default, gated on `pp.audioEnabled`). Cancels any in-flight speech first
+  // so back-to-back transitions don't queue. Cleanup cancels on unmount.
+  useEffect(() => {
+    if (!isAudioEnabled()) return;
+    const text = getCurrentText(
+      dialogueState.currentNode,
+      dialogueState.dialogueStep,
+      sessionActions
+    );
+    if (text) speak(text);
+    return () => {
+      cancelSpeech();
+    };
+  }, [dialogueState.currentNode, dialogueState.dialogueStep, sessionActions]);
 
   // Load wizard flow data
   useEffect(() => {

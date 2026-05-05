@@ -13,10 +13,13 @@ import {
   Code2,
   Settings,
   ChevronLeft,
+  Volume2,
+  VolumeX,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { isAudioEnabled, setAudioEnabled } from '@lib/audio';
 
 // Import Pixel images
 import pixelExcited from '@assets/pixel/Pixel_celebrating_victory_expression_24b7a377.png';
@@ -60,6 +63,7 @@ export default function PixelMenu({
 }: PixelMenuProps) {
   const [pixelImage, setPixelImage] = useState(pixelExcited);
   const [selectedTab, setSelectedTab] = useState<'actions' | 'history'>('actions');
+  const [audioOn, setAudioOn] = useState(() => isAudioEnabled());
 
   // Mock session history if not provided
   const defaultActions: SessionAction[] =
@@ -266,12 +270,32 @@ export default function PixelMenu({
                     </Card>
 
                     <Card
-                      className="p-4 flex flex-col items-center justify-center hover:bg-pink-100 dark:hover:bg-pink-900/30 cursor-pointer transition-colors col-span-2"
+                      className="p-4 flex flex-col items-center justify-center hover:bg-indigo-100 dark:hover:bg-indigo-900/30 cursor-pointer transition-colors"
+                      onClick={() => {
+                        const next = !audioOn;
+                        setAudioEnabled(next);
+                        setAudioOn(next);
+                      }}
+                      data-testid="audio-toggle-button"
+                      aria-pressed={audioOn}
+                    >
+                      {audioOn ? (
+                        <Volume2 className="h-8 w-8 mb-2 text-indigo-600 dark:text-indigo-400" />
+                      ) : (
+                        <VolumeX className="h-8 w-8 mb-2 text-gray-500" />
+                      )}
+                      <span className="text-sm font-medium text-center">
+                        {audioOn ? 'Voice On' : 'Voice Off'}
+                      </span>
+                    </Card>
+
+                    <Card
+                      className="p-4 flex flex-col items-center justify-center hover:bg-pink-100 dark:hover:bg-pink-900/30 cursor-pointer transition-colors"
                       onClick={onReturnCurrent}
                       data-testid="return-current-button"
                     >
                       <Home className="h-8 w-8 mb-2 text-pink-600 dark:text-pink-400" />
-                      <span className="text-sm font-medium">Return to Current Activity</span>
+                      <span className="text-sm font-medium">Return to Current</span>
                     </Card>
                   </motion.div>
                 ) : (

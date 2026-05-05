@@ -10,6 +10,7 @@ import {
   formatTestId,
 } from '@lib/wizard/utils';
 import { BUTTON_STYLES, ICON_SIZES, ANIMATIONS } from '@lib/wizard/constants';
+import { playPop } from '@lib/audio';
 
 interface WizardOptionsProps {
   options: WizardOption[];
@@ -58,7 +59,10 @@ export default function WizardOptionHandler({
           key={index}
           option={option}
           index={index}
-          onSelect={() => onOptionSelect(option)}
+          onSelect={() => {
+            playPop();
+            onOptionSelect(option);
+          }}
           isMobile={isMobile}
           variant={variant}
           optionCount={options.length}
