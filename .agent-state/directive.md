@@ -395,7 +395,7 @@ Branch: feat/player-experience-pillar-4
 
 ### task-016 ? keyboard shortcut to toggle hint panel
 
-- [ ] task-016 floating-feedback global keydown for ? gated against input/textarea; listener cleaned up on unmount
+- [x] task-016 floating-feedback global keydown for ? gated against input/textarea; listener cleaned up on unmount
 
 ### task-017 "Export Game" button → downloadable ZIP with code + assets
 

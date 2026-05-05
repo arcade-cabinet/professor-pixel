@@ -293,20 +293,24 @@ export default function LessonEnhanced() {
 
   const [showCompletionOptions, setShowCompletionOptions] = useState(false);
 
+  // Drive next-lesson lookup from the loaded lesson catalog rather than a
+  // hardcoded order map. Folds forward a task-014 reviewer finding: the
+  // hardcoded map silently lied for any lesson id outside its 10 entries
+  // (e.g., a future `pygame-sprites` lesson would falsely trigger the
+  // "You finished them all!" branch). Returns null for an unknown id
+  // (kid is on a lesson that's not in the catalog — defensive) or when
+  // the current id is the last entry. We rely on the catalog already
+  // being loaded by the parent useQuery; if it isn't yet, we treat the
+  // current lesson as terminal so the modal doesn't flash a wrong cta.
+  const allLessons = useQuery<Lesson[]>({
+    queryKey: ['lessons'],
+    queryFn: () => loadLessons(),
+  }).data;
   const getNextLessonId = (currentId: string): string | null => {
-    const lessonOrder: Record<string, string | null> = {
-      'python-basics': 'control-flow',
-      'control-flow': 'loops-iteration',
-      'loops-iteration': 'data-structures',
-      'data-structures': 'functions',
-      functions: 'object-oriented-programming',
-      'object-oriented-programming': 'error-handling',
-      'error-handling': 'file-operations',
-      'file-operations': 'pygame-intro',
-      'pygame-intro': 'first-game',
-      'first-game': null, // Last lesson
-    };
-    return lessonOrder[currentId] || null;
+    if (!allLessons) return null;
+    const idx = allLessons.findIndex((l) => l.id === currentId);
+    if (idx === -1 || idx >= allLessons.length - 1) return null;
+    return allLessons[idx + 1].id;
   };
 
   const nextStep = () => {

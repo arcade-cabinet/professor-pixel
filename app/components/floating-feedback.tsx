@@ -50,6 +50,31 @@ export default function FloatingFeedback({
   const [justCopied, setJustCopied] = useState(false);
   const { toast } = useToast();
 
+  // P4.16 — `?` keyboard shortcut toggles the hint panel. Gated so the
+  // shortcut is ignored while a kid is typing in an input/textarea or
+  // a contenteditable surface (Monaco's textarea, the rename input on
+  // /home, the search box in the asset browser, etc.). The shortcut
+  // also yields when a modifier is held so it can't conflict with
+  // browser shortcuts (Cmd+? / Shift+?). The listener is bound to the
+  // document and cleaned up on unmount; multiple FloatingFeedback
+  // instances should never be on screen simultaneously, but if they
+  // were, both would toggle — that's a more visible bug than silently
+  // losing the shortcut.
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== '?') return;
+      if (event.metaKey || event.ctrlKey || event.altKey) return;
+      const t = event.target as HTMLElement | null;
+      if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) {
+        return;
+      }
+      event.preventDefault();
+      setIsVisible((v) => !v);
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, []);
+
   useEffect(() => {
     if (showNext) {
       // Celebrate when step is completed
