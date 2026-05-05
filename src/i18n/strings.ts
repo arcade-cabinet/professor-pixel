@@ -388,6 +388,12 @@ export const strings = {
     runnerClose: 'Close runner',
   },
 
+  /* ─── Live preview overlays (P4.28) ─────────────────────────────────── */
+  livePreview: {
+    pauseHeading: 'Game paused',
+    pauseHint: 'Tap Resume or press P to keep playing',
+  },
+
   /* ─── Wizard (wizard/universal.tsx) ────────────────────────────────── */
   wizard: {
     defaultGameName: 'My Game',

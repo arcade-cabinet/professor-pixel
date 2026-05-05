@@ -26,6 +26,7 @@ import {
 } from '@lib/pygame/runtime/simulator';
 import { PythonRunner } from '@lib/python/runner';
 import { generatePygameCode } from '@lib/wizard/code-generator';
+import { strings } from '@lib/i18n';
 
 export interface GameChoice {
   type: 'character' | 'enemy' | 'collectible' | 'background' | 'rule' | 'mechanic';
@@ -434,9 +435,11 @@ export default function PygameLivePreview({
                   aria-live="polite"
                 >
                   <div className="bg-white/90 dark:bg-gray-800/90 rounded-lg px-4 py-2 text-center">
-                    <p className="text-sm font-bold text-gray-900 dark:text-gray-100">⏸ Paused</p>
+                    <p className="text-sm font-bold text-gray-900 dark:text-gray-100">
+                      ⏸ {strings.livePreview.pauseHeading}
+                    </p>
                     <p className="text-xs text-gray-600 dark:text-gray-400">
-                      Press Resume (or P) to continue
+                      {strings.livePreview.pauseHint}
                     </p>
                   </div>
                 </div>

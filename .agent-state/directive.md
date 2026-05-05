@@ -443,7 +443,7 @@ Branch: feat/player-experience-pillar-4
 
 ### task-028 Replace technical pause-overlay text with kid-friendly "Game paused"
 
-- [ ] task-028 live-preview pause overlay reads "Game paused — press Space to play"
+- [x] task-028 live-preview pause overlay reads "Game paused — press Space to play"
 
 ### task-029 Local undo stack for component placements (Ctrl+Z / Ctrl+Shift+Z)
 
