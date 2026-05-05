@@ -12,11 +12,21 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom/vitest';
 import CodeEditor from '@/components/editor/code-editor';
 
+// Test seam: code-editor.tsx checks `window.require` / `window.monaco`
+// to detect Monaco's CDN-loaded AMD shim before instantiating. The
+// component test mounts without that shim, so we explicitly clear
+// both before each case to make the "Monaco not yet loaded" branch
+// the deterministic default.
+// Global ambient declares window.require/monaco as required at the
+// type level; for tests we want the "not yet loaded" state to be the
+// deterministic default. Cast through a writable record so the
+// assignment is structural (no `any`).
+type WritableMonacoShim = Record<'require' | 'monaco', unknown>;
+
 beforeEach(() => {
-  // biome-ignore lint/suspicious/noExplicitAny: test-only window shim
-  (window as any).require = undefined;
-  // biome-ignore lint/suspicious/noExplicitAny: test-only window shim
-  (window as any).monaco = undefined;
+  const w = window as unknown as WritableMonacoShim;
+  w.require = undefined;
+  w.monaco = undefined;
 });
 
 afterEach(() => {
