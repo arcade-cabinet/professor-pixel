@@ -23,12 +23,19 @@ import OfflineBanner from '@/components/ui/offline-banner';
 import StorageBlockedNotice from '@/components/ui/storage-blocked-notice';
 import { loadLessons, statusFor } from '@lib/lessons';
 import { getClientStorage } from '@lib/storage/mode';
-import { loadProfile, saveProfile } from '@lib/storage/profile';
+import {
+  loadProfile,
+  saveProfile,
+  InvalidProfileError,
+  PROFILE_NAME_MAX_LENGTH,
+} from '@lib/storage/profile';
+import { useToast } from '@lib/hooks/use-toast';
 import type { Lesson, UserProgress } from '@lib/types/schema';
 import { strings } from '@lib/i18n';
 
 export default function LessonsIndex() {
   const [profile, setProfile] = useState(() => loadProfile());
+  const { toast } = useToast();
   const [nameDraft, setNameDraft] = useState('');
 
   const {
@@ -194,16 +201,26 @@ export default function LessonsIndex() {
               className="flex gap-2"
               onSubmit={(e) => {
                 e.preventDefault();
-                // saveProfile throws InvalidProfileError on blank/whitespace
-                // input. The trim guard above + the disabled submit button
-                // make this unreachable through the UI, but if a future
-                // refactor breaks the guard we'd rather no-op than crash.
                 if (!nameDraft.trim()) return;
                 try {
                   const saved = saveProfile(nameDraft);
                   setProfile(saved);
-                } catch {
-                  // Already filtered above — silent fallthrough.
+                } catch (err) {
+                  // saveProfile throws InvalidProfileError for empty input
+                  // (covered by the trim guard above) AND for over-cap
+                  // input (NOT covered by the guard). Surface a toast for
+                  // the over-cap case so the kid sees what went wrong
+                  // instead of a stuck Save button (P4.19 fold-forward).
+                  if (err instanceof InvalidProfileError) {
+                    toast({
+                      title: strings.profile.nameSection.tooLongTitle,
+                      description:
+                        strings.profile.nameSection.tooLongDescription(PROFILE_NAME_MAX_LENGTH),
+                      variant: 'destructive',
+                    });
+                    return;
+                  }
+                  throw err;
                 }
               }}
             >
@@ -212,7 +229,7 @@ export default function LessonsIndex() {
                 onChange={(e) => setNameDraft(e.target.value)}
                 placeholder={strings.lessons.nameCard.placeholder}
                 aria-label={strings.lessons.nameCard.ariaLabel}
-                maxLength={32}
+                maxLength={PROFILE_NAME_MAX_LENGTH}
                 data-testid="profile-name-input"
               />
               <Button type="submit" data-testid="profile-name-save" disabled={!nameDraft.trim()}>

@@ -415,7 +415,7 @@ Branch: feat/player-experience-pillar-4
 
 ### task-021 "Reset Code" button restores lesson starter code with confirm
 
-- [ ] task-021 code-editor.tsx Reset button (lesson context only) + confirm dialog
+- [x] task-021 code-editor.tsx Reset button (lesson context only) + confirm dialog
 
 ### task-022 Ctrl+Space in editor requests next hint from the floating feedback panel
 

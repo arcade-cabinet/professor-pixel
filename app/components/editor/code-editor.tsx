@@ -57,6 +57,13 @@ interface CodeEditorProps {
     id: string;
     title: string;
     description: string;
+    /**
+     * P4.21 — Reset Code button restores this string to the editor.
+     * When present, the Reset button appears with a confirm prompt;
+     * when absent (e.g. wizard-side editor), the button is hidden so
+     * we don't offer a useless "reset to empty" action.
+     */
+    initialCode?: string;
     tests?: Array<{
       input?: string;
       expectedOutput: string;
@@ -265,15 +272,27 @@ export default function CodeEditor({
     }
   }, [code]);
 
+  // P4.21 — Reset to the step's starter code with a confirm prompt.
+  // The previous behaviour cleared the editor to empty, which was both
+  // useless (the kid's actual goal is "go back to where I started this
+  // step") and silently destructive (no undo). Now: confirm modal,
+  // then restore from currentStep.initialCode. Hidden entirely when
+  // there's no initialCode to restore (wizard editor, future contexts).
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const canReset = typeof currentStep?.initialCode === 'string';
   const resetCode = () => {
+    if (!canReset) return;
+    setShowResetConfirm(true);
+  };
+  const confirmReset = () => {
     try {
-      // This would reset to the initial code for the current step
-      // For now, we'll just clear the editor
-      if (typeof onChange === 'function') {
-        onChange('');
+      if (typeof onChange === 'function' && currentStep?.initialCode != null) {
+        onChange(currentStep.initialCode);
       }
     } catch (err) {
       console.error('Error resetting code:', err);
+    } finally {
+      setShowResetConfirm(false);
     }
   };
 
@@ -328,14 +347,17 @@ export default function CodeEditor({
                 {isExecuting ? 'Checking...' : 'Run & Check'}
               </span>
             </Button>
-            <Button
-              onClick={resetCode}
-              variant="secondary"
-              className="min-h-[44px] sm:min-h-[48px] px-3 sm:px-5 text-sm sm:text-base font-medium bg-amber-500 text-gray-900 hover:bg-amber-400"
-              data-testid="button-reset-code"
-            >
-              <RotateCcw className="h-5 w-5" />
-            </Button>
+            {canReset && (
+              <Button
+                onClick={resetCode}
+                variant="secondary"
+                className="min-h-[44px] sm:min-h-[48px] px-3 sm:px-5 text-sm sm:text-base font-medium bg-amber-500 text-gray-900 hover:bg-amber-400"
+                data-testid="button-reset-code"
+                aria-label="Reset code to starter"
+              >
+                <RotateCcw className="h-5 w-5" />
+              </Button>
+            )}
           </div>
         </div>
 
@@ -464,6 +486,43 @@ export default function CodeEditor({
           </div>
         </div>
       </div>
+
+      {/* P4.21 — Reset confirmation. Inline alertdialog rather than
+          window.confirm so the styling matches the rest of the app
+          and so it doesn't hang Mobile Safari. */}
+      {showResetConfirm && (
+        <div
+          role="alertdialog"
+          aria-labelledby="reset-confirm-title"
+          aria-describedby="reset-confirm-body"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+          data-testid="reset-confirm-dialog"
+        >
+          <div className="w-full max-w-sm rounded-lg bg-white p-6 shadow-xl dark:bg-gray-800">
+            <h3
+              id="reset-confirm-title"
+              className="text-lg font-bold text-gray-900 dark:text-gray-100"
+            >
+              Reset your code?
+            </h3>
+            <p id="reset-confirm-body" className="mt-2 text-sm text-gray-700 dark:text-gray-300">
+              This puts the starter code back. Anything you've written in this step will be erased.
+            </p>
+            <div className="mt-4 flex justify-end gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setShowResetConfirm(false)}
+                data-testid="reset-cancel"
+              >
+                Keep my code
+              </Button>
+              <Button variant="destructive" onClick={confirmReset} data-testid="reset-confirm">
+                Reset
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
