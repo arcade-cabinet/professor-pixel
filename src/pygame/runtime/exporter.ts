@@ -18,8 +18,16 @@ import type { GameAsset } from '@lib/assets/types';
 import { assetManager } from '@lib/assets/manager';
 import { loadWizardProject } from '@lib/storage/projects';
 
-const PYODIDE_CDN_VERSION = '0.26.4';
-const PYODIDE_CDN_BASE = `https://cdn.jsdelivr.net/pyodide/v${PYODIDE_CDN_VERSION}/full/`;
+// Exported games (the .zip a kid downloads) currently still pull Pyodide
+// from a CDN because bundling 12MB of Pyodide assets into every export
+// triples the zip size. The runtime platform itself does NOT use a CDN —
+// see `src/python/pyodide-cache.ts` and `public/pyodide-sw.js`. Bundling
+// Pyodide into exports is tracked as follow-up work; for now the exported
+// HTML's <script> tag points here. Version pinned to match the vendored
+// copy (public/pyodide/) so exports replay against the same Pyodide build
+// the kid authored on.
+const PYODIDE_VERSION = '0.29.3';
+const PYODIDE_CDN_BASE = `https://cdn.jsdelivr.net/pyodide/v${PYODIDE_VERSION}/full/`;
 
 export interface ExportProjectOptions {
   selectedComponents: Record<string, string>;

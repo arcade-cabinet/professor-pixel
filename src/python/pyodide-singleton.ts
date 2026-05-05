@@ -1,12 +1,15 @@
 /**
  * One Pyodide per page. All consumers — runner, pygame-preview, lesson page —
- * call `getPyodide()` and share a single bootstrap promise. The CDN script-tag
- * approach gets dropped in favor of a vendored `public/pyodide/` (see T2.3).
+ * call `getPyodide()` and share a single bootstrap promise.
+ *
+ * Pyodide is fully vendored under `public/pyodide/` (8.6MB pyodide.asm.wasm +
+ * 2.3MB python_stdlib.zip + 1MB pyodide.asm.js). The OPFS-cache service worker
+ * registered in app boot intercepts those requests after first load. We do
+ * NOT fall back to a CDN — kids on locked-down school networks can't reach
+ * arbitrary external origins, and a CDN miss is a much worse failure than a
+ * loud "vendored copy missing" build error. If `public/pyodide/` is empty,
+ * that's a deploy bug, not a runtime fallback.
  */
-
-// Falls back to the CDN only if the vendored copy is missing — the version
-// must match the `pyodide` package pinned in package.json (currently 0.29.3).
-const CDN_FALLBACK_URL = 'https://cdn.jsdelivr.net/pyodide/v0.29.3/full/';
 
 export class PyodideLoadError extends Error {
   constructor(message: string, options?: { cause?: unknown }) {
@@ -44,8 +47,9 @@ interface BootstrapOptions {
 
 function resolveIndexURL(): string {
   const baseUrl = (import.meta.env.BASE_URL || '/').replace(/\/$/, '');
-  // Vendored Pyodide lives under public/pyodide/ (see T2.3). Until the
-  // postinstall ships it, fall back to the CDN.
+  // Vendored Pyodide lives under public/pyodide/ (committed to the repo).
+  // The OPFS service worker (pyodide-sw.js) caches these requests on first
+  // load so the 12MB payload is served from local storage thereafter.
   return `${baseUrl}/pyodide/`;
 }
 
@@ -112,20 +116,15 @@ async function bootstrap(opts: BootstrapOptions): Promise<PyodideInstance> {
   }
 
   const indexURL = opts.indexURL ?? resolveIndexURL();
-  // Probe the vendored copy first; fall back to the CDN if it 404s. The
-  // probe stays cheap because the request is HEAD-style on a small loader file.
-  let scriptSrc = `${indexURL}pyodide.js`;
-  try {
-    const probe = await fetch(scriptSrc, { method: 'HEAD' });
-    if (!probe.ok) throw new Error(`HTTP ${probe.status}`);
-  } catch {
-    scriptSrc = `${CDN_FALLBACK_URL}pyodide.js`;
-  }
+  const scriptSrc = `${indexURL}pyodide.js`;
 
   try {
     await loadPyodideScript(scriptSrc);
   } catch (cause) {
-    throw new PyodideLoadError('Pyodide loader script failed to attach to the page', { cause });
+    throw new PyodideLoadError(
+      `Pyodide loader script failed to load from ${scriptSrc}. Vendored copy missing? Check public/pyodide/`,
+      { cause }
+    );
   }
 
   if (!window.loadPyodide) {
@@ -134,7 +133,7 @@ async function bootstrap(opts: BootstrapOptions): Promise<PyodideInstance> {
 
   try {
     const instance = await window.loadPyodide({
-      indexURL: scriptSrc.startsWith(CDN_FALLBACK_URL) ? CDN_FALLBACK_URL : indexURL,
+      indexURL,
       stdout: opts.stdout,
       stderr: opts.stderr,
     });
