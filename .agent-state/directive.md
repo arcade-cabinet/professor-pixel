@@ -480,7 +480,7 @@ Started: 2026-05-05T11:51:00Z
 
 ### task-003 simulator.ts JSON.parse guards
 
-- [ ] task-003 src/pygame/runtime/simulator.ts:977 + :1092 each wrap JSON.parse in try/catch returning a typed safe-default; existing simulator tests still pass; new test asserts fallback shape
+- [x] task-003 simulator.ts verifyPygameShimReady + getPygameStatus each get inline parse guards with parse-specific warnings; tests/unit/simulator-malformed-json.test.ts asserts both fallback paths and well-formed regression
 
 ### task-004 M4.2 frame-rate simulator test
 

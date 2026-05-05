@@ -974,13 +974,30 @@ except Exception as e:
 json.dumps(verification)
 `);
 
-    const result = JSON.parse(verificationResult as string);
+    // Defensive parse: outer try/catch would catch a throw here, but
+    // its message is generic. Calling out parse-failure-specifically
+    // helps a dev triage "verification template emitted non-JSON" vs
+    // "Pyodide globals lookup failed" — different fixes. Inline guard
+    // also locks the safe-false-default if a future refactor moves
+    // the outer try.
+    let result: { pygame_available?: unknown; basic_functionality?: unknown; errors?: string[] };
+    try {
+      result = JSON.parse(verificationResult as string);
+    } catch (parseError) {
+      console.warn('[pygame/verifyPygameShim] verifier emitted non-JSON; treating as not-ready.', {
+        rawText: String(verificationResult).slice(0, 500),
+        parseError,
+      });
+      return false;
+    }
 
     if (result.pygame_available && result.basic_functionality) {
       console.log('✅ Pygame shim verification successful');
       return true;
     } else {
-      console.warn(`⚠️ Pygame shim verification failed: ${result.errors.join(', ')}`);
+      console.warn(
+        `⚠️ Pygame shim verification failed: ${result.errors?.join(', ') ?? 'unknown error'}`
+      );
       return false;
     }
   } catch (error) {
@@ -1089,7 +1106,19 @@ except Exception as e:
 json.dumps(status)
 `);
 
-    return JSON.parse(statusResult as string);
+    // Defensive parse — same rationale as verifyPygameShimReady. The
+    // outer try/catch covers it, but a parse-specific failure message
+    // helps a dev triage template-emit-error vs runtime-glue-error.
+    try {
+      return JSON.parse(statusResult as string);
+    } catch (parseError) {
+      console.warn(
+        '[pygame/comprehensivePygameCheck] status template emitted non-JSON; returning default.',
+        { rawText: String(statusResult).slice(0, 500), parseError }
+      );
+      defaultStatus.errors.push('comprehensive check returned malformed JSON');
+      return defaultStatus;
+    }
   } catch (error) {
     defaultStatus.errors.push(`Error during comprehensive pygame status check: ${error}`);
     return defaultStatus;

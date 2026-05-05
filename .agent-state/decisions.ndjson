@@ -123,3 +123,4 @@
 {"ts":"2026-05-05T11:29:43.505Z","sha":"9025a2763b5b","subject":"feat(editor): offline pill + shared useOnlineStatus hook (P4.33)","decision":null,"why":"offline awareness should be present wherever it's relevant; not","resolves":["task-033 — Pillar 4 player-experience work-unit complete."],"overrides":[]}
 {"ts":"2026-05-05T11:55:08.638Z","sha":"4e9427fafe34","subject":"chore(directive): queue omnibus-cleanup batch","decision":null,"why":null,"resolves":["directive seeding for omnibus-cleanup"],"overrides":[]}
 {"ts":"2026-05-05T11:57:00.998Z","sha":"6b9a4277c2af","subject":"feat(audio-toggle): migrate hardcoded labels to i18n catalog (omnibus task-001)","decision":null,"why":null,"resolves":["omnibus task-001"],"overrides":[]}
+{"ts":"2026-05-05T11:59:51.405Z","sha":"c39c244c6fee","subject":"fix(grading): defensive JSON.parse guard in validateAst (omnibus task-002)","decision":null,"why":null,"resolves":["omnibus task-002"],"overrides":[]}
