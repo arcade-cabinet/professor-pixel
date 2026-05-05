@@ -5,6 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
     <title>Pixel's PyGame Palace - Learn Python Through Game Development</title>
     <meta name="description" content="Welcome to Pixel's PyGame Palace! Learn Python programming through interactive game development with our fun, accessible learning platform." />
+    <!-- PWA install on Android (Chrome/Edge install prompt) and iOS
+         (Add to Home Screen → standalone-mode launch). Both gate install
+         behind https; works in production where the platform is hosted
+         on a real origin. localhost dev also gets the prompt because
+         browsers treat it as a secure context. -->
+    <link rel="manifest" href="/manifest.webmanifest">
+    <meta name="theme-color" content="#1a1a2e">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="PyGame Palace">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <!-- Pyodide is vendored at /pyodide/ and loaded on first run-Python click.
