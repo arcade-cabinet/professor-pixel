@@ -106,6 +106,20 @@ export default function UniversalWizard({
   // User preferences state
   const [userPreferences, setUserPreferences] = useState(() => loadUserPreferences());
 
+  // P1.4 — one-time celebration when the CTA first appears. We don't persist
+  // across sessions; a fresh page load with an already-assembled game still
+  // greets the kid (it's a positive reinforcement, not a one-shot achievement).
+  const [showCelebration, setShowCelebration] = useState(false);
+  const celebrationFiredRef = useRef(false);
+  useEffect(() => {
+    if (isWizardComplete && !celebrationFiredRef.current) {
+      celebrationFiredRef.current = true;
+      setShowCelebration(true);
+      const t = window.setTimeout(() => setShowCelebration(false), 2400);
+      return () => window.clearTimeout(t);
+    }
+  }, [isWizardComplete]);
+
   // Load and apply theme preference on mount
   useEffect(() => {
     if (userPreferences.theme === 'dark') {
@@ -275,9 +289,9 @@ export default function UniversalWizard({
         },
       }));
     } else if (currentNode.action === 'compileFullGame') {
-      // Compile all scenes with selected components
       setSessionActions((prev) => ({
         ...prev,
+        gameAssembled: true,
         compiledScenes: {
           ...prev.compiledScenes,
           full: true,
@@ -695,15 +709,39 @@ export default function UniversalWizard({
 
         {/* P1.2 wizard-completion CTA — terminal node reached, kid can play */}
         {isWizardComplete && (
-          <button
-            type="button"
-            onClick={handlePlayGame}
-            data-testid="play-game-cta"
-            aria-label="Play your game"
-            className="w-full rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 px-6 py-4 text-lg font-bold text-white shadow-lg transition-transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-purple-300"
-          >
-            ▶ Play your game!
-          </button>
+          <div className="relative">
+            {showCelebration && (
+              <div
+                aria-hidden="true"
+                data-testid="celebration-sparkle"
+                className="pointer-events-none absolute inset-0 flex items-center justify-center"
+              >
+                <div className="animate-ping text-4xl">🎉</div>
+                <div className="absolute -left-2 -top-2 animate-bounce text-2xl">✨</div>
+                <div
+                  className="absolute -right-2 -top-2 animate-bounce text-2xl"
+                  style={{ animationDelay: '0.15s' }}
+                >
+                  ✨
+                </div>
+                <div
+                  className="absolute -bottom-2 left-1/3 animate-bounce text-2xl"
+                  style={{ animationDelay: '0.3s' }}
+                >
+                  🌟
+                </div>
+              </div>
+            )}
+            <button
+              type="button"
+              onClick={handlePlayGame}
+              data-testid="play-game-cta"
+              aria-label="Play your game"
+              className="w-full rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 px-6 py-4 text-lg font-bold text-white shadow-lg transition-transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-purple-300"
+            >
+              ▶ Play your game!
+            </button>
+          </div>
         )}
       </div>
     );
@@ -715,6 +753,7 @@ export default function UniversalWizard({
     deviceState.isMobile,
     isWizardComplete,
     handlePlayGame,
+    showCelebration,
   ]);
 
   // Reset progress handler

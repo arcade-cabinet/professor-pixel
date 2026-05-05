@@ -464,18 +464,38 @@ export function useWizardDialogue({
     if (target) navigateToNode(target);
   }, [dialogueState, navigateToNode]);
 
-  // P1.1 — wizard-completion derived state. The flow JSONs end on a node
-  // whose `action` is `compileFullGame` (every -flow.json file has one); we
-  // also treat any reachable node with no options AND no multiStep as
-  // terminal so authors can compose new flows without wiring the action.
-  // Surfaced so the UI can render a "▶ Play your game" CTA at the end of
-  // the wizard journey.
+  // P1.1 — wizard-completion derived state.
+  //
+  // Two signals mark the wizard complete:
+  // (a) `currentNode.action === 'compileFullGame'` — the explicit author
+  //     contract every -flow.json file uses.
+  // (b) Structurally terminal AND `sessionActions.gameAssembled` is true —
+  //     a node with no forward navigation, but only AFTER a previous step
+  //     has actually built something the runner can launch. Without the
+  //     `gameAssembled` gate, any "you canceled" / "come back later" leaf
+  //     would surface the CTA against an empty project.
+  //
+  // For multiStep nodes, we only consider the FINAL step terminal — earlier
+  // dialogue steps still have content to show. `dialogueStep` is checked
+  // against `multiStep.length - 1`.
+  //
+  // `!isLoading` guards a narrow hydration window: persisted state can
+  // restore `currentNodeId` (and therefore `currentNode`) before a fresh
+  // flow fetch completes, leaving us with a non-null currentNode but an
+  // in-flight load. Without this guard we'd flash the CTA in that window.
   const currentNode = dialogueState.currentNode;
+  const onLastMultiStep =
+    !currentNode?.multiStep?.length ||
+    dialogueState.dialogueStep >= currentNode.multiStep.length - 1;
+  const structurallyTerminal =
+    !!currentNode &&
+    !currentNode.options?.length &&
+    onLastMultiStep &&
+    !!sessionActions.gameAssembled;
   const isWizardComplete = !!(
     currentNode &&
     !isLoading &&
-    (currentNode.action === 'compileFullGame' ||
-      (!currentNode.options?.length && !currentNode.multiStep?.length))
+    (currentNode.action === 'compileFullGame' || structurallyTerminal)
   );
 
   return {

@@ -254,13 +254,13 @@ that ran post-finishing-pillar merge. ONE comprehensive PR; no carve-offs.
 - [x] P1.1 dialogue-engine.tsx `isWizardComplete` derived state — terminal node OR `compileFullGame` action.
 - [x] P1.2 universal.tsx "▶ Play your game" CTA when complete — wires to pygame-runner.
 - [x] P1.3 tests/integration/wizard-completion.test.tsx — drive to complete, assert CTA + state.
-- [ ] P1.4 One-time celebration (confetti/sparkle) gated by `sessionActions.gameAssembled`.
+- [x] P1.4 One-time celebration (confetti/sparkle) gated by `sessionActions.gameAssembled`.
 
 ### P2 — Onboarding & landing
 
-- [ ] P2.1 home.tsx landing layout — wizard vs lessons chooser, returning-user shortcut.
-- [ ] P2.2 First-visit micro-tutorial card (dismissible, localStorage-gated).
-- [ ] P2.3 Persist `sessionActions.lastLandingPath` for return prioritization.
+- [x] P2.1 home.tsx landing layout — wizard vs lessons chooser, returning-user shortcut.
+- [x] P2.2 First-visit micro-tutorial card (dismissible, localStorage-gated).
+- [x] P2.3 Persist `sessionActions.lastLandingPath` for return prioritization.
 
 ### P3 — Audio (Pixel speaks + sound effects)
 
