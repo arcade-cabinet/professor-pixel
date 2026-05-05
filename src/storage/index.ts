@@ -3,6 +3,7 @@
 
 export * from './local';
 export * from './mode';
+export * from './opfs-projects';
 export * from './persistence';
 export * from './projects';
 export * from './session-history';
