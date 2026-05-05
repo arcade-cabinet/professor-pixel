@@ -103,7 +103,7 @@ Branch: feat/modernization-pillar
 ### M4 — Pyodide / PyGame correctness
 
 - [x] M4.1 Cold-start budget — `performance.now()` instrumentation in `pyodide-singleton.ts`, `getColdStartMs()` accessor, console.info/warn against the 8000ms budget, budget + remediation hierarchy documented in `docs/pillars/02-runtime.md`. Dev HUD overlay deferred (UI component work; scoped to a separate PR).
-- [ ] M4.2 Frame-rate test — simulator with realistic component count holds <16.67ms mean frame time over 2s
+- [ ] [WAIT-OWN-PRQ] M4.2 Frame-rate test — Simulator (`src/pygame/runtime/simulator.ts`, 1728 LOC) has no test harness today; standing one up requires understanding the canvas/context coupling well enough to mock it cleanly, plus a deterministic component-mounting API that doesn't exist in the simulator's current shape. The test alone would be 30+ lines, but the harness it depends on is the work. Splitting to its own PRQ alongside the simulator-coverage piece of the wizard / coverage PRQ.
 - [x] M4.3 Worker-side stdout truncation — enforce `maxStdout` in worker stdout callback; `clipResult` becomes verification (`verifyClippedResult`)
 
 ### M5 — Grader instrumentation
@@ -113,5 +113,5 @@ Branch: feat/modernization-pillar
 
 ### M6 — Content + STATE.md
 
-- [ ] M6.1 Three new lessons — lesson-7 (lists), lesson-8 (files), lesson-9 (classes); grader-e2e green for each
+- [x] M6.1 Three new lessons — lesson-7 (lists, 3 steps), lesson-8 (files via Pyodide virtual FS, 2 steps), lesson-9 (classes, 3 steps). Each step has full AST rules (variable_assignment, loop, function_call, defines_class, calls_method) plus appropriate runtimeRules.outputContains. Grader-e2e green: all 9 lessons × all steps score 1.0 through the worker.
 - [ ] M6.2 STATE.md final pass — move all M-tasks Active → Done; trim Next; add per-game-type playtest follow-ups
