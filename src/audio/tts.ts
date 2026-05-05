@@ -70,6 +70,9 @@ export interface SpeakOptions {
 
 export function speak(text: string, opts: SpeakOptions = {}): void {
   if (!isTTSAvailable()) return;
+  // Master audio toggle gates speak — without this, the global mute button
+  // can't actually silence Pixel mid-sentence. callers don't have to check.
+  if (!isAudioEnabled()) return;
   const cleaned = stripEmoji(text);
   if (!cleaned) return;
 

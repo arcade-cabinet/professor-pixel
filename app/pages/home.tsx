@@ -6,6 +6,7 @@ import { listWizardProjects, loadWizardProject, deleteWizardProject } from '@lib
 import { queryClient } from '@lib/net/query-client';
 import UniversalWizard from '@/components/wizard/universal';
 import { Button } from '@/components/ui/button';
+import AudioToggle from '@/components/audio-toggle';
 import { useToast } from '@lib/hooks/use-toast';
 
 const INTRO_SEEN_KEY = 'pp.hasSeenIntro';
@@ -146,6 +147,9 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-50 dark:from-gray-900 dark:to-purple-950">
+      <div className="absolute right-4 top-4 z-10">
+        <AudioToggle />
+      </div>
       <main className="mx-auto flex min-h-screen max-w-4xl flex-col items-center justify-center px-4 py-8">
         <header className="mb-12 text-center">
           <h1 className="bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-5xl font-bold text-transparent">

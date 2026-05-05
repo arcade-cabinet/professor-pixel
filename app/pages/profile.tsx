@@ -12,7 +12,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'wouter';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -27,6 +27,7 @@ const ONBOARDING_KEY = 'pp.onboardingComplete';
 
 export default function Profile() {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [profile, setProfile] = useState(() => loadProfile());
   const [nameDraft, setNameDraft] = useState(profile?.name ?? '');
   const [confirmingSwitch, setConfirmingSwitch] = useState(false);
@@ -75,19 +76,20 @@ export default function Profile() {
   // ClientStorage are NOT touched — the My Games list is intentionally
   // shared on a household device. (A kid with their own device should
   // bookmark their own profile URL.) Confirmed via a two-step button.
-  const handleSwitchUser = () => {
+  const handleSwitchUser = async () => {
     clearProfile();
     try {
       localStorage.removeItem(ONBOARDING_KEY);
     } catch {
       // ignore — onboarding flag is a hint, not load-bearing
     }
-    // Wipe lesson progress — same anonymous-user keyspace ClientStorage uses.
-    try {
-      localStorage.removeItem('pygame_academy_progress');
-    } catch {
-      // ignore
-    }
+    // Route progress wipe through the storage adapter so the keyspace stays
+    // owned by ClientStorage — no hard-coded localStorage key here.
+    await getClientStorage().clearUserProgress('anonymous-user');
+    // Stale progress in the React Query cache would otherwise show the
+    // outgoing kid's completed lessons until the cache turned over. Force
+    // a refetch so the lessons-finished list re-renders empty immediately.
+    queryClient.invalidateQueries({ queryKey: ['progress'] });
     setProfile(null);
     setConfirmingSwitch(false);
     toast({

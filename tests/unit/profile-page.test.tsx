@@ -14,13 +14,18 @@ vi.mock('@lib/lessons', () => ({
   ]),
 }));
 
+// Stateful storage stub: getUserProgress reads from progressRows so a test
+// can flip the data after switch-user and verify the UI reacts. Keeps the
+// test honest about the new clearUserProgress() abstraction landing in P7
+// reviewer follow-up.
+const progressRows: { rows: unknown[] } = { rows: [] };
+const clearUserProgressMock = vi.fn(async (_userId: string) => {
+  progressRows.rows = [];
+});
 vi.mock('@lib/storage/mode', () => ({
   getClientStorage: () => ({
-    getUserProgress: vi
-      .fn()
-      .mockResolvedValue([
-        { id: 'p1', userId: 'anonymous-user', lessonId: 'l1', currentStep: 0, completed: true },
-      ]),
+    getUserProgress: vi.fn().mockImplementation(async () => progressRows.rows),
+    clearUserProgress: clearUserProgressMock,
   }),
 }));
 
@@ -37,6 +42,10 @@ const renderProfile = () => {
 
 beforeEach(() => {
   localStorage.clear();
+  progressRows.rows = [
+    { id: 'p1', userId: 'anonymous-user', lessonId: 'l1', currentStep: 0, completed: true },
+  ];
+  clearUserProgressMock.mockClear();
 });
 
 afterEach(() => {
@@ -71,13 +80,9 @@ describe('Profile page (P7)', () => {
     expect(screen.queryByTestId('profile-completed-Loops')).not.toBeInTheDocument();
   });
 
-  it('Switch user clears profile + onboarding flag + lesson progress', async () => {
+  it('Switch user clears profile + onboarding flag + lesson progress via the storage adapter', async () => {
     saveProfile('Maya');
     localStorage.setItem('pp.onboardingComplete', '1');
-    localStorage.setItem(
-      'pygame_academy_progress',
-      JSON.stringify({ p1: { id: 'p1', userId: 'anonymous-user', lessonId: 'l1' } })
-    );
 
     renderProfile();
     fireEvent.click(screen.getByTestId('profile-switch-user'));
@@ -87,7 +92,8 @@ describe('Profile page (P7)', () => {
       expect(loadProfile()).toBeNull();
     });
     expect(localStorage.getItem('pp.onboardingComplete')).toBeNull();
-    expect(localStorage.getItem('pygame_academy_progress')).toBeNull();
+    // Routed through the storage adapter — not a hardcoded localStorage key.
+    expect(clearUserProgressMock).toHaveBeenCalledWith('anonymous-user');
   });
 
   it('cancelling the switch keeps the profile intact', async () => {
@@ -109,5 +115,23 @@ describe('Profile page (P7)', () => {
     // Save button is disabled when the trimmed draft is empty.
     expect(screen.getByTestId('profile-save-name')).toBeDisabled();
     expect(loadProfile()).toBeNull();
+  });
+
+  it('renders cleanly when no profile exists yet (cold-start path)', async () => {
+    // P7 reviewer follow-up: verify the page doesn't null-deref on
+    // profile.name when loadProfile() returns null. Cold-start = empty
+    // localStorage; the form should mount with an empty input, the
+    // save button disabled, and no createdAt line.
+    renderProfile();
+
+    const input = screen.getByTestId('profile-name-input') as HTMLInputElement;
+    expect(input.value).toBe('');
+    expect(screen.getByTestId('profile-save-name')).toBeDisabled();
+    expect(screen.queryByText(/started on/i)).not.toBeInTheDocument();
+
+    // Typing a name and saving creates the first profile.
+    fireEvent.change(input, { target: { value: 'Sam' } });
+    fireEvent.click(screen.getByTestId('profile-save-name'));
+    await waitFor(() => expect(loadProfile()?.name).toBe('Sam'));
   });
 });

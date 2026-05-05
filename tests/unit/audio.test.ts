@@ -83,6 +83,10 @@ describe('audio/tts — speak() routes to speechSynthesis', () => {
   beforeEach(() => {
     speakSpy = vi.fn();
     cancelSpy = vi.fn();
+    // P8 — speak() gates on isAudioEnabled() so the master mute toggle
+    // can silence Pixel mid-sentence. Tests that exercise the speech
+    // path must enable audio first.
+    setAudioEnabled(true);
     vi.stubGlobal('speechSynthesis', {
       speak: speakSpy,
       cancel: cancelSpy,

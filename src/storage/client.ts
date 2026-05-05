@@ -162,6 +162,20 @@ export class ClientStorage {
     return Object.values(progress).filter((p) => p.userId === userId);
   }
 
+  // Wipe ALL progress rows for a user. Used by P7's profile "Switch user"
+  // flow so the destination kid sees a fresh lessons list. Other rows for
+  // other userIds (future multi-profile work) are preserved.
+  async clearUserProgress(userId: string): Promise<void> {
+    const progressMap = this.getFromLocalStorage<Record<string, UserProgress>>(
+      ClientStorage.STORAGE_KEYS.PROGRESS
+    );
+    const kept: Record<string, UserProgress> = {};
+    for (const [id, row] of Object.entries(progressMap)) {
+      if (row.userId !== userId) kept[id] = row;
+    }
+    this.saveToLocalStorage(ClientStorage.STORAGE_KEYS.PROGRESS, kept);
+  }
+
   async getUserProgressForLesson(
     userId: string,
     lessonId: string

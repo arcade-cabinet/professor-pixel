@@ -54,8 +54,17 @@ function tone(spec: ToneSpec, startOffset = 0): void {
   osc.stop(now + spec.duration + release + 0.02);
 }
 
+// Master audio toggle gates ALL audio surfaces (TTS + SFX) with one click.
+// Per-channel gates (isSfxEnabled) still work as a sub-preference once the
+// master is on.
+import { isAudioEnabled } from './tts';
+
+function audioOk(): boolean {
+  return isAudioEnabled() && isSfxEnabled();
+}
+
 export function playSuccess(): void {
-  if (!isSfxEnabled()) return;
+  if (!audioOk()) return;
   // Major triad arpeggio: C5, E5, G5
   tone({ freq: 523.25, duration: 0.08 });
   tone({ freq: 659.25, duration: 0.08 }, 0.07);
@@ -63,14 +72,14 @@ export function playSuccess(): void {
 }
 
 export function playError(): void {
-  if (!isSfxEnabled()) return;
+  if (!audioOk()) return;
   // Two low descending square-wave blips — mildly buzzy, not harsh.
   tone({ freq: 220, duration: 0.12, type: 'square', gain: 0.12 });
   tone({ freq: 174.61, duration: 0.16, type: 'square', gain: 0.12 }, 0.13);
 }
 
 export function playPop(): void {
-  if (!isSfxEnabled()) return;
+  if (!audioOk()) return;
   // Short triangle blip for option clicks.
   tone({ freq: 880, duration: 0.04, type: 'triangle', gain: 0.1 });
 }
