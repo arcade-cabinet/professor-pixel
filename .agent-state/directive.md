@@ -92,7 +92,7 @@ Branch: feat/modernization-pillar
 ### M2 — Type / schema / test config cleanup
 
 - [x] M2.1 Fix the 209 `any`s — Carved off into the `any` cleanup pillar; landed on `feat/any-cleanup-pillar` (PR #21, 213 → 0 annotations, Biome `noExplicitAny` warn→error). Structural fixes were exactly the three the PRQ named: (1) `PyodideInstance` ambient covering simulator/error-handler/runtime, (2) typed `runPython` return casts at boundaries, (3) `validateAndMigrate<T>(data: unknown)` + per-store schema types replacing `Partial<unknown>` spreads.
-- [ ] [WAIT] M2.2 Re-enable Vitest coverage thresholds — Waiting on the wizard / coverage / simulator-harness PRQ (next in `docs/STATE.md → Next`). Strategy: pin floor at current baseline (6/4/4/6) to block regressions, then ratchet up per-PR as wizard + simulator tests land. Will be picked up after PR #22 (grader-followups) merges and the next pillar branch starts.
+- [x] M2.2 Re-enable Vitest coverage thresholds — Resolved by post-launcher consolidation C1.2 + finishing-pillar coverage ratchet. vitest.config.ts pins thresholds at 26/21/21/26 against post-launcher baseline 27.71/22.42/22.28/27.71; v8 reporter natively fails on regression. Original 6/4/4/6 floor was exceeded long ago.
 - [x] M2.3 Wizard-dialogue integration tests refresh — quarantined test deleted (per "stubs are bugs" rule); exclude removed from vitest.config.ts. Focused replacement queued in the M2.2 wizard-coverage PRQ.
 
 ### M3 — Visual + accessibility baseline
@@ -103,7 +103,7 @@ Branch: feat/modernization-pillar
 ### M4 — Pyodide / PyGame correctness
 
 - [x] M4.1 Cold-start budget — `performance.now()` instrumentation in `pyodide-singleton.ts`, `getColdStartMs()` accessor, console.info/warn against the 8000ms budget, budget + remediation hierarchy documented in `docs/pillars/02-runtime.md`. Dev HUD overlay deferred (UI component work; scoped to a separate PR).
-- [ ] [WAIT] M4.2 Frame-rate test — Waiting on the simulator-harness piece of the wizard / coverage / simulator-harness PRQ (next in `docs/STATE.md → Next`). The test itself is 30 lines; the deterministic mounting API for `src/pygame/runtime/simulator.ts` (1728 LOC of canvas/context coupling) is the actual work. Will be picked up after PR #22 merges.
+- [x] M4.2 Frame-rate test — Resolved via finishing pillar's tests/unit/simulator-frame-rate.test.ts (Proxy-based fake CanvasRenderingContext2D + controlledTime via vi.spyOn(performance.now)) and post-launcher C1.1 confirming the simulator was already DOM-free with setCanvasContext taking an injected ctx. Mean frame cost asserted < 16.67ms over 120 synthesized frames @ 42-cmd realistic load.
 - [x] M4.3 Worker-side stdout truncation — enforce `maxStdout` in worker stdout callback; `clipResult` becomes verification (`verifyClippedResult`)
 
 ### M5 — Grader instrumentation
