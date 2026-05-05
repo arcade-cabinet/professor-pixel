@@ -131,6 +131,27 @@ async function bootstrap(opts: BootstrapOptions): Promise<PyodideInstance> {
     throw new PyodideLoadError('Pyodide script loaded but window.loadPyodide is undefined');
   }
 
+  // Pyodide does `new URL(packageBaseUrl)` (no base) to resolve wheel
+  // URLs internally, so `packageBaseUrl` must be absolute. `indexURL`
+  // works as a relative path (`/pyodide/`) for the bootstrap assets
+  // because pyodide treats indexURL specially against `location`, but
+  // packageBaseUrl is fed directly to the URL constructor.
+  // jsdom test environments may not have a usable window.location.href,
+  // so fall back to the relative indexURL — the recovery tests don't
+  // actually call loadPyodide with a real implementation.
+  let absolutePackageBase = indexURL;
+  if (!indexURL.startsWith('http://') && !indexURL.startsWith('https://')) {
+    const base = window.location?.href;
+    if (base) {
+      try {
+        absolutePackageBase = new URL(indexURL, base).toString();
+      } catch {
+        // Keep the relative form; loadPyodide() will only be called in
+        // production code paths where window.location is real.
+      }
+    }
+  }
+
   try {
     const instance = await window.loadPyodide({
       indexURL,
@@ -140,7 +161,7 @@ async function bootstrap(opts: BootstrapOptions): Promise<PyodideInstance> {
       // is what makes the launcher work offline / inside Capacitor /
       // behind a captive portal — without it, loadPackage('pygame-ce')
       // would fail in any environment that blocks the default CDN.
-      packageBaseUrl: indexURL,
+      packageBaseUrl: absolutePackageBase,
       stdout: opts.stdout,
       stderr: opts.stderr,
     });
