@@ -71,3 +71,4 @@
 {"ts":"2026-05-05T07:33:48.973Z","sha":"9bffa4234896","subject":"feat(player-experience): P4 — kid-friendly NotFound page","decision":null,"why":null,"resolves":["P4.1 P4.2 P4.3"],"overrides":[]}
 {"ts":"2026-05-05T07:35:26.014Z","sha":"46f290f63195","subject":"feat(player-experience): P10 — empty + error states for /lessons","decision":null,"why":null,"resolves":["P10.1 P10.2 P10.3"],"overrides":[]}
 {"ts":"2026-05-05T07:41:01.506Z","sha":"562433089a5d","subject":"feat(player-experience): P5 — multi-project save/load on the home page","decision":null,"why":null,"resolves":["P5.1 P5.2 P5.3 P5.4"],"overrides":[]}
+{"ts":"2026-05-05T07:48:24.996Z","sha":"4018ac53b970","subject":"feat(player-experience): P6 — Pause + Reset controls in the live preview","decision":null,"why":null,"resolves":["P6.1 P6.2 P6.3 P6.4"],"overrides":[]}

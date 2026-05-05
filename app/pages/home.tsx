@@ -6,6 +6,7 @@ import { listWizardProjects, loadWizardProject, deleteWizardProject } from '@lib
 import { queryClient } from '@lib/net/query-client';
 import UniversalWizard from '@/components/wizard/universal';
 import { Button } from '@/components/ui/button';
+import { useToast } from '@lib/hooks/use-toast';
 
 const INTRO_SEEN_KEY = 'pp.hasSeenIntro';
 const LANDING_PATH_KEY = 'pp.lastLandingPath';
@@ -57,6 +58,12 @@ export default function Home() {
   const [, setLocation] = useLocation();
   const [showIntroCard, setShowIntroCard] = useState(false);
   const [skipChooser, setSkipChooser] = useState(false);
+  // Inline confirm replaces window.confirm — that blocks the main thread on
+  // mobile Safari and is silently suppressed in some embedded contexts. We
+  // track which project is awaiting confirmation; clicking Delete on a
+  // different row swaps the target. Null = no pending confirmation.
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const { toast } = useToast();
 
   // P5 — My Games. ListWizardProjects reads from ClientStorage; if the wizard
   // hasn't yet persisted any project (P5.3 work), the list is empty and we
@@ -68,7 +75,19 @@ export default function Home() {
 
   const deleteProjectMutation = useMutation({
     mutationFn: (id: string) => deleteWizardProject(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['wizard-projects'] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['wizard-projects'] });
+      setConfirmDeleteId(null);
+    },
+    onError: (err) => {
+      console.error('Failed to delete project:', err);
+      toast({
+        title: "Couldn't delete that game",
+        description: 'Try again in a moment.',
+        variant: 'destructive',
+      });
+      setConfirmDeleteId(null);
+    },
   });
 
   const openProject = async (id: string) => {
@@ -168,11 +187,7 @@ export default function Home() {
                       Open
                     </Button>
                     <Button
-                      onClick={() => {
-                        if (window.confirm(`Delete "${project.name}"? This can't be undone.`)) {
-                          deleteProjectMutation.mutate(project.id);
-                        }
-                      }}
+                      onClick={() => setConfirmDeleteId(project.id)}
                       variant="outline"
                       data-testid={`my-game-delete-${project.id}`}
                       aria-label={`Delete ${project.name}`}
@@ -180,6 +195,39 @@ export default function Home() {
                       🗑️
                     </Button>
                   </div>
+                  {confirmDeleteId === project.id && (
+                    <div
+                      role="alertdialog"
+                      aria-labelledby={`confirm-${project.id}-label`}
+                      className="mt-3 rounded-lg border-2 border-red-300 bg-red-50 p-3 text-left dark:border-red-700 dark:bg-red-900/30"
+                    >
+                      <p
+                        id={`confirm-${project.id}-label`}
+                        className="text-sm font-bold text-red-800 dark:text-red-200"
+                      >
+                        Delete "{project.name}"? This can't be undone.
+                      </p>
+                      <div className="mt-2 flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => deleteProjectMutation.mutate(project.id)}
+                          disabled={deleteProjectMutation.isPending}
+                          data-testid={`my-game-confirm-delete-${project.id}`}
+                        >
+                          {deleteProjectMutation.isPending ? 'Deleting...' : 'Delete'}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setConfirmDeleteId(null)}
+                          data-testid={`my-game-cancel-delete-${project.id}`}
+                        >
+                          Keep
+                        </Button>
+                      </div>
+                    </div>
+                  )}
                 </li>
               ))}
             </ul>

@@ -76,4 +76,13 @@ describe('wizard projects (P5)', () => {
   it('returns null when loading a missing project id', async () => {
     expect(await loadWizardProject('does-not-exist')).toBeNull();
   });
+
+  it('rejects when saving with a stale existingId so callers can fall back', async () => {
+    // The wizard's save effect uses this signal: if the kid had a project
+    // saved during the current mount but it was deleted (manual delete from
+    // home, storage cleared, etc.), passing the old id must surface as a
+    // rejected promise so the caller can retry as a fresh create. Silently
+    // swallowing it would lose the kid's progress.
+    await expect(saveWizardProject(baseSnapshot, 'definitely-not-a-real-id')).rejects.toThrow();
+  });
 });

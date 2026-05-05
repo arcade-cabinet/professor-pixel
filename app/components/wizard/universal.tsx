@@ -150,23 +150,49 @@ export default function UniversalWizard({
   // moment the kid "finishes" their game (gameAssembled). Without this the
   // home page's My Games section stays empty forever and a second wizard run
   // silently overwrites the first via the singleton wizard.state.v1 key.
-  // Once-per-mount: a single project per gameAssembled→true transition.
-  const projectSavedRef = useRef(false);
+  //
+  // Reviewer follow-up (P5 review issue #2): track the saved project's id in
+  // a ref so subsequent assembles within the same mount UPDATE the same row
+  // instead of being silently dropped. Without this, gameAssembled toggling
+  // off→on (e.g., kid edits name and re-completes) would either create a
+  // duplicate or — under the old once-per-mount guard — be discarded.
+  const savedProjectIdRef = useRef<string | null>(null);
   useEffect(() => {
     if (!sessionActions.gameAssembled) return;
-    if (projectSavedRef.current) return;
-    projectSavedRef.current = true;
     const draft = loadWizardState();
     if (!draft) return;
-    saveWizardProject({
-      wizardState: draft,
-      name: sessionActions.gameName || draft.gameType || 'My Game',
-      template: sessionActions.gameType || draft.gameType || 'unknown',
-    }).catch((err) => {
-      // Saved-game failure is non-blocking — the game still runs from the
-      // wizard's in-memory state. Log + console; the kid can re-export later.
-      console.warn('Failed to save project to My Games:', err);
-    });
+    saveWizardProject(
+      {
+        wizardState: draft,
+        name: sessionActions.gameName || draft.gameType || 'My Game',
+        template: sessionActions.gameType || draft.gameType || 'unknown',
+      },
+      savedProjectIdRef.current ?? undefined
+    )
+      .then((project) => {
+        savedProjectIdRef.current = project.id;
+      })
+      .catch(async (err) => {
+        // If the existingId path failed (stale id — someone deleted the row
+        // out from under us, or storage was cleared), fall back to a fresh
+        // create so the kid still gets a saved game.
+        if (savedProjectIdRef.current) {
+          savedProjectIdRef.current = null;
+          try {
+            const project = await saveWizardProject({
+              wizardState: draft,
+              name: sessionActions.gameName || draft.gameType || 'My Game',
+              template: sessionActions.gameType || draft.gameType || 'unknown',
+            });
+            savedProjectIdRef.current = project.id;
+            return;
+          } catch (fallbackErr) {
+            console.warn('Failed to save project to My Games (fallback):', fallbackErr);
+            return;
+          }
+        }
+        console.warn('Failed to save project to My Games:', err);
+      });
   }, [sessionActions.gameAssembled, sessionActions.gameName, sessionActions.gameType]);
 
   // Rehydrate selectedAssets from persisted IDs on mount. The wizard stores

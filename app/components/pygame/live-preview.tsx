@@ -100,6 +100,12 @@ export default function PygameLivePreview({
   // body checks isPausedRef.current each frame; flipping it stops scheduling
   // without cancelling the in-flight frame.
   const isPausedRef = useRef(false);
+  // Mount guard — the render() body always re-schedules itself, so an
+  // in-flight tick that lands AFTER stopRenderLoop() cancels its frame would
+  // otherwise schedule a new frame against a now-unmounted component and
+  // call flushFrameBuffer on a torn-down canvas. isActiveRef.current=false
+  // tells render() to bail without re-scheduling.
+  const isActiveRef = useRef(false);
 
   const [gameParams, setGameParams] = useState({
     speed: 5,
@@ -126,7 +132,9 @@ export default function PygameLivePreview({
   // pause toggle takes effect on the next animation tick without ripping
   // down the loop and re-creating the closure.
   const startRenderLoop = useCallback((_canvas: HTMLCanvasElement) => {
+    isActiveRef.current = true;
     const render = () => {
+      if (!isActiveRef.current) return;
       if (!isPausedRef.current) {
         flushFrameBuffer();
       }
@@ -291,10 +299,22 @@ export default function PygameLivePreview({
 
   // P key toggles pause when the canvas (or anything inside the preview card)
   // is focused. We attach to the canvas wrapper so typing P in the code editor
-  // — which lives outside this component — never steals input. ignoreEditableTargets
-  // is belt-and-suspenders: even within the preview, a kid focusing an input
-  // shouldn't trigger pause.
+  // — which lives outside this component — never steals input. The editable-
+  // target guard is belt-and-suspenders: even within the preview, a kid
+  // focusing an input shouldn't trigger pause.
+  //
+  // Stable handler via ref: togglePlayPause changes identity whenever
+  // isPlaying/isPaused/choices flip, which would otherwise tear down and
+  // re-add the listener on every state update — a window where keydown
+  // events can be dropped. Bind once; read the latest callback through
+  // toggleRef each invocation.
   const previewWrapperRef = useRef<HTMLDivElement>(null);
+  const toggleRef = useRef(togglePlayPause);
+  const isPlayingRef = useRef(state.isPlaying);
+  useEffect(() => {
+    toggleRef.current = togglePlayPause;
+    isPlayingRef.current = state.isPlaying;
+  }, [togglePlayPause, state.isPlaying]);
   useEffect(() => {
     const node = previewWrapperRef.current;
     if (!node) return;
@@ -307,17 +327,18 @@ export default function PygameLivePreview({
       ) {
         return;
       }
-      if (!state.isPlaying) return;
+      if (!isPlayingRef.current) return;
       e.preventDefault();
-      togglePlayPause();
+      toggleRef.current();
     };
     node.addEventListener('keydown', onKey);
     return () => node.removeEventListener('keydown', onKey);
-  }, [state.isPlaying, togglePlayPause]);
+  }, []);
 
   // Cleanup on unmount
   useEffect(() => {
     return () => {
+      isActiveRef.current = false;
       stopRenderLoop();
       setCanvasContext(null);
       resetPygameState();
@@ -379,6 +400,8 @@ export default function PygameLivePreview({
                 <div
                   className="absolute inset-0 bg-black/40 flex items-center justify-center"
                   data-testid="paused-overlay"
+                  role="status"
+                  aria-live="polite"
                 >
                   <div className="bg-white/90 dark:bg-gray-800/90 rounded-lg px-4 py-2 text-center">
                     <p className="text-sm font-bold text-gray-900 dark:text-gray-100">⏸ Paused</p>
