@@ -447,7 +447,7 @@ Branch: feat/player-experience-pillar-4
 
 ### task-029 Local undo stack for component placements (Ctrl+Z / Ctrl+Shift+Z)
 
-- [ ] task-029 wysiwyg useReducer over placements; Ctrl+Z and Ctrl+Shift+Z handlers tested
+- [x] task-029 wysiwyg useReducer over placements; Ctrl+Z and Ctrl+Shift+Z handlers tested
 
 ### task-030 Audit Monaco theme colors for WCAG AA against editor background
 

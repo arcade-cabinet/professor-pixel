@@ -355,8 +355,12 @@ export default function PixelMenu({
                     </button>
                   </motion.div>
                 ) : (
-                  /* Session History */
-                  <ScrollArea className="h-full">
+                  /* Session History — drop h-full so the outer
+                     overflow-y-auto wrapper handles scroll uniformly
+                     across tabs. Two stacked scroll containers were
+                     fighting on iOS Safari (touch hit-tested the
+                     outer first, leaving the inner unreachable). */
+                  <ScrollArea>
                     <motion.div
                       className="space-y-3"
                       initial={{ opacity: 0 }}

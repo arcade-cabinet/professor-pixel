@@ -8,6 +8,7 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { cn } from '@lib/utils/cn';
 import { useViewport } from '@lib/hooks/use-viewport';
+import { useUndoableList } from '@lib/hooks/use-undoable-list';
 
 import PygameEditorCanvas from './canvas';
 import TapToPlaceHint from './tap-to-place-hint';
@@ -35,7 +36,15 @@ export default function PygameWysiwygEditor({
   onClose,
   initialComponents = [],
 }: PygameWysiwygEditorProps) {
-  const [placedComponents, setPlacedComponents] = useState<PlacedComponent[]>(initialComponents);
+  const {
+    state: placedComponents,
+    set: setPlacedComponents,
+    undo: undoPlacements,
+    redo: redoPlacements,
+    canUndo,
+    canRedo,
+    reset: resetPlacements,
+  } = useUndoableList<PlacedComponent[]>(initialComponents);
   const [selectedComponentId, setSelectedComponentId] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [showGrid, setShowGrid] = useState(true);
@@ -190,8 +199,38 @@ export default function PygameWysiwygEditor({
   const handlePause = () => setIsPlaying(false);
   const handleReset = () => {
     setIsPlaying(false);
-    setPlacedComponents(initialComponents);
+    // Reset wipes history too — a new baseline. Otherwise Ctrl+Z
+    // after Reset would un-reset the canvas, which is a footgun.
+    resetPlacements(initialComponents);
   };
+
+  // P4.29 — Ctrl+Z / Ctrl+Shift+Z (or Cmd on macOS) for undo/redo. Gated to
+  // not fire while typing in inputs/textareas/contenteditable so the kid
+  // can still undo within a property text field with the browser's
+  // native undo. Modifier-held during a text-edit context yields to it.
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      const ctrlOrMeta = e.ctrlKey || e.metaKey;
+      if (!ctrlOrMeta) return;
+      const key = e.key.toLowerCase();
+      if (key !== 'z') return;
+      const target = e.target as HTMLElement | null;
+      if (target) {
+        const tag = target.tagName;
+        if (tag === 'INPUT' || tag === 'TEXTAREA' || target.isContentEditable) {
+          return;
+        }
+      }
+      e.preventDefault();
+      if (e.shiftKey) {
+        redoPlacements();
+      } else {
+        undoPlacements();
+      }
+    }
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [undoPlacements, redoPlacements]);
 
   return (
     <DndProvider backend={HTML5Backend}>

@@ -391,7 +391,10 @@ export const strings = {
   /* ─── Live preview overlays (P4.28) ─────────────────────────────────── */
   livePreview: {
     pauseHeading: 'Game paused',
-    pauseHint: 'Tap Resume or press P to keep playing',
+    // Reworded after task-028 review: "Tap Resume" misleads on tablets
+    // when the Resume button is scrolled below the canvas. Lean on the
+    // keyboard hint plus a generic "Resume button below" pointer.
+    pauseHint: 'Press P or tap the Resume button below to keep playing',
   },
 
   /* ─── Wizard (wizard/universal.tsx) ────────────────────────────────── */

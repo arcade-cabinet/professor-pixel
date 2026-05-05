@@ -32,6 +32,18 @@ describe('PixelMenu content overflow (P4.27)', () => {
     expect(className).not.toContain('overflow-hidden');
   });
 
+  it('history tab ScrollArea drops h-full so it does not nest a second scroller', () => {
+    // Folded forward from task-027 review: the outer `flex-1
+    // overflow-y-auto` wrapper is itself a scroll surface; an inner
+    // `<ScrollArea className="h-full">` made two scrollers fight on
+    // iOS Safari. Now ScrollArea takes natural height inside the
+    // wrapper, and the outer scroll handles both tabs.
+    const historyMatch = MENU_SOURCE.match(/Session History[\s\S]*?<ScrollArea([^>]*)>/);
+    expect(historyMatch).not.toBeNull();
+    const attrs = historyMatch![1];
+    expect(attrs).not.toMatch(/h-full/);
+  });
+
   it('actions grid does not pin to h-full (lets rows take natural height)', () => {
     // The motion.div inside the actions branch — first one after the
     // "Quick Actions" inline JSX comment.

@@ -436,7 +436,8 @@ export default function PygameLivePreview({
                 >
                   <div className="bg-white/90 dark:bg-gray-800/90 rounded-lg px-4 py-2 text-center">
                     <p className="text-sm font-bold text-gray-900 dark:text-gray-100">
-                      ⏸ {strings.livePreview.pauseHeading}
+                      <span aria-hidden="true">⏸ </span>
+                      {strings.livePreview.pauseHeading}
                     </p>
                     <p className="text-xs text-gray-600 dark:text-gray-400">
                       {strings.livePreview.pauseHint}

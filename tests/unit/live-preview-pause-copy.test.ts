@@ -25,8 +25,18 @@ describe('live preview pause overlay copy (P4.28)', () => {
   it('catalog has the kid-friendly heading and hint', () => {
     expect(strings.livePreview.pauseHeading).toBe('Game paused');
     expect(strings.livePreview.pauseHint).toMatch(/resume|press p/i);
+    // Folded forward from task-028 review: must not say "Tap Resume"
+    // (misleads on tablets where the button is below the fold).
+    expect(strings.livePreview.pauseHint).not.toMatch(/^Tap Resume\b/i);
     // Should NOT use the old technical phrasing.
     expect(strings.livePreview.pauseHeading).not.toMatch(/^Paused$/);
+  });
+
+  it('the pause glyph is hidden from screen readers (aria-hidden)', () => {
+    // The ⏸ unicode glyph announces as "pause" or "double vertical
+    // bar" before the heading; aria-hidden on the wrapping span
+    // prevents the double announcement.
+    expect(LIVE_PREVIEW_SOURCE).toMatch(/<span aria-hidden="true">⏸\s*<\/span>/);
   });
 
   it('live-preview.tsx references the catalog keys, not hardcoded strings', () => {
