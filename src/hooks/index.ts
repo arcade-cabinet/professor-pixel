@@ -2,6 +2,7 @@
 // Edit by hand only to add `export type { ... }` aliases or rename collisions.
 
 export * from './use-debug';
+export * from './use-debug-flag';
 export * from './use-device-type';
 export * from './use-edge-swipe';
 export * from './use-editor-history';

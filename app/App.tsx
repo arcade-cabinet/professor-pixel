@@ -11,6 +11,7 @@ import Home from '@/pages/home';
 import LessonPage from '@/pages/lesson';
 import PixelPresence from '@/components/pixel/presence';
 import UniversalWizard from '@/components/wizard/universal';
+import { DevHud } from '@/components/dev-hud';
 import AssetLibraryTest from '@/pages/_dev/asset-library';
 import PygamePreviewTest from '@/pages/_dev/pygame-preview';
 import PersistenceTest from '@/pages/_dev/persistence';
@@ -102,6 +103,7 @@ function App() {
             <Toaster />
             <Router />
             <PixelPresence onNavigate={setLocation} currentPath={location} />
+            <DevHud />
           </>
         </TooltipProvider>
       </QueryClientProvider>

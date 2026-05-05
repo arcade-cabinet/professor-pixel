@@ -145,6 +145,24 @@ export function isPyodideReady(): boolean {
   return typeof window !== 'undefined' && Boolean(window.pyodide);
 }
 
+/**
+ * Pyodide state for diagnostics/HUD readouts. `loading` means a bootstrap
+ * promise is in flight; `ready` means it resolved and `window.pyodide` is set.
+ * `error` is sticky between catch and the next `getPyodide()` retry —
+ * bootstrapPromise is cleared in the .catch handler, but coldStartMs stays
+ * null since it's only set on success.
+ */
+export type PyodideState = 'uninitialized' | 'loading' | 'ready' | 'error';
+
+export function getPyodideState(): PyodideState {
+  if (isPyodideReady()) return 'ready';
+  if (bootstrapPromise) return 'loading';
+  // The HUD doesn't get a way to distinguish "never started" from "failed and
+  // cleared" — both look the same after the catch handler nulls the promise.
+  // That's fine: the HUD's job is to show current state, not history.
+  return 'uninitialized';
+}
+
 /** Test-only: drop the cached promise so the next call re-bootstraps. */
 export function __resetPyodideForTests(): void {
   bootstrapPromise = null;

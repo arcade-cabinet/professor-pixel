@@ -192,13 +192,13 @@ Started: 2026-05-04T21:19:15Z
 
 ### G2 — Dev HUD overlay
 
-- [ ] G2.1 app/components/dev-hud.tsx — fixed bottom-right panel reading __performanceMonitor + worker runner state.
-- [ ] G2.2 useDebugFlag() hook (localStorage.debug or ?debug=1); App-root mount.
-- [ ] G2.3 CSS-only collapse with localStorage.debug-hud-collapsed persistence.
-- [ ] G2.4 Component test: mounts when flag set; does not render otherwise.
+- [x] G2.1 app/components/dev-hud.tsx — fixed bottom-right panel reading getColdStartMs() + getPyodideState() (new export on pyodide-singleton). Polls every 500ms.
+- [x] G2.2 src/hooks/use-debug-flag.ts — useDebugFlag() reads `?debug=1` then `localStorage.debug==='1'`; storage event subscription lets devtools toggles flip the HUD live. Mounted at App root after PixelPresence.
+- [x] G2.3 CSS-only collapse with localStorage.debug-hud-collapsed persistence; collapse button is a 32×32 round affordance, expanded panel is 280×120.
+- [x] G2.4 tests/component/dev-hud.test.tsx — 7 tests in real Chromium covering: hidden when flag unset, visible via localStorage, visible via ?debug=1, starts-collapsed flag, expand/collapse persistence, dash for null cold-start, polling re-renders on state change. All green.
 
 ### Docs
 
-- [ ] D1 STATE.md — move grader-followups Next → Done.
-- [ ] D2 docs/pillars/04-grading.md — inspectGlobals plumbing note.
-- [ ] D3 docs/pillars/01-frontend.md — dev-hud reference.
+- [x] D1 STATE.md — grader-followups moved Next → Done; Active flips to `feat/grader-followups-pillar` queued.
+- [x] D2 docs/pillars/04-grading.md — Worker-collected runtime metadata subsection added covering inspectGlobals, trackFunctions, and inputCalls; runtime-rules table descriptions updated to reflect actual instrumented behaviour (functionCalled and acceptsUserInput rows were stale).
+- [x] D3 docs/pillars/01-frontend.md — new "Debug surfaces" subsection between Component conventions and TypeScript discipline pointing at dev-hud.tsx and useDebugFlag.

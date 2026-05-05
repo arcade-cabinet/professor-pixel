@@ -80,12 +80,22 @@ Driven by `LessonRuntimeRules`:
 |-------|----------|
 | `outputContains: string[]` | Each needle must appear in stdout |
 | `outputMatches: string` | Stdout must match the regex |
-| `variableExists: string[]` | Each name must be defined in the post-execution Python globals |
-| `functionCalled: string[]` | Approximated by stdout containing the name OR the name being defined in globals (cheap proxy without instrumentation) |
-| `acceptsUserInput: boolean` | The test must have provided non-empty `input` |
+| `variableExists: string[]` | Each name must be defined in the post-execution Python globals (worker-collected snapshot — see below) |
+| `functionCalled: string[]` | Each name must have been invoked at runtime (worker-side `sys.settrace` counter, not a stdout heuristic) |
+| `acceptsUserInput: boolean` | The user code must have called `input()` at least once (worker-side counter, not "did the test provide input") |
 | `outputIncludesInput: boolean` | Stdout must echo the provided input |
 
 Runtime rules see only the post-execution state. Caps (timeoutMs, maxStdout — see Pillar 2) ensure the captured state is bounded before the rules run.
+
+### Worker-collected runtime metadata
+
+Three rules need to peek inside the worker's Pyodide rather than the main-thread Pyodide:
+
+- **`variableExists`** → the engine collects every name across the step's tests into a single `inspectGlobals: string[]` arg on `runSnippet`. The worker reads each from post-execution globals and returns `RunResult.globals: Record<string, unknown>` — *omitting* names that were never defined. The validator's existence check is `name in globals`, which keeps falsy Python values (`0`, `''`, `False`) classified as defined while still failing on absent names. Without this plumbing the rule queries main-thread Pyodide, which never executed the user's code on worker-routed lessons (the original bug fixed in the grader follow-ups pillar).
+- **`functionCalled`** → the engine collects every name across the step's tests into `trackFunctions: string[]`; the worker installs a `sys.settrace` callback that increments per-name counters on every Python frame entry. Returned as `RunResult.functionCalls: Record<string, number>`. A function defined but never called returns `0` and fails the rule.
+- **`acceptsUserInput`** → the worker monkey-patches `builtins.input` and counts each call. Returned as `RunResult.inputCalls: number`.
+
+These three live one level above the validator: they are runtime *metadata*, gathered during execution rather than reconstructed from stdout. The validator (`src/grading/runtime.ts`) just reads pre-collected counters and snapshots — no main-thread Pyodide reach-around.
 
 ## Scoring
 

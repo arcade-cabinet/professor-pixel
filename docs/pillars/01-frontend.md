@@ -89,6 +89,10 @@ src + app + public
 - Every interactive element gets a `data-testid` so e2e tests don't depend on copy or DOM structure.
 - Accessibility primitives (modals, menus, tooltips) come from `app/components/ui/` (shadcn over Radix). Don't roll your own.
 
+## Debug surfaces
+
+`app/components/dev-hud.tsx` — fixed bottom-right floating panel showing Pyodide cold-start ms, current Pyodide state (`uninitialized` / `loading` / `ready` / `error`), and the rendering host. Mounted at the App root, gated by `useDebugFlag()` (`?debug=1` query param OR `localStorage.debug='1'`). Collapse state persists in `localStorage.debug-hud-collapsed`. The HUD polls the singleton state every 500ms — keep it small and fast; don't grow it into a devtools panel.
+
 ## TypeScript discipline
 
 Biome's `noExplicitAny` is `error`-level. The codebase carries zero `any` annotations; new code must hold that line. Patterns to use instead:
