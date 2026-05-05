@@ -102,12 +102,24 @@ export default function PygameEditorCodePanel({
     return lines.join('\n');
   }, [components]);
 
-  const handleCopy = () => {
-    navigator.clipboard.writeText(generatedCode);
-    toast({
-      title: 'Code copied!',
-      description: 'The Python code has been copied to your clipboard.',
-    });
+  // Q4 (pillar 3) — must await + catch. Insecure contexts, denied
+  // permissions, and some embedded webviews reject this Promise; without
+  // the catch the kid saw "Code copied!" while nothing actually copied.
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(generatedCode);
+      toast({
+        title: 'Code copied!',
+        description: 'The Python code has been copied to your clipboard.',
+      });
+    } catch (err) {
+      console.warn('[code-panel] clipboard.writeText rejected:', err);
+      toast({
+        title: "Couldn't copy",
+        description: 'Try selecting the code and pressing Ctrl/Cmd+C instead.',
+        variant: 'destructive',
+      });
+    }
   };
 
   const handleDownload = () => {

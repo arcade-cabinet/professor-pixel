@@ -21,6 +21,7 @@ import { loadProfile, saveProfile, clearProfile, InvalidProfileError } from '@li
 import { getClientStorage } from '@lib/storage/mode';
 import { loadLessons } from '@lib/lessons';
 import type { Lesson, UserProgress } from '@lib/types/schema';
+import SafeImage from '@/components/ui/safe-image';
 import pixelHappy from '@assets/pixel/Pixel_happy_excited_expression_22a41625.png';
 
 const ONBOARDING_KEY = 'pp.onboardingComplete';
@@ -102,9 +103,10 @@ export default function Profile() {
     <div className="min-h-screen w-full bg-gradient-to-br from-purple-50 to-pink-50 dark:from-gray-900 dark:to-purple-950 px-4 py-8">
       <div className="mx-auto max-w-2xl space-y-6">
         <header className="text-center">
-          <img
+          <SafeImage
             src={pixelHappy}
             alt="Pixel waving"
+            fallbackEmoji="👋"
             className="mx-auto h-24 w-24"
             data-testid="profile-pixel-image"
           />

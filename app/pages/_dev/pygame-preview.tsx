@@ -338,8 +338,12 @@ print("Pygame environment setup complete")
                       size="sm"
                       variant="outline"
                       className="absolute top-2 right-2"
-                      onClick={() => {
-                        navigator.clipboard.writeText(generateSampleCode());
+                      onClick={async () => {
+                        try {
+                          await navigator.clipboard.writeText(generateSampleCode());
+                        } catch (err) {
+                          console.warn('[pygame-preview-dev] clipboard rejected:', err);
+                        }
                       }}
                     >
                       Copy Code
