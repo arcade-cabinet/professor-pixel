@@ -219,23 +219,47 @@ export const strings = {
 
   /* ─── Profile page (profile.tsx) ────────────────────────────────────── */
   profile: {
-    pageTitle: 'What should Pixel call you?',
-    nameLabel: 'Your name',
-    namePlaceholder: 'Your first name',
-    saveButton: 'Save',
-    savedToast: 'Saved!',
-    sinceLabel: (date: string) => `With Pixel since ${date}`,
-    sinceFallback: 'your first day',
-    backToHome: '← Back home',
-    switchUserHeading: 'Switch user',
-    switchUserBody:
-      'Starting fresh? Pixel will clear your saved games and progress so a new player can begin.',
-    switchUserButton: 'Switch user',
-    switchUserConfirm: 'Are you sure? This deletes saved games and lesson progress for this user.',
-    switchUserCancel: 'Cancel',
-    nameValidation: {
-      empty: 'Please enter a name.',
-      tooLong: 'That name is too long — try something shorter.',
+    pixelAlt: 'Pixel waving',
+    pageTitle: 'Your Profile',
+    nameSection: {
+      heading: 'Your name',
+      body: 'Pixel uses this to say hi. You can change it anytime.',
+      placeholder: 'Type your name',
+      ariaLabel: 'Your name',
+      save: 'Save name',
+      savedToast: 'Saved!',
+      savedDescription: (name: string) => `Pixel will call you ${name}.`,
+      invalidTitle: 'Pick a name first',
+      invalidDescription: 'Pixel needs at least one letter.',
+      since: (name: string, date: string) => `Hi ${name}! You started on ${date}.`,
+      sinceFallbackDate: 'your first day',
+    },
+    completedSection: {
+      heading: "Lessons you've finished",
+      empty: {
+        prefix: 'No lessons finished yet — head to the ',
+        link: 'lessons page',
+        suffix: ' to start one!',
+      },
+    },
+    switchUser: {
+      heading: 'Sharing this device?',
+      bodyPrefix: 'Click ',
+      bodyEmphasis: 'Switch user',
+      bodySuffix:
+        ' to clear the name and lesson progress so someone else can start fresh. Saved games stay so siblings can show each other what they made.',
+      button: 'Switch user',
+      confirmTitle: 'Clear name + lesson progress for this device?',
+      confirmYes: 'Yes, switch user',
+      confirmNo: 'Keep my stuff',
+      errorTitle: "Couldn't switch users",
+      errorBody: 'Try again — your stuff is still safe.',
+      successTitle: 'All set!',
+      successBody: 'Tell Pixel your name on the next screen.',
+    },
+    nav: {
+      home: 'Back to Home',
+      lessons: 'Go to Lessons',
     },
   },
 

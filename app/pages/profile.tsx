@@ -23,6 +23,7 @@ import { loadLessons } from '@lib/lessons';
 import type { Lesson, UserProgress } from '@lib/types/schema';
 import SafeImage from '@/components/ui/safe-image';
 import pixelHappy from '@assets/pixel/Pixel_happy_excited_expression_22a41625.png';
+import { strings } from '@lib/i18n';
 
 const ONBOARDING_KEY = 'pp.onboardingComplete';
 
@@ -58,12 +59,15 @@ export default function Profile() {
     try {
       const next = saveProfile(nameDraft);
       setProfile(next);
-      toast({ title: 'Saved!', description: `Pixel will call you ${next.name}.` });
+      toast({
+        title: strings.profile.nameSection.savedToast,
+        description: strings.profile.nameSection.savedDescription(next.name),
+      });
     } catch (err) {
       if (err instanceof InvalidProfileError) {
         toast({
-          title: 'Pick a name first',
-          description: 'Pixel needs at least one letter.',
+          title: strings.profile.nameSection.invalidTitle,
+          description: strings.profile.nameSection.invalidDescription,
           variant: 'destructive',
         });
         return;
@@ -89,8 +93,8 @@ export default function Profile() {
     } catch (err) {
       console.error('Failed to clear lesson progress:', err);
       toast({
-        title: "Couldn't switch users",
-        description: 'Try again — your stuff is still safe.',
+        title: strings.profile.switchUser.errorTitle,
+        description: strings.profile.switchUser.errorBody,
         variant: 'destructive',
       });
       return;
@@ -108,8 +112,8 @@ export default function Profile() {
     setProfile(null);
     setConfirmingSwitch(false);
     toast({
-      title: 'All set!',
-      description: 'Tell Pixel your name on the next screen.',
+      title: strings.profile.switchUser.successTitle,
+      description: strings.profile.switchUser.successBody,
     });
   };
 
@@ -119,29 +123,31 @@ export default function Profile() {
         <header className="text-center">
           <SafeImage
             src={pixelHappy}
-            alt="Pixel waving"
+            alt={strings.profile.pixelAlt}
             fallbackEmoji="👋"
             className="mx-auto h-24 w-24"
             data-testid="profile-pixel-image"
           />
           <h1 className="mt-2 bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-3xl font-bold text-transparent">
-            Your Profile
+            {strings.profile.pageTitle}
           </h1>
         </header>
 
         <Card className="p-6 bg-white/90 dark:bg-gray-800/90">
-          <h2 className="mb-3 text-xl font-bold text-gray-900 dark:text-gray-100">Your name</h2>
+          <h2 className="mb-3 text-xl font-bold text-gray-900 dark:text-gray-100">
+            {strings.profile.nameSection.heading}
+          </h2>
           <p className="mb-3 text-sm text-gray-700 dark:text-gray-300">
-            Pixel uses this to say hi. You can change it anytime.
+            {strings.profile.nameSection.body}
           </p>
           <div className="flex flex-col gap-3 sm:flex-row">
             <Input
               value={nameDraft}
               onChange={(e) => setNameDraft(e.target.value)}
               maxLength={32}
-              aria-label="Your name"
+              aria-label={strings.profile.nameSection.ariaLabel}
               data-testid="profile-name-input"
-              placeholder="Type your name"
+              placeholder={strings.profile.nameSection.placeholder}
               className="flex-1"
             />
             <Button
@@ -150,31 +156,32 @@ export default function Profile() {
               data-testid="profile-save-name"
               className="bg-gradient-to-r from-purple-500 to-pink-500"
             >
-              Save name
+              {strings.profile.nameSection.save}
             </Button>
           </div>
           {profile && (
             <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-              Hi {profile.name}! You started on{' '}
-              {profile.createdAt
-                ? new Date(profile.createdAt).toLocaleDateString()
-                : 'your first day'}
-              .
+              {strings.profile.nameSection.since(
+                profile.name,
+                profile.createdAt
+                  ? new Date(profile.createdAt).toLocaleDateString()
+                  : strings.profile.nameSection.sinceFallbackDate
+              )}
             </p>
           )}
         </Card>
 
         <Card className="p-6 bg-white/90 dark:bg-gray-800/90">
           <h2 className="mb-3 text-xl font-bold text-gray-900 dark:text-gray-100">
-            Lessons you've finished
+            {strings.profile.completedSection.heading}
           </h2>
           {completedTitles.length === 0 ? (
             <p className="text-sm text-gray-700 dark:text-gray-300">
-              No lessons finished yet — head to the{' '}
+              {strings.profile.completedSection.empty.prefix}
               <Link href="/lessons" className="text-purple-700 underline dark:text-purple-300">
-                lessons page
-              </Link>{' '}
-              to start one!
+                {strings.profile.completedSection.empty.link}
+              </Link>
+              {strings.profile.completedSection.empty.suffix}
             </p>
           ) : (
             <ul className="list-inside list-disc space-y-1 text-sm text-gray-800 dark:text-gray-200">
@@ -189,11 +196,12 @@ export default function Profile() {
 
         <Card className="border-2 border-amber-300 bg-amber-50 p-6 dark:border-amber-700 dark:bg-amber-900/30">
           <h2 className="mb-2 text-lg font-bold text-amber-900 dark:text-amber-100">
-            Sharing this device?
+            {strings.profile.switchUser.heading}
           </h2>
           <p className="mb-3 text-sm text-amber-800 dark:text-amber-200">
-            Click <strong>Switch user</strong> to clear the name and lesson progress so someone else
-            can start fresh. Saved games stay so siblings can show each other what they made.
+            {strings.profile.switchUser.bodyPrefix}
+            <strong>{strings.profile.switchUser.bodyEmphasis}</strong>
+            {strings.profile.switchUser.bodySuffix}
           </p>
           {!confirmingSwitch ? (
             <Button
@@ -201,7 +209,7 @@ export default function Profile() {
               onClick={() => setConfirmingSwitch(true)}
               data-testid="profile-switch-user"
             >
-              Switch user
+              {strings.profile.switchUser.button}
             </Button>
           ) : (
             <div
@@ -213,7 +221,7 @@ export default function Profile() {
                 id="switch-confirm-label"
                 className="text-sm font-bold text-red-800 dark:text-red-200"
               >
-                Clear name + lesson progress for this device?
+                {strings.profile.switchUser.confirmTitle}
               </p>
               <div className="mt-2 flex gap-2">
                 <Button
@@ -222,7 +230,7 @@ export default function Profile() {
                   onClick={handleSwitchUser}
                   data-testid="profile-switch-confirm"
                 >
-                  Yes, switch user
+                  {strings.profile.switchUser.confirmYes}
                 </Button>
                 <Button
                   size="sm"
@@ -230,7 +238,7 @@ export default function Profile() {
                   onClick={() => setConfirmingSwitch(false)}
                   data-testid="profile-switch-cancel"
                 >
-                  Keep my stuff
+                  {strings.profile.switchUser.confirmNo}
                 </Button>
               </div>
             </div>
@@ -243,10 +251,10 @@ export default function Profile() {
               a real button produces nested interactives, which trip
               keyboard + screen-reader heuristics. */}
           <Button asChild variant="outline" data-testid="profile-back-home">
-            <Link href="/">Back to Home</Link>
+            <Link href="/">{strings.profile.nav.home}</Link>
           </Button>
           <Button asChild variant="outline" data-testid="profile-go-lessons">
-            <Link href="/lessons">Go to Lessons</Link>
+            <Link href="/lessons">{strings.profile.nav.lessons}</Link>
           </Button>
         </div>
       </div>
