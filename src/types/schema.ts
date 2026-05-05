@@ -252,7 +252,7 @@ export interface Entity {
   scale?: { x: number; y: number };
   sprite?: string;
   assetPath?: string;
-  properties: Record<string, any>;
+  properties: Record<string, unknown>;
   behaviors?: EntityBehavior[];
   layer?: number;
   locked?: boolean;
@@ -275,19 +275,19 @@ export interface EntityBehavior {
     | 'spawn'
     | 'destroy'
     | 'custom';
-  parameters: Record<string, any>;
+  parameters: Record<string, unknown>;
   trigger?: BehaviorTrigger;
   enabled?: boolean;
 }
 
 export interface BehaviorTrigger {
   type: 'always' | 'onClick' | 'onCollision' | 'onKeyPress' | 'onTimer' | 'onEvent';
-  params?: Record<string, any>;
+  params?: Record<string, unknown>;
 }
 
 export interface CollisionShape {
   type: 'rect' | 'circle' | 'polygon' | 'auto';
-  data?: any;
+  data?: unknown;
 }
 
 export interface PhysicsProperties {
@@ -314,7 +314,7 @@ export interface CameraSettings {
 export interface ComponentChoice {
   component: string;
   choice: 'A' | 'B';
-  customParameters?: Record<string, any>;
+  customParameters?: Record<string, unknown>;
 }
 
 export interface AssetRef {
@@ -324,7 +324,7 @@ export interface AssetRef {
   scale?: number;
   rotation?: number;
   layer?: number;
-  properties?: Record<string, any>;
+  properties?: Record<string, unknown>;
 }
 
 export interface GameSettings {
@@ -400,7 +400,7 @@ export interface UserProfile {
 
 export interface WizardState {
   currentStep: string;
-  answers: Record<string, any>;
+  answers: Record<string, unknown>;
   suggestedTemplates: string[];
   selectedTemplate?: string;
 }
@@ -435,7 +435,7 @@ export interface SlotSpec {
 export interface ParamSpec {
   id: string;
   type: 'number' | 'boolean' | 'select';
-  default: any;
+  default: number | boolean | string;
   min?: number;
   max?: number;
   options?: string[];
@@ -453,11 +453,11 @@ export interface ComponentConfig {
   id: string;
   variant: string;
   assets: Record<string, string>;
-  params: Record<string, any>;
+  params: Record<string, unknown>;
 }
 
 export interface ComponentInstance {
   update: (dt: number, events: string[]) => void;
-  draw: (surface: any, x: number, y: number) => void;
-  [key: string]: any; // Allow additional methods
+  draw: (surface: unknown, x: number, y: number) => void;
+  [key: string]: unknown; // Allow additional methods
 }

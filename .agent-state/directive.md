@@ -137,8 +137,8 @@ Branch: feat/any-cleanup-pillar
 
 ### A3 — Storage/persistence shape typing
 
-- [ ] A3.1 storage/persistence.ts + session-history.ts + mode.ts — author LegacyPersistedShape; replace `Partial<unknown>` and `data: any`
-- [ ] A3.2 types/schema.ts — replace 4 `any`s with Zod `infer` types
+- [x] A3.1 storage/{persistence,session-history,mode}.ts — `validateAndMigrate<T>(data: unknown)` narrows defensively via `Record<string, unknown> & {version?: string}`; debounce signature now `<TArgs extends unknown[]>` to preserve caller arg types; SessionEvent.data → `Record<string, unknown>`; storage adapter consumes real `Partial<UserProgress>` / `Omit<InsertProject, 'userId'>` / `Partial<Project>` from schema; `(window as any).trackError` uses narrow Window cast
+- [x] A3.2 types/schema.ts — `Record<string, any>` → `Record<string, unknown>` (8 sites); `CollisionShape.data` → `unknown`; `ParamSpec.default` → `number | boolean | string` (matches the type discriminator field directly above); `ComponentInstance.draw(surface)` + index signature → `unknown`
 
 ### A4 — Component / editor refs
 

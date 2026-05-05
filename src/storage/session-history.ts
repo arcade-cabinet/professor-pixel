@@ -5,7 +5,7 @@ export interface SessionEvent {
   timestamp: Date;
   type: 'choice' | 'lesson' | 'editor' | 'component' | 'navigation';
   description: string;
-  data: any;
+  data: Record<string, unknown>;
   canRevert: boolean;
 }
 
@@ -37,7 +37,7 @@ class SessionHistory {
   addEvent(
     type: SessionEvent['type'],
     description: string,
-    data: any = {},
+    data: Record<string, unknown> = {},
     canRevert: boolean = true
   ): void {
     const event: SessionEvent = {
@@ -80,7 +80,7 @@ class SessionHistory {
   }
 
   // Track editor changes
-  trackEditorChange(action: string, details: any): void {
+  trackEditorChange(action: string, details: Record<string, unknown>): void {
     this.addEvent('editor', `Editor: ${action}`, details);
   }
 
@@ -190,8 +190,11 @@ class SessionHistory {
     try {
       const stored = localStorage.getItem(this.STORAGE_KEY);
       if (stored) {
-        const data = JSON.parse(stored);
-        this.events = data.events.map((e: any) => ({
+        const data = JSON.parse(stored) as {
+          events: Array<Omit<SessionEvent, 'timestamp'> & { timestamp: string }>;
+          currentPosition: number;
+        };
+        this.events = data.events.map((e) => ({
           ...e,
           timestamp: new Date(e.timestamp),
         }));

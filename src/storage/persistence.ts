@@ -37,14 +37,15 @@ const PREFERENCES_COOKIE_PREFIX = 'wizard_';
 const COOKIE_EXPIRY_DAYS = 365;
 const DEBOUNCE_DELAY = 200; // milliseconds
 
-// Debounce utility
-function debounce<T extends (...args: any[]) => any>(
-  func: T,
-  delay: number
-): (...args: Parameters<T>) => void {
+// Debounce utility — generic over the function signature so callers keep
+// their argument types intact through the wrapper.
+function debounce<TArgs extends unknown[]>(
+  func: (...args: TArgs) => unknown,
+  delay: number,
+): (...args: TArgs) => void {
   let timeoutId: NodeJS.Timeout | null = null;
 
-  return function (...args: Parameters<T>) {
+  return function (...args: TArgs) {
     if (timeoutId) {
       clearTimeout(timeoutId);
     }
@@ -61,27 +62,33 @@ function handleStorageError(error: Error, operation: string): void {
   console.error(`Storage operation failed (${operation}):`, error);
 
   // Send error to monitoring if available
-  if (typeof window !== 'undefined' && (window as any).trackError) {
-    (window as any).trackError(error, { operation, type: 'storage' });
+  const winWithTrack = window as Window & {
+    trackError?: (err: Error, context: Record<string, unknown>) => void;
+  };
+  if (typeof window !== 'undefined' && winWithTrack.trackError) {
+    winWithTrack.trackError(error, { operation, type: 'storage' });
   }
 }
 
-// Validate and migrate stored data
-function validateAndMigrate<T>(data: any, currentVersion: string): T | null {
+// Validate and migrate stored data. We accept `unknown` from JSON.parse and
+// narrow defensively before treating the bag as the caller's expected shape.
+function validateAndMigrate<T>(data: unknown, currentVersion: string): T | null {
   if (!data || typeof data !== 'object') {
     return null;
   }
 
+  const bag = data as Record<string, unknown> & { version?: string };
+
   // Check version and perform migrations if needed
-  const storedVersion = data.version || '0.0.0';
+  const storedVersion = bag.version || '0.0.0';
 
   if (storedVersion !== currentVersion) {
     console.log(`Migrating data from version ${storedVersion} to ${currentVersion}`);
     // Add migration logic here as needed in the future
-    data.version = currentVersion;
+    bag.version = currentVersion;
   }
 
-  return data as T;
+  return bag as T;
 }
 
 // LocalStorage functions for wizard state
