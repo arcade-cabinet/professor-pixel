@@ -303,17 +303,22 @@ function LessonsShell({
   children: React.ReactNode;
   centered?: boolean;
 } & React.HTMLAttributes<HTMLDivElement>) {
-  const layout = centered
-    ? 'min-h-screen flex flex-col bg-gradient-to-br from-purple-50 to-pink-50 dark:from-gray-900 dark:to-purple-950 px-4'
-    : 'min-h-screen bg-gradient-to-br from-purple-50 to-pink-50 dark:from-gray-900 dark:to-purple-950 px-4 py-8';
+  // Outer wrapper has no horizontal padding so the banners render
+  // edge-to-edge regardless of any parent layout. Inner padded
+  // wrapper holds the actual content. Avoids the fragile -mx-4
+  // negative-margin trick that only works when the immediate parent
+  // matches our padding exactly.
   return (
-    <div className={layout} {...rest}>
+    <div
+      className="min-h-screen flex flex-col bg-gradient-to-br from-purple-50 to-pink-50 dark:from-gray-900 dark:to-purple-950"
+      {...rest}
+    >
       <StorageBlockedNotice />
-      <OfflineBanner className={centered ? '' : '-mx-4 -mt-8 mb-4'} />
+      <OfflineBanner />
       {centered ? (
-        <div className="flex-1 flex items-center justify-center">{children}</div>
+        <div className="flex-1 flex items-center justify-center px-4 py-8">{children}</div>
       ) : (
-        children
+        <div className="px-4 py-8">{children}</div>
       )}
     </div>
   );
