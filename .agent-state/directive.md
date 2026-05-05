@@ -115,3 +115,61 @@ Branch: feat/modernization-pillar
 
 - [x] M6.1 Three new lessons — lesson-7 (lists, 3 steps), lesson-8 (files via Pyodide virtual FS, 2 steps), lesson-9 (classes, 3 steps). Each step has full AST rules (variable_assignment, loop, function_call, defines_class, calls_method) plus appropriate runtimeRules.outputContains. Grader-e2e green: all 9 lessons × all steps score 1.0 through the worker.
 - [x] M6.2 STATE.md final pass — modernization pillar moved Active → Done as a single milestone row; Next now reflects 4 carve-off PRQs (any-cleanup, wizard/coverage/simulator-harness, grader follow-ups, playtest follow-ups). Per-game-type playtest stubs seeded.
+
+## Batch — any-cleanup-pillar (batch-20260504-205500)
+
+Source: docs/plans/any-cleanup-pillar.prq.md (sha256: 0e7b17bb8697257364cc0c8e8b91a43e7c515937ac89d29ecae9971192020a3e)
+Started: 2026-05-04T20:55:00Z
+Branch: feat/any-cleanup-pillar
+
+### A1 — Pyodide site sweep
+
+- [ ] A1.1 Replace `pyodide: any` / `useRef<any>` (Pyodide shape) with `PyodideInstance` across with-preview, live-preview, runner, update-bridge, error-handler, simulator
+- [ ] A1.2 Replace `(window as any).pyodide` / `(globalThis as any).pyodideInstance` with typed `Window.pyodide` ambient — health.ts, error-handler.ts
+- [ ] A1.3 Add explicit return-type casts at `pyodide.runPython` consumer sites where compile fails after A1.1
+
+### A2 — Log/event payload sweep
+
+- [ ] A2.1 console-logger.ts — `data?: any` → `unknown` on LogEntry, cascade to call sites
+- [ ] A2.2 health.ts — `metadata?: any` → `unknown`
+- [ ] A2.3 retry.ts + use-retry-query.ts — retry-callback payloads → `unknown` with `instanceof Error` guards
+- [ ] A2.4 errors/tracker.ts — context `any` → `unknown` with instanceof guards in serializer
+
+### A3 — Storage/persistence shape typing
+
+- [ ] A3.1 storage/persistence.ts + session-history.ts + mode.ts — author LegacyPersistedShape; replace `Partial<unknown>` and `data: any`
+- [ ] A3.2 types/schema.ts — replace 4 `any`s with Zod `infer` types
+
+### A4 — Component / editor refs
+
+- [ ] A4.1 code-editor.tsx — Monaco `useRef<any>` → `monaco.editor.IStandaloneCodeEditor | null`
+- [ ] A4.2 properties.tsx — 4 `any`s → discriminated-union over property kinds
+- [ ] A4.3 universal.tsx — wizard step payload `any` → `Record<string, unknown>`
+
+### A5 — pygame simulator + components
+
+- [ ] A5.1 simulator.ts remaining 15 non-Pyodide `any`s → `Record<string, unknown>` or component config types
+- [ ] A5.2 pygame/components/types.ts — 2 `any`s on component value getters → generics
+
+### A6 — Net + hooks tail
+
+- [ ] A6.1 update-bridge.ts — non-Pyodide `any` → typed bridge-message union
+- [ ] A6.2 net/data.ts — 4 `any`s on cached-response payload → `unknown`
+- [ ] A6.3 hooks/use-debug.ts — 4 `any`s on debug-panel rows → `Record<string, unknown>`
+
+### A7 — Test helpers
+
+- [ ] A7.1 tests/helpers/test-utils.ts + tests/e2e/run-comprehensive-tests.ts — option-bag `any`s → library-provided types
+
+### A8 — `<any>` generics + `as any` casts
+
+- [ ] A8.1 Walk 12 `<any>` generics + 50 `as any` casts; remaining MSW boundary casts annotated as `as unknown as T` with `// no-explicit-any:` reason
+
+### A9 — Flip Biome to `error`
+
+- [ ] A9.1 biome.json — `noExplicitAny` `warn` → `error`; CI now blocks regressions
+
+### A10 — Docs
+
+- [ ] A10.1 STATE.md — move any-cleanup PRQ Next → Done milestone row
+- [ ] A10.2 docs/pillars/01-frontend.md — add "TypeScript discipline" subsection
