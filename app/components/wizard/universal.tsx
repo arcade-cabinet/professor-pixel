@@ -185,11 +185,29 @@ export default function UniversalWizard({
     if (!sessionActions.gameAssembled) return;
     const draft = loadWizardState();
     if (!draft) return;
+    // Capture a thumbnail data URL from whichever wizard-owned canvas is
+    // currently mounted. We query for the testid the live-preview canvas
+    // exposes — the WYSIWYG editor canvas uses a different testid, so we
+    // try both. toDataURL can throw on tainted canvases (cross-origin
+    // imagery without CORS); if it does, omit the thumbnail rather than
+    // failing the whole save. JPEG at 0.7 keeps the data URL well under
+    // the localStorage per-project budget for a 320x180 thumbnail.
+    let thumbnailDataUrl: string | undefined;
+    try {
+      const canvas = (document.querySelector('[data-testid="canvas-main-preview"]') ||
+        document.querySelector('[data-testid="place-canvas"]')) as HTMLCanvasElement | null;
+      if (canvas instanceof HTMLCanvasElement) {
+        thumbnailDataUrl = canvas.toDataURL('image/jpeg', 0.7);
+      }
+    } catch (err) {
+      console.warn('[universal] thumbnail capture skipped:', err);
+    }
     saveWizardProject(
       {
         wizardState: draft,
         name: sessionActions.gameName || draft.gameType || strings.wizard.defaultGameName,
         template: sessionActions.gameType || draft.gameType || 'unknown',
+        thumbnailDataUrl,
       },
       savedProjectIdRef.current ?? undefined
     )
@@ -207,6 +225,7 @@ export default function UniversalWizard({
               wizardState: draft,
               name: sessionActions.gameName || draft.gameType || strings.wizard.defaultGameName,
               template: sessionActions.gameType || draft.gameType || 'unknown',
+              thumbnailDataUrl,
             });
             savedProjectIdRef.current = project.id;
             return;

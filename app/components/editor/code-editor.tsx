@@ -96,7 +96,17 @@ export default function CodeEditor({
   // Layout-height reference is documentElement.clientHeight (stable)
   // rather than window.innerHeight (changes with iOS Safari URL-bar
   // collapse, producing a wrong inset during URL-bar transitions).
-  const [keyboardInset, setKeyboardInset] = useState(0);
+  // Both inset (keyboard pixel height) and layoutHeight (the stable
+  // clientHeight reference) are snapshotted into state from the effect.
+  // Reading clientHeight inside render would couple layout-read to a
+  // non-hook position and rely on jsdom's defineProperty support during
+  // tests; sourcing it from the effect keeps all DOM reads inside the
+  // browser-guarded code path.
+  const [viewportState, setViewportState] = useState<{ inset: number; layoutHeight: number }>({
+    inset: 0,
+    layoutHeight: 0,
+  });
+  const keyboardInset = viewportState.inset;
 
   useEffect(() => {
     const vv = typeof window !== 'undefined' ? window.visualViewport : undefined;
@@ -109,7 +119,9 @@ export default function CodeEditor({
       // Functional setState with equality check suppresses redundant
       // re-renders during normal page-scroll bursts on iOS, where vv.scroll
       // fires every frame while the keyboard is up.
-      setKeyboardInset((prev) => (prev === inset ? prev : inset));
+      setViewportState((prev) =>
+        prev.inset === inset && prev.layoutHeight === layoutHeight ? prev : { inset, layoutHeight }
+      );
     };
     update();
     vv.addEventListener('resize', update);
@@ -282,9 +294,9 @@ export default function CodeEditor({
       // systems. During a URL-bar transition that mismatch produces a
       // wrong effective height. Same-units math avoids the issue.
       style={
-        keyboardInset > 0
+        viewportState.inset > 0
           ? {
-              maxHeight: `${document.documentElement.clientHeight - keyboardInset}px`,
+              maxHeight: `${viewportState.layoutHeight - viewportState.inset}px`,
               overflow: 'hidden',
             }
           : undefined

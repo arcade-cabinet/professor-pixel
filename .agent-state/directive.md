@@ -367,7 +367,7 @@ Branch: feat/player-experience-pillar-4
 
 ### task-009 Save canvas snapshot at project save, render on /home cards
 
-- [ ] task-009 thumbnail data URL stored in project schema; rendered on home cards via SafeImage; backwards-compatible loader
+- [x] task-009 thumbnail data URL stored in project schema; rendered on home cards via SafeImage; backwards-compatible loader
 
 ### task-010 Brief "Saved" toast on successful auto-save
 

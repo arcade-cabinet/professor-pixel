@@ -227,133 +227,170 @@ export default function Home() {
                 <li
                   key={project.id}
                   data-testid={`my-game-row-${project.id}`}
-                  className="rounded-xl bg-white p-4 shadow-md dark:bg-gray-800"
+                  className="overflow-hidden rounded-xl bg-white shadow-md dark:bg-gray-800"
                 >
-                  {renameId === project.id ? (
-                    <form
-                      onSubmit={(e) => {
-                        e.preventDefault();
-                        renameProjectMutation.mutate({
-                          id: project.id,
-                          name: renameDraft,
-                        });
-                      }}
-                      className="flex flex-col gap-2"
-                    >
-                      <input
-                        type="text"
-                        value={renameDraft}
-                        onChange={(e) => setRenameDraft(e.target.value)}
-                        // eslint-disable-next-line jsx-a11y/no-autofocus
-                        autoFocus
-                        maxLength={64}
-                        aria-label={strings.home.project.renameInputAriaLabel(project.name)}
-                        data-testid={`my-game-rename-input-${project.id}`}
-                        className="w-full rounded-md border border-gray-300 px-2 py-1 text-sm font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-400 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100"
+                  {/* Thumbnail strip — captured from the wizard canvas at
+                      save time (P4.9). For older projects without a
+                      thumbnail, fall back to a soft purple/pink gradient
+                      so the card layout doesn't jump between empty and
+                      filled visuals. img is decorative, alt="" so screen
+                      readers don't announce it (the project name does
+                      that work below). */}
+                  <div
+                    className="aspect-video w-full bg-gradient-to-br from-purple-200 via-pink-200 to-blue-200 dark:from-purple-800 dark:via-pink-800 dark:to-blue-800"
+                    data-testid={`my-game-thumb-${project.id}`}
+                  >
+                    {project.thumbnailDataUrl ? (
+                      <img
+                        src={project.thumbnailDataUrl}
+                        alt=""
+                        className="h-full w-full object-cover"
+                        data-testid={`my-game-thumb-img-${project.id}`}
                       />
-                      <div className="flex gap-2">
-                        <Button
-                          type="submit"
-                          size="sm"
-                          disabled={
-                            renameDraft.trim().length === 0 ||
-                            renameDraft.trim() === project.name ||
-                            renameProjectMutation.isPending
-                          }
-                          data-testid={`my-game-rename-save-${project.id}`}
-                          className="bg-gradient-to-r from-purple-500 to-pink-500"
-                        >
-                          {strings.home.project.saveRename}
-                        </Button>
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="outline"
-                          onClick={() => {
-                            setRenameId(null);
-                            setRenameDraft('');
-                          }}
-                          data-testid={`my-game-rename-cancel-${project.id}`}
-                        >
-                          {strings.home.project.cancelRename}
-                        </Button>
-                      </div>
-                    </form>
-                  ) : (
-                    <p className="font-bold text-gray-900 dark:text-gray-100 truncate">
-                      {project.name}
-                    </p>
-                  )}
-                  <p className="mt-1 text-xs text-gray-600 dark:text-gray-400">
-                    {project.createdAt
-                      ? new Date(project.createdAt).toLocaleDateString()
-                      : strings.home.project.recently}
-                  </p>
-                  <div className="mt-3 flex gap-2">
-                    <Button
-                      onClick={() => openProject(project.id)}
-                      data-testid={`my-game-open-${project.id}`}
-                      className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500"
-                    >
-                      {strings.home.project.open}
-                    </Button>
-                    {renameId !== project.id && (
-                      <Button
-                        onClick={() => {
-                          setRenameId(project.id);
-                          setRenameDraft(project.name);
-                        }}
-                        variant="outline"
-                        data-testid={`my-game-rename-${project.id}`}
-                        aria-label={strings.home.project.renameAriaLabel(project.name)}
-                      >
-                        ✏️
-                      </Button>
-                    )}
-                    <Button
-                      onClick={() => setConfirmDeleteId(project.id)}
-                      variant="outline"
-                      data-testid={`my-game-delete-${project.id}`}
-                      aria-label={strings.home.project.deleteAriaLabel(project.name)}
-                    >
-                      🗑️
-                    </Button>
+                    ) : null}
                   </div>
-                  {confirmDeleteId === project.id && (
-                    <div
-                      role="alertdialog"
-                      aria-labelledby={`confirm-${project.id}-label`}
-                      className="mt-3 rounded-lg border-2 border-red-300 bg-red-50 p-3 text-left dark:border-red-700 dark:bg-red-900/30"
-                    >
-                      <p
-                        id={`confirm-${project.id}-label`}
-                        className="text-sm font-bold text-red-800 dark:text-red-200"
+                  <div className="p-4">
+                    {renameId === project.id ? (
+                      <form
+                        onSubmit={(e) => {
+                          e.preventDefault();
+                          // Mirror the Save button's disabled guard inside
+                          // the submit handler — the disabled prop only
+                          // gates pointer events, so pressing Enter in the
+                          // input would otherwise send empty / unchanged /
+                          // mid-flight names through to the mutation,
+                          // surfacing a noisy error toast for empty values
+                          // and a wasted write for unchanged ones.
+                          const trimmed = renameDraft.trim();
+                          if (
+                            trimmed.length === 0 ||
+                            trimmed === project.name ||
+                            renameProjectMutation.isPending
+                          ) {
+                            return;
+                          }
+                          renameProjectMutation.mutate({
+                            id: project.id,
+                            name: renameDraft,
+                          });
+                        }}
+                        className="flex flex-col gap-2"
                       >
-                        {strings.home.project.confirmDelete(project.name)}
+                        <input
+                          type="text"
+                          value={renameDraft}
+                          onChange={(e) => setRenameDraft(e.target.value)}
+                          // eslint-disable-next-line jsx-a11y/no-autofocus
+                          autoFocus
+                          maxLength={64}
+                          aria-label={strings.home.project.renameInputAriaLabel(project.name)}
+                          data-testid={`my-game-rename-input-${project.id}`}
+                          className="w-full rounded-md border border-gray-300 px-2 py-1 text-sm font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-400 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100"
+                        />
+                        <div className="flex gap-2">
+                          <Button
+                            type="submit"
+                            size="sm"
+                            disabled={
+                              renameDraft.trim().length === 0 ||
+                              renameDraft.trim() === project.name ||
+                              renameProjectMutation.isPending
+                            }
+                            data-testid={`my-game-rename-save-${project.id}`}
+                            className="bg-gradient-to-r from-purple-500 to-pink-500"
+                          >
+                            {strings.home.project.saveRename}
+                          </Button>
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              setRenameId(null);
+                              setRenameDraft('');
+                            }}
+                            data-testid={`my-game-rename-cancel-${project.id}`}
+                          >
+                            {strings.home.project.cancelRename}
+                          </Button>
+                        </div>
+                      </form>
+                    ) : (
+                      <p className="font-bold text-gray-900 dark:text-gray-100 truncate">
+                        {project.name}
                       </p>
-                      <div className="mt-2 flex gap-2">
+                    )}
+                    <p className="mt-1 text-xs text-gray-600 dark:text-gray-400">
+                      {project.createdAt
+                        ? new Date(project.createdAt).toLocaleDateString()
+                        : strings.home.project.recently}
+                    </p>
+                    <div className="mt-3 flex gap-2">
+                      <Button
+                        onClick={() => openProject(project.id)}
+                        data-testid={`my-game-open-${project.id}`}
+                        className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500"
+                      >
+                        {strings.home.project.open}
+                      </Button>
+                      {renameId !== project.id && (
                         <Button
-                          size="sm"
-                          variant="destructive"
-                          onClick={() => deleteProjectMutation.mutate(project.id)}
-                          disabled={deleteProjectMutation.isPending}
-                          data-testid={`my-game-confirm-delete-${project.id}`}
-                        >
-                          {deleteProjectMutation.isPending
-                            ? strings.home.project.deleting
-                            : strings.home.project.delete}
-                        </Button>
-                        <Button
-                          size="sm"
+                          onClick={() => {
+                            setRenameId(project.id);
+                            setRenameDraft(project.name);
+                          }}
                           variant="outline"
-                          onClick={() => setConfirmDeleteId(null)}
-                          data-testid={`my-game-cancel-delete-${project.id}`}
+                          data-testid={`my-game-rename-${project.id}`}
+                          aria-label={strings.home.project.renameAriaLabel(project.name)}
                         >
-                          {strings.home.project.keep}
+                          ✏️
                         </Button>
-                      </div>
+                      )}
+                      <Button
+                        onClick={() => setConfirmDeleteId(project.id)}
+                        variant="outline"
+                        data-testid={`my-game-delete-${project.id}`}
+                        aria-label={strings.home.project.deleteAriaLabel(project.name)}
+                      >
+                        🗑️
+                      </Button>
                     </div>
-                  )}
+                    {confirmDeleteId === project.id && (
+                      <div
+                        role="alertdialog"
+                        aria-labelledby={`confirm-${project.id}-label`}
+                        className="mt-3 rounded-lg border-2 border-red-300 bg-red-50 p-3 text-left dark:border-red-700 dark:bg-red-900/30"
+                      >
+                        <p
+                          id={`confirm-${project.id}-label`}
+                          className="text-sm font-bold text-red-800 dark:text-red-200"
+                        >
+                          {strings.home.project.confirmDelete(project.name)}
+                        </p>
+                        <div className="mt-2 flex gap-2">
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => deleteProjectMutation.mutate(project.id)}
+                            disabled={deleteProjectMutation.isPending}
+                            data-testid={`my-game-confirm-delete-${project.id}`}
+                          >
+                            {deleteProjectMutation.isPending
+                              ? strings.home.project.deleting
+                              : strings.home.project.delete}
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => setConfirmDeleteId(null)}
+                            data-testid={`my-game-cancel-delete-${project.id}`}
+                          >
+                            {strings.home.project.keep}
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </li>
               ))}
             </ul>

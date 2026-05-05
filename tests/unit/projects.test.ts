@@ -96,6 +96,28 @@ describe('wizard projects (P5)', () => {
     expect(await loadWizardProject(saved.id)).toBeNull();
   });
 
+  it('persists a thumbnail data URL with the project and restores it on list (P4.9)', async () => {
+    const dataUrl = 'data:image/jpeg;base64,/9j/2wBDAA==';
+    const saved = await saveWizardProject({ ...baseSnapshot, thumbnailDataUrl: dataUrl });
+    expect(saved.thumbnailDataUrl).toBe(dataUrl);
+
+    const list = await listWizardProjects();
+    expect(list[0].thumbnailDataUrl).toBe(dataUrl);
+  });
+
+  it('preserves an existing thumbnail across a saveWizardProject(existingId) without a new dataUrl', async () => {
+    const dataUrl = 'data:image/jpeg;base64,/9j/2wBDAA==';
+    const saved = await saveWizardProject({ ...baseSnapshot, thumbnailDataUrl: dataUrl });
+
+    // Mid-wizard auto-save when the canvas is unmounted: caller passes
+    // no thumbnailDataUrl, so the spread guard skips the field rather
+    // than clobbering the prior thumbnail with `undefined`.
+    await saveWizardProject(baseSnapshot, saved.id);
+
+    const list = await listWizardProjects();
+    expect(list[0].thumbnailDataUrl).toBe(dataUrl);
+  });
+
   it('renames a project in place, preserving files and template (P4.8)', async () => {
     const saved = await saveWizardProject(baseSnapshot);
     expect(saved.name).toBe('Robot Quest');

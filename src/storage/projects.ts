@@ -25,6 +25,16 @@ export interface WizardProjectSnapshot {
   name: string;
   /** Game template id (e.g., 'platformer', 'shooter'). */
   template: string;
+  /**
+   * Optional canvas snapshot captured at save time. Stored as a data URL
+   * (image/png) so the /home My Games row can show what the kid built
+   * without re-running the wizard or pyodide. The wizard caller is
+   * responsible for capturing canvas.toDataURL — projects.ts is just the
+   * persistence channel. Backwards-compatible: older projects without a
+   * thumbnail still load fine; the home card just falls back to a
+   * gradient placeholder.
+   */
+  thumbnailDataUrl?: string;
 }
 
 export async function listWizardProjects(): Promise<Project[]> {
@@ -56,6 +66,13 @@ export async function saveWizardProject(
     return storage.updateProject(existingId, {
       name: snapshot.name,
       template: snapshot.template,
+      // Only include thumbnailDataUrl if the caller supplied one. Sending
+      // `undefined` would clobber a previously-saved thumbnail with each
+      // mid-wizard auto-save (the kid built a thing, then the canvas
+      // unmounted before the next save).
+      ...(snapshot.thumbnailDataUrl !== undefined
+        ? { thumbnailDataUrl: snapshot.thumbnailDataUrl }
+        : {}),
       files: [fileEntry],
       assets: [],
     });
@@ -66,7 +83,7 @@ export async function saveWizardProject(
     template: snapshot.template,
     description: undefined,
     published: false,
-    thumbnailDataUrl: undefined,
+    thumbnailDataUrl: snapshot.thumbnailDataUrl,
     files: [fileEntry],
     assets: [],
   });
