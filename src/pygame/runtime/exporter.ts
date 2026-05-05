@@ -18,16 +18,21 @@ import type { GameAsset } from '@lib/assets/types';
 import { assetManager } from '@lib/assets/manager';
 import { loadWizardProject } from '@lib/storage/projects';
 
-// Exported games (the .zip a kid downloads) currently still pull Pyodide
-// from a CDN because bundling 12MB of Pyodide assets into every export
-// triples the zip size. The runtime platform itself does NOT use a CDN —
-// see `src/python/pyodide-cache.ts` and `public/pyodide-sw.js`. Bundling
-// Pyodide into exports is tracked as follow-up work; for now the exported
-// HTML's <script> tag points here. Version pinned to match the vendored
-// copy (public/pyodide/) so exports replay against the same Pyodide build
-// the kid authored on.
-const PYODIDE_VERSION = '0.29.3';
-const PYODIDE_CDN_BASE = `https://cdn.jsdelivr.net/pyodide/v${PYODIDE_VERSION}/full/`;
+// The export is source-only: game.py + assets/ + a small launcher HTML.
+// Pyodide is NOT bundled per-game — that would mean shipping 12MB of WASM
+// runtime with every export. Instead, the platform itself (Pixel's PyGame
+// Palace) acts as the launcher: kids drop a .zip into the launcher's
+// "Open game" UI and it runs in the same Pyodide+OPFS sandbox the editor
+// uses. One runtime, many games; runtime upgrades automatically; PWA
+// install works because the platform is on a real https origin (file://
+// can't host a PWA). See task-65 for the launcher build-out.
+//
+// The bundled index.html is a friendly fallback for the case where someone
+// double-clicks the export without the launcher: it tells them how to load
+// the game in the launcher, and (for kids who already have Python) how to
+// run game.py natively. We don't try to load Pyodide from CDN and pretend
+// the export is "double-click and play" — that pretense is what the
+// launcher architecture replaces.
 
 export interface ExportProjectOptions {
   selectedComponents: Record<string, string>;
@@ -58,7 +63,7 @@ export async function exportProjectAsZip(options: ExportProjectOptions): Promise
   const pythonCode = compilePythonGame(selectedComponents, selectedAssets);
   zip.file('game.py', pythonCode);
 
-  zip.file('index.html', buildBootstrapHtml(title, pythonCode));
+  zip.file('index.html', buildBootstrapHtml(title));
 
   zip.file('README.md', buildReadme(title));
 
@@ -218,91 +223,53 @@ export function slugify(s: string): string {
   );
 }
 
-function buildBootstrapHtml(title: string, pythonCode: string): string {
-  // Self-contained Pyodide loader. Loads pygame-ce, runs game.py, renders to
-  // a canvas. Friendly "loading..." UI for the seconds it takes Pyodide to
-  // boot. Errors surface in a visible panel so the kid isn't staring at a
-  // blank page.
+function buildBootstrapHtml(title: string): string {
+  // The export is a SEND-MODE ARTIFACT, not a self-runnable game. The
+  // kid's authoritative copy lives in the launcher's OPFS library inside
+  // Pixel's PyGame Palace. This HTML is what someone sees if they
+  // double-click index.html out of the zip without going through the
+  // launcher: a friendly "this is a game from Pixel's PyGame Palace,
+  // here's where to play it" landing page.
   //
-  // The bootstrap is hybrid:
-  //   * Served over http(s):// (or any protocol where fetch works) → fetch
-  //     game.py at runtime so edits to the side-by-side file take effect on
-  //     refresh. This honours the README's "edit game.py, refresh, see the
-  //     change" promise.
-  //   * Opened from file:// → use the inlined base64 copy. Chrome/Edge block
-  //     fetch() of sibling files under the file:// origin.
-  //   * fetch() fails for any other reason → fall back to the inlined copy.
-  // Base64 (vs. a JS string-literal escape) sidesteps every quoting corner
-  // case (backticks, ${}, unicode line separators, etc.) that could break a
-  // kid's game silently if the compiled Python ever contained them.
+  // We deliberately do NOT load Pyodide here, do NOT run game.py, do NOT
+  // pretend the bundle is double-click-and-play. Doing that would mean
+  // shipping 12MB of Pyodide per export AND maintaining a parallel
+  // runtime story; the launcher exists exactly to avoid that. Anyone
+  // who wants to actually play the game opens the launcher. Anyone who
+  // wants to read or hand-modify the source opens game.py in a text
+  // editor — the README explains how to run it with their own Python.
   const safeTitle = escapeHtml(title);
-  const pythonB64 = base64UTF8(pythonCode);
   return `<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>${safeTitle}</title>
+  <title>${safeTitle} — Pixel's PyGame Palace</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-    body { margin: 0; font-family: system-ui, sans-serif; background: #1a1a2e; color: #eee; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
-    h1 { margin: 1rem; }
-    #status { margin: 0.5rem; font-size: 0.9rem; opacity: 0.8; }
-    #error { background: #722; padding: 1rem; border-radius: 0.5rem; max-width: 80ch; white-space: pre-wrap; display: none; }
-    canvas { border: 2px solid #444; background: #000; image-rendering: pixelated; max-width: 100%; height: auto; }
+    body { margin: 0; font-family: system-ui, sans-serif; background: #1a1a2e; color: #eee; display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding: 2rem; box-sizing: border-box; }
+    h1 { margin: 1rem 0 0.25rem; }
+    .subtitle { opacity: 0.7; margin-bottom: 2rem; }
+    .card { background: #2a2a3e; padding: 1.5rem; border-radius: 0.75rem; max-width: 36rem; margin-bottom: 1rem; }
+    .card h2 { margin-top: 0; }
+    code { background: #0009; padding: 0.1rem 0.4rem; border-radius: 0.25rem; font-size: 0.9em; }
+    a { color: #88aaff; }
   </style>
 </head>
 <body>
-  <h1>${safeTitle}</h1>
-  <div id="status">Loading Python… (this can take ~10s the first time)</div>
-  <pre id="error"></pre>
-  <canvas id="canvas" width="800" height="600"></canvas>
-  <script src="${PYODIDE_CDN_BASE}pyodide.js"></script>
-  <script>
-    // Compiled game source is inlined as a base64 string so the bundle works
-    // under file:// (where fetch() fails with CORS errors in Chrome/Edge).
-    // BUT — when served over http(s)://, we prefer fetch('game.py') so that
-    // edits to the side-by-side game.py file take effect on refresh. The
-    // README promises "edit game.py, refresh, see the change"; honour that
-    // when the protocol allows. The base64 copy is the safety net.
-    const GAME_PY_B64 = "${pythonB64}";
-    function decodeInlinedGame() {
-      const bytes = Uint8Array.from(atob(GAME_PY_B64), (c) => c.charCodeAt(0));
-      return new TextDecoder('utf-8').decode(bytes);
-    }
-    async function loadGameSource() {
-      // file:// origins can't fetch sibling files in Chrome/Edge — go straight
-      // to the inlined copy. Other protocols (http, https, blob, etc.) try
-      // the live game.py first and fall back to the inline copy on any error.
-      if (location.protocol === 'file:') return decodeInlinedGame();
-      try {
-        const r = await fetch('game.py');
-        if (!r.ok) throw new Error('HTTP ' + r.status);
-        return await r.text();
-      } catch (e) {
-        console.warn('Falling back to inlined game.py:', e);
-        return decodeInlinedGame();
-      }
-    }
-    (async () => {
-      const status = document.getElementById('status');
-      const error = document.getElementById('error');
-      try {
-        status.textContent = 'Loading Python…';
-        const pyodide = await loadPyodide({ indexURL: '${PYODIDE_CDN_BASE}' });
-        status.textContent = 'Loading pygame…';
-        await pyodide.loadPackage(['pygame-ce']);
-        status.textContent = 'Loading your game…';
-        const code = await loadGameSource();
-        status.textContent = 'Running!';
-        await pyodide.runPythonAsync(code);
-      } catch (e) {
-        status.textContent = 'Something went wrong.';
-        error.style.display = 'block';
-        error.textContent = String(e && e.message ? e.message : e);
-        console.error(e);
-      }
-    })();
-  </script>
+  <h1>🎮 ${safeTitle}</h1>
+  <div class="subtitle">A game made with Pixel's PyGame Palace</div>
+  <div class="card">
+    <h2>How to play this game</h2>
+    <p>This bundle is a sharing format — open <strong>Pixel's PyGame
+    Palace</strong> and you'll find this project in your My Games library
+    to play and remix.</p>
+  </div>
+  <div class="card">
+    <h2>Want to peek at the code?</h2>
+    <p>Open <code>game.py</code> in any text editor. The
+    <code>README.md</code> file in this folder has instructions for running
+    it with your own Python interpreter (Windows / macOS / Linux).</p>
+  </div>
 </body>
 </html>
 `;
@@ -313,34 +280,71 @@ function buildReadme(title: string): string {
 
 You made this with Pixel's PyGame Palace! 🎮
 
+This is a **share bundle** — a snapshot of your game that you can drop into
+Google Drive, iCloud Drive, AirDrop, email, etc. The full version of your
+game lives in your Pixel's PyGame Palace library; this folder is for getting
+a copy somewhere else.
+
 ## How to play it
 
-1. **Easy way:** Just double-click \`index.html\` and your game opens in your web browser.
-2. **If that doesn't work:** Right-click \`index.html\` → "Open with" → pick your browser (Chrome, Firefox, Safari…).
+Open **Pixel's PyGame Palace** and find this game in your **My Games**
+library. That's where it plays — same place you built it.
 
-The first time it loads, it might take ~10 seconds — your browser is downloading
-Python so it can run your game. After that, it's fast!
+If you're on a different device than where you authored it, open Pixel's
+PyGame Palace there. (You'll need internet the first time the launcher
+loads on a new device, then it works offline.)
 
-## How to share it
+## Want to peek at the code?
 
-Send the **whole folder** (or the ZIP file) to a friend. They can play it the
-same way: open \`index.html\`.
+Open \`game.py\` in any text editor — that's the Python code your game runs.
+You can read it, learn from it, even change it. (If you change it here, the
+copy back in Pixel's PyGame Palace doesn't update automatically — that one
+stays the source of truth for your library.)
 
-> Note: this game uses an internet connection the first time you load it (to
-> download Python). After that, it usually works offline if your browser
-> caches it.
+### Run game.py with your own Python
+
+If you have Python set up on your computer and want to run \`game.py\` with
+your own interpreter (faster than the browser version, full pygame
+features), install \`pygame-ce\` and run it directly:
+
+**Windows:**
+\`\`\`
+py -m pip install pygame-ce
+py game.py
+\`\`\`
+(If \`py\` isn't found, install Python from https://www.python.org/downloads/
+and check "Add Python to PATH" during setup.)
+
+**macOS:**
+\`\`\`
+python3 -m pip install pygame-ce
+python3 game.py
+\`\`\`
+(If \`python3\` isn't found, install it via https://www.python.org/downloads/
+or \`brew install python\` if you use Homebrew.)
+
+**Linux:**
+\`\`\`
+python3 -m pip install --user pygame-ce
+python3 game.py
+\`\`\`
+(On Ubuntu/Debian, \`sudo apt install python3 python3-pip\` first if needed.)
+
+**Chromebook (Linux mode):** Same as Linux above, after enabling Linux from
+Settings → Advanced → Developers.
 
 ## Files in this bundle
 
-- \`game.py\` — your game's Python code
-- \`index.html\` — the page that runs your game
+- \`game.py\` — the Python code that runs your game
+- \`index.html\` — a friendly landing page if you double-click the folder
 - \`assets/\` — the pictures and sounds your game uses
+- \`README.md\` — this file
 
-## Want to change something?
+## How to share it
 
-Open \`game.py\` in any text editor (or paste it back into Pixel's PyGame Palace
-to keep building!). Save your changes, refresh \`index.html\`, and you'll see
-the new version.
+Send the whole folder (or the ZIP file) wherever you want — Google Drive,
+iCloud, email, Discord, USB stick. Anyone with Pixel's PyGame Palace can
+play it.
 `;
 }
 
@@ -353,11 +357,3 @@ function escapeHtml(s: string): string {
     .replace(/'/g, '&#39;');
 }
 
-function base64UTF8(s: string): string {
-  // btoa() only handles latin-1; encode to UTF-8 bytes first so emoji and
-  // non-ASCII identifiers in the compiled Python survive.
-  const bytes = new TextEncoder().encode(s);
-  let bin = '';
-  for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
-  return btoa(bin);
-}

@@ -59,6 +59,53 @@ describe('exportProjectAsZip', () => {
     expect(html).not.toContain('<Quest>');
   });
 
+  it('produces a SHARE-MODE bundle: no Pyodide, no loadPyodide, no PWA manifest', async () => {
+    // The export is a one-way send-mode artifact (Drive/iCloud share).
+    // The kid's authoritative game lives in the launcher's OPFS library;
+    // this zip is for getting a copy to another person/device. So:
+    //  - No <script src=".../pyodide.js"> tag (no CDN, no bundled runtime).
+    //  - No loadPyodide() call in the HTML.
+    //  - No manifest.webmanifest (PWA install only honored on https origins,
+    //    not from a double-clicked file:// zip — would be theater).
+    //  - No pyodide/ folder in the zip.
+    const result = await exportProjectAsZip({
+      selectedComponents: {},
+      selectedAssets: [],
+      title: 'Send-Mode Game',
+      fetchImpl: makeFetchStub({}),
+    });
+    const zip = await JSZip.loadAsync(result.blob);
+    const html = (await zip.file('index.html')?.async('string')) ?? '';
+    expect(html).not.toMatch(/loadPyodide/);
+    expect(html).not.toMatch(/pyodide\.js/);
+    expect(html).not.toMatch(/cdn\.jsdelivr/);
+    expect(html).not.toMatch(/<link rel="manifest"/);
+    expect(zip.file('manifest.webmanifest')).toBeFalsy();
+    // No pyodide/ folder either.
+    for (const name of Object.keys(zip.files)) {
+      expect(name).not.toMatch(/^pyodide\//);
+    }
+  });
+
+  it('landing HTML directs the player to the launcher (no false runnable promise)', async () => {
+    const result = await exportProjectAsZip({
+      selectedComponents: {},
+      selectedAssets: [],
+      title: 'Landing Test',
+      fetchImpl: makeFetchStub({}),
+    });
+    const zip = await JSZip.loadAsync(result.blob);
+    const html = (await zip.file('index.html')?.async('string')) ?? '';
+    // Mentions the launcher product by name so a kid landing here knows
+    // where to play it.
+    expect(html).toMatch(/Pixel's PyGame Palace/);
+    // README explains both the launcher path AND the native-Python path
+    // for kids who want to hand-run game.py.
+    const readme = (await zip.file('README.md')?.async('string')) ?? '';
+    expect(readme).toMatch(/My Games/);
+    expect(readme).toMatch(/pygame-ce/);
+  });
+
   it('uses the title to derive the zip filename (slugified)', async () => {
     const result = await exportProjectAsZip({
       selectedComponents: {},
