@@ -121,13 +121,6 @@ function handleStorageError(error: Error, operation: string): void {
 //
 // Unknown fields are passed through (`.passthrough()`) so a kid who switched
 // to a newer build doesn't lose data when the schema gains optional fields.
-const sessionActionsSchema = z
-  .object({
-    nextAction: z.string().optional(),
-    completedActions: z.array(z.string()).optional(),
-  })
-  .passthrough();
-
 // `version` and `updatedAt` are required at write time, but legacy payloads
 // (pre-migration) may be missing one or both. Mark optional so the migration
 // path can repair them rather than rejecting the whole record.
@@ -138,7 +131,7 @@ const persistedWizardStateSchema = z
     currentNodeId: z.string().optional(),
     gameType: z.string().nullable().optional(),
     selectedGameType: z.string().nullable().optional(),
-    sessionActions: sessionActionsSchema.optional(),
+    sessionActions: z.record(z.string(), z.unknown()).optional(),
     selectedAssetIds: z.array(z.string()).optional(),
     updatedAt: z.string().optional(),
   })
@@ -157,11 +150,10 @@ const persistedSessionStateSchema = z
   })
   .passthrough();
 
-// Validate and migrate stored data. We accept `unknown` from JSON.parse and
-// narrow defensively before treating the bag as the caller's expected shape.
-// The schema-based variants below are preferred for typed payloads; the
-// generic helper survives only for the legacy non-schemaed callsites that
-// still pass through it.
+// Validate and migrate stored data. Parses untrusted JSON.parse output through
+// the supplied schema and bumps the `version` field if the payload is from an
+// older build. Returns null on validation failure so the caller can clear the
+// corrupted record.
 function validateAndMigrate<T extends z.ZodTypeAny>(
   data: unknown,
   schema: T,

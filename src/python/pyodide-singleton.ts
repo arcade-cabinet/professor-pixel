@@ -10,11 +10,8 @@ const CDN_FALLBACK_URL = 'https://cdn.jsdelivr.net/pyodide/v0.29.3/full/';
 
 export class PyodideLoadError extends Error {
   constructor(message: string, options?: { cause?: unknown }) {
-    super(message);
+    super(message, options);
     this.name = 'PyodideLoadError';
-    if (options?.cause !== undefined) {
-      (this as Error & { cause?: unknown }).cause = options.cause;
-    }
   }
 }
 

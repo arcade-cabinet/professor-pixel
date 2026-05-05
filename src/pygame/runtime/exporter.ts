@@ -306,17 +306,9 @@ function escapeHtml(s: string): string {
 
 function base64UTF8(s: string): string {
   // btoa() only handles latin-1; encode to UTF-8 bytes first so emoji and
-  // non-ASCII identifiers in the compiled Python survive. In jsdom and
-  // browsers btoa is available globally; in Node test runs Buffer is.
+  // non-ASCII identifiers in the compiled Python survive.
   const bytes = new TextEncoder().encode(s);
-  if (typeof btoa === 'function') {
-    let bin = '';
-    for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
-    return btoa(bin);
-  }
-  // Fallback for environments without btoa (older Node). globalThis.Buffer
-  // is typed via @types/node in this repo's transitive deps.
-  return (globalThis as { Buffer?: { from(b: Uint8Array): { toString(enc: string): string } } })
-    .Buffer!.from(bytes)
-    .toString('base64');
+  let bin = '';
+  for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+  return btoa(bin);
 }
