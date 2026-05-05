@@ -86,7 +86,10 @@ describe('CodeEditor — visualViewport keyboard inset (P4.6)', () => {
       // and the inset reference in the same coordinate system. 800 - 320
       // = 480 visible CSS pixels for the wrapper.
       expect(wrapper.style.maxHeight).toBe('480px');
-      expect(wrapper.style.overflow).toBe('hidden');
+      // Overflow is gated on the same condition but lives in the
+      // className (the static piece) — the inline style only carries
+      // the dynamic px math.
+      expect(wrapper.className).toMatch(/overflow-hidden/);
     });
 
     // Keyboard closes — maxHeight releases.

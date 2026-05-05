@@ -287,8 +287,16 @@ export default function PygameLivePreview({
 
       const canvas = event.currentTarget;
       const rect = canvas.getBoundingClientRect();
-      const x = event.clientX - rect.left;
-      const y = event.clientY - rect.top;
+      // The canvas renders at responsive CSS size (className includes
+      // w-full h-auto), but pygame draws into the canvas's intrinsic
+      // pixel buffer. Click coordinates from the pointer event are in
+      // CSS pixels — pass those straight to handle_click and a kid
+      // tapping the upper-left of a sprite on a phone hits the middle
+      // of empty space in game space. Scale to the backing-store ratio.
+      const scaleX = rect.width > 0 ? canvas.width / rect.width : 1;
+      const scaleY = rect.height > 0 ? canvas.height / rect.height : 1;
+      const x = (event.clientX - rect.left) * scaleX;
+      const y = (event.clientY - rect.top) * scaleY;
 
       // Send interaction to pygame
       if (pyodide) {

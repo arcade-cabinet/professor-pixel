@@ -352,7 +352,13 @@ export default function CodeEditor({
 
   return (
     <div
-      className="w-full md:w-1/2 flex flex-col"
+      className={cn(
+        'w-full md:w-1/2 flex flex-col',
+        // The overflow:hidden is a static value gated on the same
+        // condition as the dynamic maxHeight — keep the static piece
+        // in className so only the truly dynamic px math is inline.
+        viewportState.inset > 0 && 'overflow-hidden'
+      )}
       // While the soft keyboard is up, cap the wrapper's effective height
       // to the visible viewport so the flex-1 Monaco container shrinks
       // and stays within the kid's view. Without the cap, the wrapper
@@ -370,7 +376,6 @@ export default function CodeEditor({
         viewportState.inset > 0
           ? {
               maxHeight: `${viewportState.layoutHeight - viewportState.inset}px`,
-              overflow: 'hidden',
             }
           : undefined
       }

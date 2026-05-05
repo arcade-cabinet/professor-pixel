@@ -416,8 +416,16 @@ export function useWizardDialogue({
         // render an empty bubble. Flow JSON edits between sessions can also
         // shrink a multiStep array, in which case the stale index is also
         // invalid and falls through to 0.
+        // Disk-resident value — must be a non-negative integer within
+        // the current multiStep array. A non-integer (e.g. 1.5) or
+        // negative would slip past `< length` and either index off the
+        // end of the array (undefined) or pull a step the kid never
+        // saw. Flow JSON edits between sessions can also shrink the
+        // array, in which case the stale index falls through to 0.
         const stepInRange =
           typeof persistedStep === 'number' &&
+          Number.isInteger(persistedStep) &&
+          persistedStep >= 0 &&
           node.multiStep != null &&
           persistedStep < node.multiStep.length;
         const restoreStep = isFirst && stepInRange ? persistedStep : 0;
@@ -442,19 +450,38 @@ export function useWizardDialogue({
   const historyRef = useRef<string[]>([]);
   const [historyDepth, setHistoryDepth] = useState(0);
 
+  // historyRef stores raw node IDs. When the kid switches to a
+  // different flow (loadedFlowPath changes) those IDs no longer exist
+  // in the new wizardData — pressing Back would route to a missing
+  // node and crash the renderer. Reset on flow change.
+  useEffect(() => {
+    historyRef.current = [];
+    setHistoryDepth(0);
+  }, [loadedFlowPath]);
+
   // Navigation functions
-  const navigateToNode = useCallback((nodeId: string, options?: { skipHistory?: boolean }) => {
-    setDialogueState((prev) => {
+  //
+  // The back-stack push happens BEFORE the setState call rather than
+  // inside the updater. React 19 strict mode invokes state updaters
+  // twice in dev to surface impure logic — a `historyRef.current.push`
+  // inside the updater would double-push and the kid sees Back land on
+  // the same node twice. Reading `dialogueState.currentNodeId` from the
+  // closure is fine because navigateToNode runs from event handlers
+  // where the latest render is current.
+  const navigateToNode = useCallback(
+    (nodeId: string, options?: { skipHistory?: boolean }) => {
+      const prevId = dialogueState.currentNodeId;
       // Self-navigation (re-entering the same node) is a no-op for the
       // back-stack — pushing the same id would let Back re-stick the kid
       // on the page they're already on.
-      if (!options?.skipHistory && prev.currentNodeId && prev.currentNodeId !== nodeId) {
-        historyRef.current.push(prev.currentNodeId);
+      if (!options?.skipHistory && prevId && prevId !== nodeId) {
+        historyRef.current.push(prevId);
         setHistoryDepth(historyRef.current.length);
       }
-      return { ...prev, currentNodeId: nodeId };
-    });
-  }, []);
+      setDialogueState((prev) => ({ ...prev, currentNodeId: nodeId }));
+    },
+    [dialogueState.currentNodeId]
+  );
 
   const goBack = useCallback(() => {
     if (historyRef.current.length === 0) return;

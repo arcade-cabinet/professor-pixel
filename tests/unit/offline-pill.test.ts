@@ -50,14 +50,19 @@ describe('offline pill (P4.33)', () => {
     expect(LESSON_SOURCE).toMatch(/<OfflinePill\s*\/?>/);
   });
 
-  it('pill renders nothing while online and a status pill while offline', () => {
-    // Source-level guard: an `if (online) return null` branch is the
-    // contract that keeps the pill out of the DOM on a healthy
-    // connection.
-    expect(PILL_SOURCE).toMatch(/if\s*\(\s*online\s*\)\s*return\s*null/);
-    // When offline, the pill exposes role="status" + a testid for
-    // integration assertions.
+  it('uses a persistent live-region host so announcements fire on transitions', () => {
+    // Earlier shape was `if (online) return null` — that unmounted the
+    // role="status" host on every online→offline flip and screen
+    // readers silently lost the registered live region. The fix keeps
+    // an empty live-region host mounted always; only the visible pill
+    // is conditional.
+    expect(PILL_SOURCE).not.toMatch(/if\s*\(\s*online\s*\)\s*return\s*null/);
     expect(PILL_SOURCE).toContain('role="status"');
+    expect(PILL_SOURCE).toContain('aria-live="polite"');
+    expect(PILL_SOURCE).toContain('data-testid="offline-pill-host"');
+    // The visible pill still exposes its testid for integration assertions.
     expect(PILL_SOURCE).toContain('data-testid="offline-pill"');
+    // Conditional render of the visible pill via `!online && ...`.
+    expect(PILL_SOURCE).toMatch(/!online\s*&&/);
   });
 });
