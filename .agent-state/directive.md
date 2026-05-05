@@ -476,7 +476,7 @@ Started: 2026-05-05T11:51:00Z
 
 ### task-002 grading/ast.ts JSON.parse guard
 
-- [ ] task-002 src/grading/ast.ts:37 wraps JSON.parse in try/catch returning [] on malformed Python output; test asserts the fallback path
+- [x] task-002 src/grading/ast.ts JSON.parse wrapped in try/catch returning [] + console.warn; tests/unit/grading-ast-malformed.test.ts asserts fallback + regression
 
 ### task-003 simulator.ts JSON.parse guards
 

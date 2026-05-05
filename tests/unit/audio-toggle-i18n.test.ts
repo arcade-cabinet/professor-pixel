@@ -29,11 +29,14 @@ describe('audio-toggle i18n (omnibus task-001)', () => {
 
   it('the old hardcoded English strings are gone from this component', () => {
     // The four literal strings that earlier sat inline in audio-
-    // toggle.tsx. If any of these reappear the component has drifted
-    // back off the catalog.
-    expect(SOURCE).not.toMatch(/'Mute audio'/);
-    expect(SOURCE).not.toMatch(/'Unmute audio'/);
-    expect(SOURCE).not.toMatch(/'Sound on'/);
-    expect(SOURCE).not.toMatch(/'Sound off'/);
+    // toggle.tsx. Use plain `toContain` rather than a quote-anchored
+    // regex — the strings could re-enter the file as JSX text
+    // (`>Sound on<`), double-quoted attribute values (`title="Sound
+    // on"`), or template literals (`\`Sound on\``) and a regex that
+    // anchors on single quotes would silently miss those re-entries.
+    expect(SOURCE).not.toContain('Mute audio');
+    expect(SOURCE).not.toContain('Unmute audio');
+    expect(SOURCE).not.toContain('Sound on');
+    expect(SOURCE).not.toContain('Sound off');
   });
 });

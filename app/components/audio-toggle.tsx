@@ -59,7 +59,12 @@ export default function AudioToggle({
       onClick={onClick}
       aria-pressed={enabled}
       aria-label={label}
-      title={label}
+      // Hover tooltip uses the present-tense visibleLabel (state)
+      // rather than the imperative label (action). When showLabel is
+      // false — the common chrome placement — the tooltip is the only
+      // sighted affordance, and reporting current state matches the
+      // design intent better than narrating screen-reader content.
+      title={visibleLabel}
       data-testid="audio-toggle"
       className={cn('shrink-0', className)}
     >

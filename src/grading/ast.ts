@@ -34,7 +34,24 @@ export async function validateAst(
 
   const raw = pyodide.runPython(AST_VALIDATOR_SOURCE);
   const text = typeof raw === 'string' ? raw : String(raw);
-  return JSON.parse(text) as RuleResult[];
+  // Defensive parse: the Python validator emits json.dumps(results),
+  // but a stray print() inserted into AST_VALIDATOR_SOURCE during
+  // debugging, a Pyodide upgrade quirk, or a Python-side exception
+  // that escapes the inner try/except can produce non-JSON output.
+  // Without this guard the throw escapes validateAst and crashes the
+  // grading layer — kid sees a generic error, dev gets no signal that
+  // the validator template is the actual culprit. Empty rule-results
+  // is the same fallback the early-return branches use, so the
+  // grading engine is already shaped to handle it.
+  try {
+    return JSON.parse(text) as RuleResult[];
+  } catch (parseError) {
+    console.warn(
+      '[grading/ast] AST validator returned non-JSON output; treating as no rules evaluated.',
+      { rawText: text.slice(0, 500), parseError }
+    );
+    return [];
+  }
 }
 
 // The Python validator. Kept as a single string so it ships in one Pyodide
