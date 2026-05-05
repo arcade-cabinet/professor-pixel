@@ -20,6 +20,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { isAudioEnabled, setAudioEnabled, subscribeAudioEnabled } from '@lib/audio';
+import { strings } from '@lib/i18n';
 
 // Import Pixel images
 import pixelExcited from '@assets/pixel/Pixel_celebrating_victory_expression_24b7a377.png';
@@ -130,10 +131,10 @@ export default function PixelMenu({
 
   const formatTime = (date: Date) => {
     const mins = Math.floor((Date.now() - date.getTime()) / (1000 * 60));
-    if (mins < 60) return `${mins}m ago`;
+    if (mins < 60) return strings.pixelMenu.history.minutesAgo(mins);
     const hours = Math.floor(mins / 60);
-    if (hours < 24) return `${hours}h ago`;
-    return `${Math.floor(hours / 24)}d ago`;
+    if (hours < 24) return strings.pixelMenu.history.hoursAgo(hours);
+    return strings.pixelMenu.history.daysAgo(Math.floor(hours / 24));
   };
 
   return (
@@ -164,7 +165,7 @@ export default function PixelMenu({
                     animate={{ x: 0, opacity: 1 }}
                     className="text-2xl font-bold text-gray-800 dark:text-gray-100"
                   >
-                    Pixel's Command Center
+                    {strings.pixelMenu.title}
                   </motion.h2>
                   <Button
                     onClick={onClose}
@@ -186,7 +187,7 @@ export default function PixelMenu({
                 >
                   <motion.img
                     src={pixelImage}
-                    alt="Pixel"
+                    alt={strings.pixelMenu.pixelAlt}
                     className="w-20 h-20 rounded-full shadow-lg"
                     style={{ imageRendering: 'crisp-edges' }}
                     animate={{
@@ -200,9 +201,11 @@ export default function PixelMenu({
                     }}
                   />
                   <div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">Welcome back!</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      {strings.pixelMenu.welcome}
+                    </p>
                     <p className="font-medium text-gray-800 dark:text-gray-200">
-                      What would you like to do?
+                      {strings.pixelMenu.prompt}
                     </p>
                   </div>
                 </motion.div>
@@ -215,7 +218,7 @@ export default function PixelMenu({
                     size="sm"
                     className="flex-1"
                   >
-                    Quick Actions
+                    {strings.pixelMenu.tabs.actions}
                   </Button>
                   <Button
                     onClick={() => setSelectedTab('history')}
@@ -223,7 +226,7 @@ export default function PixelMenu({
                     size="sm"
                     className="flex-1"
                   >
-                    Session History
+                    {strings.pixelMenu.tabs.history}
                   </Button>
                 </div>
               </div>
@@ -244,7 +247,9 @@ export default function PixelMenu({
                       data-testid="change-game-button"
                     >
                       <Gamepad2 className="h-8 w-8 mb-2 text-purple-600 dark:text-purple-400" />
-                      <span className="text-sm font-medium text-center">Change Game</span>
+                      <span className="text-sm font-medium text-center">
+                        {strings.pixelMenu.actions.changeGame}
+                      </span>
                     </Card>
 
                     <Card
@@ -253,7 +258,9 @@ export default function PixelMenu({
                       data-testid="switch-lesson-button"
                     >
                       <BookOpen className="h-8 w-8 mb-2 text-blue-600 dark:text-blue-400" />
-                      <span className="text-sm font-medium text-center">Switch Lesson</span>
+                      <span className="text-sm font-medium text-center">
+                        {strings.pixelMenu.actions.switchLesson}
+                      </span>
                     </Card>
 
                     <Card
@@ -262,7 +269,9 @@ export default function PixelMenu({
                       data-testid="export-game-button"
                     >
                       <Download className="h-8 w-8 mb-2 text-green-600 dark:text-green-400" />
-                      <span className="text-sm font-medium text-center">Export Game</span>
+                      <span className="text-sm font-medium text-center">
+                        {strings.pixelMenu.actions.exportGame}
+                      </span>
                     </Card>
 
                     <Card
@@ -271,7 +280,9 @@ export default function PixelMenu({
                       data-testid="view-progress-button"
                     >
                       <TrendingUp className="h-8 w-8 mb-2 text-orange-600 dark:text-orange-400" />
-                      <span className="text-sm font-medium text-center">View Progress</span>
+                      <span className="text-sm font-medium text-center">
+                        {strings.pixelMenu.actions.viewProgress}
+                      </span>
                     </Card>
 
                     <button
@@ -284,7 +295,11 @@ export default function PixelMenu({
                       }}
                       data-testid="audio-toggle-button"
                       aria-pressed={audioOn}
-                      aria-label={audioOn ? 'Turn voice off' : 'Turn voice on'}
+                      aria-label={
+                        audioOn
+                          ? strings.pixelMenu.actions.voiceTurnOff
+                          : strings.pixelMenu.actions.voiceTurnOn
+                      }
                     >
                       {audioOn ? (
                         <Volume2 className="h-8 w-8 mb-2 text-indigo-600 dark:text-indigo-400" />
@@ -292,7 +307,9 @@ export default function PixelMenu({
                         <VolumeX className="h-8 w-8 mb-2 text-gray-500" />
                       )}
                       <span className="text-sm font-medium text-center">
-                        {audioOn ? 'Voice On' : 'Voice Off'}
+                        {audioOn
+                          ? strings.pixelMenu.actions.voiceOn
+                          : strings.pixelMenu.actions.voiceOff}
                       </span>
                     </button>
 
@@ -302,7 +319,9 @@ export default function PixelMenu({
                       data-testid="return-current-button"
                     >
                       <Home className="h-8 w-8 mb-2 text-pink-600 dark:text-pink-400" />
-                      <span className="text-sm font-medium">Return to Current</span>
+                      <span className="text-sm font-medium">
+                        {strings.pixelMenu.actions.returnCurrent}
+                      </span>
                     </Card>
                   </motion.div>
                 ) : (
@@ -353,8 +372,8 @@ export default function PixelMenu({
                       {actions.length === 0 && (
                         <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                           <Clock className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                          <p>No actions yet this session</p>
-                          <p className="text-sm mt-2">Start creating to see your history!</p>
+                          <p>{strings.pixelMenu.history.empty}</p>
+                          <p className="text-sm mt-2">{strings.pixelMenu.history.emptyHint}</p>
                         </div>
                       )}
                     </motion.div>
@@ -370,7 +389,7 @@ export default function PixelMenu({
                 transition={{ delay: 0.5 }}
               >
                 <p className="text-xs text-gray-500 dark:text-gray-400">
-                  Swipe down or tap outside to close
+                  {strings.pixelMenu.swipeHint}
                 </p>
               </motion.div>
             </div>

@@ -274,14 +274,33 @@ export const strings = {
 
   /* ─── Pixel menu (pixel/menu.tsx) ──────────────────────────────────── */
   pixelMenu: {
-    open: 'Open Pixel menu',
-    close: 'Close menu',
-    home: 'Home',
-    lessons: 'Lessons',
-    progress: 'View progress',
-    profile: 'Profile',
-    help: 'Help',
-    about: 'About',
+    pixelAlt: 'Pixel',
+    title: "Pixel's Command Center",
+    welcome: 'Welcome back!',
+    prompt: 'What would you like to do?',
+    tabs: {
+      actions: 'Quick Actions',
+      history: 'Session History',
+    },
+    actions: {
+      changeGame: 'Change Game',
+      switchLesson: 'Switch Lesson',
+      exportGame: 'Export Game',
+      viewProgress: 'View Progress',
+      voiceOn: 'Voice On',
+      voiceOff: 'Voice Off',
+      voiceTurnOn: 'Turn voice on',
+      voiceTurnOff: 'Turn voice off',
+      returnCurrent: 'Return to Current',
+    },
+    history: {
+      empty: 'No actions yet this session',
+      emptyHint: 'Start creating to see your history!',
+      minutesAgo: (n: number) => `${n}m ago`,
+      hoursAgo: (n: number) => `${n}h ago`,
+      daysAgo: (n: number) => `${n}d ago`,
+    },
+    swipeHint: 'Swipe down or tap outside to close',
   },
 
   /* ─── Floating feedback (floating-feedback.tsx) ────────────────────── */

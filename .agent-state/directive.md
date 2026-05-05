@@ -334,7 +334,7 @@ Branch: feat/player-experience-pillar-4
 - [x] task-001c lesson.tsx migrated to strings catalog
 - [x] task-001d profile.tsx migrated to strings catalog
 - [x] task-001e wizard/universal.tsx migrated to strings catalog
-- [ ] task-001f pixel/menu.tsx migrated to strings catalog
+- [x] task-001f pixel/menu.tsx migrated to strings catalog
 - [ ] task-001g floating-feedback.tsx migrated to strings catalog
 
 ### task-002 Add preconnect + script preload for Pyodide CDN to index.html

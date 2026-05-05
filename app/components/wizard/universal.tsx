@@ -474,7 +474,7 @@ export default function UniversalWizard({
         return;
       } else if (option.action === 'openWYSIWYGEditor') {
         // Open the pro editor with all selected components and assets
-        const message = "You've got this! I'm here if you need me!";
+        const message = strings.wizard.minimizeMessages.youGotThis;
         setUiState((prev) => ({
           ...prev,
           wysiwygEditorOpen: true,
