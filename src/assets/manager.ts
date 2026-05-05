@@ -144,10 +144,11 @@ export class AssetManager {
       return this.loadedImages.get(assetId)!;
     }
 
-    // Skip data URLs
+    // Skip data URLs — withBase only prefixes root-relative paths, but
+    // assigning asset.path directly is clearer than relying on the no-op.
     if (asset.path.startsWith('data:')) {
       const img = new Image();
-      img.src = withBase(asset.path);
+      img.src = asset.path;
       this.loadedImages.set(assetId, img);
       this.loadStatus.loaded++;
       return img;
