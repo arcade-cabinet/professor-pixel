@@ -40,18 +40,27 @@ describe('StorageBlockedNotice (Q12)', () => {
   });
 
   it('disappears after dismiss and persists the dismissal in sessionStorage', () => {
-    vi.spyOn(Storage.prototype, 'setItem').mockImplementation((key) => {
-      // Allow sessionStorage writes but block localStorage. The probe key
-      // is randomized per tab (pp.__storage_probe_<rand>__), so match by
-      // prefix rather than literal equality. sessionStorage's dismiss key
-      // (pp.storageBlockedDismissed) falls through and succeeds.
+    // Delegate non-probe keys to the real Storage.prototype.setItem so the
+    // dismiss write actually lands in sessionStorage and we can assert it
+    // (CodeRabbit feedback: stubbing all setItem only proves in-memory hiding).
+    const realSetItem = Storage.prototype.setItem;
+    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(function (
+      this: Storage,
+      key: string,
+      value: string
+    ) {
+      // The probe key is randomized per tab (pp.__storage_probe_<rand>__).
+      // Throw only on probe keys; pass everything else through (the dismiss
+      // key pp.storageBlockedDismissed needs to actually persist).
       if (typeof key === 'string' && key.startsWith('pp.__storage_probe_')) {
         throw new Error('QuotaExceededError');
       }
+      return realSetItem.call(this, key, value);
     });
     render(<StorageBlockedNotice />);
     expect(screen.getByTestId('storage-blocked-notice')).toBeInTheDocument();
     fireEvent.click(screen.getByTestId('storage-blocked-dismiss'));
     expect(screen.queryByTestId('storage-blocked-notice')).not.toBeInTheDocument();
+    expect(sessionStorage.getItem('pp.storageBlockedDismissed')).toBe('1');
   });
 });
