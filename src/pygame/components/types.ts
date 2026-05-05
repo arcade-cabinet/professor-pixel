@@ -26,22 +26,6 @@ export type ComponentType =
  */
 export type ComponentPropertyValue = string | number | boolean;
 
-/**
- * Schema describing a single editable property the wizard surfaces. The
- * inspector switches on `type` to render the correct control.
- */
-export interface PropertyDefinition {
-  name: string;
-  label: string;
-  type: 'number' | 'string' | 'boolean' | 'color' | 'select';
-  default?: ComponentPropertyValue;
-  min?: number;
-  max?: number;
-  step?: number;
-  options?: Array<{ value: string; label: string }>;
-  description?: string;
-}
-
 /** Bag the wizard threads through the inspector — every property is one of
  * the runtime types we know how to surface. */
 export type ComponentPropertyBag = Record<string, ComponentPropertyValue>;
