@@ -9,6 +9,7 @@ export * from './use-editor-history';
 export * from './use-health-monitor';
 export * from './use-input-bridge';
 export * from './use-media-query';
+export * from './use-online-status';
 export * from './use-orientation';
 export * from './use-retry-query';
 export * from './use-toast';

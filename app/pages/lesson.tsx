@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Header from '@/components/header';
 import CodeEditor from '@/components/editor/code-editor';
 import FloatingFeedback from '@/components/floating-feedback';
+import OfflinePill from '@/components/ui/offline-pill';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -433,6 +434,14 @@ export default function LessonEnhanced() {
         progress={progressPercent}
         onBack={() => setLocation('/playground')}
       />
+
+      {/* P4.33 — compact offline indicator over the editor surface. Renders
+          nothing when online; only the chrome/page-level OfflineBanner
+          would otherwise carry this signal, and that banner doesn't show
+          on the lesson page. */}
+      <div className="flex justify-end px-4 pt-2">
+        <OfflinePill />
+      </div>
 
       {/* Intro modal removed - functionality no longer available */}
 

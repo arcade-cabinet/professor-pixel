@@ -463,4 +463,4 @@ Branch: feat/player-experience-pillar-4
 
 ### task-033 Editor header shows an offline pill when navigator is offline
 
-- [ ] task-033 src/utils/online-status.ts shared helpers + hook; banner + editor consume it; both update on offline event
+- [x] task-033 src/hooks/use-online-status.ts shared hook; banner consumes it; new OfflinePill mounted on lesson editor

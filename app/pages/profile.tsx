@@ -352,9 +352,14 @@ export default function Profile() {
             onClick={handleSaveExpression}
             data-testid="profile-save-expression"
             className="bg-gradient-to-r from-purple-500 to-pink-500"
+            // Guard: with no profile, saveProfile would throw on the
+            // empty-name branch and surface a confusing "Pick a name
+            // first" toast for an unrelated user action. Match the
+            // rename button's pattern and require the profile to exist.
             disabled={
-              pronounsDraft === (profile?.pronouns ?? '') &&
-              emojiDraft === (profile?.avatarEmoji ?? '')
+              !profile ||
+              (pronounsDraft === (profile.pronouns ?? '') &&
+                emojiDraft === (profile.avatarEmoji ?? ''))
             }
           >
             {strings.profile.expressionSection.saveButton}

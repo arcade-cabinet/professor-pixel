@@ -7,40 +7,20 @@
 // kids (and the adult helping them) understand WHY things are sluggish
 // or failing before they hit the actual error path.
 //
-// useSyncExternalStore is the React 19 idiomatic way to subscribe to
-// browser state — it handles SSR correctly via the server snapshot
-// (assume online) and tear-off via the subscribe-returned cleanup.
+// P4.33 — the subscription lives in `useOnlineStatus` so the editor's
+// compact pill can share it.
 
-import { useSyncExternalStore } from 'react';
 import { WifiOff } from 'lucide-react';
 import { cn } from '@lib/utils/cn';
 import { strings } from '@lib/i18n';
+import { useOnlineStatus } from '@lib/hooks/use-online-status';
 
 interface OfflineBannerProps {
   className?: string;
 }
 
-function subscribe(callback: () => void): () => void {
-  window.addEventListener('online', callback);
-  window.addEventListener('offline', callback);
-  return () => {
-    window.removeEventListener('online', callback);
-    window.removeEventListener('offline', callback);
-  };
-}
-
-function getClientSnapshot(): boolean {
-  return navigator.onLine;
-}
-
-function getServerSnapshot(): boolean {
-  // SSR has no network signal; assume online so the banner doesn't
-  // flash on hydration for the common case.
-  return true;
-}
-
 export default function OfflineBanner({ className }: OfflineBannerProps) {
-  const online = useSyncExternalStore(subscribe, getClientSnapshot, getServerSnapshot);
+  const online = useOnlineStatus();
 
   if (online) return null;
 

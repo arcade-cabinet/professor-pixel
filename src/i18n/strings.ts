@@ -28,6 +28,15 @@ export const strings = {
       message:
         "You're offline — saved games still work, but new lessons and Pixel updates need a connection.",
     },
+    offlinePill: {
+      // P4.33 — the editor's compact equivalent. Sits next to the run
+      // button so the kid sees it without leaving their workspace; full
+      // sentence explanation lives in the tooltip.
+      label: 'Offline',
+      tooltip:
+        "You're offline. Your code still runs and saves locally — only loading new lessons needs the internet.",
+      ariaLabel: 'Offline — code still runs locally',
+    },
     storageBlocked: {
       title: "Pixel can't save your progress here",
       message:
@@ -284,7 +293,6 @@ export const strings = {
       heading: 'Make it yours',
       body: 'Optional — pick how Pixel should refer to you and an emoji that feels like you.',
       pronounsLabel: 'Pronouns',
-      pronounsAriaLabel: 'Pick your pronouns',
       pronounsNone: 'Not specified',
       pronounsCustom: 'Custom',
       pronounsCustomPlaceholder: 'Type your own',
