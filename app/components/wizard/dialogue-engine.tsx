@@ -113,18 +113,22 @@ export function useWizardDialogue({
   // P3.2 — Pixel speaks the current node text when it changes (audio off by
   // default, gated on `pp.audioEnabled`). Cancels any in-flight speech first
   // so back-to-back transitions don't queue. Cleanup cancels on unmount.
+  // Compute the derived text outside the effect so the effect depends on the
+  // resolved string rather than on the sessionActions object identity —
+  // sessionActions reshapes on every state update, so depending on it would
+  // re-fire speech on every keystroke, not just when the visible text changes.
+  const currentText = getCurrentText(
+    dialogueState.currentNode,
+    dialogueState.dialogueStep,
+    sessionActions
+  );
   useEffect(() => {
     if (!isAudioEnabled()) return;
-    const text = getCurrentText(
-      dialogueState.currentNode,
-      dialogueState.dialogueStep,
-      sessionActions
-    );
-    if (text) speak(text);
+    if (currentText) speak(currentText);
     return () => {
       cancelSpeech();
     };
-  }, [dialogueState.currentNode, dialogueState.dialogueStep, sessionActions]);
+  }, [currentText]);
 
   // Load wizard flow data
   useEffect(() => {

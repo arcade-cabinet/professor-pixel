@@ -161,7 +161,7 @@ Pyodide CDN version is pinned via `PYODIDE_CDN_VERSION` constant in the exporter
 
 ### Sync direction is intentionally one-way (V1)
 
-```
+```text
 Visual edits  →  PlacedComponent[]  →  generated Python
                  (canonical)           (read-only view)
 ```

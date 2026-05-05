@@ -81,7 +81,9 @@ export async function exportProjectAsZip(options: ExportProjectOptions): Promise
       // values. Strip the directory prefix, then collapse anything that
       // isn't a safe filename character to '_'. Belt-and-suspenders against
       // CWE-22 path traversal in the consumer's unzip step.
-      const rawName = src.split('/').pop() ?? `${asset.id ?? 'asset'}.bin`;
+      // pop() returns '' (not undefined) when src ends with '/', so use ||
+      // not ?? — both empty-string and undefined fall back to the asset id.
+      const rawName = src.split('/').pop() || `${asset.id || 'asset'}.bin`;
       const fname = rawName.replace(/[^a-zA-Z0-9._-]/g, '_') || 'asset.bin';
       assetsFolder.file(fname, buf);
     } catch (err) {
@@ -133,8 +135,12 @@ export async function shareOrDownload(exported: ExportedProject): Promise<'share
         return 'shared';
       }
     } catch (err) {
-      // AbortError (user dismissed), or unsupported — fall through to download.
-      if ((err as Error)?.name !== 'AbortError') {
+      // AbortError (user dismissed), NotAllowedError (transient activation
+      // expired between zip-generation and share — common on iOS Safari
+      // when the export takes a few hundred ms), or unsupported — fall
+      // through to triggerDownload which works without user activation.
+      const name = (err as Error)?.name;
+      if (name !== 'AbortError' && name !== 'NotAllowedError') {
         console.warn('navigator.share failed, falling back to download:', err);
       }
     }

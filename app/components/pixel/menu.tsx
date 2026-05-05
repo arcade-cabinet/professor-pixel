@@ -65,6 +65,16 @@ export default function PixelMenu({
   const [selectedTab, setSelectedTab] = useState<'actions' | 'history'>('actions');
   const [audioOn, setAudioOn] = useState(() => isAudioEnabled());
 
+  // Re-sync audioOn whenever the menu opens — the storage value can change
+  // from another surface (e.g., another tab, an SDK call) while the menu is
+  // closed; without this resync the toggle would show the stale value the
+  // first time it's opened.
+  useEffect(() => {
+    if (isOpen) {
+      setAudioOn(isAudioEnabled());
+    }
+  }, [isOpen]);
+
   // Mock session history if not provided
   const defaultActions: SessionAction[] =
     sessionActions.length > 0
@@ -269,8 +279,9 @@ export default function PixelMenu({
                       <span className="text-sm font-medium text-center">View Progress</span>
                     </Card>
 
-                    <Card
-                      className="p-4 flex flex-col items-center justify-center hover:bg-indigo-100 dark:hover:bg-indigo-900/30 cursor-pointer transition-colors"
+                    <button
+                      type="button"
+                      className="p-4 flex flex-col items-center justify-center rounded-md border bg-card hover:bg-indigo-100 dark:hover:bg-indigo-900/30 cursor-pointer transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
                       onClick={() => {
                         const next = !audioOn;
                         setAudioEnabled(next);
@@ -278,6 +289,7 @@ export default function PixelMenu({
                       }}
                       data-testid="audio-toggle-button"
                       aria-pressed={audioOn}
+                      aria-label={audioOn ? 'Turn voice off' : 'Turn voice on'}
                     >
                       {audioOn ? (
                         <Volume2 className="h-8 w-8 mb-2 text-indigo-600 dark:text-indigo-400" />
@@ -287,7 +299,7 @@ export default function PixelMenu({
                       <span className="text-sm font-medium text-center">
                         {audioOn ? 'Voice On' : 'Voice Off'}
                       </span>
-                    </Card>
+                    </button>
 
                     <Card
                       className="p-4 flex flex-col items-center justify-center hover:bg-pink-100 dark:hover:bg-pink-900/30 cursor-pointer transition-colors"

@@ -451,6 +451,12 @@ MockPygame.key.get_pressed = lambda: global_key_state
               <Button
                 onClick={async () => {
                   recoverPyodide();
+                  // recoverPyodide() drops the singleton + window.pyodide,
+                  // but pyodideRef still points at the now-stale instance.
+                  // Clear the local ref so initPyodide() runs a real fresh
+                  // bootstrap rather than skipping the work because the ref
+                  // looks populated.
+                  pyodideRef.current = null;
                   setError(null);
                   // initPyodide owns its own loading state. The finally
                   // guarantees the spinner unblocks even if a future refactor

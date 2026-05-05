@@ -40,6 +40,8 @@ import {
   loadUserPreferences,
   clearWizardState,
   clearAllData,
+  loadWizardState,
+  saveWizardStateDebounced,
   PersistedSessionState,
 } from '@lib/storage/persistence';
 
@@ -140,6 +142,22 @@ export default function UniversalWizard({
       celebrationFiredRef.current = false;
     };
   }, [isWizardComplete]);
+
+  // Rehydrate selectedAssets from persisted IDs on mount. The wizard stores
+  // asset IDs (not full GameAsset objects) so the asset catalog stays the
+  // source of truth — if the kid navigates away to /lessons and comes back,
+  // their picked assets reappear in the wizard's UI.
+  useEffect(() => {
+    const persisted = loadWizardState();
+    const ids = persisted?.selectedAssetIds;
+    if (!ids || ids.length === 0) return;
+    const assets = ids
+      .map((id) => assetManager.getAssetById(id))
+      .filter((a): a is GameAsset => Boolean(a));
+    if (assets.length > 0) {
+      setSelectedAssets(assets);
+    }
+  }, []);
 
   // Load and apply theme preference on mount
   useEffect(() => {
@@ -325,7 +343,6 @@ export default function UniversalWizard({
         ...prev,
         embeddedComponent: 'pygame-runner',
         previewMode: scene,
-        pyodideMode: true,
       }));
     }
   }, [dialogueState.currentNode, setSessionActions, dialogueState, sessionActions.gameType]);
@@ -578,7 +595,6 @@ export default function UniversalWizard({
           ...prev,
           embeddedComponent: 'pygame-runner',
           previewMode: scene,
-          pyodideMode: true,
         }));
       } else if (option.action === 'launchPyodideGame') {
         // Launch the complete compiled game
@@ -586,7 +602,6 @@ export default function UniversalWizard({
           ...prev,
           embeddedComponent: 'pygame-runner',
           previewMode: 'full',
-          pyodideMode: true,
         }));
       } else if (option.action === 'exportPyodideGame') {
         // P6 BLOCKER — export full ZIP bundle (Python + assets + index.html
@@ -650,7 +665,6 @@ export default function UniversalWizard({
     setUiState((prev) => ({
       ...prev,
       embeddedComponent: 'pygame-runner',
-      pyodideMode: true,
       previewMode: 'full',
     }));
   }, []);
@@ -695,29 +709,23 @@ export default function UniversalWizard({
               >
                 <div className="animate-ping text-4xl">🎉</div>
                 <div className="absolute -left-2 -top-2 animate-bounce text-2xl">✨</div>
-                <div
-                  className="absolute -right-2 -top-2 animate-bounce text-2xl"
-                  style={{ animationDelay: '0.15s' }}
-                >
+                <div className="absolute -right-2 -top-2 animate-bounce text-2xl [animation-delay:0.15s]">
                   ✨
                 </div>
-                <div
-                  className="absolute -bottom-2 left-1/3 animate-bounce text-2xl"
-                  style={{ animationDelay: '0.3s' }}
-                >
+                <div className="absolute -bottom-2 left-1/3 animate-bounce text-2xl [animation-delay:0.3s]">
                   🌟
                 </div>
               </div>
             )}
-            <button
+            <Button
               type="button"
               onClick={handlePlayGame}
               data-testid="play-game-cta"
               aria-label="Play your game"
-              className="w-full rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 px-6 py-4 text-lg font-bold text-white shadow-lg transition-transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-purple-300"
+              className="h-auto w-full rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 px-6 py-4 text-lg font-bold text-white shadow-lg transition-transform hover:scale-105 hover:from-purple-700 hover:to-pink-700 focus:outline-none focus:ring-4 focus:ring-purple-300"
             >
               ▶ Play your game!
-            </button>
+            </Button>
           </div>
         )}
       </div>
@@ -888,6 +896,13 @@ export default function UniversalWizard({
         } else if (asset.type === 'sound') {
           assetManager.addSound(asset.id);
         }
+      });
+
+      // Persist asset IDs to wizard state so a navigation away (e.g.,
+      // setLocation('/lessons')) doesn't drop them. Stored as IDs only —
+      // the asset catalog is the source of truth for metadata.
+      saveWizardStateDebounced({
+        selectedAssetIds: assetsArray.map((a) => a.id),
       });
 
       // Close browser and continue dialogue

@@ -11,6 +11,14 @@ export interface PersistedWizardState {
   gameType?: string | null;
   selectedGameType?: string | null;
   sessionActions?: SessionActions;
+  /**
+   * Asset IDs (not full GameAsset objects) selected by the kid during the
+   * wizard. Stored as IDs so the asset catalog stays the source of truth —
+   * if an asset's metadata changes between sessions, the wizard sees the
+   * fresh version on rehydration. Re-resolved against `assetManager` /
+   * the catalog at mount time.
+   */
+  selectedAssetIds?: string[];
   updatedAt: string;
 }
 

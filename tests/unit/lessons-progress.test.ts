@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { statusFor } from '@/pages/lessons';
+import { statusFor } from '@lib/lessons';
 import type { Lesson, UserProgress } from '@lib/types/schema';
 
 function makeLesson(stepCount: number): Lesson {

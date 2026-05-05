@@ -126,24 +126,23 @@ If the warning lands consistently in production, the answer is **not** to raise 
 
 ## Worker recovery
 
-Pyodide can wedge — a runaway script eats the heap, an `OSError` from a missing stdlib path fires during boot, an in-progress `loadPyodide()` rejects after the network drops. The singleton is a long-lived cached promise, so once it rejects every subsequent `getPyodide()` call returns the same rejection. The fix is to drop the cache and let the next caller re-bootstrap.
+Pyodide can wedge in two narrow ways the cached singleton doesn't auto-recover from. The bootstrap path itself is already self-healing: `getPyodide()`'s `.catch` handler nulls `bootstrapPromise` on rejection, so a plain network-blip bootstrap failure is **not** sticky — the next `getPyodide()` call retries from scratch. `recoverPyodide()` exists for the cases where that's not enough.
 
 ```ts
 import { recoverPyodide, getPyodide } from '@lib/python';
 
-recoverPyodide();              // drops cached promise + window.pyodide
+recoverPyodide();              // drops in-flight or ready instance + window.pyodide
 const pyodide = await getPyodide();   // fresh bootstrap
 ```
 
-`recoverPyodide()` (`src/python/pyodide-singleton.ts`) is idempotent and safe to call from any surface (error boundary, debug HUD, "Try again" button). It:
+The two cases `recoverPyodide()` handles that `.catch` on the singleton can't:
 
-1. Sets `bootstrapPromise = null` so the next `getPyodide()` re-runs the loader.
-2. Resets `coldStartMs` so the next boot's instrumentation is honest (the previous failed boot's number doesn't bleed forward).
-3. Deletes `window.pyodide` so anything inspecting the global doesn't see a stale half-initialized instance.
+1. **Poisoned ready instance.** Bootstrap succeeded, but a kid's runaway script ate the heap or left a partially-initialized class on `window.pyodide`. The singleton is happy (`isPyodideReady()` returns true), but the next `runPython()` will misbehave. `recoverPyodide()` deletes `window.pyodide` and nulls `bootstrapPromise` so a fresh boot replaces the poisoned instance.
+2. **Supersede an in-flight boot.** A user clicks "Try again" while the original `loadPyodide()` is still pending (network slow, not failed). `recoverPyodide()` nulls `bootstrapPromise` and resets `coldStartMs`; when the original eventually resolves, its `.then` handler observes `myPromise !== bootstrapPromise` and discards the stale instance instead of writing it to `window.pyodide`. The race-fix lives in `getPyodide()`'s `.then` body.
 
-The implementation guards against a race: if `recoverPyodide()` is called *while* a bootstrap is in-flight, that in-flight promise still resolves into the local handler — but the handler checks `myPromise === bootstrapPromise` before assigning `window.pyodide`, so a late-resolving stale bootstrap can't clobber a fresh one. Test coverage in `tests/unit/pyodide-recover.test.ts` (4 tests, including the race).
+`recoverPyodide()` is idempotent and safe to call from any surface (error boundary, debug HUD, "Try again" button). The user-facing surface is `app/components/pygame/runner.tsx` — when the runner catches a Pyodide error, it shows a friendly error UI with a **Try again** button that calls `recoverPyodide()`, clears the local `pyodideRef`, then re-runs `initPyodide()`. The button's `onClick` uses `try / catch / finally` so `isLoading` always unblocks, even if the fresh bootstrap fails.
 
-The user-facing surface is `app/components/pygame/runner.tsx` — when the runner catches a Pyodide error, it shows a friendly error UI with a **Try again** button that calls `recoverPyodide()` then re-runs the snippet. `try / catch / finally` resets `isLoading` so the UI doesn't get stuck in a loading state if the recover itself fails.
+Test coverage in `tests/unit/pyodide-recover.test.ts` (4 tests, including the in-flight supersede race).
 
 ## PyGame simulator
 

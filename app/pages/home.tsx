@@ -55,17 +55,19 @@ export default function Home() {
   const [skipChooser, setSkipChooser] = useState(false);
 
   useEffect(() => {
-    // Returning user? Skip chooser, render the wizard inline (we don't
-    // navigate to /wizard so the URL stays "/" — feels like the same app
-    // they left).
+    // Returning user — route them back to whatever surface they were using.
+    // The lastPath check has to come BEFORE the persisted-wizard branch:
+    // a kid can have persisted wizard state AND have chosen Lessons last;
+    // we want to honor the explicit Lessons choice over the implicit
+    // "you have a wizard in flight" assumption.
     const persisted = loadWizardState();
     const lastPath = readLastLandingPath();
-    if (persisted || lastPath === 'wizard') {
-      setSkipChooser(true);
-      return;
-    }
     if (lastPath === 'lessons') {
       setLocation('/lessons');
+      return;
+    }
+    if (persisted || lastPath === 'wizard') {
+      setSkipChooser(true);
       return;
     }
     // First-visit micro-tutorial card

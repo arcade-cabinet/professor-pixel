@@ -8,6 +8,11 @@ import { PlacedComponent } from './wysiwyg';
 import { getComponentById } from '@lib/pygame/components/registry';
 import { setCanvasContext, flushFrameBuffer } from '@lib/pygame/runtime/simulator';
 
+// Components are rendered as ~60px boxes (see preview() functions). Center
+// them on the cursor by subtracting half-width on placement. All three
+// placement paths — drag-drop, tap-to-place, drag-move — use the same offset.
+const PLACE_HALF = 30;
+
 interface PygameEditorCanvasProps {
   components: PlacedComponent[];
   selectedId: string | null;
@@ -50,12 +55,15 @@ export default function PygameEditorCanvas({
         // Match the click-place coordinate system: canvas is rendered at
         // CSS-pixel size but its drawing buffer is fixed at 800x600. Scale
         // CSS-pixel offsets up to internal canvas pixels so DnD drop and
-        // tap-to-place agree on where the component lands.
+        // tap-to-place agree on where the component lands. Then center the
+        // component on the cursor by subtracting half the component bbox
+        // (PLACE_HALF) — same offset tap-to-place uses on the click handler
+        // so all three placement paths land in the same spot.
         const rect = canvas.getBoundingClientRect();
         const scaleX = canvas.width / rect.width;
         const scaleY = canvas.height / rect.height;
-        const x = (offset.x - rect.left) * scaleX;
-        const y = (offset.y - rect.top) * scaleY;
+        const x = (offset.x - rect.left) * scaleX - PLACE_HALF;
+        const y = (offset.y - rect.top) * scaleY - PLACE_HALF;
         onDrop(item.componentId, x, y);
       }
     },
@@ -140,6 +148,30 @@ export default function PygameEditorCanvas({
     };
   }, [components, selectedId, showGrid, isPlaying]);
 
+  // When a palette item is armed, pull keyboard focus to the canvas so a
+  // keyboard-only user can press Enter/Space to place at the canvas center.
+  // Mouse/touch users are unaffected by the focus shift.
+  useEffect(() => {
+    if (armedComponentId && canvasRef.current) {
+      canvasRef.current.focus();
+    }
+  }, [armedComponentId]);
+
+  // Keyboard placement when armed: Enter or Space drops the armed component
+  // at the canvas center (in internal coords). Without this the canvas was
+  // operable only with a pointer device.
+  const handleCanvasKeyDown = (e: React.KeyboardEvent<HTMLCanvasElement>) => {
+    if (!armedComponentId) return;
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      const cx = canvas.width / 2 - PLACE_HALF;
+      const cy = canvas.height / 2 - PLACE_HALF;
+      onDrop(armedComponentId, cx, cy);
+    }
+  };
+
   // Handle component click/drag
   const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
@@ -157,7 +189,7 @@ export default function PygameEditorCanvas({
     // P4 tap-to-place — if a palette item is armed, the next canvas tap places
     // it at the click point (centered on the cursor) instead of selecting.
     if (armedComponentId) {
-      onDrop(armedComponentId, x - 30, y - 30);
+      onDrop(armedComponentId, x - PLACE_HALF, y - PLACE_HALF);
       return;
     }
 
@@ -180,7 +212,7 @@ export default function PygameEditorCanvas({
         const handleMouseMove = (e: MouseEvent) => {
           const newX = (e.clientX - rect.left) * scaleX;
           const newY = (e.clientY - rect.top) * scaleY;
-          onMove(clickedComponent.id, newX - 30, newY - 30);
+          onMove(clickedComponent.id, newX - PLACE_HALF, newY - PLACE_HALF);
         };
         const handleMouseUp = () => {
           setDraggedComponent(null);
@@ -208,12 +240,18 @@ export default function PygameEditorCanvas({
     >
       <canvas
         ref={canvasRef}
-        className={cn(armedComponentId ? 'cursor-copy' : 'cursor-crosshair')}
+        tabIndex={0}
+        data-testid={armedComponentId ? `place-canvas-${armedComponentId}` : 'place-canvas'}
+        className={cn(
+          'focus:outline-none focus:ring-2 focus:ring-purple-400',
+          armedComponentId ? 'cursor-copy' : 'cursor-crosshair'
+        )}
         onClick={handleCanvasClick}
+        onKeyDown={handleCanvasKeyDown}
         style={{ width: '100%', height: '100%', maxWidth: '800px', maxHeight: '600px' }}
         aria-label={
           armedComponentId
-            ? 'Tap anywhere to place the armed component'
+            ? 'Tap, click, or press Enter to place the armed component on the canvas'
             : 'Game canvas — click a component to select it'
         }
       />

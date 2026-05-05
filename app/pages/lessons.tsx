@@ -18,40 +18,37 @@ import { Card } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { loadLessons } from '@lib/lessons';
+import { loadLessons, statusFor } from '@lib/lessons';
 import { getClientStorage } from '@lib/storage/mode';
 import { loadProfile, saveProfile } from '@lib/storage/profile';
 import type { Lesson, UserProgress } from '@lib/types/schema';
-
-export interface LessonRowState {
-  state: 'completed' | 'in-progress' | 'not-started';
-  pct: number; // 0..100 — how far through the lesson's steps
-}
-
-export function statusFor(lesson: Lesson, progress: UserProgress | undefined): LessonRowState {
-  if (!progress) return { state: 'not-started', pct: 0 };
-  if (progress.completed) return { state: 'completed', pct: 100 };
-  const total = lesson.content.steps.length;
-  const pct = total > 0 ? Math.round((progress.currentStep / total) * 100) : 0;
-  return { state: 'in-progress', pct };
-}
 
 export default function LessonsIndex() {
   const [profile, setProfile] = useState(() => loadProfile());
   const [nameDraft, setNameDraft] = useState('');
 
-  const { data: lessons, isLoading: lessonsLoading } = useQuery<Lesson[]>({
+  const {
+    data: lessons,
+    isLoading: lessonsLoading,
+    error: lessonsError,
+  } = useQuery<Lesson[]>({
     queryKey: ['lessons'],
     queryFn: () => loadLessons(),
   });
 
-  const { data: allProgress } = useQuery<UserProgress[]>({
+  const { data: allProgress, error: progressError } = useQuery<UserProgress[]>({
     queryKey: ['progress'],
     queryFn: async () => {
       const storage = getClientStorage();
       return storage.getUserProgress('anonymous-user');
     },
   });
+
+  // Surface query failures to the page error boundary instead of falling
+  // through to "0% progress / no lessons" — which is indistinguishable
+  // from "you're a new user" and silently hides real failures.
+  if (lessonsError) throw lessonsError;
+  if (progressError) throw progressError;
 
   const progressByLesson = useMemo(() => {
     const m = new Map<string, UserProgress>();
@@ -112,9 +109,17 @@ export default function LessonsIndex() {
               className="flex gap-2"
               onSubmit={(e) => {
                 e.preventDefault();
+                // saveProfile throws InvalidProfileError on blank/whitespace
+                // input. The trim guard above + the disabled submit button
+                // make this unreachable through the UI, but if a future
+                // refactor breaks the guard we'd rather no-op than crash.
                 if (!nameDraft.trim()) return;
-                const saved = saveProfile(nameDraft);
-                setProfile(saved);
+                try {
+                  const saved = saveProfile(nameDraft);
+                  setProfile(saved);
+                } catch {
+                  // Already filtered above — silent fallthrough.
+                }
               }}
             >
               <Input

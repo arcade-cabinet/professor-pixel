@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { loadProfile, saveProfile, clearProfile } from '@lib/storage/profile';
+import { loadProfile, saveProfile, clearProfile, InvalidProfileError } from '@lib/storage/profile';
 
 beforeEach(() => {
   localStorage.clear();
@@ -55,6 +55,21 @@ describe('profile storage', () => {
 
   it('returns null when stored shape lacks required fields', () => {
     localStorage.setItem('pp.profile', JSON.stringify({ name: 'NoTimestamp' }));
+    expect(loadProfile()).toBeNull();
+  });
+
+  it('throws InvalidProfileError on blank/whitespace input rather than persisting', () => {
+    expect(() => saveProfile('')).toThrow(InvalidProfileError);
+    expect(() => saveProfile('   ')).toThrow(InvalidProfileError);
+    expect(() => saveProfile('\t\n')).toThrow(InvalidProfileError);
+    expect(localStorage.getItem('pp.profile')).toBeNull();
+  });
+
+  it('rejects a stored blank-name profile from older versions', () => {
+    localStorage.setItem(
+      'pp.profile',
+      JSON.stringify({ name: '   ', createdAt: '2026-01-01T00:00:00.000Z' })
+    );
     expect(loadProfile()).toBeNull();
   });
 });

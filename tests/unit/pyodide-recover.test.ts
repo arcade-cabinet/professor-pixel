@@ -103,9 +103,9 @@ describe('recoverPyodide', () => {
 
     const mod = await import('@lib/python/pyodide-singleton');
     await mod.getPyodide();
-    // The real bootstrap sets window.pyodide; simulate that here since our
-    // mocked loadPyodide doesn't.
-    win.pyodide = fakeInstance;
+    // getPyodide()'s .then handler publishes window.pyodide on success — no
+    // manual seeding needed; that's the production behavior we're verifying.
+    expect((win as Window & { pyodide?: PyodideInstance }).pyodide).toBe(fakeInstance);
     expect(mod.isPyodideReady()).toBe(true);
 
     mod.recoverPyodide();

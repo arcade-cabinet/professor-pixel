@@ -55,24 +55,44 @@ async function loadPyodideScript(scriptSrc: string): Promise<void> {
   await new Promise<void>((resolve, reject) => {
     const existing = document.querySelector<HTMLScriptElement>(`script[src="${scriptSrc}"]`);
     if (existing) {
+      // Three sub-cases:
+      //   1) loadPyodide already on window → script ran successfully; resolve.
+      //   2) script's load/error already fired but window.loadPyodide isn't set
+      //      → dead tag (CDN failure, recover-after-failure). Adding listeners
+      //      to a finished script never fires; we'd hang forever. Remove the
+      //      tag and fall through to creating a fresh one.
+      //   3) Script still loading → attach listeners and wait.
       if (window.loadPyodide) {
         resolve();
         return;
       }
-      existing.addEventListener('load', () => resolve(), { once: true });
-      existing.addEventListener(
-        'error',
-        () => reject(new PyodideLoadError(`Failed to load ${scriptSrc}`)),
-        { once: true }
-      );
-      return;
+      const status = existing.dataset.pyodideStatus;
+      if (status === 'loaded' || status === 'error') {
+        existing.remove();
+        // fall through to fresh-create below
+      } else {
+        existing.addEventListener('load', () => resolve(), { once: true });
+        existing.addEventListener(
+          'error',
+          () => reject(new PyodideLoadError(`Failed to load ${scriptSrc}`)),
+          { once: true }
+        );
+        return;
+      }
     }
 
     const script = document.createElement('script');
     script.src = scriptSrc;
     script.async = true;
-    script.onload = () => resolve();
-    script.onerror = () => reject(new PyodideLoadError(`Failed to load ${scriptSrc}`));
+    script.dataset.pyodideStatus = 'loading';
+    script.onload = () => {
+      script.dataset.pyodideStatus = 'loaded';
+      resolve();
+    };
+    script.onerror = () => {
+      script.dataset.pyodideStatus = 'error';
+      reject(new PyodideLoadError(`Failed to load ${scriptSrc}`));
+    };
     document.head.appendChild(script);
   });
 }

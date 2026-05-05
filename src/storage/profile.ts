@@ -13,6 +13,13 @@ export interface PlayerProfile {
   createdAt: string; // ISO timestamp
 }
 
+export class InvalidProfileError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'InvalidProfileError';
+  }
+}
+
 export function loadProfile(): PlayerProfile | null {
   if (typeof localStorage === 'undefined') return null;
   try {
@@ -23,7 +30,11 @@ export function loadProfile(): PlayerProfile | null {
       parsed &&
       typeof parsed === 'object' &&
       typeof (parsed as PlayerProfile).name === 'string' &&
-      typeof (parsed as PlayerProfile).createdAt === 'string'
+      typeof (parsed as PlayerProfile).createdAt === 'string' &&
+      // Reject blank-name profiles even if they slipped through an older
+      // saveProfile path. Pixel's "Welcome back, !" copy with an empty
+      // interpolation is worse than no profile at all.
+      (parsed as PlayerProfile).name.trim().length > 0
     ) {
       return parsed as PlayerProfile;
     }
@@ -34,8 +45,16 @@ export function loadProfile(): PlayerProfile | null {
 }
 
 export function saveProfile(name: string): PlayerProfile {
+  // Trim and cap before validating so leading/trailing whitespace doesn't
+  // pass an "is non-empty?" check by accident. A kid pasting Tolstoy gets
+  // truncated; a kid hitting Save with all whitespace gets rejected
+  // (caller must show a "name required" message rather than persist garbage).
+  const trimmed = name.trim().slice(0, 32);
+  if (trimmed.length === 0) {
+    throw new InvalidProfileError('Profile name cannot be empty');
+  }
   const profile: PlayerProfile = {
-    name: name.trim().slice(0, 32), // cap length so a kid pasting Tolstoy doesn't break the UI
+    name: trimmed,
     createdAt: loadProfile()?.createdAt ?? new Date().toISOString(),
   };
   if (typeof localStorage !== 'undefined') {

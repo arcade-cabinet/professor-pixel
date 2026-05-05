@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { Play, Pause, RotateCw, Code, Eye, Grid3x3, Package, Settings2, X } from 'lucide-react';
@@ -50,6 +50,54 @@ export default function PygameWysiwygEditor({
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [propertiesOpen, setPropertiesOpen] = useState(false);
   const [armedComponentId, setArmedComponentId] = useState<string | null>(null);
+
+  // Drawer focus management — keyboard a11y for the compact-viewport
+  // palette + properties drawers. We move focus into the drawer on open,
+  // restore focus to the toggle button on close, and listen for Escape
+  // anywhere on the page to dismiss whichever drawer is open.
+  const paletteToggleRef = useRef<HTMLButtonElement | null>(null);
+  const propertiesToggleRef = useRef<HTMLButtonElement | null>(null);
+  const paletteDrawerRef = useRef<HTMLDivElement | null>(null);
+  const propertiesDrawerRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (paletteOpen) {
+      // Move focus to the first focusable child inside the drawer so a
+      // keyboard user lands on a real control, not on the scrim.
+      const first = paletteDrawerRef.current?.querySelector<HTMLElement>(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      );
+      first?.focus();
+    } else if (paletteToggleRef.current) {
+      // Drawer just closed — restore focus to the toggle that opened it,
+      // matching native dialog semantics.
+      paletteToggleRef.current.focus();
+    }
+  }, [paletteOpen]);
+
+  useEffect(() => {
+    if (propertiesOpen) {
+      const first = propertiesDrawerRef.current?.querySelector<HTMLElement>(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      );
+      first?.focus();
+    } else if (propertiesToggleRef.current) {
+      propertiesToggleRef.current.focus();
+    }
+  }, [propertiesOpen]);
+
+  useEffect(() => {
+    if (!paletteOpen && !propertiesOpen) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key !== 'Escape') return;
+      // Close whichever drawer is open — properties takes priority because
+      // it nests visually above the palette in compact layout.
+      if (propertiesOpen) setPropertiesOpen(false);
+      else if (paletteOpen) setPaletteOpen(false);
+    }
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [paletteOpen, propertiesOpen]);
 
   const selectedComponent = placedComponents.find((c) => c.id === selectedComponentId);
 
@@ -149,6 +197,7 @@ export default function PygameWysiwygEditor({
           <div className="flex items-center gap-2 sm:gap-4">
             {isCompact && (
               <Button
+                ref={paletteToggleRef}
                 size="icon"
                 variant="ghost"
                 onClick={() => setPaletteOpen((o) => !o)}
@@ -214,6 +263,7 @@ export default function PygameWysiwygEditor({
             </div>
             {isCompact && selectedComponent && (
               <Button
+                ref={propertiesToggleRef}
                 size="icon"
                 variant="ghost"
                 onClick={() => setPropertiesOpen((o) => !o)}
@@ -249,11 +299,13 @@ export default function PygameWysiwygEditor({
                 />
               )}
               <div
+                ref={paletteDrawerRef}
                 className={cn(
                   'absolute left-0 top-0 bottom-0 z-20 w-72 max-w-[85vw] transition-transform',
                   paletteOpen ? 'translate-x-0' : '-translate-x-full'
                 )}
                 role="dialog"
+                aria-modal="true"
                 aria-label="Component palette"
                 aria-hidden={!paletteOpen}
               >
@@ -327,11 +379,13 @@ export default function PygameWysiwygEditor({
                   />
                 )}
                 <div
+                  ref={propertiesDrawerRef}
                   className={cn(
                     'absolute right-0 top-0 bottom-0 z-20 w-80 max-w-[85vw] transition-transform',
                     propertiesOpen ? 'translate-x-0' : 'translate-x-full'
                   )}
                   role="dialog"
+                  aria-modal="true"
                   aria-label="Component settings"
                   aria-hidden={!propertiesOpen}
                 >
