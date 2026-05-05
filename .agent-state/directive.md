@@ -1,6 +1,6 @@
 # Continuous Work Directive — professor-pixel
 
-**Status:** RELEASED
+**Status:** ACTIVE
 **Owner:** jbogaty
 
 ## What CONTINUOUS means
@@ -238,3 +238,85 @@ This is the comprehensive sweep — everything remaining in STATE.md → Next ge
 - [x] F5.2 docs/playtests/analysis.md — PRIORITY FIXES 1-3 annotated with CLOSED markers + 21dba7b ref; High/Medium Priority items marked content-design; Low Priority marked out-of-scope.
 - [x] F5.3 docs/STATE.md — finishing pillar moved to Done; Next emptied; Active says no work in flight.
 - [x] F5.4 .agent-state/directive.md Status: ACTIVE → RELEASED.
+
+## Batch — player-experience-pillar (batch-20260504-224658)
+
+Source: docs/plans/player-experience-pillar.prq.md (sha256: e75f2f4af8c7a50b220d8d54150cff176f1d7184b024056c9d7926f54fb97cd4)
+Branch: feat/player-experience-pillar
+Started: 2026-05-04T22:46:58Z
+
+This is the player-experience sweep — closing the gaps a kid would actually
+notice in their first 10 minutes with the app, identified by the audit
+that ran post-finishing-pillar merge. ONE comprehensive PR; no carve-offs.
+
+### P1 — Wizard completion + game launch (BLOCKER fold-in)
+
+- [ ] P1.1 dialogue-engine.tsx `isWizardComplete` derived state — terminal node OR `compileFullGame` action.
+- [ ] P1.2 universal.tsx "▶ Play your game" CTA when complete — wires to pygame-runner.
+- [ ] P1.3 tests/integration/wizard-completion.test.tsx — drive to complete, assert CTA + state.
+- [ ] P1.4 One-time celebration (confetti/sparkle) gated by `sessionActions.gameAssembled`.
+
+### P2 — Onboarding & landing
+
+- [ ] P2.1 home.tsx landing layout — wizard vs lessons chooser, returning-user shortcut.
+- [ ] P2.2 First-visit micro-tutorial card (dismissible, localStorage-gated).
+- [ ] P2.3 Persist `sessionActions.lastLandingPath` for return prioritization.
+
+### P3 — Audio (Pixel speaks + sound effects)
+
+- [ ] P3.1 src/audio/tts.ts — Web Speech API wrapper, emoji strip, idempotent cancel.
+- [ ] P3.2 dialogue-engine speaks node text on transition; mute by default behind `pp.audioEnabled`.
+- [ ] P3.3 src/audio/sfx.ts — 3 sounds (success/error/pop) via Web Audio API + lazy AudioContext.
+- [ ] P3.4 Wire SFX: success on grader-pass + wizard-complete; error on grader-fail + Pyodide timeout; pop on option select.
+- [ ] P3.5 Audio toggle UI (speaker icon).
+- [ ] P3.6 tests/unit/audio-tts.test.ts — emoji strip, cancel-prior, mute-respect.
+
+### P4 — Mobile/tablet editor responsiveness
+
+- [ ] P4.1 wysiwyg.tsx responsive split — drawer < lg, full sidebar lg+; hamburger toggle.
+- [ ] P4.2 palette.tsx 48×48px touch targets; vertical phone-portrait, horizontal+overflow phone-landscape.
+- [ ] P4.3 Touch drag-drop — react-dnd MultiBackend (HTML5 + Touch).
+- [ ] P4.4 visual.spec.ts editor coverage at 7 viewport sizes.
+
+### P5 — Accessibility (a11y)
+
+- [ ] P5.1 Wizard option `aria-label`s; dialogue container `role="region"` + `aria-live="polite"`.
+- [ ] P5.2 Keyboard nav: Enter selects, 1-9 number-key shortcuts, arrow-key option navigation.
+- [ ] P5.3 Focus management on node transition.
+- [ ] P5.4 axe-core extended to editor route in tests/e2e/a11y.spec.ts; fix any violations.
+- [ ] P5.5 `prefers-reduced-motion` respect — disable Pixel float, minimize transition, celebration confetti.
+
+### P6 — Project export (BLOCKER)
+
+- [ ] P6.1 src/export/bundle.ts — ZIP via jszip with game.py + assets/ + index.html (Pyodide CDN wrapper) + README.md.
+- [ ] P6.2 code-panel.tsx `handleDownload` swap to `bundleProject(...)`.
+- [ ] P6.3 Web Share API affordance with ZIP fallback.
+- [ ] P6.4 tests/unit/export-bundle.test.ts — ZIP manifest validation.
+
+### P7 — Pyodide error recovery
+
+- [ ] P7.1 worker-runner.ts `runner.recover()` — recycle worker on timeout.
+- [ ] P7.2 grading/engine.ts:171 timeout copy → kid-friendly + "Run Again" button calling recover().
+- [ ] P7.3 errors/educational.ts patterns for NameError / IndentationError / ZeroDivisionError / IndexError / KeyError with lesson-pointer hints.
+- [ ] P7.4 localStorage QuotaExceededError handler — friendly toast + clear option.
+- [ ] P7.5 Pyodide cold-start failure — user-facing retry banner instead of broken UI.
+
+### P8 — Lesson progress visibility
+
+- [ ] P8.1 lesson-progress-bar.tsx — N of M completed + milestone badges (3/5/10).
+- [ ] P8.2 lesson.tsx render bar; "What's next?" callout under completed lessons.
+- [ ] P8.3 `pp.profile = { name?, createdAt }` localStorage handle; wizard interpolates `{name}`; settings page allows change.
+
+### P9 — Code ↔ WYSIWYG sync (V1 boundary)
+
+- [ ] P9.1 docs/pillars/01-frontend.md — document one-way sync limitation as intentional V1 boundary.
+- [ ] P9.2 Code mode / Visual mode toggle with dirty-flag warning before discard.
+- [ ] P9.3 Full bidirectional sync explicitly out-of-scope (P-future).
+
+### P10 — Docs / state sweep
+
+- [ ] P10.1 docs/STATE.md — player-experience pillar Active → Done; refresh Next.
+- [ ] P10.2 docs/pillars/01-frontend.md — Audio surface / a11y / Editor responsiveness / Project export subsections.
+- [ ] P10.3 docs/pillars/02-runtime.md — Worker recovery subsection (`runner.recover()` API).
+- [ ] P10.4 docs/playtests/ — closed markers for items this PRQ resolves (Death/Respawn, Game Over Screen).
+- [ ] P10.5 .agent-state/directive.md Status: ACTIVE → RELEASED.
