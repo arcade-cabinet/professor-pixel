@@ -1,3 +1,5 @@
+import { z } from 'zod';
+
 interface GameObject {
   type: string;
   x: number;
@@ -5,6 +7,28 @@ interface GameObject {
   color: string;
   size: number;
 }
+
+// Schemas for the python-side json.dumps payloads. The Pyodide
+// templates are internal and well-controlled, but a runtime upgrade
+// or a stray exception that escapes the inner try/except can produce
+// JSON-valid-but-shape-wrong output. Validating at the boundary fails
+// closed (return safe default) instead of letting downstream code
+// crash on `result.errors.join` or false-positive readiness from a
+// truthy non-boolean.
+const VerificationResultSchema = z.object({
+  pygame_available: z.boolean().optional(),
+  basic_functionality: z.boolean().optional(),
+  rendering_bridge: z.boolean().optional(),
+  errors: z.array(z.string()).optional(),
+});
+
+const PygameStatusSchema = z.object({
+  isAvailable: z.boolean(),
+  modules: z.array(z.string()),
+  errors: z.array(z.string()),
+  capabilities: z.array(z.string()),
+  renderingBridge: z.boolean(),
+});
 
 interface SimulationResult {
   fps: number;
@@ -53,7 +77,14 @@ interface PygameSprite {
 
 // Global rendering state
 let canvasContext: CanvasRenderingContext2D | null = null;
-let frameBuffer: DrawCommand[] = [];
+// Drained in-place via `.length = 0` rather than reassigned to a fresh
+// `[]`. The reassignment pattern made `getFrameBuffer()`'s exported
+// reference go stale after the first flush, breaking the test seam:
+// callers that captured the array-by-reference would write to a dead
+// array while the live one (now bound to a fresh `[]`) ignored them.
+// Drain-in-place keeps the identity stable and incidentally avoids
+// per-frame allocation churn.
+const frameBuffer: DrawCommand[] = [];
 let isRenderingActive = false;
 let currentFPS = 60;
 let _lastFrameTime = 0;
@@ -297,7 +328,7 @@ export function setCanvasContext(ctx: CanvasRenderingContext2D | null) {
 
 // Reset pygame state
 export function resetPygameState() {
-  frameBuffer = [];
+  frameBuffer.length = 0;
   isRenderingActive = false;
   currentFPS = 60;
   _lastFrameTime = 0;
@@ -331,13 +362,17 @@ export function createPygameEnvironment() {
         console.log(`🖼️ Display mode set: ${size[0]}x${size[1]}`);
         return new RenderingSurface(size[0], size[1], true);
       },
+      // flushFrameBuffer's finally block already drains the buffer.
+      // Earlier code added a second `frameBuffer = []` here as belt-
+      // and-suspenders, but that was a logic landmine: a future
+      // refactor that moves the drain out of flushFrameBuffer would
+      // leave display.flip/update silently stale. flushFrameBuffer
+      // owns drain ownership; trust it.
       flip: () => {
         flushFrameBuffer();
-        frameBuffer = [];
       },
       update: () => {
         flushFrameBuffer();
-        frameBuffer = [];
       },
       set_caption: (title: string) => console.log(`🏷️ Window caption: ${title}`),
     },
@@ -683,7 +718,7 @@ export function flushFrameBuffer() {
     console.error('Pygame rendering error:', error);
   } finally {
     // Clear the frame buffer after rendering
-    frameBuffer = [];
+    frameBuffer.length = 0;
   }
 }
 
@@ -710,7 +745,7 @@ export const pygameShim = {
   quit() {
     isRenderingActive = false;
     canvasContext = null;
-    frameBuffer = [];
+    frameBuffer.length = 0;
   },
 
   // Time module with Clock
@@ -974,13 +1009,49 @@ except Exception as e:
 json.dumps(verification)
 `);
 
-    const result = JSON.parse(verificationResult as string);
+    // Defensive parse: outer try/catch would catch a throw here, but
+    // its message is generic. Calling out parse-failure-specifically
+    // helps a dev triage "verification template emitted non-JSON" vs
+    // "Pyodide globals lookup failed" — different fixes. Inline guard
+    // also locks the safe-false-default if a future refactor moves
+    // the outer try.
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(verificationResult as string);
+    } catch (parseError) {
+      // Avoid logging raw Pyodide stdout — same rationale as
+      // grading/ast.ts. The verifier template is internal, not user-
+      // authored, so leakage risk is lower; treat the same way for
+      // consistency.
+      const raw = String(verificationResult);
+      console.warn('[pygame/verifyPygameShim] verifier emitted non-JSON; treating as not-ready.', {
+        outputLength: raw.length,
+        prefix: raw.replace(/[^\x20-\x7e]/g, '').slice(0, 80),
+        parseError,
+      });
+      return false;
+    }
+    // Schema validation: a JSON-valid payload with the wrong shape
+    // (string `pygame_available`, errors as `null`, etc.) would
+    // otherwise fall through to `result.errors.join` and throw, or
+    // report ready off a truthy non-boolean. Fail closed.
+    const validated = VerificationResultSchema.safeParse(parsed);
+    if (!validated.success) {
+      console.warn(
+        '[pygame/verifyPygameShim] verifier output failed schema validation; treating as not-ready.',
+        { issues: validated.error.issues.slice(0, 5) }
+      );
+      return false;
+    }
+    const result = validated.data;
 
     if (result.pygame_available && result.basic_functionality) {
       console.log('✅ Pygame shim verification successful');
       return true;
     } else {
-      console.warn(`⚠️ Pygame shim verification failed: ${result.errors.join(', ')}`);
+      console.warn(
+        `⚠️ Pygame shim verification failed: ${result.errors?.join(', ') ?? 'unknown error'}`
+      );
       return false;
     }
   } catch (error) {
@@ -1089,7 +1160,38 @@ except Exception as e:
 json.dumps(status)
 `);
 
-    return JSON.parse(statusResult as string);
+    // Defensive parse — same rationale as verifyPygameShimReady. The
+    // outer try/catch covers it, but a parse-specific failure message
+    // helps a dev triage template-emit-error vs runtime-glue-error.
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(statusResult as string);
+    } catch (parseError) {
+      const raw = String(statusResult);
+      console.warn(
+        '[pygame/comprehensivePygameCheck] status template emitted non-JSON; returning default.',
+        {
+          outputLength: raw.length,
+          prefix: raw.replace(/[^\x20-\x7e]/g, '').slice(0, 80),
+          parseError,
+        }
+      );
+      defaultStatus.errors.push('comprehensive check returned malformed JSON');
+      return defaultStatus;
+    }
+    // Schema validation: a JSON-valid payload missing isAvailable or
+    // with errors[] as null would otherwise propagate downstream as a
+    // typed-but-wrong status object. Fail closed to defaultStatus.
+    const validated = PygameStatusSchema.safeParse(parsed);
+    if (!validated.success) {
+      console.warn(
+        '[pygame/comprehensivePygameCheck] status template payload failed schema validation; returning default.',
+        { issues: validated.error.issues.slice(0, 5) }
+      );
+      defaultStatus.errors.push('comprehensive check returned mis-shaped payload');
+      return defaultStatus;
+    }
+    return validated.data;
   } catch (error) {
     defaultStatus.errors.push(`Error during comprehensive pygame status check: ${error}`);
     return defaultStatus;

@@ -13,6 +13,7 @@ import { Volume2, VolumeX } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { isAudioEnabled, setAudioEnabled, subscribeAudioEnabled } from '@lib/audio/tts';
 import { cn } from '@lib/utils/cn';
+import { strings } from '@lib/i18n';
 
 interface AudioToggleProps {
   className?: string;
@@ -45,7 +46,10 @@ export default function AudioToggle({
     setAudioEnabled(!enabled);
   };
 
-  const label = enabled ? 'Mute audio' : 'Unmute audio';
+  const label = enabled ? strings.chrome.audioToggle.onLabel : strings.chrome.audioToggle.offLabel;
+  const visibleLabel = enabled
+    ? strings.chrome.audioToggle.soundOnLabel
+    : strings.chrome.audioToggle.soundOffLabel;
 
   return (
     <Button
@@ -55,7 +59,12 @@ export default function AudioToggle({
       onClick={onClick}
       aria-pressed={enabled}
       aria-label={label}
-      title={label}
+      // Hover tooltip uses the present-tense visibleLabel (state)
+      // rather than the imperative label (action). When showLabel is
+      // false — the common chrome placement — the tooltip is the only
+      // sighted affordance, and reporting current state matches the
+      // design intent better than narrating screen-reader content.
+      title={visibleLabel}
       data-testid="audio-toggle"
       className={cn('shrink-0', className)}
     >
@@ -64,7 +73,7 @@ export default function AudioToggle({
       ) : (
         <VolumeX className="h-4 w-4" data-testid="audio-toggle-off-icon" />
       )}
-      {showLabel && <span className="ml-2 text-sm">{enabled ? 'Sound on' : 'Sound off'}</span>}
+      {showLabel && <span className="ml-2 text-sm">{visibleLabel}</span>}
     </Button>
   );
 }

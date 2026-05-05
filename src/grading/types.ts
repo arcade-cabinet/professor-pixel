@@ -1,3 +1,4 @@
+import { z } from 'zod';
 import type {
   LessonAstRules,
   LessonRuntimeRules,
@@ -9,13 +10,22 @@ export type TestSpec = LessonTestSpec;
 export type AstRules = LessonAstRules;
 export type RuntimeRules = LessonRuntimeRules;
 
-export interface RuleResult {
+/**
+ * Per-rule grading verdict. Schema is the canonical contract — the
+ * Python-side AST validator's json.dumps output is parsed against this
+ * schema before flowing into the grading engine, so a malformed but
+ * JSON-valid payload (wrong types, missing fields, extra arbitrary
+ * data) gets caught at the boundary instead of crashing the renderer.
+ */
+export const RuleResultSchema = z.object({
   /** Stable identifier for the rule, e.g. "ast.has_function:greet" */
-  id: string;
-  passed: boolean;
+  id: z.string(),
+  passed: z.boolean(),
   /** Friendly explanation surfaced to the student. */
-  message: string;
-}
+  message: z.string(),
+});
+export type RuleResult = z.infer<typeof RuleResultSchema>;
+export const RuleResultArraySchema = z.array(RuleResultSchema);
 
 export interface GradeBreakdown {
   ast: RuleResult[];

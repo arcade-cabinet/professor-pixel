@@ -44,8 +44,16 @@ export const strings = {
       dismissLabel: 'Dismiss',
     },
     audioToggle: {
+      // aria-label / title — read by assistive tech and the OS tooltip;
+      // the imperative form ("Mute …") is what screen readers announce
+      // for the BUTTON STATE TRANSITION it's about to take.
       onLabel: 'Mute Pixel',
       offLabel: 'Unmute Pixel',
+      // Visible label that flips with state — present-tense, the kid
+      // can read "what is sound right now" rather than "what will the
+      // button do." Different concept from the imperative aria-label.
+      soundOnLabel: 'Sound on',
+      soundOffLabel: 'Sound off',
     },
     errorBoundary: {
       title: 'Hmm, something is blocked',
@@ -467,6 +475,17 @@ export const strings = {
       placeholder: 'Enter your game name...',
       submit: 'Create Game',
     },
+  },
+
+  /* ─── Asset browser (wizard/asset-browser.tsx) ─────────────────────── */
+  assetBrowser: {
+    // Visually-hidden label that pairs with the category filter
+    // <select>. The "All Categories" option already labels the
+    // control for sighted users, but a screen reader reading the
+    // <select> standalone would announce "All Categories — combo
+    // box" with no hint that this is a filter — the explicit label
+    // closes that gap without adding visual chrome.
+    categoryFilterLabel: 'Filter assets by category',
   },
 
   /* ─── Code editor (code-editor.tsx) ────────────────────────────────── */

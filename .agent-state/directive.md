@@ -464,3 +464,32 @@ Branch: feat/player-experience-pillar-4
 ### task-033 Editor header shows an offline pill when navigator is offline
 
 - [x] task-033 src/hooks/use-online-status.ts shared hook; banner consumes it; new OfflinePill mounted on lesson editor
+
+## Batch — omnibus-cleanup (batch-20260505-115100)
+
+Source: docs/plans/omnibus-cleanup.prq.md
+Started: 2026-05-05T11:51:00Z
+
+### task-001 audio-toggle i18n migration
+
+- [x] task-001 audio-toggle.tsx labels move into strings.audioToggle catalog block; aria-label + visible "Sound on/off"; tests/unit/audio-toggle-i18n.test.ts asserts catalog wiring
+
+### task-002 grading/ast.ts JSON.parse guard
+
+- [x] task-002 src/grading/ast.ts JSON.parse wrapped in try/catch returning [] + console.warn; tests/unit/grading-ast-malformed.test.ts asserts fallback + regression
+
+### task-003 simulator.ts JSON.parse guards
+
+- [x] task-003 simulator.ts verifyPygameShimReady + getPygameStatus each get inline parse guards with parse-specific warnings; tests/unit/simulator-malformed-json.test.ts asserts both fallback paths and well-formed regression
+
+### task-004 M4.2 frame-rate simulator test
+
+- [x] task-004 tests/unit/simulator-frame-rate.test.ts measures flushFrameBuffer CPU cost over 120 synthesized frames with 42-cmd realistic load; asserts mean < 16.67ms; ~1s CI cost (well under 30s budget)
+
+### task-005 explicit form labels
+
+- [x] task-005 home.tsx project-rename + profile.tsx name + asset-browser.tsx category select each get sr-only <label htmlFor> + matching id; tests/unit/form-labels.test.ts asserts wiring + new catalog key
+
+### task-006 modernization-pillar status update
+
+- [x] task-006 modernization-pillar M4.2 boxes flipped to [x] with deviation footnote; frontmatter stays ACTIVE because other M-tasks (M1.1-M1.5, M2.1-M2.3, M3.1-M3.2, M4.1, M4.3, M5.1-M5.2, M6.1-M6.2) are still [ ] — pillar not closeable
