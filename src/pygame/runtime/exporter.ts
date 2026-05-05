@@ -175,12 +175,17 @@ function buildBootstrapHtml(title: string, pythonCode: string): string {
   // boot. Errors surface in a visible panel so the kid isn't staring at a
   // blank page.
   //
-  // We inline the compiled game.py as a base64 string so the bundle works
-  // when opened from file:// — `fetch('game.py')` fails under the file://
-  // origin in Chrome/Edge with CORS errors, but a base64 literal is just a
-  // string. Base64 (vs. a JS string-literal escape) sidesteps every quoting
-  // corner case (backticks, ${}, unicode line separators, etc.) that could
-  // break a kid's game silently if the compiled Python ever contained them.
+  // The bootstrap is hybrid:
+  //   * Served over http(s):// (or any protocol where fetch works) → fetch
+  //     game.py at runtime so edits to the side-by-side file take effect on
+  //     refresh. This honours the README's "edit game.py, refresh, see the
+  //     change" promise.
+  //   * Opened from file:// → use the inlined base64 copy. Chrome/Edge block
+  //     fetch() of sibling files under the file:// origin.
+  //   * fetch() fails for any other reason → fall back to the inlined copy.
+  // Base64 (vs. a JS string-literal escape) sidesteps every quoting corner
+  // case (backticks, ${}, unicode line separators, etc.) that could break a
+  // kid's game silently if the compiled Python ever contained them.
   const safeTitle = escapeHtml(title);
   const pythonB64 = base64UTF8(pythonCode);
   return `<!doctype html>
@@ -204,10 +209,31 @@ function buildBootstrapHtml(title: string, pythonCode: string): string {
   <canvas id="canvas" width="800" height="600"></canvas>
   <script src="${PYODIDE_CDN_BASE}pyodide.js"></script>
   <script>
-    // Compiled game source, base64-encoded so we don't need fetch() — which
-    // fails under file:// in Chrome/Edge. Decoded at runtime via TextDecoder
-    // so any non-ASCII characters survive intact.
+    // Compiled game source is inlined as a base64 string so the bundle works
+    // under file:// (where fetch() fails with CORS errors in Chrome/Edge).
+    // BUT — when served over http(s)://, we prefer fetch('game.py') so that
+    // edits to the side-by-side game.py file take effect on refresh. The
+    // README promises "edit game.py, refresh, see the change"; honour that
+    // when the protocol allows. The base64 copy is the safety net.
     const GAME_PY_B64 = "${pythonB64}";
+    function decodeInlinedGame() {
+      const bytes = Uint8Array.from(atob(GAME_PY_B64), (c) => c.charCodeAt(0));
+      return new TextDecoder('utf-8').decode(bytes);
+    }
+    async function loadGameSource() {
+      // file:// origins can't fetch sibling files in Chrome/Edge — go straight
+      // to the inlined copy. Other protocols (http, https, blob, etc.) try
+      // the live game.py first and fall back to the inline copy on any error.
+      if (location.protocol === 'file:') return decodeInlinedGame();
+      try {
+        const r = await fetch('game.py');
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return await r.text();
+      } catch (e) {
+        console.warn('Falling back to inlined game.py:', e);
+        return decodeInlinedGame();
+      }
+    }
     (async () => {
       const status = document.getElementById('status');
       const error = document.getElementById('error');
@@ -217,8 +243,7 @@ function buildBootstrapHtml(title: string, pythonCode: string): string {
         status.textContent = 'Loading pygame…';
         await pyodide.loadPackage(['pygame-ce']);
         status.textContent = 'Loading your game…';
-        const bytes = Uint8Array.from(atob(GAME_PY_B64), (c) => c.charCodeAt(0));
-        const code = new TextDecoder('utf-8').decode(bytes);
+        const code = await loadGameSource();
         status.textContent = 'Running!';
         await pyodide.runPythonAsync(code);
       } catch (e) {

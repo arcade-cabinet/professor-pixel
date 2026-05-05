@@ -112,9 +112,11 @@ The aggregate today reflects the unit project only. Integration and component te
 - **TTS (`tts.ts`)** — `speak(text)` strips emoji via a `\p{Extended_Pictographic}` regex (covers ZWJ + Fitzpatrick + variation selectors), hands the cleaned text to `SpeechSynthesisUtterance`, and routes through `window.speechSynthesis`. A `voiceschanged` listener is installed on the first `speak()` call so Chrome's async voice catalog populates correctly. Voice selection prefers a child-friendly voice if one is available; otherwise the default voice ships.
 - **SFX (`sfx.ts`)** — procedural Web Audio tones for `playSuccess` (C5/E5/G5 chord), `playError`, and `playPop` (option-select feedback). No audio assets — the tones are oscillator-synthesized at play time, so they cost zero bundle weight.
 
-User-facing toggle lives in the Pixel menu (`app/components/pixel/menu.tsx`) as a `Voice On/Off` card. The toggle persists to `localStorage.audio.enabled`; both `speak` and `playPop` no-op when off. The toggle defaults to **on** for new sessions because the wizard's narration is core to the mascot-driven framing.
+User-facing toggle lives in the Pixel menu (`app/components/pixel/menu.tsx`) as a `Voice On/Off` button (`role="button"` + `aria-label` that flips with state). The toggle persists to `localStorage.pp.audioEnabled` (key managed by `setAudioEnabled` / `isAudioEnabled` in `src/audio/tts.ts`); both `speak` and `playPop` no-op when off. The toggle defaults to **off** for new sessions — kids opt in via the menu so we never autoplay TTS without explicit consent.
 
-The dialogue engine (`app/components/wizard/dialogue-engine.tsx`) calls `speak()` once per node transition (gated on `isAudioEnabled`). The simulator and grader pillars do not import from `src/audio/` — only the wizard / option-handler / celebration surfaces do.
+Cross-tab and same-tab reactivity flows through `subscribeAudioEnabled(listener)`. It dispatches a `pp:audio-changed` `CustomEvent` on every flip and also listens for the native `storage` event, so a flip in tab A propagates to tab B without a refresh and a flip in the same tab updates every subscriber on the next tick. Consumers (dialogue engine, Pixel menu) subscribe in a `useEffect` cleanup-tracked subscription rather than polling `isAudioEnabled()` per render.
+
+The dialogue engine (`app/components/wizard/dialogue-engine.tsx`) calls `speak()` once per node transition, gated on the reactive `audioEnabled` state from `subscribeAudioEnabled`. When the kid flips audio off mid-sentence the engine calls `cancelSpeech()` from its effect cleanup so playback halts immediately. The simulator and grader pillars do not import from `src/audio/` — only the wizard / option-handler / celebration surfaces do.
 
 ## Accessibility surface
 
@@ -145,13 +147,18 @@ Canvas coordinate scaling: the canvas drawing buffer is fixed at 800×600 intern
 
 `src/pygame/runtime/exporter.ts` is the V1 handoff to a real text editor — kids who want to keep editing their game outside the visual editor get a runnable ZIP.
 
-`exportProjectAsZip(scene)` produces:
-- `game.py` — the generated Pygame source
-- `index.html` — a minimal Pyodide CDN bootstrap so the game runs in any modern browser via `python -m http.server` or just opening the file
-- `README.md` — how to run locally, how to publish
-- `assets/` — every selected `GameAsset.path` copied in
+`exportProjectAsZip(opts: ExportProjectOptions)` returns an `ExportedProject` object (`{ blob: Blob; filename: string }`) that the caller hands to `shareOrDownload`. The bundle contains:
 
-`shareOrDownload(blob, filename)` prefers the Web Share API (`navigator.share` with a `File` object, MIME `application/zip`) when available, falling back to a triggered `<a download>` click. The Web Share path lights up "Save to Files" / "AirDrop" / "Save to Drive" on iOS / Android / Chromebook respectively, which is the actual learner-friendly handoff.
+- `game.py` — the generated Pygame source (also inlined as a base64 string in `index.html` so the bundle works under `file://`).
+- `index.html` — Pyodide CDN bootstrap. When opened over http(s):// it `fetch()`es `game.py` so kids can edit the file and refresh; under `file://` (or if `fetch()` fails) it falls back to the inlined base64 copy.
+- `README.md` — how to run locally, how to share.
+- `assets/<basename>` — every selected `GameAsset.path` copied in. Basenames are sanitized (`[^a-zA-Z0-9._-]` → `_`) as defense-in-depth against path traversal in the consumer's unzip step. Failed fetches land in `assets/MISSING.txt` rather than aborting the whole bundle.
+
+`shareOrDownload(exported: ExportedProject)` returns one of `'shared' | 'downloaded' | 'cancelled'`:
+
+- `'shared'` — Web Share API succeeded (`navigator.share` with a `File` object, MIME `application/zip`). Lights up "Save to Files" / "AirDrop" / "Save to Drive" on iOS / Android / Chromebook respectively.
+- `'cancelled'` — user explicitly dismissed the share sheet (`AbortError`). We deliberately do **not** auto-fall-back to a download here; re-pushing the file would override their intent. Callers can show a "Save instead" affordance.
+- `'downloaded'` — fell through to a synthetic `<a download>` click. Triggered when `navigator.share` is unavailable, when `canShare()` returns false, when share rejects with anything other than `AbortError`, or silently when share rejects with `NotAllowedError` (transient activation expired — common on iOS Safari when the export step takes a few hundred ms).
 
 Pyodide CDN version is pinned via `PYODIDE_CDN_VERSION` constant in the exporter; bump the constant when the Pyodide vendor in `public/pyodide/` updates.
 
