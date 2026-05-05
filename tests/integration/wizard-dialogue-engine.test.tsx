@@ -56,17 +56,23 @@ describe('useWizardDialogue (post-restructure dialogue-engine)', () => {
   beforeEach(() => {
     vi.mocked(persistence.loadWizardState).mockReturnValue(null);
     vi.mocked(persistence.saveWizardStateDebounced).mockClear();
-    global.fetch = vi.fn(async (url: string | URL | Request) => {
-      const path = typeof url === 'string' ? url : (url as URL).pathname;
-      if (path.includes('platformer-flow')) {
-        return new Response(JSON.stringify(platformerFlow), { status: 200 });
-      }
-      return new Response(JSON.stringify(defaultFlow), { status: 200 });
-    }) as unknown as typeof fetch;
+    // Use vi.stubGlobal so vi.unstubAllGlobals in afterEach can restore the
+    // original fetch — direct assignment would leak into other test files.
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (url: string | URL | Request) => {
+        const path = typeof url === 'string' ? url : (url as URL).pathname;
+        if (path.includes('platformer-flow')) {
+          return new Response(JSON.stringify(platformerFlow), { status: 200 });
+        }
+        return new Response(JSON.stringify(defaultFlow), { status: 200 });
+      })
+    );
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
+    vi.unstubAllGlobals();
   });
 
   it('loads the default flow on mount and resolves currentNode', async () => {

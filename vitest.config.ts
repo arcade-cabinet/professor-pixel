@@ -81,17 +81,20 @@ export default defineConfig({
       // a threshold without unanimous review; flapping floors are how
       // coverage rules become decorative.
       //
-      // Today's snapshot (unit project only — integration + component add
-      // more but aren't measured in this aggregate yet): statements 6.03%,
-      // branches 4.46%, functions 4.30%, lines 6.05%. The thresholds below
-      // sit just above those numbers so any regression fails CI; the work
-      // to actually push the percentages up is per-domain (wizard, pygame
-      // simulator, app components) and lives in subsequent PRQs.
+      // Scope: `pnpm test:coverage` (= `vitest run --coverage`) runs ALL
+      // Vitest projects — unit + integration + component (browser). The
+      // numbers below are the aggregate across all three.
+      //
+      // Today's snapshot: statements 12.05%, branches 9.36%, functions
+      // 8.85%, lines 11.65%. The thresholds below sit just below those
+      // numbers so any regression fails CI; the work to actually push the
+      // percentages up is per-domain (wizard, pygame simulator, app
+      // components) and lives in subsequent PRQs.
       thresholds: {
-        statements: 6,
-        branches: 4,
-        functions: 4,
-        lines: 6,
+        statements: 12,
+        branches: 9,
+        functions: 8,
+        lines: 11,
       },
     },
   },
