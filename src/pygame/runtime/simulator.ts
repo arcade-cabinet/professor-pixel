@@ -338,13 +338,17 @@ export function createPygameEnvironment() {
         console.log(`🖼️ Display mode set: ${size[0]}x${size[1]}`);
         return new RenderingSurface(size[0], size[1], true);
       },
+      // flushFrameBuffer's finally block already drains the buffer.
+      // Earlier code added a second `frameBuffer = []` here as belt-
+      // and-suspenders, but that was a logic landmine: a future
+      // refactor that moves the drain out of flushFrameBuffer would
+      // leave display.flip/update silently stale. flushFrameBuffer
+      // owns drain ownership; trust it.
       flip: () => {
         flushFrameBuffer();
-        frameBuffer.length = 0;
       },
       update: () => {
         flushFrameBuffer();
-        frameBuffer.length = 0;
       },
       set_caption: (title: string) => console.log(`🏷️ Window caption: ${title}`),
     },

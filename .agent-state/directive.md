@@ -492,4 +492,4 @@ Started: 2026-05-05T11:51:00Z
 
 ### task-006 modernization-pillar status update
 
-- [ ] task-006 docs/plans/modernization-pillar.prq.md M4.2 box flips to [x] with merge-sha footnote; frontmatter status flips to RELEASED with closeout if pillar fully [x]
+- [x] task-006 modernization-pillar M4.2 boxes flipped to [x] with deviation footnote; frontmatter stays ACTIVE because other M-tasks (M1.1-M1.5, M2.1-M2.3, M3.1-M3.2, M4.1, M4.3, M5.1-M5.2, M6.1-M6.2) are still [ ] — pillar not closeable

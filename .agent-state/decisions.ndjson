@@ -126,3 +126,4 @@
 {"ts":"2026-05-05T11:59:51.405Z","sha":"c39c244c6fee","subject":"fix(grading): defensive JSON.parse guard in validateAst (omnibus task-002)","decision":null,"why":null,"resolves":["omnibus task-002"],"overrides":[]}
 {"ts":"2026-05-05T12:02:14.226Z","sha":"598d28aac7d3","subject":"fix(pygame/simulator): inline JSON.parse guards on shim verification (omnibus task-003)","decision":null,"why":null,"resolves":["omnibus task-003"],"overrides":[]}
 {"ts":"2026-05-05T12:04:11.985Z","sha":"f9ebfb085b8a","subject":"test(simulator): M4.2 frame-rate floor (omnibus task-004)","decision":null,"why":null,"resolves":["omnibus task-004; closes M4.2 from modernization-pillar."],"overrides":[]}
+{"ts":"2026-05-05T12:08:56.705Z","sha":"0b14761f29e0","subject":"feat(a11y): explicit form labels + drain-in-place frameBuffer fix (omnibus task-005 + task-004 fold-forward)","decision":null,"why":null,"resolves":["omnibus task-005; folds forward task-004 BLOCKING."],"overrides":[]}

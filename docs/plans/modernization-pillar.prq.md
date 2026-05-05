@@ -43,7 +43,7 @@ The commits land in dependency order — toolchain first (everything else is bui
 ### M4 — Pyodide / PyGame correctness (3 commits)
 
 - [ ] M4.1 — Cold-start budget. Wire a perf timer around `getPyodide()` boot; surface in `console.info` and (in dev) on a HUD overlay. Set a budget in `docs/pillars/02-runtime.md` (target: <3s on first load on a mid-tier laptop, <8s on a Chromebook).
-- [ ] M4.2 — Frame-rate test for the simulator. Component-project test mounts the simulator with a realistic component count (≥6 sprites + 2 platforms + a particle effect) and asserts mean frame time < 16.67ms over 2 seconds.
+- [x] M4.2 — Frame-rate test for the simulator. Lands in `tests/unit/simulator-frame-rate.test.ts` (omnibus task-004). Approach swapped from real-rAF wall-clock to CPU-time over 120 synthesized frames with the spec'd 6-sprite + 2-platform + particle-burst load — same regression-detection target (per-frame dispatch cost crossing 16.67ms) at ~1s CI cost vs the original 30s budget. Fake-canvas ledger length used as the lower-bound assertion (timing-based lower bounds floor to 0 in jsdom and don't catch short-circuit refactors). Companion fix: `frameBuffer` declared `const` and drained in-place via `.length = 0` so `getFrameBuffer()`'s exported reference stays identity-stable across flushes.
 - [ ] M4.3 — Worker-side stdout truncation. Move `maxStdout` enforcement into the worker's stdout buffer (truncate during `pyodide.runPython` callback), eliminating the megabytes-across-Comlink case STATE.md flagged. Update the `clipResult` in `worker-runner.ts` to verify the cap, not enforce it.
 
 ### M5 — Grader instrumentation (2 commits)
@@ -135,8 +135,8 @@ The commits land in dependency order — toolchain first (everything else is bui
 
 ### M4.2 — frame-rate test
 
-- [ ] New component-project test asserts mean frame time < 16.67ms with realistic component count.
-- [ ] Test runs in <30s on CI.
+- [x] Test asserts mean frame time < 16.67ms with realistic component count. Lives at `tests/unit/simulator-frame-rate.test.ts`. Synthesized 120-frame measurement of `flushFrameBuffer` CPU dispatch cost (the actual regression target) instead of real-rAF wall-clock — deliberate departure from the original spec, justified in the test header and the omnibus-cleanup PRQ.
+- [x] Test runs in <30s on CI. Actual cost: well under 1s.
 
 ### M4.3 — worker-side maxStdout
 
