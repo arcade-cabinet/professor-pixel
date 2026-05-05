@@ -87,7 +87,9 @@ export default function FloatingFeedback({
   // also be triggered from anywhere else that wants to surface the
   // hint — e.g., a future "?" floating button on the wizard surface.
   useEffect(() => {
-    const onRequestHint = () => setIsVisible(true);
+    // Functional setter: skip the no-op render when the panel is already
+    // visible (Ctrl+Space spam shouldn't churn the AnimatePresence subtree).
+    const onRequestHint = () => setIsVisible((v) => (v ? v : true));
     document.addEventListener('pp:request-hint', onRequestHint);
     return () => document.removeEventListener('pp:request-hint', onRequestHint);
   }, []);
@@ -197,6 +199,7 @@ export default function FloatingFeedback({
                   onClick={() => setIsVisible(false)}
                   className="h-8 w-8 p-0 hover:bg-muted rounded-full transition-all"
                   data-testid="button-dismiss-feedback"
+                  aria-label={strings.floatingFeedback.dismissAriaLabel}
                 >
                   <X className="h-5 w-5" />
                 </Button>

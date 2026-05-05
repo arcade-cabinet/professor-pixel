@@ -376,6 +376,16 @@ export const strings = {
     copyErrorDescription: 'Please try selecting and copying the text manually.',
     applyTitle: 'Solution applied!',
     applyDescription: 'The solution has been added to the code editor.',
+    dismissAriaLabel: 'Dismiss hint panel',
+  },
+
+  /* ─── Icon-only button labels (a11y, P4.24) ─────────────────────────── */
+  iconButtons: {
+    closePixelMenu: 'Close menu',
+    closeAssetBrowser: 'Close asset browser',
+    runnerEnterFullscreen: 'Enter fullscreen',
+    runnerExitFullscreen: 'Exit fullscreen',
+    runnerClose: 'Close runner',
   },
 
   /* ─── Wizard (wizard/universal.tsx) ────────────────────────────────── */

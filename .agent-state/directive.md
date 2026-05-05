@@ -427,7 +427,7 @@ Branch: feat/player-experience-pillar-4
 
 ### task-024 Audit + add aria-label to every icon-only button
 
-- [ ] task-024 every icon-only button has aria-label or sr-only sibling; grep audit clean
+- [x] task-024 every icon-only button has aria-label or sr-only sibling; grep audit clean
 
 ### task-025 Add loading="lazy" on lesson Pixel images
 

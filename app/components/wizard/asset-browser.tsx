@@ -12,6 +12,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { GameAsset, AssetType, AssetFilter, AssetSelection } from '@lib/assets/types';
 import { assetManager } from '@lib/assets/manager';
+import { strings } from '@lib/i18n';
 
 interface AssetBrowserProps {
   onSelect?: (asset: GameAsset) => void;
@@ -303,7 +304,13 @@ export default function AssetBrowserWizard({
             </Button>
 
             {!embedded && onClose && (
-              <Button variant="ghost" size="sm" onClick={onClose} data-testid="button-close">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onClose}
+                data-testid="button-close"
+                aria-label={strings.iconButtons.closeAssetBrowser}
+              >
                 <X className="w-4 h-4" />
               </Button>
             )}

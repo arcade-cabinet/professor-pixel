@@ -180,6 +180,7 @@ export default function PixelMenu({
                     size="icon"
                     className="rounded-full"
                     data-testid="close-pixel-menu"
+                    aria-label={strings.iconButtons.closePixelMenu}
                   >
                     <X className="h-5 w-5" />
                   </Button>

@@ -70,4 +70,24 @@ describe('quota monitoring (P4.20)', () => {
     // No estimate impl set; default falls back to a missing API.
     expect(await shouldWarnQuota()).toBe(false);
   });
+
+  it('warns via the localStorage byte-count fallback when ≥ 4MB used', async () => {
+    // Folded forward from task-022 review: the byte-count path was
+    // untested. Stuff a single ~5MB UTF-16 string in localStorage and
+    // confirm shouldWarnQuota fires even when the estimate API is
+    // unavailable (Safari, private mode, etc.).
+    const FIVE_MB_CODE_UNITS = 5 * 1024 * 1024; // bytes / 2 = code units; total bytes ≈ 10MB
+    const big = 'a'.repeat(FIVE_MB_CODE_UNITS / 2); // ~5MB worth of UTF-16
+    localStorage.setItem('pp.bigKey', big);
+    expect(await shouldWarnQuota()).toBe(true);
+  });
+
+  it('localStorage threshold respects the session-once gate', async () => {
+    const big = 'a'.repeat(3 * 1024 * 1024); // ~6MB UTF-16
+    localStorage.setItem('pp.bigKey', big);
+    expect(await shouldWarnQuota()).toBe(true);
+    markQuotaWarned();
+    // Even though localStorage is still over budget, we don't re-warn.
+    expect(await shouldWarnQuota()).toBe(false);
+  });
 });
