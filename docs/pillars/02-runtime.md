@@ -1,6 +1,6 @@
 ---
 title: Pillar 2 — Runtime
-updated: 2026-05-04
+updated: 2026-05-05
 status: current
 domain: technical
 ---
@@ -123,6 +123,27 @@ If the warning lands consistently in production, the answer is **not** to raise 
 1. Precache `python_stdlib.zip` in the service worker (largest single chunk).
 2. Pre-warm a worker on idle so user code lands on a hot Python heap.
 3. Strip unused stdlib modules at vendor time (currently we ship the full set).
+
+## Worker recovery
+
+Pyodide can wedge — a runaway script eats the heap, an `OSError` from a missing stdlib path fires during boot, an in-progress `loadPyodide()` rejects after the network drops. The singleton is a long-lived cached promise, so once it rejects every subsequent `getPyodide()` call returns the same rejection. The fix is to drop the cache and let the next caller re-bootstrap.
+
+```ts
+import { recoverPyodide, getPyodide } from '@lib/python';
+
+recoverPyodide();              // drops cached promise + window.pyodide
+const pyodide = await getPyodide();   // fresh bootstrap
+```
+
+`recoverPyodide()` (`src/python/pyodide-singleton.ts`) is idempotent and safe to call from any surface (error boundary, debug HUD, "Try again" button). It:
+
+1. Sets `bootstrapPromise = null` so the next `getPyodide()` re-runs the loader.
+2. Resets `coldStartMs` so the next boot's instrumentation is honest (the previous failed boot's number doesn't bleed forward).
+3. Deletes `window.pyodide` so anything inspecting the global doesn't see a stale half-initialized instance.
+
+The implementation guards against a race: if `recoverPyodide()` is called *while* a bootstrap is in-flight, that in-flight promise still resolves into the local handler — but the handler checks `myPromise === bootstrapPromise` before assigning `window.pyodide`, so a late-resolving stale bootstrap can't clobber a fresh one. Test coverage in `tests/unit/pyodide-recover.test.ts` (4 tests, including the race).
+
+The user-facing surface is `app/components/pygame/runner.tsx` — when the runner catches a Pyodide error, it shows a friendly error UI with a **Try again** button that calls `recoverPyodide()` then re-runs the snippet. `try / catch / finally` resets `isLoading` so the UI doesn't get stuck in a loading state if the recover itself fails.
 
 ## PyGame simulator
 

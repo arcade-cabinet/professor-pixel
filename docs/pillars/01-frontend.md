@@ -1,6 +1,6 @@
 ---
 title: Pillar 1 — Frontend
-updated: 2026-05-04
+updated: 2026-05-05
 status: current
 domain: technical
 ---
@@ -104,6 +104,56 @@ The aggregate today reflects the unit project only. Integration and component te
 ## Debug surfaces
 
 `app/components/dev-hud.tsx` — fixed bottom-right floating panel showing Pyodide cold-start ms, current Pyodide state (`uninitialized` / `loading` / `ready` / `error`), and the rendering host. Mounted at the App root, gated by `useDebugFlag()` (`?debug=1` query param OR `localStorage.debug='1'`). Collapse state persists in `localStorage.debug-hud-collapsed`. The HUD polls the singleton state every 500ms — keep it small and fast; don't grow it into a devtools panel.
+
+## Audio surface (TTS + SFX)
+
+`src/audio/` is the only place that touches the Web Speech and Web Audio APIs. Two surfaces:
+
+- **TTS (`tts.ts`)** — `speak(text)` strips emoji via a `\p{Extended_Pictographic}` regex (covers ZWJ + Fitzpatrick + variation selectors), hands the cleaned text to `SpeechSynthesisUtterance`, and routes through `window.speechSynthesis`. A `voiceschanged` listener is installed on the first `speak()` call so Chrome's async voice catalog populates correctly. Voice selection prefers a child-friendly voice if one is available; otherwise the default voice ships.
+- **SFX (`sfx.ts`)** — procedural Web Audio tones for `playSuccess` (C5/E5/G5 chord), `playError`, and `playPop` (option-select feedback). No audio assets — the tones are oscillator-synthesized at play time, so they cost zero bundle weight.
+
+User-facing toggle lives in the Pixel menu (`app/components/pixel/menu.tsx`) as a `Voice On/Off` card. The toggle persists to `localStorage.audio.enabled`; both `speak` and `playPop` no-op when off. The toggle defaults to **on** for new sessions because the wizard's narration is core to the mascot-driven framing.
+
+The dialogue engine (`app/components/wizard/dialogue-engine.tsx`) calls `speak()` once per node transition (gated on `isAudioEnabled`). The simulator and grader pillars do not import from `src/audio/` — only the wizard / option-handler / celebration surfaces do.
+
+## Accessibility surface
+
+The wizard and editor surfaces meet a baseline a11y bar without an explicit framework:
+
+- **Live regions** — dialogue text is wrapped in `<p role="status" aria-live="polite" aria-atomic>` so screen readers announce node transitions without the user having to refocus.
+- **Option groups** — the multiple-choice option list in `option-handler.tsx` is `role="group"` with `aria-label="Choose one"`; each option button has its own `aria-label` that includes the option text plus state.
+- **Touch targets** — every interactive element on a touch-primary viewport has `min-h-[44px]` (Apple HIG / WCAG SC 2.5.5 target). Toolbar icons collapse from labeled buttons to icon-only buttons under `sm` breakpoint, but the hit area stays 44px+.
+- **Reduced motion** — the celebration sparkle (P1.4) is gated on `window.matchMedia('(prefers-reduced-motion: reduce)').matches === false`. Users who set the OS-level preference get the success copy without animation.
+- **Focus management** — drawer scrims in the WYSIWYG editor are `tabIndex={-1} aria-hidden="true"` so the dialog content owns the natural tab order. Esc on a `role="dialog"` closes the drawer.
+
+Axe-core regression suite lives in `tests/integration/axe-*.test.tsx` (added during the modernization pillar M3.2). Add coverage when surfacing new interactive components.
+
+## Editor responsiveness
+
+The WYSIWYG editor (`app/components/editor/`) adapts via `useViewport()` (`src/hooks/use-viewport.ts` — width + isCompact + isTouchPrimary, reactive to resize / orientation / `(pointer: coarse)` / `(any-pointer: fine)` matchMedia changes).
+
+Layout breakpoints:
+
+- **`>= lg` (≥1024px)** — three-column flex: palette left, canvas center, properties right. Drag-and-drop via react-dnd's HTML5Backend works on mouse-primary devices.
+- **`< lg`** — palette and properties collapse to absolute drawers (`translate-x-full` / `-translate-x-full` off-screen, slid in via toolbar buttons). Properties auto-opens when a component is selected. The toolbar buttons collapse from labeled to icon-only under `sm`.
+
+For touch-primary devices (where the HTML5 drag backend doesn't fire), `armedComponentId` provides a tap-to-arm-then-tap-to-place fallback: tap a palette tile to arm it (`aria-pressed=true`), tap the canvas to place at the click point. The same component re-tapped disarms.
+
+Canvas coordinate scaling: the canvas drawing buffer is fixed at 800×600 internal pixels but rendered at `width: 100%` capped at 800px CSS-wide. Both the click handler and the DnD drop handler scale CSS-pixel offsets to internal coordinates via `(canvas.width / rect.width)` so the two placement paths agree on where a component lands.
+
+## Project export
+
+`src/pygame/runtime/exporter.ts` is the V1 handoff to a real text editor — kids who want to keep editing their game outside the visual editor get a runnable ZIP.
+
+`exportProjectAsZip(scene)` produces:
+- `game.py` — the generated Pygame source
+- `index.html` — a minimal Pyodide CDN bootstrap so the game runs in any modern browser via `python -m http.server` or just opening the file
+- `README.md` — how to run locally, how to publish
+- `assets/` — every selected `GameAsset.path` copied in
+
+`shareOrDownload(blob, filename)` prefers the Web Share API (`navigator.share` with a `File` object, MIME `application/zip`) when available, falling back to a triggered `<a download>` click. The Web Share path lights up "Save to Files" / "AirDrop" / "Save to Drive" on iOS / Android / Chromebook respectively, which is the actual learner-friendly handoff.
+
+Pyodide CDN version is pinned via `PYODIDE_CDN_VERSION` constant in the exporter; bump the constant when the Pyodide vendor in `public/pyodide/` updates.
 
 ## WYSIWYG editor — code-sync boundary (V1)
 

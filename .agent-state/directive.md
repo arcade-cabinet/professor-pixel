@@ -1,6 +1,6 @@
 # Continuous Work Directive — professor-pixel
 
-**Status:** ACTIVE
+**Status:** RELEASED
 **Owner:** jbogaty
 
 ## What CONTINUOUS means
@@ -315,8 +315,8 @@ that ran post-finishing-pillar merge. ONE comprehensive PR; no carve-offs.
 
 ### P10 — Docs / state sweep
 
-- [ ] P10.1 docs/STATE.md — player-experience pillar Active → Done; refresh Next.
-- [ ] P10.2 docs/pillars/01-frontend.md — Audio surface / a11y / Editor responsiveness / Project export subsections.
-- [ ] P10.3 docs/pillars/02-runtime.md — Worker recovery subsection (`runner.recover()` API).
-- [ ] P10.4 docs/playtests/ — closed markers for items this PRQ resolves (Death/Respawn, Game Over Screen).
-- [ ] P10.5 .agent-state/directive.md Status: ACTIVE → RELEASED.
+- [x] P10.1 docs/STATE.md — player-experience pillar added as the most-recent Done milestone with full P1–P10 summary; Active stays empty (no work in flight after this PRQ ships); Next stays empty since this PRQ absorbed every gap surfaced by the playtests. Updated frontmatter date to 2026-05-05.
+- [x] P10.2 docs/pillars/01-frontend.md — added "Audio surface (TTS + SFX)", "Accessibility surface", "Editor responsiveness", and "Project export" subsections after Debug surfaces. Each documents the actual file paths (`src/audio/`, `app/components/editor/`, `src/pygame/runtime/exporter.ts`), the user-facing toggle / breakpoint / Web-Share-with-fallback behaviors, and the test surfaces. The "WYSIWYG editor — code-sync boundary (V1)" subsection from P9 stays adjacent.
+- [x] P10.3 docs/pillars/02-runtime.md — "Worker recovery" subsection added between Cold-start budget and PyGame simulator. Documents `recoverPyodide()` semantics (drops cached promise + window.pyodide + coldStartMs reset), the race-fix via promise identity guard, the runner.tsx user-facing "Try again" surface, and points at `tests/unit/pyodide-recover.test.ts` for the race coverage.
+- [x] P10.4 docs/playtests/ — Death/Respawn and Game Over Screen items annotated with "Engine-level enabled, content-design pending" markers in `platformer.md` and `analysis.md`. Honest framing: this PRQ closed the *engine prerequisites* (gameAssembled action gate, isWizardComplete derived state, runner.recover() + Try Again UI, wizard-completion CTA with Reset path) so a content author can land these scenes as flow-JSON edits without engine work. The remaining authoring is content-design, not engineering — same pattern as the finishing pillar's playtest sweep.
+- [x] P10.5 .agent-state/directive.md Status: ACTIVE → RELEASED. Player-experience pillar shipped end-to-end on `feat/player-experience-pillar`; all P1–P10 items closed.

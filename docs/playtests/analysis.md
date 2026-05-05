@@ -1,6 +1,6 @@
 ---
 title: Playtest Analysis (cross-cutting)
-updated: 2026-05-04
+updated: 2026-05-05
 status: current
 domain: product
 summary: Critical issues observed across all game-type playtests
@@ -44,6 +44,7 @@ summary: Critical issues observed across all game-type playtests
 2. **Death/Respawn**
    - What happens when player dies?
    - Need: "Instant Respawn" vs "Death Animation"
+   - **Engine prerequisites CLOSED (2026-05, player-experience pillar):** wizard `gameAssembled` action gate + `isWizardComplete` derived state + per-component property panel both support a Death/Respawn scene authored as a sub-flow. Remaining work is content authoring (per-game flow-JSON edits), not engineering.
 
 3. **Pause Menu**
    - Never mentioned in any flow
