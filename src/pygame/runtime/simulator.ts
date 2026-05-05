@@ -11,10 +11,44 @@ interface SimulationResult {
   objects: GameObject[];
 }
 
-// Frame buffer for accumulating pygame draw commands
+// Frame buffer for accumulating pygame draw commands. The renderer
+// dispatches by `type` and reads `args` positionally; concrete shapes vary
+// (color string, [x, y] tuple, radius number, points array, etc.) so the
+// args bag stays unknown[] and the dispatch casts each arg as it consumes
+// it — Python's pygame is dynamic by nature, mirror that at the boundary
+// rather than forcing a discriminated union the renderer would have to
+// re-narrow at every call site anyway.
 interface DrawCommand {
-  type: 'circle' | 'rect' | 'line' | 'fill' | 'blit' | 'clear' | 'text';
-  args: any[];
+  type:
+    | 'circle'
+    | 'rect'
+    | 'line'
+    | 'fill'
+    | 'blit'
+    | 'clear'
+    | 'text'
+    | 'polygon'
+    | 'ellipse';
+  args: unknown[];
+}
+
+/** Pygame color: RGB or RGBA tuple, or a CSS color string. The simulator
+ * normalizes through {@link parseColor} at the draw boundary. */
+type PygameColor = [number, number, number] | [number, number, number, number] | string;
+
+/** Pygame rect: either a [x, y, w, h] tuple or a Rect-like object with
+ * compatible fields. */
+type PygameRectArg =
+  | [number, number, number, number]
+  | { x?: number; y?: number; left?: number; top?: number; width?: number; w?: number; height?: number; h?: number };
+
+/** Minimal sprite contract the Group.update / Group.draw helpers consume.
+ * Real pygame sprites have far more API; this is just what the simulator
+ * actually touches when iterating a group. */
+interface PygameSprite {
+  update(): void;
+  image?: RenderingSurface;
+  rect?: { x: number; y: number };
 }
 
 // Global rendering state
@@ -235,7 +269,7 @@ class PygameFont {
       const rgbColor = `rgb(${color[0]}, ${color[1]}, ${color[2]})`;
       // Store text rendering command in frame buffer for later execution
       frameBuffer.push({
-        type: 'text' as any,
+        type: 'text',
         args: [text, 0, 0, rgbColor, `${this.size}px ${this.fontFamily}`],
       });
     }
@@ -349,7 +383,7 @@ export function createPygameEnvironment() {
       ) => {
         if (surface.isMainSurface && canvasContext) {
           const rgbColor = `rgb(${color[0]}, ${color[1]}, ${color[2]})`;
-          frameBuffer.push({ type: 'polygon' as any, args: [rgbColor, points] });
+          frameBuffer.push({ type: 'polygon', args: [rgbColor, points] });
         }
         return null;
       },
@@ -361,7 +395,7 @@ export function createPygameEnvironment() {
         if (surface.isMainSurface && canvasContext) {
           const rgbColor = `rgb(${color[0]}, ${color[1]}, ${color[2]})`;
           frameBuffer.push({
-            type: 'ellipse' as any,
+            type: 'ellipse',
             args: [rgbColor, rect[0], rect[1], rect[2], rect[3]],
           });
         }
@@ -390,7 +424,7 @@ export function createPygameEnvironment() {
     event: {
       get: () => [],
       poll: () => null,
-      Event: (type: number, dict: any = {}) => ({ type, ...dict }),
+      Event: (type: number, dict: Record<string, unknown> = {}) => ({ type, ...dict }),
     },
     key: {
       get_pressed: () => new Array(512).fill(false),
@@ -402,8 +436,8 @@ export function createPygameEnvironment() {
       set_cursor: (
         size: [number, number],
         hotspot: [number, number],
-        xormasks: any,
-        andmasks: any
+        xormasks: unknown,
+        andmasks: unknown
       ) => null,
     },
     Surface: RenderingSurface,
@@ -433,11 +467,11 @@ export function createPygameEnvironment() {
         kill() {}
       },
       Group: class {
-        sprites: any[] = [];
-        add(sprite: any) {
+        sprites: PygameSprite[] = [];
+        add(sprite: PygameSprite) {
           this.sprites.push(sprite);
         }
-        remove(sprite: any) {
+        remove(sprite: PygameSprite) {
           const idx = this.sprites.indexOf(sprite);
           if (idx > -1) this.sprites.splice(idx, 1);
         }
@@ -482,8 +516,8 @@ export function createPygameEnvironment() {
     random: {
       randint: (min: number, max: number) => Math.floor(Math.random() * (max - min + 1)) + min,
       random: () => Math.random(),
-      choice: (arr: any[]) => arr[Math.floor(Math.random() * arr.length)],
-      shuffle: (arr: any[]) => {
+      choice: (arr: unknown[]) => arr[Math.floor(Math.random() * arr.length)],
+      shuffle: (arr: unknown[]) => {
         for (let i = arr.length - 1; i > 0; i--) {
           const j = Math.floor(Math.random() * (i + 1));
           [arr[i], arr[j]] = [arr[j], arr[i]];
@@ -512,28 +546,49 @@ export function flushFrameBuffer() {
           canvasContext.clearRect(0, 0, canvasContext.canvas.width, canvasContext.canvas.height);
           break;
 
-        case 'fill':
-          const [fillColor] = command.args;
+        case 'fill': {
+          const [fillColor] = command.args as [string];
           canvasContext.fillStyle = fillColor;
           canvasContext.fillRect(0, 0, canvasContext.canvas.width, canvasContext.canvas.height);
           break;
+        }
 
-        case 'circle':
-          const [circleColor, centerX, centerY, radius] = command.args;
+        case 'circle': {
+          const [circleColor, centerX, centerY, radius] = command.args as [
+            string,
+            number,
+            number,
+            number,
+          ];
           canvasContext.fillStyle = circleColor;
           canvasContext.beginPath();
           canvasContext.arc(centerX, centerY, radius, 0, 2 * Math.PI);
           canvasContext.fill();
           break;
+        }
 
-        case 'rect':
-          const [rectColor, rectX, rectY, rectWidth, rectHeight] = command.args;
+        case 'rect': {
+          const [rectColor, rectX, rectY, rectWidth, rectHeight] = command.args as [
+            string,
+            number,
+            number,
+            number,
+            number,
+          ];
           canvasContext.fillStyle = rectColor;
           canvasContext.fillRect(rectX, rectY, rectWidth, rectHeight);
           break;
+        }
 
-        case 'line':
-          const [lineColor, startX, startY, endX, endY, lineWidth] = command.args;
+        case 'line': {
+          const [lineColor, startX, startY, endX, endY, lineWidth] = command.args as [
+            string,
+            number,
+            number,
+            number,
+            number,
+            number | undefined,
+          ];
           canvasContext.strokeStyle = lineColor;
           canvasContext.lineWidth = lineWidth || 1;
           canvasContext.beginPath();
@@ -541,9 +596,10 @@ export function flushFrameBuffer() {
           canvasContext.lineTo(endX, endY);
           canvasContext.stroke();
           break;
+        }
 
-        case 'polygon' as any:
-          const [polyColor, points] = command.args;
+        case 'polygon': {
+          const [polyColor, points] = command.args as [string, Array<[number, number]>];
           if (points && points.length > 0) {
             canvasContext.fillStyle = polyColor;
             canvasContext.beginPath();
@@ -555,9 +611,11 @@ export function flushFrameBuffer() {
             canvasContext.fill();
           }
           break;
+        }
 
-        case 'ellipse' as any:
-          const [ellipseColor, ellipseX, ellipseY, ellipseWidth, ellipseHeight] = command.args;
+        case 'ellipse': {
+          const [ellipseColor, ellipseX, ellipseY, ellipseWidth, ellipseHeight] =
+            command.args as [string, number, number, number, number];
           canvasContext.fillStyle = ellipseColor;
           canvasContext.beginPath();
           canvasContext.ellipse(
@@ -571,20 +629,34 @@ export function flushFrameBuffer() {
           );
           canvasContext.fill();
           break;
+        }
 
-        case 'text':
-          const [text, textX, textY, textColor, font] = command.args;
+        case 'text': {
+          const [text, textX, textY, textColor, font] = command.args as [
+            string,
+            number,
+            number,
+            string,
+            string,
+          ];
           canvasContext.fillStyle = textColor;
           canvasContext.font = font;
           canvasContext.fillText(text, textX, textY);
           break;
+        }
 
-        case 'blit':
+        case 'blit': {
           // For now, just draw a placeholder rectangle for blits
-          const [blitWidth, blitHeight, blitX, blitY] = command.args;
+          const [blitWidth, blitHeight, blitX, blitY] = command.args as [
+            number,
+            number,
+            number,
+            number,
+          ];
           canvasContext.fillStyle = 'rgba(100, 100, 100, 0.5)';
           canvasContext.fillRect(blitX, blitY, blitWidth, blitHeight);
           break;
+        }
       }
     }
   } catch (error) {
@@ -596,7 +668,7 @@ export function flushFrameBuffer() {
 }
 
 // Utility function to convert pygame color to CSS color
-function parseColor(color: any): string {
+function parseColor(color: unknown): string {
   if (Array.isArray(color)) {
     if (color.length >= 3) {
       const r = Math.max(0, Math.min(255, Math.floor(color[0])));
@@ -712,7 +784,7 @@ export const pygameShim = {
 
   // Enhanced draw module with real rendering
   draw: {
-    circle(surface: RenderingSurface, color: any, pos: [number, number], radius: number) {
+    circle(surface: RenderingSurface, color: PygameColor, pos: [number, number], radius: number) {
       if (surface.isMainSurface && isRenderingActive) {
         const cssColor = parseColor(color);
         frameBuffer.push({
@@ -721,18 +793,18 @@ export const pygameShim = {
         });
       }
     },
-    rect(surface: RenderingSurface, color: any, rect: any) {
+    rect(surface: RenderingSurface, color: PygameColor, rect: PygameRectArg) {
       if (surface.isMainSurface && isRenderingActive) {
         const cssColor = parseColor(color);
-        let x, y, width, height;
+        let x: number, y: number, width: number, height: number;
 
         if (Array.isArray(rect) && rect.length >= 4) {
           [x, y, width, height] = rect;
-        } else if (rect && typeof rect === 'object') {
-          x = rect.x || rect.left || 0;
-          y = rect.y || rect.top || 0;
-          width = rect.width || rect.w || 50;
-          height = rect.height || rect.h || 50;
+        } else if (rect && typeof rect === 'object' && !Array.isArray(rect)) {
+          x = rect.x ?? rect.left ?? 0;
+          y = rect.y ?? rect.top ?? 0;
+          width = rect.width ?? rect.w ?? 50;
+          height = rect.height ?? rect.h ?? 50;
         } else {
           x = y = 0;
           width = height = 50;
@@ -746,7 +818,7 @@ export const pygameShim = {
     },
     line(
       surface: RenderingSurface,
-      color: any,
+      color: PygameColor,
       start: [number, number],
       end: [number, number],
       width: number = 1
@@ -759,7 +831,7 @@ export const pygameShim = {
         });
       }
     },
-    polygon(surface: RenderingSurface, color: any, points: [number, number][]) {
+    polygon(surface: RenderingSurface, color: PygameColor, points: [number, number][]) {
       // Approximate polygon with lines for now
       if (surface.isMainSurface && isRenderingActive && points.length > 1) {
         const cssColor = parseColor(color);
@@ -784,7 +856,7 @@ export const pygameShim = {
     pump() {
       /* Process events - no-op for simulation */
     },
-    Event(type: number, dict: any = {}) {
+    Event(type: number, dict: Record<string, unknown> = {}) {
       return { type, ...dict };
     },
   },

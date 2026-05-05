@@ -150,8 +150,8 @@ Cascade: pygame/components/registry now exports `AnyPyGameComponent` (preview/ge
 
 ### A5 — pygame simulator + components
 
-- [ ] A5.1 simulator.ts remaining 15 non-Pyodide `any`s → `Record<string, unknown>` or component config types
-- [ ] A5.2 pygame/components/types.ts — 2 `any`s on component value getters → generics
+- [x] A5.1 simulator.ts: zero `any`s. Authored `PygameColor` (RGB/RGBA tuple | CSS string), `PygameRectArg` (tuple | Rect-like object), `PygameSprite` (minimal contract: update + image + rect). Draw API typed via these (`circle`, `rect`, `line`, `polygon` + their registerPygameShim copies). DrawCommand.args stays `unknown[]` because pygame is dynamic; renderer dispatch uses tuple-cast destructures per case (`as [string, number, number, number]` for circle, etc.). Group sprites array typed `PygameSprite[]`. `Event(type, dict)` → `Record<string, unknown>`. `choice/shuffle: any[]` → `unknown[]`. `parseColor(color: any)` → `unknown` (it already does runtime-shape probing). `'text'/'polygon'/'ellipse' as any` casts dropped — added to DrawCommand.type union.
+- [x] A5.2 pygame/components/types.ts — already covered in A4 (generic `PyGameComponent<P>` + `ComponentPropertyValue` + `PropertyDefinition`)
 
 ### A6 — Net + hooks tail
 
