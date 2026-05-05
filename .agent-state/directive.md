@@ -331,7 +331,7 @@ Branch: feat/player-experience-pillar-4
 - [ ] task-001 src/i18n/{strings,index,use-strings}.ts created and all hardcoded user-facing copy in pages + chrome routed through useStrings()/strings; tests pass
 
 ### task-002 Add preconnect + script preload for Pyodide CDN to index.html
-- [ ] task-002 index.html has preconnect and preload entries for the pinned Pyodide URL; cold-load TTFB improvement noted
+- [x] task-002 index.html has preconnect and preload entries for the pinned Pyodide URL; cold-load TTFB improvement noted
 
 ### task-003 Wizard step history stack + back button
 - [ ] task-003 universal.tsx has history stack + Back button; pop restores prior UI; new test green
