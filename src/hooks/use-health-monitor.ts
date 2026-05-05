@@ -206,15 +206,20 @@ export function usePerformanceHealth() {
     const metrics = getPerformanceMetrics();
     const issues: string[] = [];
 
-    if (metrics.performance?.apiResponseTime > 2000) {
+    const apiResponseTime = (metrics.performance as { apiResponseTime?: number } | null)
+      ?.apiResponseTime;
+    const errorRate = (metrics.performance as { errorRate?: number } | null)?.errorRate;
+    const memoryPercentage = (metrics.memory as { percentage?: number } | null)?.percentage;
+
+    if (apiResponseTime !== undefined && apiResponseTime > 2000) {
       issues.push('Slow API responses detected');
     }
 
-    if (metrics.performance?.errorRate > 5) {
+    if (errorRate !== undefined && errorRate > 5) {
       issues.push('High error rate detected');
     }
 
-    if (metrics.memory?.percentage > 80) {
+    if (memoryPercentage !== undefined && memoryPercentage > 80) {
       issues.push('High memory usage detected');
     }
 

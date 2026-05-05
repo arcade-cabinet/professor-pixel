@@ -24,7 +24,7 @@ export interface LogEntry {
   category: LogCategory;
   message: string;
   timestamp: Date;
-  data?: any;
+  data?: unknown;
   context?: string;
   userId?: string;
   sessionId: string;
@@ -156,7 +156,7 @@ class ConsoleLogger {
   }
 
   // Main logging method
-  log(level: LogLevel, category: LogCategory, message: string, data?: any, context?: string) {
+  log(level: LogLevel, category: LogCategory, message: string, data?: unknown, context?: string) {
     const entry: LogEntry = {
       level,
       category,
@@ -197,115 +197,115 @@ class ConsoleLogger {
   }
 
   // Convenience methods for each level
-  debug(category: LogCategory, message: string, data?: any, context?: string) {
+  debug(category: LogCategory, message: string, data?: unknown, context?: string) {
     this.log('debug', category, message, data, context);
   }
 
-  info(category: LogCategory, message: string, data?: any, context?: string) {
+  info(category: LogCategory, message: string, data?: unknown, context?: string) {
     this.log('info', category, message, data, context);
   }
 
-  warn(category: LogCategory, message: string, data?: any, context?: string) {
+  warn(category: LogCategory, message: string, data?: unknown, context?: string) {
     this.log('warn', category, message, data, context);
   }
 
-  error(category: LogCategory, message: string, data?: any, context?: string) {
+  error(category: LogCategory, message: string, data?: unknown, context?: string) {
     this.log('error', category, message, data, context);
   }
 
-  success(category: LogCategory, message: string, data?: any, context?: string) {
+  success(category: LogCategory, message: string, data?: unknown, context?: string) {
     this.log('success', category, message, data, context);
   }
 
   // Category-specific convenience methods
   system = {
-    debug: (message: string, data?: any, context?: string) =>
+    debug: (message: string, data?: unknown, context?: string) =>
       this.debug('system', message, data, context),
-    info: (message: string, data?: any, context?: string) =>
+    info: (message: string, data?: unknown, context?: string) =>
       this.info('system', message, data, context),
-    warn: (message: string, data?: any, context?: string) =>
+    warn: (message: string, data?: unknown, context?: string) =>
       this.warn('system', message, data, context),
-    error: (message: string, data?: any, context?: string) =>
+    error: (message: string, data?: unknown, context?: string) =>
       this.error('system', message, data, context),
-    success: (message: string, data?: any, context?: string) =>
+    success: (message: string, data?: unknown, context?: string) =>
       this.success('system', message, data, context),
   };
 
   python = {
-    debug: (message: string, data?: any, context?: string) =>
+    debug: (message: string, data?: unknown, context?: string) =>
       this.debug('python', message, data, context),
-    info: (message: string, data?: any, context?: string) =>
+    info: (message: string, data?: unknown, context?: string) =>
       this.info('python', message, data, context),
-    warn: (message: string, data?: any, context?: string) =>
+    warn: (message: string, data?: unknown, context?: string) =>
       this.warn('python', message, data, context),
-    error: (message: string, data?: any, context?: string) =>
+    error: (message: string, data?: unknown, context?: string) =>
       this.error('python', message, data, context),
-    success: (message: string, data?: any, context?: string) =>
+    success: (message: string, data?: unknown, context?: string) =>
       this.success('python', message, data, context),
   };
 
   pygame = {
-    debug: (message: string, data?: any, context?: string) =>
+    debug: (message: string, data?: unknown, context?: string) =>
       this.debug('pygame', message, data, context),
-    info: (message: string, data?: any, context?: string) =>
+    info: (message: string, data?: unknown, context?: string) =>
       this.info('pygame', message, data, context),
-    warn: (message: string, data?: any, context?: string) =>
+    warn: (message: string, data?: unknown, context?: string) =>
       this.warn('pygame', message, data, context),
-    error: (message: string, data?: any, context?: string) =>
+    error: (message: string, data?: unknown, context?: string) =>
       this.error('pygame', message, data, context),
-    success: (message: string, data?: any, context?: string) =>
+    success: (message: string, data?: unknown, context?: string) =>
       this.success('pygame', message, data, context),
   };
 
   user = {
-    debug: (message: string, data?: any, context?: string) =>
+    debug: (message: string, data?: unknown, context?: string) =>
       this.debug('user', message, data, context),
-    info: (message: string, data?: any, context?: string) =>
+    info: (message: string, data?: unknown, context?: string) =>
       this.info('user', message, data, context),
-    warn: (message: string, data?: any, context?: string) =>
+    warn: (message: string, data?: unknown, context?: string) =>
       this.warn('user', message, data, context),
-    error: (message: string, data?: any, context?: string) =>
+    error: (message: string, data?: unknown, context?: string) =>
       this.error('user', message, data, context),
-    success: (message: string, data?: any, context?: string) =>
+    success: (message: string, data?: unknown, context?: string) =>
       this.success('user', message, data, context),
   };
 
   network = {
-    debug: (message: string, data?: any, context?: string) =>
+    debug: (message: string, data?: unknown, context?: string) =>
       this.debug('network', message, data, context),
-    info: (message: string, data?: any, context?: string) =>
+    info: (message: string, data?: unknown, context?: string) =>
       this.info('network', message, data, context),
-    warn: (message: string, data?: any, context?: string) =>
+    warn: (message: string, data?: unknown, context?: string) =>
       this.warn('network', message, data, context),
-    error: (message: string, data?: any, context?: string) =>
+    error: (message: string, data?: unknown, context?: string) =>
       this.error('network', message, data, context),
-    success: (message: string, data?: any, context?: string) =>
+    success: (message: string, data?: unknown, context?: string) =>
       this.success('network', message, data, context),
   };
 
   performance = {
-    debug: (message: string, data?: any, context?: string) =>
+    debug: (message: string, data?: unknown, context?: string) =>
       this.debug('performance', message, data, context),
-    info: (message: string, data?: any, context?: string) =>
+    info: (message: string, data?: unknown, context?: string) =>
       this.info('performance', message, data, context),
-    warn: (message: string, data?: any, context?: string) =>
+    warn: (message: string, data?: unknown, context?: string) =>
       this.warn('performance', message, data, context),
-    error: (message: string, data?: any, context?: string) =>
+    error: (message: string, data?: unknown, context?: string) =>
       this.error('performance', message, data, context),
-    success: (message: string, data?: any, context?: string) =>
+    success: (message: string, data?: unknown, context?: string) =>
       this.success('performance', message, data, context),
   };
 
   ui = {
-    debug: (message: string, data?: any, context?: string) =>
+    debug: (message: string, data?: unknown, context?: string) =>
       this.debug('ui', message, data, context),
-    info: (message: string, data?: any, context?: string) =>
+    info: (message: string, data?: unknown, context?: string) =>
       this.info('ui', message, data, context),
-    warn: (message: string, data?: any, context?: string) =>
+    warn: (message: string, data?: unknown, context?: string) =>
       this.warn('ui', message, data, context),
-    error: (message: string, data?: any, context?: string) =>
+    error: (message: string, data?: unknown, context?: string) =>
       this.error('ui', message, data, context),
-    success: (message: string, data?: any, context?: string) =>
+    success: (message: string, data?: unknown, context?: string) =>
       this.success('ui', message, data, context),
   };
 
@@ -471,7 +471,7 @@ export const educationalLogger = {
     }
   },
 
-  gameInteraction: (action: string, details?: any) => {
+  gameInteraction: (action: string, details?: unknown) => {
     logger.info('pygame', `Game interaction: ${action}`, details);
   },
 

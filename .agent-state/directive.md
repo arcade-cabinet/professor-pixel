@@ -130,10 +130,10 @@ Branch: feat/any-cleanup-pillar
 
 ### A2 — Log/event payload sweep
 
-- [ ] A2.1 console-logger.ts — `data?: any` → `unknown` on LogEntry, cascade to call sites
-- [ ] A2.2 health.ts — `metadata?: any` → `unknown`
-- [ ] A2.3 retry.ts + use-retry-query.ts — retry-callback payloads → `unknown` with `instanceof Error` guards
-- [ ] A2.4 errors/tracker.ts — context `any` → `unknown` with instanceof guards in serializer
+- [x] A2.1 console-logger.ts — 43 `data?: any` → `unknown`; LogEntry.data + every log helper signature; gameInteraction details param
+- [x] A2.2 health.ts — `details?: Record<string, any>` → `Record<string, unknown>`; 13 `catch (error: any)` → `catch (error: unknown)` with `errMsg` instanceof guards; `(window as any).loadPyodide` + `(performance as any).memory` + `__healthMonitor` global typed via narrow Window/Performance casts
+- [x] A2.3 retry.ts + use-retry-query.ts — RetryOptions callbacks + RetryResult.error + UseRetryState.lastError → `unknown`; introduced `RetryErrorShape` + `asRetryError()` defensive probe; (error as any).status pattern → typed Error & {status} cast; use-retry-query.ts cascades fixed (trackNetworkError needs Error so wraps via instanceof guard); use-health-monitor.ts metric narrowing for the `Record<string, unknown>` cascade
+- [x] A2.4 errors/tracker.ts — 3 `catch (e: any)` → `catch (e: unknown)` with instanceof message guards; `(window as any).__errorTracker` typed
 
 ### A3 — Storage/persistence shape typing
 

@@ -114,8 +114,10 @@ class ErrorTracker {
           this.errorPatterns.set(pattern.pattern, pattern);
         });
       }
-    } catch (e: any) {
-      logger.system.warn('Failed to load persisted error data', { error: e?.message || String(e) });
+    } catch (e: unknown) {
+      logger.system.warn('Failed to load persisted error data', {
+        error: e instanceof Error ? e.message : String(e),
+      });
     }
   }
 
@@ -126,8 +128,10 @@ class ErrorTracker {
 
       const patternsArray = Array.from(this.errorPatterns.values());
       localStorage.setItem('pygame-error-patterns', JSON.stringify(patternsArray));
-    } catch (e: any) {
-      logger.system.warn('Failed to persist error data', { error: e?.message || String(e) });
+    } catch (e: unknown) {
+      logger.system.warn('Failed to persist error data', {
+        error: e instanceof Error ? e.message : String(e),
+      });
     }
   }
 
@@ -453,8 +457,10 @@ class ErrorTracker {
     this.observers.forEach((observer) => {
       try {
         observer(analytics);
-      } catch (e: any) {
-        logger.system.error('Error tracker observer failed', { error: e?.message || String(e) });
+      } catch (e: unknown) {
+        logger.system.error('Error tracker observer failed', {
+          error: e instanceof Error ? e.message : String(e),
+        });
       }
     });
   }
@@ -537,7 +543,7 @@ export const exportErrorData = () => errorTracker.exportErrorData();
 
 // Make error tracker available globally in development
 if (import.meta.env.DEV) {
-  (window as any).__errorTracker = errorTracker;
+  (window as Window & { __errorTracker?: typeof errorTracker }).__errorTracker = errorTracker;
 }
 
 export default errorTracker;

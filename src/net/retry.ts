@@ -5,6 +5,24 @@
 
 import React, { useState } from 'react';
 
+/**
+ * Shape we probe on a thrown value to drive retry decisions. We accept
+ * `unknown` at the boundary and read these fields defensively (each access
+ * uses optional chaining + nullish checks). Everything is optional because
+ * the value may not even be an Error object.
+ */
+interface RetryErrorShape {
+  name?: string;
+  code?: string;
+  message?: string;
+  status?: number;
+  type?: string;
+}
+
+function asRetryError(e: unknown): RetryErrorShape {
+  return (typeof e === 'object' && e !== null ? e : {}) as RetryErrorShape;
+}
+
 export interface RetryOptions {
   /** Maximum number of retry attempts */
   maxAttempts?: number;
@@ -17,17 +35,17 @@ export interface RetryOptions {
   /** Jitter to add randomness to delays */
   jitter?: boolean;
   /** Function to determine if error should trigger retry */
-  shouldRetry?: (error: any, attempt: number) => boolean;
+  shouldRetry?: (error: unknown, attempt: number) => boolean;
   /** Callback for retry attempts */
-  onRetry?: (error: any, attempt: number) => void;
+  onRetry?: (error: unknown, attempt: number) => void;
   /** Callback for final failure */
-  onFinalFailure?: (error: any, totalAttempts: number) => void;
+  onFinalFailure?: (error: unknown, totalAttempts: number) => void;
 }
 
 export interface RetryResult<T> {
   success: boolean;
   data?: T;
-  error?: any;
+  error?: unknown;
   attempts: number;
   totalTime: number;
 }
@@ -39,40 +57,42 @@ class RetryMechanism {
     maxDelay: 30000,
     backoffMultiplier: 2,
     jitter: true,
-    shouldRetry: (error: any, attempt: number) => this.defaultShouldRetry(error, attempt),
+    shouldRetry: (error: unknown, attempt: number) => this.defaultShouldRetry(error, attempt),
     onRetry: () => {},
     onFinalFailure: () => {},
   };
 
-  private defaultShouldRetry(error: any, attempt: number): boolean {
+  private defaultShouldRetry(error: unknown, attempt: number): boolean {
     // Don't retry on final attempt
     if (attempt >= this.defaultOptions.maxAttempts) return false;
 
+    const e = asRetryError(error);
+
     // Retry network errors
-    if (error?.name === 'NetworkError' || error?.code === 'NETWORK_ERROR') return true;
+    if (e.name === 'NetworkError' || e.code === 'NETWORK_ERROR') return true;
 
     // Retry timeout errors
-    if (error?.name === 'TimeoutError' || error?.message?.includes('timeout')) return true;
+    if (e.name === 'TimeoutError' || e.message?.includes('timeout')) return true;
 
     // Retry 5xx server errors
-    if (error?.status >= 500 && error?.status < 600) return true;
+    if (e.status !== undefined && e.status >= 500 && e.status < 600) return true;
 
     // Retry specific client errors that might be temporary
-    if (error?.status === 408 || error?.status === 429) return true; // Request timeout, Too Many Requests
+    if (e.status === 408 || e.status === 429) return true; // Request timeout, Too Many Requests
 
     // Retry connection failures
     if (
-      error?.message?.includes('Failed to fetch') ||
-      error?.message?.includes('Connection failed') ||
-      error?.message?.includes('ERR_NETWORK')
+      e.message?.includes('Failed to fetch') ||
+      e.message?.includes('Connection failed') ||
+      e.message?.includes('ERR_NETWORK')
     )
       return true;
 
     // Don't retry client errors (4xx except specific ones)
-    if (error?.status >= 400 && error?.status < 500) return false;
+    if (e.status !== undefined && e.status >= 400 && e.status < 500) return false;
 
     // Don't retry authentication errors
-    if (error?.status === 401 || error?.status === 403) return false;
+    if (e.status === 401 || e.status === 403) return false;
 
     // Retry unknown errors
     return true;
@@ -105,7 +125,7 @@ class RetryMechanism {
   ): Promise<RetryResult<T>> {
     const options = { ...this.defaultOptions, ...userOptions };
     const startTime = Date.now();
-    let lastError: any;
+    let lastError: unknown;
 
     for (let attempt = 1; attempt <= options.maxAttempts; attempt++) {
       try {
@@ -162,9 +182,12 @@ class RetryMechanism {
         const response = await fetch(url, fetchOptions);
 
         if (!response.ok) {
-          const error = new Error(`HTTP ${response.status}: ${response.statusText}`);
-          (error as any).status = response.status;
-          (error as any).statusText = response.statusText;
+          const error = new Error(`HTTP ${response.status}: ${response.statusText}`) as Error & {
+            status?: number;
+            statusText?: string;
+          };
+          error.status = response.status;
+          error.statusText = response.statusText;
           throw error;
         }
 
@@ -218,12 +241,13 @@ class RetryMechanism {
     const pythonRetryOptions: RetryOptions = {
       maxAttempts: 2, // Don't retry Python errors as much
       baseDelay: 500,
-      shouldRetry: (error: any, attempt: number) => {
+      shouldRetry: (error: unknown, _attempt: number) => {
+        const e = asRetryError(error);
         // Only retry on specific Python runtime errors
-        if (error?.message?.includes('pyodide not ready')) return true;
-        if (error?.message?.includes('Worker error')) return true;
-        if (error?.message?.includes('Memory error')) return false; // Don't retry memory errors
-        if (error?.type === 'SyntaxError') return false; // Don't retry syntax errors
+        if (e.message?.includes('pyodide not ready')) return true;
+        if (e.message?.includes('Worker error')) return true;
+        if (e.message?.includes('Memory error')) return false; // Don't retry memory errors
+        if (e.type === 'SyntaxError') return false; // Don't retry syntax errors
         return false; // Don't retry most Python errors
       },
       ...retryOptions,
@@ -248,11 +272,12 @@ class RetryMechanism {
     const fileRetryOptions: RetryOptions = {
       maxAttempts: 3,
       baseDelay: 2000,
-      shouldRetry: (error: any, attempt: number) => {
+      shouldRetry: (error: unknown, _attempt: number) => {
+        const e = asRetryError(error);
         // Retry network and server errors for file operations
-        if (error?.message?.includes('Failed to fetch')) return true;
-        if (error?.status >= 500) return true;
-        if (error?.status === 408 || error?.status === 429) return true;
+        if (e.message?.includes('Failed to fetch')) return true;
+        if (e.status !== undefined && e.status >= 500) return true;
+        if (e.status === 408 || e.status === 429) return true;
         return false;
       },
       ...retryOptions,
@@ -298,7 +323,7 @@ export const fileOperationWithRetry = <T>(
 export interface UseRetryState {
   isRetrying: boolean;
   retryCount: number;
-  lastError: any;
+  lastError: unknown;
   canRetry: boolean;
 }
 

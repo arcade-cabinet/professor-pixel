@@ -17,7 +17,7 @@ export interface HealthCheck {
 export interface HealthResult {
   status: 'healthy' | 'warning' | 'critical' | 'unknown';
   message: string;
-  details?: Record<string, any>;
+  details?: Record<string, unknown>;
   timestamp: Date;
   responseTime?: number;
 }
@@ -52,7 +52,7 @@ class HealthMonitor {
           const startTime = performance.now();
 
           // Check if pyodide is globally available
-          if (typeof (window as any).loadPyodide === 'undefined') {
+          if (typeof window.loadPyodide === 'undefined') {
             return {
               status: 'critical',
               message: 'Pyodide loader not available',
@@ -81,20 +81,22 @@ class HealthMonitor {
               timestamp: new Date(),
               responseTime: performance.now() - startTime,
             };
-          } catch (error: any) {
+          } catch (error: unknown) {
+            const errMsg = error instanceof Error ? error.message : String(error);
             return {
               status: 'critical',
-              message: `Pyodide execution failed: ${error?.message || String(error)}`,
-              details: { error: error?.message || String(error) },
+              message: `Pyodide execution failed: ${errMsg}`,
+              details: { error: errMsg },
               timestamp: new Date(),
               responseTime: performance.now() - startTime,
             };
           }
-        } catch (error: any) {
+        } catch (error: unknown) {
+          const errMsg = error instanceof Error ? error.message : String(error);
           return {
             status: 'critical',
-            message: `Pyodide health check failed: ${error?.message || String(error)}`,
-            details: { error: error?.message || String(error) },
+            message: `Pyodide health check failed: ${errMsg}`,
+            details: { error: errMsg },
             timestamp: new Date(),
           };
         }
@@ -135,20 +137,22 @@ pygame.quit()
               timestamp: new Date(),
               responseTime: performance.now() - startTime,
             };
-          } catch (error: any) {
+          } catch (error: unknown) {
+            const errMsg = error instanceof Error ? error.message : String(error);
             return {
               status: 'critical',
-              message: `Pygame shim failed: ${error?.message || String(error)}`,
-              details: { error: error?.message || String(error) },
+              message: `Pygame shim failed: ${errMsg}`,
+              details: { error: errMsg },
               timestamp: new Date(),
               responseTime: performance.now() - startTime,
             };
           }
-        } catch (error: any) {
+        } catch (error: unknown) {
+          const errMsg = error instanceof Error ? error.message : String(error);
           return {
             status: 'critical',
-            message: `Pygame health check failed: ${error?.message || String(error)}`,
-            details: { error: error?.message || String(error) },
+            message: `Pygame health check failed: ${errMsg}`,
+            details: { error: errMsg },
             timestamp: new Date(),
           };
         }
@@ -197,7 +201,7 @@ pygame.quit()
                 responseTime,
               };
             }
-          } catch (error: any) {
+          } catch (error: unknown) {
             const responseTime = performance.now() - startTime;
 
             if (error instanceof Error && error.name === 'AbortError') {
@@ -221,11 +225,12 @@ pygame.quit()
               responseTime,
             };
           }
-        } catch (error: any) {
+        } catch (error: unknown) {
+          const errMsg = error instanceof Error ? error.message : String(error);
           return {
             status: 'critical',
-            message: `API health check failed: ${error?.message || String(error)}`,
-            details: { error: error?.message || String(error) },
+            message: `API health check failed: ${errMsg}`,
+            details: { error: errMsg },
             timestamp: new Date(),
           };
         }
@@ -258,11 +263,12 @@ pygame.quit()
                 responseTime: performance.now() - startTime,
               };
             }
-          } catch (error: any) {
+          } catch (error: unknown) {
+            const errMsg = error instanceof Error ? error.message : String(error);
             return {
               status: 'warning',
-              message: `localStorage not available: ${error?.message || String(error)}`,
-              details: { error: error?.message || String(error) },
+              message: `localStorage not available: ${errMsg}`,
+              details: { error: errMsg },
               timestamp: new Date(),
               responseTime: performance.now() - startTime,
             };
@@ -284,11 +290,12 @@ pygame.quit()
                 responseTime: performance.now() - startTime,
               };
             }
-          } catch (error: any) {
+          } catch (error: unknown) {
+            const errMsg = error instanceof Error ? error.message : String(error);
             return {
               status: 'warning',
-              message: `sessionStorage not available: ${error?.message || String(error)}`,
-              details: { error: error?.message || String(error) },
+              message: `sessionStorage not available: ${errMsg}`,
+              details: { error: errMsg },
               timestamp: new Date(),
               responseTime: performance.now() - startTime,
             };
@@ -300,11 +307,12 @@ pygame.quit()
             timestamp: new Date(),
             responseTime: performance.now() - startTime,
           };
-        } catch (error: any) {
+        } catch (error: unknown) {
+          const errMsg = error instanceof Error ? error.message : String(error);
           return {
             status: 'warning',
-            message: `Storage health check failed: ${error?.message || String(error)}`,
-            details: { error: error?.message || String(error) },
+            message: `Storage health check failed: ${errMsg}`,
+            details: { error: errMsg },
             timestamp: new Date(),
           };
         }
@@ -322,7 +330,15 @@ pygame.quit()
           const startTime = performance.now();
 
           // Type-safe check for browser memory API
-          const memoryInfo = (performance as any).memory;
+          const memoryInfo = (
+            performance as Performance & {
+              memory?: {
+                usedJSHeapSize: number;
+                totalJSHeapSize: number;
+                jsHeapSizeLimit: number;
+              };
+            }
+          ).memory;
           if (!memoryInfo) {
             return {
               status: 'unknown',
@@ -358,11 +374,12 @@ pygame.quit()
             timestamp: new Date(),
             responseTime: performance.now() - startTime,
           };
-        } catch (error: any) {
+        } catch (error: unknown) {
+          const errMsg = error instanceof Error ? error.message : String(error);
           return {
             status: 'unknown',
-            message: `Memory health check failed: ${error?.message || String(error)}`,
-            details: { error: error?.message || String(error) },
+            message: `Memory health check failed: ${errMsg}`,
+            details: { error: errMsg },
             timestamp: new Date(),
           };
         }
@@ -424,11 +441,12 @@ pygame.quit()
             timestamp: new Date(),
             responseTime: performance.now() - startTime,
           };
-        } catch (error: any) {
+        } catch (error: unknown) {
+          const errMsg = error instanceof Error ? error.message : String(error);
           return {
             status: 'unknown',
-            message: `Performance health check failed: ${error?.message || String(error)}`,
-            details: { error: error?.message || String(error) },
+            message: `Performance health check failed: ${errMsg}`,
+            details: { error: errMsg },
             timestamp: new Date(),
           };
         }
@@ -474,17 +492,18 @@ pygame.quit()
       logger.system.info(`Health check completed: ${name}`, { result });
 
       return result;
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errMsg = error instanceof Error ? error.message : String(error);
       const result: HealthResult = {
         status: 'critical',
-        message: `Health check failed: ${error?.message || String(error)}`,
-        details: { error: error?.message || String(error) },
+        message: `Health check failed: ${errMsg}`,
+        details: { error: errMsg },
         timestamp: new Date(),
       };
 
       this.lastResults.set(name, result);
       logger.system.error(`Health check failed: ${name}`, {
-        error: error?.message || String(error),
+        error: errMsg,
       });
 
       return result;
@@ -599,9 +618,10 @@ pygame.quit()
     this.observers.forEach((observer) => {
       try {
         observer(health);
-      } catch (error: any) {
+      } catch (error: unknown) {
+        const errMsg = error instanceof Error ? error.message : String(error);
         logger.system.error('Health monitor observer error', {
-          error: error?.message || String(error),
+          error: errMsg,
         });
       }
     });
@@ -652,7 +672,7 @@ export const stopHealthMonitoring = () => healthMonitor.stopMonitoring();
 
 // Make health monitor available globally in development
 if (import.meta.env.DEV) {
-  (window as any).__healthMonitor = healthMonitor;
+  (window as Window & { __healthMonitor?: typeof healthMonitor }).__healthMonitor = healthMonitor;
 }
 
 export default healthMonitor;
