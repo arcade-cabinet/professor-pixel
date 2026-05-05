@@ -80,11 +80,32 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(handlePyodideRequest(event.request, url));
 });
 
+// Allowlist of file extensions Pyodide actually requests. Anything else
+// passes through to the network without being cached. This is belt-and-
+// suspenders security against a future Pyodide release fetching, e.g.,
+// a .html crash report or a directory listing — neither belongs in our
+// WASM/data cache. Defense in depth on top of the same-origin + flat-
+// path checks above.
+const ALLOWED_EXTENSIONS = new Set(['wasm', 'js', 'mjs', 'json', 'zip', 'data']);
+
+function isAllowedFile(fileName) {
+  // Reject empty, traversal, and nested paths up front.
+  if (!fileName || fileName.includes('..') || fileName.includes('/')) return false;
+  // Reject filenames with no extension or weird control chars.
+  const dot = fileName.lastIndexOf('.');
+  if (dot <= 0 || dot === fileName.length - 1) return false;
+  if (!/^[a-zA-Z0-9._-]+$/.test(fileName)) return false;
+  const ext = fileName.slice(dot + 1).toLowerCase();
+  return ALLOWED_EXTENSIONS.has(ext);
+}
+
 async function handlePyodideRequest(request, url) {
   const fileName = url.pathname.slice(PYODIDE_PREFIX.length);
-  if (!fileName || fileName.includes('..') || fileName.includes('/')) {
-    // Defensive: don't pull arbitrary paths into OPFS. Pyodide only
-    // requests flat files (pyodide.asm.wasm, python_stdlib.zip, etc).
+  if (!isAllowedFile(fileName)) {
+    // Pass through to network; don't read or write OPFS for paths we
+    // don't recognize. Pyodide only fetches flat .wasm / .js / .mjs /
+    // .json / .zip / .data files; anything else is either a bug or an
+    // attack and we shouldn't persist it.
     return fetch(request);
   }
 
@@ -101,13 +122,28 @@ async function handlePyodideRequest(request, url) {
   const networkResponse = await fetch(request);
   if (!networkResponse.ok) return networkResponse;
 
+  // Belt-and-suspenders: only persist responses whose Content-Type
+  // matches what we'd expect for the allowed extensions. A 2xx HTML
+  // body served at /pyodide/foo.wasm (CDN misroute, captive portal
+  // login page) would otherwise corrupt the cache.
+  const ct = (networkResponse.headers.get('content-type') || '').toLowerCase();
+  const expectedCt = guessContentType(fileName);
+  const ctMatches =
+    ct === expectedCt ||
+    ct.startsWith(expectedCt) ||
+    // Pyodide's CDN sometimes serves .wasm as application/octet-stream;
+    // permit that too. We don't want to break the network path on a
+    // strict mismatch — just refuse to cache.
+    expectedCt === 'application/octet-stream';
   // Tee the response so we can both return one half to Pyodide and
   // drain the other into OPFS without consuming the body twice.
   const responseToReturn = networkResponse.clone();
-  writeToOpfs(fileName, networkResponse).catch(() => {
-    // OPFS write failed (quota, Lockdown Mode). The next cold start
-    // re-fetches; not fatal.
-  });
+  if (ctMatches) {
+    writeToOpfs(fileName, networkResponse).catch(() => {
+      // OPFS write failed (quota, Lockdown Mode). The next cold start
+      // re-fetches; not fatal.
+    });
+  }
   return responseToReturn;
 }
 

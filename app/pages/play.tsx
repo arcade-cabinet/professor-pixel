@@ -66,10 +66,6 @@ export default function PlayPage() {
         setState({ kind: 'not-found' });
         return;
       }
-      const assetIds = snapshot.wizardState.selectedAssetIds ?? [];
-      const selectedAssets = assetIds
-        .map((id) => assetManager.getAssetById(id))
-        .filter((a): a is GameAsset => Boolean(a));
       const sessionActions = snapshot.wizardState.sessionActions;
       const selectedComponents =
         (sessionActions?.selectedComponents as Record<string, string> | undefined) ?? {};
@@ -87,8 +83,24 @@ export default function PlayPage() {
       // predate the gamePy field. Either way the result is the same
       // string compilePythonGame would emit; the persisted path just
       // skips the recompile.
+      //
+      // We only resolve selectedAssets in the recompile branch — the
+      // happy path (snapshot.gamePy already cached) skips the asset
+      // catalog touch entirely. assetManager.getAssetById is cheap once
+      // the catalog is hydrated, but the eager call still kicked off
+      // .ready() lookups on cold loads, slowing every /play visit by
+      // one round-trip even when the recompile wasn't needed.
       try {
-        const pythonCode = snapshot.gamePy ?? compilePythonGame(selectedComponents, selectedAssets);
+        let pythonCode: string;
+        if (snapshot.gamePy) {
+          pythonCode = snapshot.gamePy;
+        } else {
+          const assetIds = snapshot.wizardState.selectedAssetIds ?? [];
+          const selectedAssets = assetIds
+            .map((id) => assetManager.getAssetById(id))
+            .filter((a): a is GameAsset => Boolean(a));
+          pythonCode = compilePythonGame(selectedComponents, selectedAssets);
+        }
         setState({
           kind: 'ready',
           pythonCode,

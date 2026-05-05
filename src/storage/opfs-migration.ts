@@ -97,30 +97,65 @@ async function run(): Promise<MigrationResult> {
   }
 
   const skipped: string[] = [];
+  // Track OPFS write failures separately from "row was malformed" skips.
+  // A schema-rejected localStorage row will never succeed no matter how
+  // many times we retry, so it's safe to seal the sentinel afterward.
+  // An OPFS quota or transient I/O failure could clear up next boot, so
+  // we deliberately leave the sentinel UNwritten in that case so the
+  // migration retries.
+  let opfsWriteFailures = 0;
   let migrated = 0;
 
-  for (const project of Object.values(parsed)) {
-    if (!project || typeof project !== 'object') {
-      skipped.push(String(project));
+  for (const projectRaw of Object.values(parsed)) {
+    // Validate shape before reading nested fields. localStorage is a
+    // user-writable surface (browser extensions, devtools console,
+    // tampering); we can't trust .id / .files / .name to exist or to
+    // be the type we expect.
+    if (!projectRaw || typeof projectRaw !== 'object') {
+      skipped.push(String(projectRaw));
       continue;
     }
-    const wizardFile = project.files?.find((f) => f.path === SNAPSHOT_FILE);
+    const project = projectRaw as Partial<Project>;
+    if (typeof project.id !== 'string' || !project.id) {
+      skipped.push('<missing id>');
+      continue;
+    }
+    if (typeof project.name !== 'string' || !project.name) {
+      skipped.push(project.id);
+      continue;
+    }
+    if (typeof project.template !== 'string') {
+      skipped.push(project.id);
+      continue;
+    }
+    if (!Array.isArray(project.files)) {
+      skipped.push(project.id);
+      continue;
+    }
+    const wizardFile = project.files.find(
+      (f): f is { path: string; content: string } =>
+        Boolean(f) &&
+        typeof f === 'object' &&
+        typeof (f as { path?: unknown }).path === 'string' &&
+        typeof (f as { content?: unknown }).content === 'string' &&
+        (f as { path: string }).path === SNAPSHOT_FILE
+    );
     if (!wizardFile) {
       // Pre-launcher project format that didn't carry a wizard
       // snapshot. Skip — the kid can't resume it anyway, so there's
       // nothing meaningful to migrate.
-      skipped.push(project.id ?? '<unknown id>');
+      skipped.push(project.id);
       continue;
     }
     let wizardState: unknown;
     try {
       wizardState = JSON.parse(wizardFile.content);
     } catch {
-      skipped.push(project.id ?? '<unknown id>');
+      skipped.push(project.id);
       continue;
     }
     let thumbnailBlob: Blob | undefined;
-    if (project.thumbnailDataUrl) {
+    if (typeof project.thumbnailDataUrl === 'string' && project.thumbnailDataUrl) {
       try {
         thumbnailBlob = await dataUrlToBlob(project.thumbnailDataUrl);
       } catch (err) {
@@ -139,11 +174,22 @@ async function run(): Promise<MigrationResult> {
       migrated += 1;
     } catch (err) {
       console.warn(`[opfs-migration] failed to migrate project ${project.id}`, err);
-      skipped.push(project.id ?? '<unknown id>');
+      skipped.push(project.id);
+      opfsWriteFailures += 1;
     }
   }
 
-  await writeSentinel();
+  // Only seal the sentinel if every row either migrated cleanly or was
+  // skipped for a permanent reason (malformed shape, bad JSON). An OPFS
+  // write failure (quota exceeded, transient I/O) could clear up next
+  // boot — leaving the sentinel unwritten lets the migration retry.
+  if (opfsWriteFailures === 0) {
+    await writeSentinel();
+  } else {
+    console.warn(
+      `[opfs-migration] ${opfsWriteFailures} OPFS write failure(s); sentinel deliberately not written so migration retries next boot`
+    );
+  }
   return { ran: true, migrated, skipped };
 }
 
