@@ -409,13 +409,17 @@ export function useWizardDialogue({
       if (node) {
         const isFirst = isFirstNodeResolutionRef.current;
         const persistedStep = persistedStateRef.current?.dialogueStep;
-        // Only restore the persisted step if the resolved node still has
-        // it within range — flow JSON edits between sessions could shrink
-        // a multiStep node, leaving a stale persisted index that would
-        // render an empty bubble.
+        // Only restore the persisted step if the resolved node IS multiStep
+        // AND the index is within range. A non-multiStep node always renders
+        // at step 0 — accepting a non-zero stale value would let
+        // getCurrentText be called with dialogueStep=2 on a plain node and
+        // render an empty bubble. Flow JSON edits between sessions can also
+        // shrink a multiStep array, in which case the stale index is also
+        // invalid and falls through to 0.
         const stepInRange =
           typeof persistedStep === 'number' &&
-          (!node.multiStep || persistedStep < node.multiStep.length);
+          node.multiStep != null &&
+          persistedStep < node.multiStep.length;
         const restoreStep = isFirst && stepInRange ? persistedStep : 0;
         if (isFirst) isFirstNodeResolutionRef.current = false;
         setDialogueState((prev) => ({

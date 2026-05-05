@@ -267,10 +267,21 @@ export default function PygameLivePreview({
     }
   }, [stopRenderLoop]);
 
-  // Handle canvas interactions
-  const handleCanvasClick = useCallback(
-    (event: React.MouseEvent<HTMLCanvasElement>) => {
+  // Handle canvas interactions. Use Pointer Events for unified mouse +
+  // touch + pen support — onClick on a canvas fires a 300ms-delayed
+  // synthetic click on touch devices, which feels laggy in a kid's
+  // game preview. onPointerDown fires immediately on the first touch
+  // contact AND on mouse-button-down, so taps feel snappy on tablets
+  // while keeping desktop click semantics. preventDefault on a touch
+  // pointer suppresses the trailing synthetic-click cycle so pygame
+  // doesn't see the same tap twice.
+  const handleCanvasPointerDown = useCallback(
+    (event: React.PointerEvent<HTMLCanvasElement>) => {
       if (!state.isPlaying) return;
+
+      if (event.pointerType === 'touch') {
+        event.preventDefault();
+      }
 
       const canvas = event.currentTarget;
       const rect = canvas.getBoundingClientRect();
@@ -407,8 +418,8 @@ export default function PygameLivePreview({
                 ref={canvasRef}
                 width={showComparison ? 320 : 640}
                 height={360}
-                className="w-full h-auto cursor-pointer"
-                onClick={handleCanvasClick}
+                className="w-full h-auto cursor-pointer touch-none"
+                onPointerDown={handleCanvasPointerDown}
                 data-testid="canvas-main-preview"
               />
 

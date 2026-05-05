@@ -172,10 +172,20 @@ export default function PygameEditorCanvas({
     }
   };
 
-  // Handle component click/drag
-  const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
+  // Handle component select/drag via Pointer Events for unified mouse +
+  // touch + pen support. The prior implementation used onClick + window
+  // mousemove/mouseup listeners, which silently broke touch-drag on
+  // tablets — pygame editor users on iPads could place components but
+  // not move them. Pointer Events fire for all input modalities and
+  // setPointerCapture keeps the drag locked to the originating canvas
+  // even when the finger leaves its bounds.
+  const handleCanvasPointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
+
+    if (e.pointerType === 'touch') {
+      e.preventDefault();
+    }
 
     const rect = canvas.getBoundingClientRect();
     // Account for CSS scaling — the canvas is rendered at 800x600 internal
@@ -206,21 +216,40 @@ export default function PygameEditorCanvas({
     if (clickedComponent) {
       onSelect(clickedComponent.id);
 
-      // Set up drag handling
       if (!draggedComponent) {
         setDraggedComponent(clickedComponent.id);
-        const handleMouseMove = (e: MouseEvent) => {
-          const newX = (e.clientX - rect.left) * scaleX;
-          const newY = (e.clientY - rect.top) * scaleY;
+        const pointerId = e.pointerId;
+        // setPointerCapture routes subsequent pointermove / pointerup events
+        // to this canvas regardless of where the pointer travels — even off-
+        // screen on touch — so the drag doesn't drop mid-stroke when a
+        // finger crosses out of the canvas's bounding rect.
+        try {
+          canvas.setPointerCapture(pointerId);
+        } catch {
+          // Older browsers / non-DOM test envs — fall through; window-level
+          // listeners below still cover the desktop path.
+        }
+        const handlePointerMove = (ev: PointerEvent) => {
+          if (ev.pointerId !== pointerId) return;
+          const newX = (ev.clientX - rect.left) * scaleX;
+          const newY = (ev.clientY - rect.top) * scaleY;
           onMove(clickedComponent.id, newX - PLACE_HALF, newY - PLACE_HALF);
         };
-        const handleMouseUp = () => {
+        const handlePointerUp = (ev: PointerEvent) => {
+          if (ev.pointerId !== pointerId) return;
           setDraggedComponent(null);
-          window.removeEventListener('mousemove', handleMouseMove);
-          window.removeEventListener('mouseup', handleMouseUp);
+          try {
+            canvas.releasePointerCapture(pointerId);
+          } catch {
+            // ignore
+          }
+          window.removeEventListener('pointermove', handlePointerMove);
+          window.removeEventListener('pointerup', handlePointerUp);
+          window.removeEventListener('pointercancel', handlePointerUp);
         };
-        window.addEventListener('mousemove', handleMouseMove);
-        window.addEventListener('mouseup', handleMouseUp);
+        window.addEventListener('pointermove', handlePointerMove);
+        window.addEventListener('pointerup', handlePointerUp);
+        window.addEventListener('pointercancel', handlePointerUp);
       }
     } else {
       onSelect(null);
@@ -243,10 +272,10 @@ export default function PygameEditorCanvas({
         tabIndex={0}
         data-testid={armedComponentId ? `place-canvas-${armedComponentId}` : 'place-canvas'}
         className={cn(
-          'focus:outline-none focus:ring-2 focus:ring-purple-400',
+          'touch-none focus:outline-none focus:ring-2 focus:ring-purple-400',
           armedComponentId ? 'cursor-copy' : 'cursor-crosshair'
         )}
-        onClick={handleCanvasClick}
+        onPointerDown={handleCanvasPointerDown}
         onKeyDown={handleCanvasKeyDown}
         style={{ width: '100%', height: '100%', maxWidth: '800px', maxHeight: '600px' }}
         aria-label={

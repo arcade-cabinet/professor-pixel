@@ -351,7 +351,7 @@ Branch: feat/player-experience-pillar-4
 
 ### task-005 Pointer events on live-preview + WYSIWYG canvas
 
-- [ ] task-005 canvas surfaces accept pointerdown/touchstart; new test asserts handler runs on pointer events
+- [x] task-005 canvas surfaces accept pointerdown/touchstart; new test asserts handler runs on pointer events
 
 ### task-006 Use window.visualViewport to keep code editor visible when soft keyboard opens
 
