@@ -328,7 +328,13 @@ Started: 2026-05-05T08:56:02Z
 Branch: feat/player-experience-pillar-4
 
 ### task-001 i18n string catalog with English source-of-truth + hook + per-page migration
-- [ ] task-001 src/i18n/{strings,index,use-strings}.ts created and all hardcoded user-facing copy in pages + chrome routed through useStrings()/strings; tests pass
+- [x] task-001a src/i18n/{strings,index,use-strings}.ts catalog scaffold + chrome banners + home + not-found migrated
+- [ ] task-001b lessons.tsx migrated to strings catalog
+- [ ] task-001c lesson.tsx migrated to strings catalog
+- [ ] task-001d profile.tsx migrated to strings catalog
+- [ ] task-001e wizard/universal.tsx migrated to strings catalog
+- [ ] task-001f pixel/menu.tsx migrated to strings catalog
+- [ ] task-001g floating-feedback.tsx migrated to strings catalog
 
 ### task-002 Add preconnect + script preload for Pyodide CDN to index.html
 - [x] task-002 index.html has preconnect and preload entries for the pinned Pyodide URL; cold-load TTFB improvement noted

@@ -14,6 +14,7 @@
 import { useSyncExternalStore } from 'react';
 import { WifiOff } from 'lucide-react';
 import { cn } from '@lib/utils/cn';
+import { strings } from '@lib/i18n';
 
 interface OfflineBannerProps {
   className?: string;
@@ -54,10 +55,7 @@ export default function OfflineBanner({ className }: OfflineBannerProps) {
       )}
     >
       <WifiOff className="h-4 w-4" aria-hidden="true" />
-      <span>
-        You're offline — saved games still work, but new lessons and Pixel updates need a
-        connection.
-      </span>
+      <span>{strings.chrome.offlineBanner.message}</span>
     </div>
   );
 }
