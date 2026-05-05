@@ -21,6 +21,26 @@ import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom/vitest';
 import { Router, Route } from 'wouter';
 import { memoryLocation } from 'wouter/memory-location';
+// Hoisted mocks — vi.mock is hoisted to the top of the file, so any state
+// it captures must come from vi.hoisted (not module-level let/const). The
+// click-Play test asserts on these spies; the loading/not-found/unfinished
+// tests never click Play and so don't trigger them.
+const { fakeLoadPackage, fakeRunPython, fakeRecover } = vi.hoisted(() => ({
+  fakeLoadPackage: vi.fn(async () => undefined),
+  fakeRunPython: vi.fn(async () => undefined),
+  fakeRecover: vi.fn(() => undefined),
+}));
+vi.mock('@lib/python/pyodide-singleton', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@lib/python/pyodide-singleton')>();
+  return {
+    ...actual,
+    getPyodide: vi.fn(async () => ({
+      loadPackage: fakeLoadPackage,
+      runPythonAsync: fakeRunPython,
+    })),
+    recoverPyodide: fakeRecover,
+  };
+});
 import PlayPage from '@/pages/play';
 import { __clearAllOpfsProjectsForTests, saveOpfsProject } from '@lib/storage/opfs-projects';
 import { __resetOpfsRoutingForTests } from '@lib/storage/projects';
@@ -112,26 +132,11 @@ describe('Launcher /play/:projectId page', () => {
   });
 
   it('clicking Play transitions to running state and invokes Pyodide', async () => {
-    // Spy on Pyodide before render so the click path picks up the spy.
-    // We import the module via vi.importActual + a partial mock so the
-    // real getPyodide isn't called (a real Pyodide boot in this test
-    // would add 5–10s; we just need to confirm the page wires the
-    // click through to the runtime).
-    const fakeRunPython = vi.fn(async () => undefined);
-    const fakeLoadPackage = vi.fn(async () => undefined);
-    vi.doMock('@lib/python/pyodide-singleton', async (importOriginal) => {
-      const actual = await importOriginal<typeof import('@lib/python/pyodide-singleton')>();
-      return {
-        ...actual,
-        getPyodide: vi.fn(async () => ({
-          loadPackage: fakeLoadPackage,
-          runPythonAsync: fakeRunPython,
-        })),
-      };
-    });
-    // Re-import the page so it picks up the mock.
-    vi.resetModules();
-    const { default: PlayPageMocked } = await import('@/pages/play');
+    // Mocks are hoisted at module scope (see vi.mock at top of file).
+    // We just reset the call counters per-test so prior tests' clicks
+    // don't bleed into this assertion.
+    fakeLoadPackage.mockClear();
+    fakeRunPython.mockClear();
     const meta = await saveOpfsProject({
       name: 'Click Play Test',
       template: 'platformer',
@@ -141,7 +146,7 @@ describe('Launcher /play/:projectId page', () => {
     const { hook } = memoryLocation({ path: `/play/${meta.id}` });
     render(
       <Router hook={hook}>
-        <Route path="/play/:projectId" component={PlayPageMocked} />
+        <Route path="/play/:projectId" component={PlayPage} />
       </Router>
     );
 
