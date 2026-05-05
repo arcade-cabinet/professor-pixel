@@ -96,7 +96,7 @@ export default function WizardWithPreview({ pyodide, className }: WizardWithPrev
   }, [currentNode]);
 
   // Handle live preview interactions
-  const handlePreviewInteraction = useCallback((action: string, details?: any) => {
+  const handlePreviewInteraction = useCallback((action: string, details?: unknown) => {
     console.log('Preview interaction:', action, details);
 
     // Generate dynamic comments based on interactions

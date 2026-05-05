@@ -137,19 +137,21 @@ async function runTestSuite(
     }
 
     return { success: true, duration, output: stdout };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.log('❌ Test suite failed');
     console.log('🔍 Error details:');
 
-    if (error.stdout) {
-      console.log('STDOUT:', error.stdout.split('\n').slice(-10).join('\n'));
+    const e = error as { stdout?: string; stderr?: string; message?: string };
+
+    if (e.stdout) {
+      console.log('STDOUT:', e.stdout.split('\n').slice(-10).join('\n'));
     }
 
-    if (error.stderr) {
-      console.log('STDERR:', error.stderr.split('\n').slice(-10).join('\n'));
+    if (e.stderr) {
+      console.log('STDERR:', e.stderr.split('\n').slice(-10).join('\n'));
     }
 
-    return { success: false, duration: 0, error: error.message, output: error.stdout || '' };
+    return { success: false, duration: 0, error: e.message, output: e.stdout || '' };
   }
 }
 
@@ -266,7 +268,12 @@ async function runComprehensiveTests(
 // CLI interface
 if (import.meta.url === `file://${process.argv[1]}`) {
   const args = process.argv.slice(2);
-  const options: any = { headless: true };
+  const options: {
+    headless: boolean;
+    suites?: string[];
+    projects?: string[];
+    priority?: 'critical' | 'high' | 'medium';
+  } = { headless: true };
 
   // Parse command line arguments
   for (let i = 0; i < args.length; i++) {

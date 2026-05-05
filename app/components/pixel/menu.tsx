@@ -34,7 +34,7 @@ interface SessionAction {
   title: string;
   description?: string;
   timestamp: Date;
-  icon: React.ComponentType<any>;
+  icon: React.ComponentType<{ className?: string; size?: number }>;
 }
 
 interface PixelMenuProps {

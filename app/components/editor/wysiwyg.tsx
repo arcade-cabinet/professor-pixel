@@ -13,13 +13,14 @@ import PygameEditorCanvas from './canvas';
 import PygameEditorPalette from './palette';
 import PygameEditorProperties from './properties';
 import PygameEditorCodePanel from './code-panel';
+import type { ComponentPropertyValue } from '@lib/pygame/components/types';
 
 export interface PlacedComponent {
   id: string;
   componentId: string;
   x: number;
   y: number;
-  properties: Record<string, any>;
+  properties: Record<string, ComponentPropertyValue>;
 }
 
 interface PygameWysiwygEditorProps {
@@ -84,13 +85,18 @@ export default function PygameWysiwygEditor({
     [selectedComponentId]
   );
 
-  const handlePropertyChange = useCallback((id: string, property: string, value: any) => {
-    setPlacedComponents((prev) =>
-      prev.map((comp) =>
-        comp.id === id ? { ...comp, properties: { ...comp.properties, [property]: value } } : comp
-      )
-    );
-  }, []);
+  const handlePropertyChange = useCallback(
+    (id: string, property: string, value: ComponentPropertyValue) => {
+      setPlacedComponents((prev) =>
+        prev.map((comp) =>
+          comp.id === id
+            ? { ...comp, properties: { ...comp.properties, [property]: value } }
+            : comp
+        )
+      );
+    },
+    []
+  );
 
   const handlePlay = () => setIsPlaying(true);
   const handlePause = () => setIsPlaying(false);

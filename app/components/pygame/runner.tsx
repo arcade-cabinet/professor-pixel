@@ -5,10 +5,11 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { compilePythonGame } from '@lib/pygame/runtime/compiler';
 import { getPyodide } from '@lib/python/pyodide-singleton';
+import type { GameAsset } from '@lib/assets/types';
 
 interface PygameRunnerProps {
   selectedComponents?: Record<string, string>;
-  selectedAssets?: any[];
+  selectedAssets?: GameAsset[];
   previewMode?: string;
   className?: string;
   onError?: (error: string) => void;

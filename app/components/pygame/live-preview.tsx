@@ -30,7 +30,7 @@ export interface GameChoice {
   type: 'character' | 'enemy' | 'collectible' | 'background' | 'rule' | 'mechanic';
   id: string;
   name: string;
-  properties?: Record<string, any>;
+  properties?: Record<string, unknown>;
   sprite?: string;
   behavior?: string;
   code?: string;
@@ -41,7 +41,7 @@ interface PygameLivePreviewProps {
   currentStep?: string;
   showComparison?: boolean;
   alternativeChoice?: GameChoice;
-  onInteraction?: (action: string, details?: any) => void;
+  onInteraction?: (action: string, details?: unknown) => void;
   className?: string;
   pixelComments?: string[];
   pyodide?: PyodideInstance;

@@ -1,4 +1,5 @@
 import type { JSX } from 'react';
+import type { SwipeableHandlers } from 'react-swipeable';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -20,7 +21,7 @@ interface LayoutProps {
   onAdvance: () => void;
   onOptionSelect: (option: WizardOption) => void;
   onOpenMenu: () => void;
-  edgeSwipeHandlers?: any;
+  edgeSwipeHandlers?: SwipeableHandlers;
 }
 
 // Phone Portrait Layout

@@ -11,12 +11,13 @@ domain: context
 
 ## Active
 
-_No work in flight. The modernization pillar (`feat/modernization-pillar`) is queued for review and squash-merge to `main`._
+_No work in flight. The `any` cleanup pillar (`feat/any-cleanup-pillar`) is queued for review and squash-merge to `main`._
 
 ## Done (recent milestones)
 
 | Milestone | When | Notes |
 |-----------|------|-------|
+| `any` cleanup pillar (TypeScript discipline) | 2026-05 | Branch: `feat/any-cleanup-pillar`. 213 `any` annotations → 0; Biome `noExplicitAny` flipped from `warn` → `error`. Authored `PyodideInstance` ambient; defensive `ErrorShape` probe pattern for catch blocks; `PyGameComponent<P extends object>` generic + `AnyPyGameComponent` erased view at registry boundary; `PygameColor` / `PygameRectArg` / `PygameSprite` runtime types in simulator with tuple-cast destructures per renderer case; debounce branded as `<TArgs extends unknown[]>`. |
 | Modernization pillar (toolchain bumps + correctness gaps) | 2026-05 | Branch: `feat/modernization-pillar`. M1.1–M1.5 toolchain (pnpm 10, TS 6, Vite 8 + Vitest 4, React 19, Biome 2.4); M2.3 quarantined wizard test removed; M3.1 visual regression baseline; M3.2 axe-core a11y suite; M4.1 cold-start budget instrumentation; M4.3 worker-side stdout truncation; M5.1 sys.settrace functionCalled instrumentation; M5.2 input() call counter; M6.1 lessons 7-9 (lists, files, classes). |
 | Stabilization pillar (banner, type seam, grader e2e) | 2026-05 | Squashed into `8f478f8` on main; PR #20 |
 | Foundations pillar (Pyodide worker, Zod lessons, AST grading, 6 lessons) | 2026-05 | Squashed into `f4f418d` on main; PR #19 |
@@ -32,16 +33,6 @@ _No work in flight. The modernization pillar (`feat/modernization-pillar`) is qu
 ## Next (queued, no commitment yet)
 
 Sized roughly so any one item is a single PR.
-
-### `any` cleanup PRQ (carved off modernization-M2.1)
-
-Bulk `any → unknown` was attempted in the modernization pillar and rolled back: replacing 209 instances mechanically caused 60+ cascading TS errors. The fix is structural, not per-instance:
-
-1. Author a real Pyodide type covering `runPython`, `runPythonAsync`, `globals.set/get`, `loadPackage` — replace `pyodide: any` with that type across simulator, error-handler, runner.
-2. Type the legacy state shapes for `storage/persistence` migration (currently `Partial<unknown>` blows up the spread).
-3. Walk the remaining files where `unknown` is the right answer, adding `instanceof Error` guards in catch blocks and `Record<string, unknown>` for prop bags.
-
-Once 1+2+3 land, flip Biome's `noExplicitAny` to `error`.
 
 ### Wizard / coverage / simulator-harness PRQ (carved off modernization-M2.2 + -M2.3 + -M4.2)
 

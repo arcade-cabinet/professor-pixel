@@ -24,7 +24,8 @@ export function useOrientation(): OrientationState {
   useEffect(() => {
     const handleOrientationChange = () => {
       const isPortrait = window.innerHeight > window.innerWidth;
-      const angle = (window.screen as any)?.orientation?.angle || 0;
+      const angle =
+        (window.screen as Screen & { orientation?: { angle?: number } })?.orientation?.angle ?? 0;
 
       setOrientation({
         isPortrait,

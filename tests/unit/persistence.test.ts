@@ -1,5 +1,6 @@
 // Unit tests for persistence library
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import type { UIState } from '@lib/wizard/types';
 import {
   saveWizardState,
   saveWizardStateDebounced,
@@ -245,7 +246,7 @@ describe('Persistence Library', () => {
     });
 
     it('should clear session state correctly', () => {
-      saveSessionState({ uiState: { pixelMenuOpen: true } as any });
+      saveSessionState({ uiState: { pixelMenuOpen: true } as UIState });
       expect(loadSessionState()).toBeTruthy();
 
       clearSessionState();
@@ -393,7 +394,7 @@ describe('Persistence Library', () => {
     it('should clear all wizard-related data', () => {
       // Set up data in all storage types
       saveWizardState({ currentNodeId: 'test' });
-      saveSessionState({ uiState: { pixelMenuOpen: true } as any });
+      saveSessionState({ uiState: { pixelMenuOpen: true } as UIState });
       setCookie('theme', 'dark');
       setCookie('sound_enabled', 'true');
       setCookie('other_cookie', 'value'); // Non-wizard cookie
@@ -460,7 +461,7 @@ describe('Persistence Library', () => {
 
     it('should recover from corrupted session state', () => {
       // Save valid state
-      saveSessionState({ uiState: { pixelMenuOpen: true } as any });
+      saveSessionState({ uiState: { pixelMenuOpen: true } as UIState });
       expect(loadSessionState()!.uiState!.pixelMenuOpen).toBe(true);
 
       // Corrupt the data
@@ -471,7 +472,7 @@ describe('Persistence Library', () => {
       expect(loaded).toBeNull();
 
       // Should be able to save new state
-      saveSessionState({ uiState: { pixelMenuOpen: false } as any });
+      saveSessionState({ uiState: { pixelMenuOpen: false } as UIState });
       expect(loadSessionState()!.uiState!.pixelMenuOpen).toBe(false);
     });
   });

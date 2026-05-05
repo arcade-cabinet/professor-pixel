@@ -305,7 +305,7 @@ export default function AssetBrowserWizard({
 
           {/* Asset type tabs */}
           {!assetType && (
-            <Tabs value={selectedTab} onValueChange={(v) => setSelectedTab(v as any)}>
+            <Tabs value={selectedTab} onValueChange={(v) => setSelectedTab(v as AssetType | 'all')}>
               <TabsList className="w-full">
                 <TabsTrigger value="all" className="flex-1">
                   All

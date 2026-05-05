@@ -30,7 +30,7 @@ type PresenceState = 'center-stage' | 'waiting-corner' | 'expanded-corner';
 interface Choice {
   id: string;
   label: string;
-  icon?: React.ComponentType<any>;
+  icon?: React.ComponentType<{ className?: string; size?: number }>;
   action: () => void;
 }
 

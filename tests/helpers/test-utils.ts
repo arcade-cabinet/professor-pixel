@@ -168,7 +168,7 @@ export const createMockFlowData = (): Record<string, WizardNode> => ({
 
 // Custom matchers for persistence testing
 export const persistenceMatchers = {
-  toHavePersistedState(received: any, expected: any) {
+  toHavePersistedState(received: unknown, expected: unknown) {
     const pass = JSON.stringify(received) === JSON.stringify(expected);
     return {
       pass,
@@ -179,14 +179,22 @@ export const persistenceMatchers = {
     };
   },
 
-  toHaveValidVersion(received: any, expectedVersion: string) {
-    const pass = received?.version === expectedVersion;
+  toHaveValidVersion(received: unknown, expectedVersion: string) {
+    const pass =
+      typeof received === 'object' &&
+      received !== null &&
+      (received as { version?: unknown }).version === expectedVersion;
     return {
       pass,
-      message: () =>
-        pass
+      message: () => {
+        const actual =
+          typeof received === 'object' && received !== null
+            ? (received as { version?: unknown }).version
+            : undefined;
+        return pass
           ? `Expected version not to be ${expectedVersion}`
-          : `Expected version to be ${expectedVersion}, but got ${received?.version}`,
+          : `Expected version to be ${expectedVersion}, but got ${actual}`;
+      },
     };
   },
 };

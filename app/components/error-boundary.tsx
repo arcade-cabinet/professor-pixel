@@ -75,7 +75,7 @@ export class ErrorBoundary extends Component<Props, State> {
         type: 'react-error',
         error: error.message,
         stack: error.stack,
-        componentStack: errorInfo.componentStack,
+        componentStack: errorInfo.componentStack ?? undefined,
         context: this.props.context,
         level: this.props.level,
         errorId: this.state.errorId,

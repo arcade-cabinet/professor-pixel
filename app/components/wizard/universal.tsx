@@ -959,7 +959,7 @@ export default function UniversalWizard({
     return (
       <AssetBrowserWizard
         assetType={
-          uiState.assetBrowserType === 'all' ? undefined : (uiState.assetBrowserType as any)
+          uiState.assetBrowserType === 'all' ? undefined : (uiState.assetBrowserType as AssetType)
         }
         gameType={uiState.selectedGameType}
         onSelect={handleAssetSelection}

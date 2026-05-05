@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { WizardNode, DialogueState, SessionActions } from '@lib/wizard/types';
+import { WizardNode, DialogueState, SessionActions, WizardOption } from '@lib/wizard/types';
 import {
   getCurrentText,
   shouldShowOptions,
@@ -367,7 +367,7 @@ export function useWizardDialogue({
   }, []);
 
   const handleOptionSelect = useCallback(
-    (option: any) => {
+    (option: WizardOption) => {
       console.log('Option selected:', option.text, 'Action:', option.action);
 
       // Update session actions
@@ -377,13 +377,14 @@ export function useWizardDialogue({
 
       // Handle setVariable if present
       if (option.setVariable) {
+        const setVariable = option.setVariable;
         setSessionActions((prev) => ({
           ...prev,
-          ...option.setVariable,
+          ...setVariable,
           // Ensure selectedGameType is also set for flow loading
-          selectedGameType: option.setVariable.gameType || prev.selectedGameType,
+          selectedGameType: setVariable.gameType || prev.selectedGameType,
         }));
-        console.log('Set variable:', option.setVariable);
+        console.log('Set variable:', setVariable);
       }
 
       // Handle transitionToSpecializedFlow action

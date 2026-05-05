@@ -89,6 +89,20 @@ src + app + public
 - Every interactive element gets a `data-testid` so e2e tests don't depend on copy or DOM structure.
 - Accessibility primitives (modals, menus, tooltips) come from `app/components/ui/` (shadcn over Radix). Don't roll your own.
 
+## TypeScript discipline
+
+Biome's `noExplicitAny` is `error`-level. The codebase carries zero `any` annotations; new code must hold that line. Patterns to use instead:
+
+- **Pyodide instances** → `PyodideInstance` from `src/types/pyodide.d.ts`. Cast `pyodide.globals.get('foo')` results at the call boundary: `(pyodide.globals.get('reset_game_state') as () => Promise<void>)()`.
+- **Catch blocks** → `catch (e: unknown)` then narrow via `e instanceof Error`. For retry/error-shape probing, use the `ErrorShape` interface + `asErrorShape(e)` helper pattern (see `src/net/retry.ts`).
+- **Component property bags** → `PyGameComponent<P extends object>` generic with per-component property interfaces; the registry erases to `AnyPyGameComponent` (with `unknown` args) at the boundary because TS function-arg variance is invariant in strict mode. The `as unknown as AnyPyGameComponent[]` cast is intentional and lives at exactly one site (`src/pygame/components/registry.ts`).
+- **Renderer dispatch** → `DrawCommand.args` is `unknown[]`. Each renderer case tuple-casts at destructure: `const [color, x, y, r] = command.args as [string, number, number, number]`.
+- **Storage/migration** → `validateAndMigrate<T>(data: unknown)` at the IO boundary; downstream consumers see typed shapes.
+- **Window globals** → narrow casts only: `(window as Window & { __foo?: typeof foo }).__foo = foo`. Never `(window as any)`.
+- **Library callbacks with unknown payload shapes** (e.g. `details?: unknown` on preview interactions) — keep them `unknown` and have the consumer narrow.
+
+If you genuinely need `as any` (MSW handler boundary types, third-party-lib gaps), use `as unknown as T` with a `// no-explicit-any: <≥10-word reason>` comment.
+
 ## See also
 
 - [Pillar 2 — Runtime](02-runtime.md) — how Python execution plugs in

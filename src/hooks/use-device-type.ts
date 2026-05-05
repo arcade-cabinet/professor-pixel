@@ -28,7 +28,7 @@ export function useDeviceType(): DeviceCapabilities {
     const isTouchDevice =
       'ontouchstart' in window ||
       navigator.maxTouchPoints > 0 ||
-      (navigator as any).msMaxTouchPoints > 0;
+      ((navigator as Navigator & { msMaxTouchPoints?: number }).msMaxTouchPoints ?? 0) > 0;
 
     // Detect foldable devices (wider aspect ratio when unfolded)
     const aspectRatio = Math.max(width, height) / Math.min(width, height);

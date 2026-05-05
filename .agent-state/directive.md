@@ -161,17 +161,17 @@ Cascade: pygame/components/registry now exports `AnyPyGameComponent` (preview/ge
 
 ### A7 — Test helpers
 
-- [ ] A7.1 tests/helpers/test-utils.ts + tests/e2e/run-comprehensive-tests.ts — option-bag `any`s → library-provided types
+- [x] A7.1 tests/helpers/test-utils.ts + tests/e2e/run-comprehensive-tests.ts — option-bag `any`s → library-provided types. Plus app-side sweep: with-preview.tsx (`details?: any` → `unknown`), live-preview.tsx (same + `Record<string, any>` → `Record<string, unknown>`), wysiwyg.tsx (`Record<string, any>` → `Record<string, ComponentPropertyValue>` with handlePropertyChange tightened), universal.tsx:962 (`as any` → `as AssetType`), properties.tsx (dead commented filter blocks deleted along with orphaned renderPropertyControl helper, slimmed imports).
 
 ### A8 — `<any>` generics + `as any` casts
 
-- [ ] A8.1 Walk 12 `<any>` generics + 50 `as any` casts; remaining MSW boundary casts annotated as `as unknown as T` with `// no-explicit-any:` reason
+- [x] A8.1 Walk remaining sites — final `rg` shows zero `:\s*any\b|<any>|\bas any\b` hits across `app src tests` (excluding `*.d.ts`). Biome lint reports 0 `noExplicitAny` violations. No MSW boundary casts needed `// no-explicit-any:` annotations (all were typeable via existing schema/library types).
 
 ### A9 — Flip Biome to `error`
 
-- [ ] A9.1 biome.json — `noExplicitAny` `warn` → `error`; CI now blocks regressions
+- [x] A9.1 biome.json — `noExplicitAny` `warn` → `error`; `pnpm biome lint app src tests` clean for the rule. CI now blocks regressions.
 
 ### A10 — Docs
 
-- [ ] A10.1 STATE.md — move any-cleanup PRQ Next → Done milestone row
-- [ ] A10.2 docs/pillars/01-frontend.md — add "TypeScript discipline" subsection
+- [x] A10.1 STATE.md — any-cleanup PRQ moved Next → Done milestone row; Active flipped to `feat/any-cleanup-pillar` queued for review.
+- [x] A10.2 docs/pillars/01-frontend.md — "TypeScript discipline" subsection added with PyodideInstance, ErrorShape probe, PyGameComponent generic + AnyPyGameComponent erasure, renderer tuple-cast, validateAndMigrate, narrow Window cast, and `as unknown as T` + `// no-explicit-any:` escape hatch documented.

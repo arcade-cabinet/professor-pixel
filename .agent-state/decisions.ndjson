@@ -43,3 +43,4 @@
 {"ts":"2026-05-05T01:47:24.584Z","sha":"8f02a7e53ef2","subject":"refactor(types): narrow storage + schema bags to unknown / typed shapes","decision":null,"why":null,"resolves":["A3.1","A3.2 of any-cleanup-pillar batch"],"overrides":[]}
 {"ts":"2026-05-05T01:53:41.710Z","sha":"d6ccc9564fc7","subject":"refactor(types): typed component / editor / wizard refs replace any","decision":null,"why":null,"resolves":["A4.1","A4.2","A4.3 of any-cleanup-pillar batch"],"overrides":[]}
 {"ts":"2026-05-05T01:57:02.598Z","sha":"8fed482104f2","subject":"refactor(types): zero any in pygame simulator via tuple-cast renderer","decision":null,"why":null,"resolves":["A5.1","A5.2 of any-cleanup-pillar batch"],"overrides":[]}
+{"ts":"2026-05-05T02:02:44.703Z","sha":"06de094e871c","subject":"refactor(types): typed monitoring + dev surface drains the long tail","decision":null,"why":null,"resolves":["A6.1","A6.2","A6.3 of any-cleanup-pillar batch"],"overrides":[]}

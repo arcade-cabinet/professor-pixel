@@ -290,7 +290,7 @@ function getFriendlyErrorMessage(
 export function useOptimisticMutation<T, TVariables>(
   mutationFn: (variables: TVariables) => Promise<T>,
   options: {
-    queryKey: any[];
+    queryKey: readonly unknown[];
     optimisticUpdateFn: (oldData: unknown, variables: TVariables) => unknown;
     retryOptions?: RetryOptions;
   }

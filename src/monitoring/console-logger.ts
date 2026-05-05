@@ -3,11 +3,8 @@
  * Provides leveled logging with filtering and educational context
  */
 
-declare global {
-  interface Window {
-    __trackError?: Function;
-  }
-}
+// Window.__trackError is declared in src/errors/global-handler.ts where it
+// is installed; this module just consults it conditionally.
 
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error' | 'success';
 export type LogCategory =
@@ -447,7 +444,7 @@ export const logger = new ConsoleLogger();
 
 // Make logger available globally in development
 if (import.meta.env.DEV) {
-  (window as any).__logger = logger;
+  (window as Window & { __logger?: typeof logger }).__logger = logger;
 }
 
 // Educational logging helpers

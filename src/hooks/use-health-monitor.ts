@@ -102,10 +102,10 @@ export function useHealthCheck(checkName: string, autoRun = true) {
       setResult(checkResult);
       setLastRun(new Date());
       return checkResult;
-    } catch (error: any) {
+    } catch (error: unknown) {
       const errorResult: HealthResult = {
         status: 'critical',
-        message: `Failed to run health check: ${error?.message || String(error)}`,
+        message: `Failed to run health check: ${error instanceof Error ? error.message : String(error)}`,
         timestamp: new Date(),
       };
       setResult(errorResult);

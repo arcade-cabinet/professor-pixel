@@ -62,7 +62,7 @@
         "useHookAtTopLevel": "error"
       },
       "suspicious": {
-        "noExplicitAny": "warn",
+        "noExplicitAny": "error",
         "noDoubleEquals": "warn",
         "noArrayIndexKey": "warn"
       }

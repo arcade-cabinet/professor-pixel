@@ -48,9 +48,13 @@ class GlobalErrorHandler {
     // Handle unhandled promise rejections
     window.addEventListener('unhandledrejection', this.handlePromiseRejection.bind(this));
 
-    // Add global error tracking function for Error Boundaries and other components
-    (window as Window & { __trackError?: GlobalErrorHandler['track'] }).__trackError =
-      this.track.bind(this);
+    // Add global error tracking function for Error Boundaries and other components.
+    // The Window.__trackError ambient (src/types/ambient.d.ts) is intentionally
+    // declared with a loose, non-discriminated `type: string` so the various
+    // call sites (console-logger.ts, ErrorBoundary) can install/consult it
+    // without importing GlobalError. We cast through `as unknown` here at
+    // installation because GlobalError narrows `type` to a specific union.
+    window.__trackError = this.track.bind(this) as unknown as Window['__trackError'];
 
     // Handle visibility change to persist errors before tab close
     document.addEventListener('visibilitychange', this.handleVisibilityChange.bind(this));

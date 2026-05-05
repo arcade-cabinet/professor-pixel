@@ -378,11 +378,12 @@ test.describe('Pixel Animation Tests', () => {
 
           // Monitor performance during animations
           await page.evaluate(() => {
-            (window as any).animationFrames = [];
+            const w = window as Window & { animationFrames?: number[] };
+            w.animationFrames = [];
 
             const originalRAF = window.requestAnimationFrame;
             window.requestAnimationFrame = function (callback) {
-              (window as any).animationFrames.push(Date.now());
+              w.animationFrames?.push(Date.now());
               return originalRAF(callback);
             };
           });
@@ -394,7 +395,9 @@ test.describe('Pixel Animation Tests', () => {
           await page.waitForTimeout(3000); // Wait for animation
 
           // Check animation performance
-          const animationFrames = await page.evaluate(() => (window as any).animationFrames || []);
+          const animationFrames = await page.evaluate(
+            () => (window as Window & { animationFrames?: number[] }).animationFrames || [],
+          );
 
           if (animationFrames.length > 0) {
             console.log(`Recorded ${animationFrames.length} animation frames`);
