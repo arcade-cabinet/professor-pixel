@@ -15,10 +15,12 @@ import {
   ChevronLeft,
   Volume2,
   VolumeX,
+  HelpCircle,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import HelpModal from '@/components/help-modal';
 import { isAudioEnabled, setAudioEnabled, subscribeAudioEnabled } from '@lib/audio';
 import { strings } from '@lib/i18n';
 
@@ -65,6 +67,11 @@ export default function PixelMenu({
   const [pixelImage, setPixelImage] = useState(pixelExcited);
   const [selectedTab, setSelectedTab] = useState<'actions' | 'history'>('actions');
   const [audioOn, setAudioOn] = useState(() => isAudioEnabled());
+  // P4.15 — controlled state for the Help/FAQ modal. Lives here (not in
+  // the parent surface) because the menu is the only entry point for
+  // now; task-016 will add a `?` keyboard shortcut that hoists this
+  // up if needed.
+  const [helpOpen, setHelpOpen] = useState(false);
 
   // Stay in sync with the audio enabled flag from any surface — the menu's
   // toggle, another tab, or future SDK callers. subscribeAudioEnabled fires
@@ -323,6 +330,17 @@ export default function PixelMenu({
                         {strings.pixelMenu.actions.returnCurrent}
                       </span>
                     </Card>
+
+                    {/* P4.15 — Help / FAQ launcher. Opens a focus-trapped modal
+                        with 6 common-question answers from the i18n catalog. */}
+                    <Card
+                      className="p-4 flex flex-col items-center justify-center hover:bg-yellow-100 dark:hover:bg-yellow-900/30 cursor-pointer transition-colors"
+                      onClick={() => setHelpOpen(true)}
+                      data-testid="help-button"
+                    >
+                      <HelpCircle className="h-8 w-8 mb-2 text-yellow-600 dark:text-yellow-400" />
+                      <span className="text-sm font-medium">{strings.help.title}</span>
+                    </Card>
                   </motion.div>
                 ) : (
                   /* Session History */
@@ -396,6 +414,11 @@ export default function PixelMenu({
           </motion.div>
         </motion.div>
       )}
+      {/* P4.15 — Help/FAQ modal lives outside the AnimatePresence open
+          gate so the modal can persist if the menu is dismissed (Radix
+          Dialog has its own portal + open state; rendering once keeps
+          focus management clean). */}
+      <HelpModal open={helpOpen} onOpenChange={setHelpOpen} />
     </AnimatePresence>
   );
 }

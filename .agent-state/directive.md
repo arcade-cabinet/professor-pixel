@@ -391,7 +391,7 @@ Branch: feat/player-experience-pillar-4
 
 ### task-015 PixelMenu-attached "?" button opens FAQ modal
 
-- [ ] task-015 help-modal.tsx with 6 FAQ entries; PixelMenu Help entry; keyboard-accessible (Escape + focus trap)
+- [x] task-015 help-modal.tsx with 6 FAQ entries; PixelMenu Help entry; keyboard-accessible (Escape + focus trap)
 
 ### task-016 ? keyboard shortcut to toggle hint panel
 
