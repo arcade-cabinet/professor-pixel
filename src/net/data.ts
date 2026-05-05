@@ -1,7 +1,11 @@
-import { isStaticMode, StorageAdapter } from '@lib/storage/mode';
+import { StorageAdapter } from '@lib/storage/mode';
 import type { UserProgress, Project, InsertProject } from '@lib/types/schema';
 
-// Centralized data layer that switches between API and static storage
+// Pure browser app — no backend exists. Every method routes to the
+// client-side StorageAdapter (localStorage / OPFS). Used to gate behind
+// `isStaticMode()`, but the apiRequest path was dead code that would
+// have 404'd on Capacitor + Pages and was kept alive only by the
+// localhost-vs-github.io heuristic in storage/mode.ts.
 class DataService {
   private storageAdapter: StorageAdapter | null = null;
 
@@ -12,103 +16,49 @@ class DataService {
     return this.storageAdapter;
   }
 
-  // Helper to make API requests in non-static mode
-  private async apiRequest(method: string, url: string, data?: unknown) {
-    const response = await fetch(url, {
-      method,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: data ? JSON.stringify(data) : undefined,
-    });
-
-    if (!response.ok) {
-      throw new Error(`API request failed: ${response.statusText}`);
-    }
-
-    return response.json();
-  }
-
-  // Lesson methods
   async getLessons() {
-    if (isStaticMode()) {
-      return this.getStorageAdapter().getLessons();
-    }
-    return this.apiRequest('GET', '/api/lessons');
+    return this.getStorageAdapter().getLessons();
   }
 
   async getLesson(id: string) {
-    if (isStaticMode()) {
-      return this.getStorageAdapter().getLesson(id);
-    }
-    return this.apiRequest('GET', `/api/lessons/${id}`);
+    return this.getStorageAdapter().getLesson(id);
   }
 
-  // Progress methods
   async getUserProgress() {
-    if (isStaticMode()) {
-      return this.getStorageAdapter().getUserProgress();
-    }
-    return this.apiRequest('GET', '/api/progress');
+    return this.getStorageAdapter().getUserProgress();
   }
 
   async getUserProgressForLesson(lessonId: string) {
-    if (isStaticMode()) {
-      return this.getStorageAdapter().getUserProgressForLesson(lessonId);
-    }
-    return this.apiRequest('GET', `/api/progress/${lessonId}`);
+    return this.getStorageAdapter().getUserProgressForLesson(lessonId);
   }
 
   async updateUserProgress(lessonId: string, progressData: Partial<UserProgress>) {
-    if (isStaticMode()) {
-      return this.getStorageAdapter().updateUserProgress(lessonId, progressData);
-    }
-    return this.apiRequest('PUT', `/api/progress/${lessonId}`, progressData);
+    return this.getStorageAdapter().updateUserProgress(lessonId, progressData);
   }
 
-  // Project methods
   async listProjects() {
-    if (isStaticMode()) {
-      return this.getStorageAdapter().listProjects();
-    }
-    return this.apiRequest('GET', '/api/projects');
+    return this.getStorageAdapter().listProjects();
   }
 
   async getProject(id: string) {
-    if (isStaticMode()) {
-      return this.getStorageAdapter().getProject(id);
-    }
-    return this.apiRequest('GET', `/api/projects/${id}`);
+    return this.getStorageAdapter().getProject(id);
   }
 
   async createProject(project: Omit<InsertProject, 'userId'>) {
-    if (isStaticMode()) {
-      return this.getStorageAdapter().createProject(project);
-    }
-    return this.apiRequest('POST', '/api/projects', project);
+    return this.getStorageAdapter().createProject(project);
   }
 
   async updateProject(id: string, updates: Partial<Project>) {
-    if (isStaticMode()) {
-      return this.getStorageAdapter().updateProject(id, updates);
-    }
-    return this.apiRequest('PUT', `/api/projects/${id}`, updates);
+    return this.getStorageAdapter().updateProject(id, updates);
   }
 
   async deleteProject(id: string) {
-    if (isStaticMode()) {
-      return this.getStorageAdapter().deleteProject(id);
-    }
-    return this.apiRequest('DELETE', `/api/projects/${id}`);
+    return this.getStorageAdapter().deleteProject(id);
   }
 
   async listPublishedProjects() {
-    if (isStaticMode()) {
-      return this.getStorageAdapter().listPublishedProjects();
-    }
-    return this.apiRequest('GET', '/api/gallery');
+    return this.getStorageAdapter().listPublishedProjects();
   }
 }
 
-// Singleton instance
 export const dataService = new DataService();
