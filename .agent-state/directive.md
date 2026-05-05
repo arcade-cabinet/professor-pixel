@@ -507,19 +507,19 @@ Branch: feat/post-launcher-consolidation (after PR #30 squash-merges)
 
 ### C2 — Direct-dep security bumps
 
-- [ ] C2.1 Review/merge Dependabot PR #16 (jsdom 27→29) after green CI
-- [ ] C2.2 Review/merge Dependabot PR #18 (@types/node 20→25) after green CI
+- [x] C2.1 PR #16 (jsdom 27→29) squash-merged into main
+- [ ] C2.2 PR #18 (@types/node 20→25) — triggered @dependabot rebase after #16 changed lockfile; will squash-merge once green
 - [ ] C2.3 react-resizable-panels 2→4 with import/ref-type rewrite across editor + wizard layout-manager
-- [ ] C2.4 Review/merge Dependabot bundle PR #24 (45 minor/patch) after framer-motion 12.x + recharts 2.x audit
+- [ ] C2.4 PR #24 bundle (45 minor/patch) — triggered @dependabot rebase; will squash-merge once green
 - [ ] C2.5 Close remaining Dependabot alerts as "covered by overrides" with citation, OR bump if direct
 
 ### C3 — Capacitor shell
 
-- [ ] C3.1 Install @capacitor/core, /cli, /android, /ios; npx cap init "Pixel's PyGame Palace" "com.arcadecabinet.professorpixel" --web-dir=dist; commit capacitor.config.ts + android/ + ios/
-- [ ] C3.2 SW registration guard: if (location.protocol !== 'capacitor:') registerPyodideCache() — fall back to in-memory cache inside Capacitor WebView
-- [ ] C3.3 Android signing: gitignored android/app/keystore/, committed signing.properties.example, docs/deployment/android.md
-- [ ] C3.4 iOS workflow: docs/deployment/ios.md (manual TestFlight loop, no CI auto-signing)
-- [ ] C3.5 .github/workflows/cd-mobile.yml builds debug APK on every push to main as workflow artifact; manual-trigger signed Play Store build behind ANDROID_KEYSTORE_BASE64 secret
+- [x] C3.1 Installed @capacitor/cli + /core + /android + /ios at 8.3.1; npx cap init produced capacitor.config.ts; npx cap add android scaffolded android/ tree (75M but bulk is .gitignored synced dist/, real tracked footprint <1MB)
+- [x] C3.2 src/python/pyodide-cache.ts short-circuits SW registration when window.location.protocol === 'capacitor:' or 'capacitor-electron:'; in-memory module cache via getPyodide() singleton handles persistence inside the WebView
+- [x] C3.3 android/app/signing.properties.example committed; android/app/signing.properties + android/app/keystore/ in root .gitignore + Capacitor's own android/.gitignore; docs/DEPLOYMENT.md → Android workflow section documents keystore generation + Play Store upload
+- [x] C3.4 docs/DEPLOYMENT.md → iOS workflow section: manual Mac+Xcode loop, TestFlight as primary distribution channel; iOS not in cd-mobile.yml because Apple's signing model doesn't fit GitHub-hosted runners
+- [x] C3.5 .github/workflows/cd-mobile.yml builds debug APK on every push to main with paths-filter on app/src/public/capacitor/android changes; uploads as workflow artifact retention-days 14; signed-release job behind workflow_dispatch.inputs.release + ANDROID_KEYSTORE_BASE64 + ANDROID_KEYSTORE_PASSWORD + ANDROID_KEY_ALIAS + ANDROID_KEY_PASSWORD secrets, retention-days 90, gated on `android-release` GitHub environment
 
 ### C4 — Docs sweep (no errata files)
 

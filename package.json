@@ -89,6 +89,10 @@
   "devDependencies": {
     "@axe-core/playwright": "^4.11.3",
     "@biomejs/biome": "^2.4.14",
+    "@capacitor/android": "^8.3.1",
+    "@capacitor/cli": "^8.3.1",
+    "@capacitor/core": "^8.3.1",
+    "@capacitor/ios": "^8.3.1",
     "@playwright/test": "^1.55.0",
     "@replit/vite-plugin-cartographer": "^0.3.0",
     "@replit/vite-plugin-dev-banner": "^0.1.1",

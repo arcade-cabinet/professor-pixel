@@ -1,6 +1,6 @@
 ---
 title: Deployment
-updated: 2026-05-04
+updated: 2026-05-05
 status: current
 domain: ops
 ---
@@ -16,8 +16,11 @@ domain: ops
 | **GitHub Pages** | Static SPA (`dist/`) | `push: main` or manual dispatch | `.github/workflows/cd.yml` |
 | **Local preview** | Static SPA (`dist/`) | `pnpm preview` | `package.json` |
 | **Any static host** | Static SPA (`dist/`) | Upload `dist/` to S3 / Cloudflare Pages / Netlify / etc. | — |
+| **PWA install** | Same `dist/` via Add-to-Home-Screen | User-driven (Chrome install prompt, iOS Safari "Add to Home Screen") | `public/manifest.webmanifest` + `index.html` |
+| **Android (Capacitor)** | `android/` shell wrapping `dist/` | Manual: `npx cap sync android && (cd android && ./gradlew assembleDebug)`; CI: `.github/workflows/cd-mobile.yml` | `capacitor.config.ts` + `android/` |
+| **iOS (Capacitor)** | `ios/` shell wrapping `dist/` | Manual on Mac/Xcode (no CI auto-signing) | `capacitor.config.ts` + `ios/` |
 
-The app is a pure browser SPA. There is no server component. Pyodide loads from CDN at runtime; persistence is `localStorage`/`sessionStorage`/cookies; static content (lessons JSON, asset catalog JSON) is served from `public/`.
+The app is a pure browser SPA. There is no server component. Pyodide loads from a vendored copy under `public/pyodide/` (intercepted + cached in OPFS by `public/pyodide-sw.js` on web/PWA targets; bundled directly into the APK/IPA on Capacitor targets — the SW is bypassed there because there's nothing to cache). Persistence is OPFS (with `localStorage` fallback for legacy data — see `src/storage/opfs-migration.ts`). Static content (lessons JSON, asset catalog JSON) is served from `public/`.
 
 ## GitHub Pages
 
@@ -115,6 +118,72 @@ For runtime health, the in-browser monitoring (`@lib/monitoring/health`, `@lib/e
 | Asset references 404 in browser | `public/assets/catalog.json` stale or missing | `pnpm catalog` (also runs as `predev`/`prebuild`) |
 | `@assets/pixel/...` import fails | New portrait added to `app/assets/pixel/` not picked up | Restart the dev server — Vite picks up new files at start |
 | Pyodide fails to load | CDN reachability or version mismatch | Confirm `loadPyodide` indexURL in `app/components/pygame/runner.tsx` |
+
+## Mobile (Capacitor)
+
+The Android and iOS shells wrap the same `dist/` bundle the web target deploys. Capacitor is a thin native chrome around a WebView, so all the app code (TypeScript, React, Pyodide, the launcher) is identical across web/PWA/mobile. The differences are:
+
+- **No service worker.** `src/python/pyodide-cache.ts` short-circuits when `window.location.protocol === 'capacitor:'`. The Pyodide WASM is shipped directly in the APK/IPA bundle (it's already on-device, nothing to cache).
+- **No `localStorage` migration.** Mobile installs are fresh — there's no pre-existing `pygame_academy_projects` data to migrate from. The migration code path runs harmlessly (sees no localStorage entries, writes the sentinel, exits).
+- **OPFS works.** Both Android WebView and WKWebView (iOS 16+) support OPFS. Project saves land in the WebView's per-app OPFS quota and persist across launches.
+
+### Android workflow
+
+```sh
+# One-time setup (per machine)
+brew install --cask android-studio        # macOS
+# Install Android SDK 34+ via Android Studio's SDK manager
+echo "sdk.dir=$HOME/Library/Android/sdk" > android/local.properties
+
+# Each iteration
+pnpm build                                # rebuild dist/
+npx cap sync android                      # mirror dist/ → android/app/src/main/assets/public/
+(cd android && ./gradlew assembleDebug)   # produces android/app/build/outputs/apk/debug/app-debug.apk
+
+# Install on a connected device or emulator
+adb install android/app/build/outputs/apk/debug/app-debug.apk
+```
+
+For a Play Store release build:
+
+```sh
+# Generate a keystore (one-time, store securely OUT of git)
+keytool -genkey -v -keystore android/app/keystore/release.keystore \
+  -alias professor-pixel -keyalg RSA -keysize 2048 -validity 10000
+
+# Create signing.properties (gitignored — see signing.properties.example)
+cat > android/app/signing.properties <<EOF
+storeFile=keystore/release.keystore
+storePassword=…
+keyAlias=professor-pixel
+keyPassword=…
+EOF
+
+(cd android && ./gradlew assembleRelease)
+# APK at android/app/build/outputs/apk/release/app-release.apk
+# Upload to https://play.google.com/console/
+```
+
+CI (`.github/workflows/cd-mobile.yml`) builds the **debug** APK on every push to `main` and uploads it as a workflow artifact. The signed Play Store build runs only on manual workflow dispatch and consumes the `ANDROID_KEYSTORE_BASE64` + `ANDROID_KEYSTORE_PASSWORD` + `ANDROID_KEY_ALIAS` + `ANDROID_KEY_PASSWORD` repository secrets.
+
+### iOS workflow
+
+iOS provisioning + signing requires a physical Mac with Xcode 16+ and an active Apple Developer account ($99/yr). CI cannot fully sign builds (Apple's restrictions), so the iOS path is manual:
+
+```sh
+# One-time setup (per machine, Mac only)
+sudo xcode-select --install
+sudo gem install cocoapods
+
+# Each iteration
+pnpm build
+npx cap sync ios
+(cd ios/App && pod install)
+open ios/App/App.xcworkspace
+# In Xcode: select your team, set bundle ID, Product → Archive → upload to TestFlight
+```
+
+The TestFlight beta loop is the recommended distribution channel until App Store submission is needed.
 
 ## See also
 

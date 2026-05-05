@@ -1,0 +1,154 @@
+name: CD-Mobile
+
+# Builds the Capacitor Android APK on every push to main and uploads it as a
+# workflow artifact for QA download. Signed Play Store builds run only via
+# manual workflow_dispatch and consume the ANDROID_KEYSTORE_* secrets.
+#
+# iOS builds are deliberately NOT in this workflow — Apple's signing model
+# doesn't fit GitHub-hosted runners cleanly. iOS is a manual Mac+Xcode flow
+# (see docs/DEPLOYMENT.md → iOS workflow).
+
+on:
+  push:
+    branches: ['main']
+    paths:
+      - 'app/**'
+      - 'src/**'
+      - 'public/**'
+      - 'capacitor.config.ts'
+      - 'android/**'
+      - '!android/build/**'
+      - '!android/.gradle/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - '.github/workflows/cd-mobile.yml'
+  workflow_dispatch:
+    inputs:
+      release:
+        description: 'Build a signed release APK (requires ANDROID_KEYSTORE_* secrets)'
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  android-debug:
+    name: Build Android debug APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+          cache: 'pnpm'
+
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools platforms;android-34 build-tools;34.0.0'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build web bundle
+        run: pnpm build
+
+      - name: Sync Capacitor Android
+        run: npx cap sync android
+
+      - name: Assemble debug APK
+        working-directory: android
+        run: ./gradlew assembleDebug --no-daemon
+
+      - name: Upload debug APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: professor-pixel-debug-${{ github.sha }}
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 14
+          if-no-files-found: error
+
+  android-release:
+    name: Build signed Android release APK
+    if: github.event_name == 'workflow_dispatch' && inputs.release
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    environment: android-release
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+          cache: 'pnpm'
+
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools platforms;android-34 build-tools;34.0.0'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Decode keystore
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          mkdir -p android/app/keystore
+          printf '%s' "$ANDROID_KEYSTORE_BASE64" | base64 -d > android/app/keystore/release.keystore
+
+      - name: Write signing.properties
+        env:
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          cat > android/app/signing.properties <<EOF
+          storeFile=keystore/release.keystore
+          storePassword=$ANDROID_KEYSTORE_PASSWORD
+          keyAlias=$ANDROID_KEY_ALIAS
+          keyPassword=$ANDROID_KEY_PASSWORD
+          EOF
+
+      - name: Build web bundle
+        run: pnpm build
+
+      - name: Sync Capacitor Android
+        run: npx cap sync android
+
+      - name: Assemble release APK
+        working-directory: android
+        run: ./gradlew assembleRelease --no-daemon
+
+      - name: Upload release APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: professor-pixel-release-${{ github.sha }}
+          path: android/app/build/outputs/apk/release/app-release.apk
+          retention-days: 90
+          if-no-files-found: error

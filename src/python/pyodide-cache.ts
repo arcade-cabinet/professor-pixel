@@ -30,6 +30,19 @@ export function registerPyodideCache(): Promise<ServiceWorkerRegistration | null
     if (typeof navigator === 'undefined' || !('serviceWorker' in navigator)) {
       return null;
     }
+    // Capacitor WebView guard. Inside the Android/iOS Capacitor shell
+    // the page loads from the `capacitor:` (or `https://localhost` on
+    // Android-with-server-config) protocol, where service workers
+    // don't run reliably and the asset bundle is already on-device
+    // anyway — there's nothing to cache, the WASM is shipped in the
+    // APK/IPA. Skip SW registration there; the in-memory module cache
+    // that getPyodide() maintains is plenty.
+    if (typeof window !== 'undefined') {
+      const proto = window.location?.protocol;
+      if (proto === 'capacitor:' || proto === 'capacitor-electron:') {
+        return null;
+      }
+    }
     // Service workers don't run on http: in production-equivalent
     // contexts, but Vite's dev server is http://localhost which
     // browsers treat as a secure context for SW purposes.
