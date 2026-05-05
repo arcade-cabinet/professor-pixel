@@ -5,6 +5,7 @@ export {
   isTTSAvailable,
   isAudioEnabled,
   setAudioEnabled,
+  subscribeAudioEnabled,
 } from './tts';
 export type { SpeakOptions } from './tts';
 

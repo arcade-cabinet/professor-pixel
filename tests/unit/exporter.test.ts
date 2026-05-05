@@ -225,11 +225,40 @@ describe('shareOrDownload', () => {
     consoleWarnSpy.mockRestore();
   });
 
-  it('falls back silently on AbortError (user dismissed share sheet)', async () => {
+  it('returns "cancelled" on AbortError without auto-downloading', async () => {
+    // User explicitly dismissed the share sheet — re-pushing a download
+    // would override their intent. Return 'cancelled' and let the caller
+    // decide whether to offer a manual "save instead" affordance.
     const abortErr = new Error('aborted');
     abortErr.name = 'AbortError';
     const shareSpy = vi.fn(async () => {
       throw abortErr;
+    });
+    const downloadSpy = vi.fn();
+    vi.stubGlobal('navigator', {
+      share: shareSpy,
+      canShare: vi.fn(() => true),
+    });
+    // If triggerDownload were invoked it would call createObjectURL on the
+    // global URL — failing this spy assertion catches the regression.
+    vi.stubGlobal('URL', {
+      ...URL,
+      createObjectURL: downloadSpy,
+      revokeObjectURL: vi.fn(),
+    });
+    const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const action = await shareOrDownload(exported);
+    expect(action).toBe('cancelled');
+    expect(downloadSpy).not.toHaveBeenCalled();
+    expect(consoleWarnSpy).not.toHaveBeenCalled();
+    consoleWarnSpy.mockRestore();
+  });
+
+  it('falls back to download silently on NotAllowedError (transient activation expired)', async () => {
+    const notAllowedErr = new Error('user activation required');
+    notAllowedErr.name = 'NotAllowedError';
+    const shareSpy = vi.fn(async () => {
+      throw notAllowedErr;
     });
     vi.stubGlobal('navigator', {
       share: shareSpy,
@@ -243,7 +272,8 @@ describe('shareOrDownload', () => {
     const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     const action = await shareOrDownload(exported);
     expect(action).toBe('downloaded');
-    // No warn for AbortError — user dismissal is normal flow.
+    // No warn for NotAllowedError — the kid didn't say "no", iOS Safari
+    // just lost the user-activation token after the await.
     expect(consoleWarnSpy).not.toHaveBeenCalled();
     consoleWarnSpy.mockRestore();
   });

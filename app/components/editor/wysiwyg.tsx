@@ -59,29 +59,37 @@ export default function PygameWysiwygEditor({
   const propertiesToggleRef = useRef<HTMLButtonElement | null>(null);
   const paletteDrawerRef = useRef<HTMLDivElement | null>(null);
   const propertiesDrawerRef = useRef<HTMLDivElement | null>(null);
+  // Has-been-open guards — without these, the focus-restore effects fire
+  // on initial mount and grab focus to the toggle buttons before the user
+  // has interacted, hijacking page focus on every load. Only restore focus
+  // when an open transitioned to closed.
+  const paletteHasBeenOpenRef = useRef(false);
+  const propertiesHasBeenOpenRef = useRef(false);
 
   useEffect(() => {
     if (paletteOpen) {
+      paletteHasBeenOpenRef.current = true;
       // Move focus to the first focusable child inside the drawer so a
       // keyboard user lands on a real control, not on the scrim.
       const first = paletteDrawerRef.current?.querySelector<HTMLElement>(
         'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
       );
       first?.focus();
-    } else if (paletteToggleRef.current) {
+    } else if (paletteHasBeenOpenRef.current && paletteToggleRef.current) {
       // Drawer just closed — restore focus to the toggle that opened it,
-      // matching native dialog semantics.
+      // matching native dialog semantics. Skipped on initial mount.
       paletteToggleRef.current.focus();
     }
   }, [paletteOpen]);
 
   useEffect(() => {
     if (propertiesOpen) {
+      propertiesHasBeenOpenRef.current = true;
       const first = propertiesDrawerRef.current?.querySelector<HTMLElement>(
         'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
       );
       first?.focus();
-    } else if (propertiesToggleRef.current) {
+    } else if (propertiesHasBeenOpenRef.current && propertiesToggleRef.current) {
       propertiesToggleRef.current.focus();
     }
   }, [propertiesOpen]);
@@ -275,7 +283,13 @@ export default function PygameWysiwygEditor({
               </Button>
             )}
             {onClose && (
-              <Button variant="ghost" size="sm" onClick={onClose} className="min-h-[44px]">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onClose}
+                className="min-h-[44px]"
+                aria-label="Close editor"
+              >
                 {isCompact ? <X className="w-5 h-5" /> : 'Close Editor'}
               </Button>
             )}

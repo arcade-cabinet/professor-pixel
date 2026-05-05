@@ -10,8 +10,11 @@ const CDN_FALLBACK_URL = 'https://cdn.jsdelivr.net/pyodide/v0.29.3/full/';
 
 export class PyodideLoadError extends Error {
   constructor(message: string, options?: { cause?: unknown }) {
-    super(message, options);
+    super(message);
     this.name = 'PyodideLoadError';
+    if (options?.cause !== undefined) {
+      (this as Error & { cause?: unknown }).cause = options.cause;
+    }
   }
 }
 
@@ -67,7 +70,16 @@ async function loadPyodideScript(scriptSrc: string): Promise<void> {
         return;
       }
       const status = existing.dataset.pyodideStatus;
-      if (status === 'loaded' || status === 'error') {
+      // 'loaded' and 'error' tags are dead — load/error already fired, so
+      // attaching listeners would hang forever. Replace.
+      //
+      // 'loading' on a retry path is also suspect: if we got here with
+      // bootstrapPromise === null (i.e. recoverPyodide() ran or a previous
+      // attempt threw) AND window.loadPyodide is still falsy, the prior
+      // attempt's network request was likely abandoned. Listeners attached
+      // to a tag whose request was already cancelled never fire, so the
+      // retry would hang. Replace and re-issue.
+      if (status === 'loaded' || status === 'error' || status === 'loading') {
         existing.remove();
         // fall through to fresh-create below
       } else {

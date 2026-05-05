@@ -14,7 +14,7 @@ domain: technical
 
 | Layer | Choice |
 |-------|--------|
-| Framework | React 18 (functional components only — no class components) |
+| Framework | React 19 (functional components only — no class components) |
 | Language | TypeScript 5.6, `strict: true` |
 | Build | Vite 5 |
 | Routing | wouter |

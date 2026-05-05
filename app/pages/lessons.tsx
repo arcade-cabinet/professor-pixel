@@ -36,7 +36,11 @@ export default function LessonsIndex() {
     queryFn: () => loadLessons(),
   });
 
-  const { data: allProgress, error: progressError } = useQuery<UserProgress[]>({
+  const {
+    data: allProgress,
+    error: progressError,
+    isLoading: progressLoading,
+  } = useQuery<UserProgress[]>({
     queryKey: ['progress'],
     queryFn: async () => {
       const storage = getClientStorage();
@@ -62,7 +66,7 @@ export default function LessonsIndex() {
     return Math.round((completedCount / lessons.length) * 100);
   }, [lessons, progressByLesson]);
 
-  if (lessonsLoading) {
+  if (lessonsLoading || progressLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-pink-50 dark:from-gray-900 dark:to-purple-950">
         <p className="text-gray-700 dark:text-gray-300">Loading lessons…</p>

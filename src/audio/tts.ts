@@ -94,6 +94,14 @@ export function cancelSpeech(): void {
 // spaces. We default OFF and persist the user's choice.
 const AUDIO_KEY = 'pp.audioEnabled';
 
+/**
+ * Custom event dispatched on `window` when setAudioEnabled flips. Lets any
+ * surface (dialogue engine, menu badge, etc.) subscribe reactively without
+ * polling. The native `storage` event only fires for cross-tab writes, so we
+ * need our own signal for same-tab toggles.
+ */
+const AUDIO_CHANGE_EVENT = 'pp:audio-changed';
+
 export function isAudioEnabled(): boolean {
   if (typeof localStorage === 'undefined') return false;
   try {
@@ -115,4 +123,32 @@ export function setAudioEnabled(enabled: boolean): void {
   } catch {
     // Quota or privacy mode — fall through silently.
   }
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent(AUDIO_CHANGE_EVENT, { detail: enabled }));
+  }
+}
+
+/**
+ * Subscribe to audio-enabled changes. Listener fires immediately with the
+ * current value, and on every subsequent setAudioEnabled call (same tab via
+ * the custom event, cross-tab via the native storage event).
+ *
+ * Returns an unsubscribe function — call it from a useEffect cleanup.
+ */
+export function subscribeAudioEnabled(listener: (enabled: boolean) => void): () => void {
+  if (typeof window === 'undefined') {
+    listener(false);
+    return () => undefined;
+  }
+  listener(isAudioEnabled());
+  const onCustom = () => listener(isAudioEnabled());
+  const onStorage = (e: StorageEvent) => {
+    if (e.key === AUDIO_KEY || e.key === null) listener(isAudioEnabled());
+  };
+  window.addEventListener(AUDIO_CHANGE_EVENT, onCustom);
+  window.addEventListener('storage', onStorage);
+  return () => {
+    window.removeEventListener(AUDIO_CHANGE_EVENT, onCustom);
+    window.removeEventListener('storage', onStorage);
+  };
 }

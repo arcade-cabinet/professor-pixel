@@ -15,7 +15,7 @@ import {
   loadWizardState,
   PersistedWizardState,
 } from '@lib/storage/persistence';
-import { speak, isAudioEnabled, cancelSpeech } from '@lib/audio';
+import { speak, cancelSpeech, subscribeAudioEnabled } from '@lib/audio';
 
 interface UseWizardDialogueProps {
   initialNodeId?: string;
@@ -122,13 +122,20 @@ export function useWizardDialogue({
     dialogueState.dialogueStep,
     sessionActions
   );
+  // Reactive audio-enabled — subscribe so the speech effect fires when the
+  // kid toggles voice on while parked on a node, not only on the *next*
+  // node transition. subscribeAudioEnabled fires on same-tab toggles
+  // (custom event) and cross-tab toggles (storage event).
+  const [audioEnabled, setAudioEnabledState] = useState(false);
+  useEffect(() => subscribeAudioEnabled(setAudioEnabledState), []);
+
   useEffect(() => {
-    if (!isAudioEnabled()) return;
+    if (!audioEnabled) return;
     if (currentText) speak(currentText);
     return () => {
       cancelSpeech();
     };
-  }, [currentText]);
+  }, [currentText, audioEnabled]);
 
   // Load wizard flow data
   useEffect(() => {

@@ -16,6 +16,10 @@ export function statusFor(lesson: Lesson, progress: UserProgress | undefined): L
   if (!progress) return { state: 'not-started', pct: 0 };
   if (progress.completed) return { state: 'completed', pct: 100 };
   const total = lesson.content.steps.length;
-  const pct = total > 0 ? Math.round((progress.currentStep / total) * 100) : 0;
+  // Clamp into [0, 100]: a stale or out-of-bounds currentStep (negative,
+  // or larger than total after a lesson has been edited) would otherwise
+  // leak straight into the progress bar UI as a negative width or > 100%.
+  const raw = total > 0 ? Math.round((progress.currentStep / total) * 100) : 0;
+  const pct = Math.max(0, Math.min(100, raw));
   return { state: 'in-progress', pct };
 }

@@ -48,7 +48,7 @@ export async function exportProjectAsZip(options: ExportProjectOptions): Promise
   const pythonCode = compilePythonGame(selectedComponents, selectedAssets);
   zip.file('game.py', pythonCode);
 
-  zip.file('index.html', buildBootstrapHtml(title));
+  zip.file('index.html', buildBootstrapHtml(title, pythonCode));
 
   zip.file('README.md', buildReadme(title));
 
@@ -118,9 +118,14 @@ export function triggerDownload(exported: ExportedProject): void {
 /**
  * Try Web Share API first (mobile-friendly: dispatches to Messages, AirDrop,
  * etc.); fall back to triggering a download if sharing isn't supported or the
- * user cancels. Returns the action that was actually taken.
+ * user cancels. Returns the action that was actually taken — including
+ * `'cancelled'` if the user explicitly dismissed the share sheet, in which
+ * case we do NOT fall back to a download (re-downloading would override an
+ * intentional cancel).
  */
-export async function shareOrDownload(exported: ExportedProject): Promise<'shared' | 'downloaded'> {
+export async function shareOrDownload(
+  exported: ExportedProject
+): Promise<'shared' | 'downloaded' | 'cancelled'> {
   // navigator.canShare requires the File-share path; not all browsers support
   // sharing files (Firefox desktop, older Safari). Detect properly.
   if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
@@ -135,12 +140,18 @@ export async function shareOrDownload(exported: ExportedProject): Promise<'share
         return 'shared';
       }
     } catch (err) {
-      // AbortError (user dismissed), NotAllowedError (transient activation
-      // expired between zip-generation and share — common on iOS Safari
-      // when the export takes a few hundred ms), or unsupported — fall
-      // through to triggerDownload which works without user activation.
       const name = (err as Error)?.name;
-      if (name !== 'AbortError' && name !== 'NotAllowedError') {
+      // AbortError = user explicitly dismissed the share sheet. Respect that
+      // intent: do NOT auto-download. The caller can show a "tap Save again
+      // when ready" affordance if they want.
+      if (name === 'AbortError') {
+        return 'cancelled';
+      }
+      // NotAllowedError = transient activation expired between zip-gen and
+      // share (common on iOS Safari when the export takes a few hundred ms).
+      // The user didn't explicitly say "no", so falling through to the
+      // download path delivers the file without user re-activation.
+      if (name !== 'NotAllowedError') {
         console.warn('navigator.share failed, falling back to download:', err);
       }
     }
@@ -158,12 +169,20 @@ function slugify(s: string): string {
   );
 }
 
-function buildBootstrapHtml(title: string): string {
+function buildBootstrapHtml(title: string, pythonCode: string): string {
   // Self-contained Pyodide loader. Loads pygame-ce, runs game.py, renders to
   // a canvas. Friendly "loading..." UI for the seconds it takes Pyodide to
   // boot. Errors surface in a visible panel so the kid isn't staring at a
   // blank page.
+  //
+  // We inline the compiled game.py as a base64 string so the bundle works
+  // when opened from file:// — `fetch('game.py')` fails under the file://
+  // origin in Chrome/Edge with CORS errors, but a base64 literal is just a
+  // string. Base64 (vs. a JS string-literal escape) sidesteps every quoting
+  // corner case (backticks, ${}, unicode line separators, etc.) that could
+  // break a kid's game silently if the compiled Python ever contained them.
   const safeTitle = escapeHtml(title);
+  const pythonB64 = base64UTF8(pythonCode);
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -185,6 +204,10 @@ function buildBootstrapHtml(title: string): string {
   <canvas id="canvas" width="800" height="600"></canvas>
   <script src="${PYODIDE_CDN_BASE}pyodide.js"></script>
   <script>
+    // Compiled game source, base64-encoded so we don't need fetch() — which
+    // fails under file:// in Chrome/Edge. Decoded at runtime via TextDecoder
+    // so any non-ASCII characters survive intact.
+    const GAME_PY_B64 = "${pythonB64}";
     (async () => {
       const status = document.getElementById('status');
       const error = document.getElementById('error');
@@ -194,7 +217,8 @@ function buildBootstrapHtml(title: string): string {
         status.textContent = 'Loading pygame…';
         await pyodide.loadPackage(['pygame-ce']);
         status.textContent = 'Loading your game…';
-        const code = await fetch('game.py').then((r) => r.text());
+        const bytes = Uint8Array.from(atob(GAME_PY_B64), (c) => c.charCodeAt(0));
+        const code = new TextDecoder('utf-8').decode(bytes);
         status.textContent = 'Running!';
         await pyodide.runPythonAsync(code);
       } catch (e) {
@@ -253,4 +277,21 @@ function escapeHtml(s: string): string {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
+}
+
+function base64UTF8(s: string): string {
+  // btoa() only handles latin-1; encode to UTF-8 bytes first so emoji and
+  // non-ASCII identifiers in the compiled Python survive. In jsdom and
+  // browsers btoa is available globally; in Node test runs Buffer is.
+  const bytes = new TextEncoder().encode(s);
+  if (typeof btoa === 'function') {
+    let bin = '';
+    for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+    return btoa(bin);
+  }
+  // Fallback for environments without btoa (older Node). globalThis.Buffer
+  // is typed via @types/node in this repo's transitive deps.
+  return (globalThis as { Buffer?: { from(b: Uint8Array): { toString(enc: string): string } } })
+    .Buffer!.from(bytes)
+    .toString('base64');
 }

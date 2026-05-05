@@ -19,7 +19,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { isAudioEnabled, setAudioEnabled } from '@lib/audio';
+import { isAudioEnabled, setAudioEnabled, subscribeAudioEnabled } from '@lib/audio';
 
 // Import Pixel images
 import pixelExcited from '@assets/pixel/Pixel_celebrating_victory_expression_24b7a377.png';
@@ -65,15 +65,10 @@ export default function PixelMenu({
   const [selectedTab, setSelectedTab] = useState<'actions' | 'history'>('actions');
   const [audioOn, setAudioOn] = useState(() => isAudioEnabled());
 
-  // Re-sync audioOn whenever the menu opens — the storage value can change
-  // from another surface (e.g., another tab, an SDK call) while the menu is
-  // closed; without this resync the toggle would show the stale value the
-  // first time it's opened.
-  useEffect(() => {
-    if (isOpen) {
-      setAudioOn(isAudioEnabled());
-    }
-  }, [isOpen]);
+  // Stay in sync with the audio enabled flag from any surface — the menu's
+  // toggle, another tab, or future SDK callers. subscribeAudioEnabled fires
+  // synchronously with the current value on first call.
+  useEffect(() => subscribeAudioEnabled(setAudioOn), []);
 
   // Mock session history if not provided
   const defaultActions: SessionAction[] =
