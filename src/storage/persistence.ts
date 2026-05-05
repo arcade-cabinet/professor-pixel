@@ -1,6 +1,7 @@
 // Persistence library for wizard state management
 // Handles localStorage, sessionStorage, and cookies for state persistence
 
+import { z } from 'zod';
 import type { SessionActions, UIState } from '@lib/wizard/types';
 
 // Type definitions for persisted data
@@ -11,6 +12,14 @@ export interface PersistedWizardState {
   gameType?: string | null;
   selectedGameType?: string | null;
   sessionActions?: SessionActions;
+  /**
+   * Asset IDs (not full GameAsset objects) selected by the kid during the
+   * wizard. Stored as IDs so the asset catalog stays the source of truth —
+   * if an asset's metadata changes between sessions, the wizard sees the
+   * fresh version on rehydration. Re-resolved against `assetManager` /
+   * the catalog at mount time.
+   */
+  selectedAssetIds?: string[];
   updatedAt: string;
 }
 
@@ -57,38 +66,113 @@ function debounce<TArgs extends unknown[]>(
   };
 }
 
-// Error handler for storage operations
+// Detect a quota-exceeded error across browsers. Firefox uses NS_ERROR_DOM_QUOTA_REACHED
+// (code 1014); Chrome/Safari use QuotaExceededError (code 22). DOMException name is
+// the most reliable signal post-2018, but older Safari still returns string names.
+export function isQuotaExceeded(error: unknown): boolean {
+  if (!(error instanceof Error)) return false;
+  const name = error.name;
+  const code = (error as Error & { code?: number }).code;
+  return (
+    name === 'QuotaExceededError' ||
+    name === 'NS_ERROR_DOM_QUOTA_REACHED' ||
+    code === 22 ||
+    code === 1014 ||
+    /quota/i.test(error.message)
+  );
+}
+
+// Error handler for storage operations. On QuotaExceeded we surface a kid-
+// friendly toast (if the host page wires one up) so the player isn't blindsided
+// by a silent save failure mid-session.
 function handleStorageError(error: Error, operation: string): void {
   console.error(`Storage operation failed (${operation}):`, error);
 
-  // Send error to monitoring if available
+  // Both branches below touch `window`. SSR + Node test runs hit this when
+  // a fake-storage shim throws — gate ALL window access behind a single
+  // typeof check so we don't ReferenceError before reaching the real bug.
+  if (typeof window === 'undefined') return;
+
+  if (isQuotaExceeded(error)) {
+    const winWithToast = window as Window & { toast?: (msg: unknown) => void };
+    if (typeof winWithToast.toast === 'function') {
+      winWithToast.toast(
+        "Looks like your saved games are full! Open the menu to clear old data, or your browser's site settings."
+      );
+    }
+  }
+
   const winWithTrack = window as Window & {
     trackError?: (err: Error, context: Record<string, unknown>) => void;
   };
-  if (typeof window !== 'undefined' && winWithTrack.trackError) {
-    winWithTrack.trackError(error, { operation, type: 'storage' });
+  if (winWithTrack.trackError) {
+    winWithTrack.trackError(error, {
+      operation,
+      type: 'storage',
+      quotaExceeded: isQuotaExceeded(error),
+    });
   }
 }
 
-// Validate and migrate stored data. We accept `unknown` from JSON.parse and
-// narrow defensively before treating the bag as the caller's expected shape.
-function validateAndMigrate<T>(data: unknown, currentVersion: string): T | null {
-  if (!data || typeof data !== 'object') {
+// Schemas for persisted payloads. We treat localStorage as untrusted input —
+// another tab, an extension, or a user's devtools session could put anything
+// there. Validating with zod prevents `selectedAssetIds: ["a", 42, null]`
+// from sneaking past the type system and exploding inside React render.
+//
+// Unknown fields are passed through (`.passthrough()`) so a kid who switched
+// to a newer build doesn't lose data when the schema gains optional fields.
+// `version` and `updatedAt` are required at write time, but legacy payloads
+// (pre-migration) may be missing one or both. Mark optional so the migration
+// path can repair them rather than rejecting the whole record.
+const persistedWizardStateSchema = z
+  .object({
+    version: z.string().optional(),
+    activeFlowPath: z.string().nullable().optional(),
+    currentNodeId: z.string().optional(),
+    gameType: z.string().nullable().optional(),
+    selectedGameType: z.string().nullable().optional(),
+    sessionActions: z.record(z.string(), z.unknown()).optional(),
+    selectedAssetIds: z.array(z.string()).optional(),
+    updatedAt: z.string().optional(),
+  })
+  .passthrough();
+
+// UIState lives in wizard/types.ts as a hand-rolled type; persisted UI is
+// transient (sessionStorage), so we accept any object and let the consumer
+// guard individual fields. The structural pieces we DO care about (version,
+// gameName) are validated; everything else is passthrough.
+const persistedSessionStateSchema = z
+  .object({
+    version: z.string().optional(),
+    uiState: z.record(z.string(), z.unknown()).optional(),
+    gameName: z.string().optional(),
+    updatedAt: z.string().optional(),
+  })
+  .passthrough();
+
+// Validate and migrate stored data. Parses untrusted JSON.parse output through
+// the supplied schema and bumps the `version` field if the payload is from an
+// older build. Returns null on validation failure so the caller can clear the
+// corrupted record.
+function validateAndMigrate<T extends z.ZodTypeAny>(
+  data: unknown,
+  schema: T,
+  currentVersion: string
+): z.infer<T> | null {
+  const parsed = schema.safeParse(data);
+  if (!parsed.success) {
+    console.warn('Persisted data failed schema validation:', parsed.error.issues);
     return null;
   }
 
-  const bag = data as Record<string, unknown> & { version?: string };
-
-  // Check version and perform migrations if needed
+  const bag = parsed.data as { version?: string };
   const storedVersion = bag.version || '0.0.0';
-
   if (storedVersion !== currentVersion) {
     console.log(`Migrating data from version ${storedVersion} to ${currentVersion}`);
-    // Add migration logic here as needed in the future
     bag.version = currentVersion;
   }
 
-  return bag as T;
+  return parsed.data;
 }
 
 // LocalStorage functions for wizard state
@@ -117,7 +201,11 @@ export function loadWizardState(): PersistedWizardState | null {
     if (!stored) return null;
 
     const parsed = JSON.parse(stored);
-    return validateAndMigrate<PersistedWizardState>(parsed, STORAGE_VERSION);
+    return validateAndMigrate(
+      parsed,
+      persistedWizardStateSchema,
+      STORAGE_VERSION
+    ) as PersistedWizardState | null;
   } catch (error) {
     handleStorageError(error as Error, 'loadWizardState');
     // Clear corrupted data
@@ -157,7 +245,11 @@ export function loadSessionState(): PersistedSessionState | null {
     if (!stored) return null;
 
     const parsed = JSON.parse(stored);
-    return validateAndMigrate<PersistedSessionState>(parsed, STORAGE_VERSION);
+    return validateAndMigrate(
+      parsed,
+      persistedSessionStateSchema,
+      STORAGE_VERSION
+    ) as PersistedSessionState | null;
   } catch (error) {
     handleStorageError(error as Error, 'loadSessionState');
     // Clear corrupted data

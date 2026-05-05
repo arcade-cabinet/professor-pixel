@@ -15,6 +15,7 @@ import {
   Split,
 } from 'lucide-react';
 import { cn } from '@lib/utils/cn';
+import { getEducationalError, type EducationalError } from '@lib/errors/educational';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useToast } from '@lib/hooks/use-toast';
 import {
@@ -50,7 +51,12 @@ interface PygameLivePreviewProps {
 interface PreviewState {
   isPlaying: boolean;
   isLoading: boolean;
-  error: string | null;
+  // Hold the full mapped EducationalError so the overlay can show the
+  // friendly headline AND the contextual explanation/details — not just a
+  // single line. Storing only the string would throw away learningTips,
+  // nextSteps, and the original error text the kid (or a helping adult)
+  // needs to debug.
+  error: EducationalError | null;
   fps: number;
   interactions: string[];
   score: number;
@@ -156,12 +162,15 @@ export default function PygameLivePreview({
           isPlaying: true,
         }));
       } catch (error) {
-        const errorMessage =
-          error instanceof Error ? error.message : 'Failed to execute pygame code';
+        // Don't pipe the raw exception text into the kid-facing overlay —
+        // route through the educational mapper so "TypeError: …" becomes a
+        // teaching message. The raw text is still logged to console for devs.
+        const raw = error instanceof Error ? error.message : 'Failed to execute pygame code';
+        console.error('[live-preview]', raw);
         setState((prev) => ({
           ...prev,
           isLoading: false,
-          error: errorMessage,
+          error: getEducationalError(raw),
           isPlaying: false,
         }));
 
@@ -321,11 +330,24 @@ export default function PygameLivePreview({
                 </div>
               )}
 
-              {/* Error Overlay */}
+              {/* Error Overlay — mirrors runner.tsx's structured panel so the
+                  kid gets the friendly headline + explanation + an
+                  optional "Show details" disclosure for the raw exception. */}
               {state.error && (
                 <div className="absolute inset-0 bg-red-900/20 flex items-center justify-center p-4">
                   <div className="bg-white/90 dark:bg-gray-800/90 rounded-lg p-4 max-w-sm">
-                    <p className="text-sm text-red-600 dark:text-red-400">{state.error}</p>
+                    <p className="text-sm font-bold text-red-600 dark:text-red-400">
+                      {state.error.friendlyMessage}
+                    </p>
+                    <p className="mt-1 text-sm text-gray-700 dark:text-gray-300">
+                      {state.error.explanation}
+                    </p>
+                    <details className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                      <summary className="cursor-pointer hover:opacity-100">Show details</summary>
+                      <pre className="mt-1 whitespace-pre-wrap break-words">
+                        {state.error.originalError}
+                      </pre>
+                    </details>
                   </div>
                 </div>
               )}

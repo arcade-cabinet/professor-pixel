@@ -155,7 +155,6 @@ export interface UIState {
   componentChoiceOpen?: boolean;
   currentComponentId?: string;
   currentComponentCategory?: string;
-  pyodideMode?: boolean;
 }
 
 // Edge swipe handler options

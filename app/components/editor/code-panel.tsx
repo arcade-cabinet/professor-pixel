@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Copy, Download, FileCode } from 'lucide-react';
+import { Copy, Download, FileCode, Info } from 'lucide-react';
 import { cn } from '@lib/utils/cn';
 import { PlacedComponent } from './wysiwyg';
 import { getComponentById } from '@lib/pygame/components/registry';
@@ -155,6 +155,23 @@ export default function PygameEditorCodePanel({
           </Button>
         </div>
       </div>
+
+      {/* V1 boundary signal — generation is one-way. See
+          docs/pillars/01-frontend.md "WYSIWYG editor — code-sync boundary".
+          The kid sees this callout every time they open the Code tab so
+          they don't expect Python edits to round-trip back to components. */}
+      <aside
+        role="note"
+        aria-label="About this code"
+        className="mx-4 mt-4 rounded-md border border-purple-700/40 bg-purple-900/30 px-3 py-2 text-xs text-purple-100 flex items-start gap-2"
+      >
+        <Info className="w-4 h-4 mt-0.5 flex-shrink-0 text-purple-300" aria-hidden="true" />
+        <div>
+          <strong className="font-semibold text-purple-200">Read-only preview.</strong> This Python
+          is generated from your components. To change it, edit components in Visual mode — typing
+          in this panel won't update your game.
+        </div>
+      </aside>
 
       <ScrollArea className="flex-1 p-4">
         <pre className="text-sm font-mono">

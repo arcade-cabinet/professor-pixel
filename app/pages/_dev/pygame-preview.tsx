@@ -54,6 +54,10 @@ export default function PygamePreviewTest() {
     },
   ];
 
+  // setupPygameEnvironment is a stable closure (only references pyodideInstance
+  // passed in as arg + a static Python string). Safe to omit from deps; documenting
+  // here so the biome-ignore is auditable rather than mysterious.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: stable closure with static Python source
   const loadPyodide = useCallback(async () => {
     if (pyodide) return;
 

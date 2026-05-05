@@ -1,6 +1,6 @@
 ---
 title: Platformer Playtest
-updated: 2026-05-04
+updated: 2026-05-05
 status: current
 domain: product
 summary: Wizard playtest notes for the platformer game type
@@ -103,6 +103,7 @@ summary: Wizard playtest notes for the platformer game type
 2. **Death/Respawn Sequence**
    - Currently missing entirely
    - Need: Respawn effect choice (fade in vs drop from sky)
+   - **Engine-level enabled, content-design pending (2026-05, player-experience pillar):** the wizard now has an explicit `gameAssembled` action gate and a derived `isWizardComplete` terminal state, so a death/respawn scene can be authored as a sub-flow ending in either a continue option (back to gameplay-config) or a re-entry into combat-config. Adding the scene is a flow-JSON edit (`platformer-flow.json` insertion between Stage 3 Gameplay Mechanics and Stage 4 World Building); no engine work is blocking it.
 
 3. **Level Complete Sequence**
    - Missing transition between levels
@@ -111,3 +112,4 @@ summary: Wizard playtest notes for the platformer game type
 4. **Game Over Screen**
    - Not mentioned in flow at all
    - Need: Retry options, score display style
+   - **Engine-level enabled, content-design pending (2026-05, player-experience pillar):** the runner pillar now exposes `recoverPyodide()` + a "Try again" UI affordance for runtime errors (P7), and the wizard-completion CTA on the universal flow has a clear Reset path (P1). A Game Over scene at end-of-stage-7 boss-battle authoring is purely a flow-JSON addition with two option-handler choices ("Retry from checkpoint" vs "Back to title"); both are existing engine surfaces.

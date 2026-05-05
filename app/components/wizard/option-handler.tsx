@@ -10,6 +10,7 @@ import {
   formatTestId,
 } from '@lib/wizard/utils';
 import { BUTTON_STYLES, ICON_SIZES, ANIMATIONS } from '@lib/wizard/constants';
+import { playPop } from '@lib/audio';
 
 interface WizardOptionsProps {
   options: WizardOption[];
@@ -52,13 +53,18 @@ export default function WizardOptionHandler({
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: ANIMATIONS.DIALOGUE_TRANSITION.delay }}
       className={`${containerStyles} ${className}`}
+      role="group"
+      aria-label="Choose your next step"
     >
       {options.map((option, index) => (
         <OptionButton
           key={index}
           option={option}
           index={index}
-          onSelect={() => onOptionSelect(option)}
+          onSelect={() => {
+            playPop();
+            onOptionSelect(option);
+          }}
           isMobile={isMobile}
           variant={variant}
           optionCount={options.length}
@@ -141,6 +147,7 @@ export function OptionButton({
         variant={buttonVariant}
         size={buttonSize}
         data-testid={formatTestId('dialogue-option', index)}
+        aria-label={option.text}
       >
         <OptionContent
           text={option.text}

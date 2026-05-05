@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { useLocation } from 'wouter';
 import PixelMenu from '@/components/pixel/menu';
 import { UniversalWizardProps, DeviceState, UIState, WizardOption } from '@lib/wizard/types';
 import { detectDevice, getLayoutMode } from '@lib/wizard/utils';
@@ -29,9 +30,10 @@ import PixelMinimizeAnimation from '@/components/pixel/minimize-animation';
 import PixelMinimized from '@/components/pixel/minimized';
 import PygameComponentSelector from '@/components/pygame/component-selector';
 import { GameAsset, AssetType } from '@lib/assets/types';
+import { useToast } from '@lib/hooks/use-toast';
 import { assetManager } from '@lib/assets/manager';
 import { ICON_SIZES, STYLES } from '@lib/wizard/constants';
-import { compilePythonGame, downloadPythonFile } from '@lib/pygame/runtime/compiler';
+import { exportProjectAsZip, shareOrDownload } from '@lib/pygame/runtime/exporter';
 import {
   saveSessionState,
   loadSessionState,
@@ -39,6 +41,8 @@ import {
   loadUserPreferences,
   clearWizardState,
   clearAllData,
+  loadWizardState,
+  saveWizardStateDebounced,
   PersistedSessionState,
 } from '@lib/storage/persistence';
 
@@ -58,11 +62,15 @@ export default function UniversalWizard({
     dialogueState,
     sessionActions,
     isLoading,
+    isWizardComplete,
     navigateToNode,
     handleOptionSelect,
     advance,
     setSessionActions,
   } = useWizardDialogue({ flowType });
+
+  const [, setLocation] = useLocation();
+  const { toast } = useToast();
 
   // Device state management
   const [deviceState, setDeviceState] = useState<DeviceState>(detectDevice());
@@ -104,6 +112,54 @@ export default function UniversalWizard({
 
   // User preferences state
   const [userPreferences, setUserPreferences] = useState(() => loadUserPreferences());
+
+  // P1.4 — one-time celebration when the CTA first appears. We don't persist
+  // across sessions; a fresh page load with an already-assembled game still
+  // greets the kid (it's a positive reinforcement, not a one-shot achievement).
+  //
+  // StrictMode-safe: we reset the fired-ref in cleanup so the second
+  // dev-mode invoke can re-schedule, AND we explicitly clear the visible
+  // sparkle in cleanup so an interrupted timer never leaves it stuck on.
+  const [showCelebration, setShowCelebration] = useState(false);
+  const celebrationFiredRef = useRef(false);
+  useEffect(() => {
+    if (!isWizardComplete) return;
+    if (celebrationFiredRef.current) return;
+    // P5 a11y — respect prefers-reduced-motion. Users who opt out of motion
+    // (vestibular sensitivity, focus disorders) get the CTA without the
+    // animated sparkle. The completion announcement still fires via the
+    // dialogue's aria-live region, so they don't lose the milestone.
+    if (typeof window !== 'undefined' && window.matchMedia) {
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        celebrationFiredRef.current = true;
+        return;
+      }
+    }
+    celebrationFiredRef.current = true;
+    setShowCelebration(true);
+    const t = window.setTimeout(() => setShowCelebration(false), 2400);
+    return () => {
+      window.clearTimeout(t);
+      setShowCelebration(false);
+      celebrationFiredRef.current = false;
+    };
+  }, [isWizardComplete]);
+
+  // Rehydrate selectedAssets from persisted IDs on mount. The wizard stores
+  // asset IDs (not full GameAsset objects) so the asset catalog stays the
+  // source of truth — if the kid navigates away to /lessons and comes back,
+  // their picked assets reappear in the wizard's UI.
+  useEffect(() => {
+    const persisted = loadWizardState();
+    const ids = persisted?.selectedAssetIds;
+    if (!ids || ids.length === 0) return;
+    const assets = ids
+      .map((id) => assetManager.getAssetById(id))
+      .filter((a): a is GameAsset => Boolean(a));
+    if (assets.length > 0) {
+      setSelectedAssets(assets);
+    }
+  }, []);
 
   // Load and apply theme preference on mount
   useEffect(() => {
@@ -274,9 +330,9 @@ export default function UniversalWizard({
         },
       }));
     } else if (currentNode.action === 'compileFullGame') {
-      // Compile all scenes with selected components
       setSessionActions((prev) => ({
         ...prev,
+        gameAssembled: true,
         compiledScenes: {
           ...prev.compiledScenes,
           full: true,
@@ -289,14 +345,13 @@ export default function UniversalWizard({
         ...prev,
         embeddedComponent: 'pygame-runner',
         previewMode: scene,
-        pyodideMode: true,
       }));
     }
   }, [dialogueState.currentNode, setSessionActions, dialogueState, sessionActions.gameType]);
 
   // Wrap handleOptionSelect to handle actions
   const handleOptionSelectWithAction = useCallback(
-    (option: WizardOption) => {
+    async (option: WizardOption) => {
       console.log('handleOptionSelectWithAction called with option:', option);
       // For selectComponentVariant, handle the action first before dialogue navigation
       // This ensures the selection is saved properly without triggering flow changes
@@ -518,7 +573,6 @@ export default function UniversalWizard({
         option.action === 'compileEndScene' ||
         option.action === 'compileFullGame'
       ) {
-        // Compile the scene with selected components and assets
         const sceneType = option.action.includes('Gameplay')
           ? 'gameplay'
           : option.action.includes('End')
@@ -530,6 +584,10 @@ export default function UniversalWizard({
             ...prev.compiledScenes,
             [sceneType]: true,
           },
+          // P1 reviewer fix: full-game compile must flip gameAssembled so the
+          // structurally-terminal CTA path can fire when the next node has no
+          // options. Scene-level compiles don't yet count as assembled.
+          ...(sceneType === 'full' ? { gameAssembled: true } : {}),
         }));
       } else if (option.action === 'launchPyodidePreview') {
         // Launch Pyodide preview with compiled scene. actionParams is
@@ -539,7 +597,6 @@ export default function UniversalWizard({
           ...prev,
           embeddedComponent: 'pygame-runner',
           previewMode: scene,
-          pyodideMode: true,
         }));
       } else if (option.action === 'launchPyodideGame') {
         // Launch the complete compiled game
@@ -547,79 +604,34 @@ export default function UniversalWizard({
           ...prev,
           embeddedComponent: 'pygame-runner',
           previewMode: 'full',
-          pyodideMode: true,
         }));
       } else if (option.action === 'exportPyodideGame') {
-        // Export the complete game as Python file
-        console.log('exportPyodideGame action triggered');
-        console.log('sessionActions.selectedComponents:', sessionActions.selectedComponents);
-        console.log('selectedAssets:', selectedAssets);
-
+        // P6 BLOCKER — export full ZIP bundle (Python + assets + index.html
+        // Pyodide bootstrap + README) so the kid can share or run offline.
         try {
-          const pythonCode = compilePythonGame(
-            sessionActions.selectedComponents || {},
-            selectedAssets
-          );
-          console.log('Python code compiled, length:', pythonCode.length);
-
-          const filename = `my_game_${Date.now()}.py`;
-          console.log('Downloading as:', filename);
-
-          downloadPythonFile(pythonCode, filename);
-          console.log('Download triggered successfully');
-
-          // Show a success message to the user
-          const toast =
-            (window as Window & { toast?: (msg: unknown) => void }).toast || console.log;
-          toast('Game exported successfully!');
+          const exported = await exportProjectAsZip({
+            selectedComponents: sessionActions.selectedComponents || {},
+            selectedAssets,
+            title: sessionActions.gameName || 'My Pygame Game',
+          });
+          const action = await shareOrDownload(exported);
+          if (action !== 'cancelled') {
+            toast({
+              title: 'Game exported!',
+              description: `Saved as ${exported.filename}.`,
+            });
+          }
         } catch (error) {
           console.error('Error during export:', error);
-
-          // Show an error message to the user
-          const toast =
-            (window as Window & { toast?: (msg: unknown) => void }).toast || console.log;
-          toast('Failed to export game. Please try again.');
+          toast({
+            title: "Couldn't export your game",
+            description: 'Something went wrong saving the ZIP — try again in a moment.',
+            variant: 'destructive',
+          });
         }
-      } else if (option.action === 'compileGameplayScene') {
-        // Compile gameplay scene from selected components
-        setSessionActions((prev) => ({
-          ...prev,
-          compiledScenes: {
-            ...prev.compiledScenes,
-            gameplay: true,
-          },
-        }));
-      } else if (option.action === 'compileEndScene') {
-        // Compile ending scene from selected components
-        setSessionActions((prev) => ({
-          ...prev,
-          compiledScenes: {
-            ...prev.compiledScenes,
-            ending: true,
-          },
-        }));
-      } else if (option.action === 'compileFullGame') {
-        // Compile all scenes into complete game
-        setSessionActions((prev) => ({
-          ...prev,
-          compiledScenes: {
-            ...prev.compiledScenes,
-            full: true,
-          },
-          gameAssembled: true,
-        }));
       } else if (option.action === 'tweakDifficulty') {
         // Adjust game difficulty settings
         console.log('Adjusting difficulty');
-      } else if (option.action === 'launchPyodideGame') {
-        // Launch the game with Pyodide runner
-        console.log('Launching game with Pyodide...');
-        setUiState((prev) => ({
-          ...prev,
-          embeddedComponent: 'pygame-runner',
-          previewMode: 'full',
-          gameRunnerOpen: true,
-        }));
       } else if (
         option.action === 'previewScene' ||
         option.action === 'previewGameplay' ||
@@ -651,6 +663,17 @@ export default function UniversalWizard({
     [handleOptionSelect, setSessionActions, sessionActions, selectedAssets]
   );
 
+  // P1.2 — Launch the user's game when the wizard reaches its terminal node
+  // (`compileFullGame` action OR an options-less / multiStep-less node). This
+  // is the "▶ Play your game" CTA the audit flagged as missing.
+  const handlePlayGame = useCallback(() => {
+    setUiState((prev) => ({
+      ...prev,
+      embeddedComponent: 'pygame-runner',
+      previewMode: 'full',
+    }));
+  }, []);
+
   // Render dialogue content for desktop/tablet
   const renderDialogue = useCallback(() => {
     const { currentNode } = dialogueState;
@@ -679,9 +702,49 @@ export default function UniversalWizard({
         )}
 
         {showContinue && <ContinueButton onClick={advance} isMobile={deviceState.isMobile} />}
+
+        {/* P1.2 wizard-completion CTA — terminal node reached, kid can play */}
+        {isWizardComplete && (
+          <div className="relative">
+            {showCelebration && (
+              <div
+                aria-hidden="true"
+                data-testid="celebration-sparkle"
+                className="pointer-events-none absolute inset-0 flex items-center justify-center"
+              >
+                <div className="animate-ping text-4xl">🎉</div>
+                <div className="absolute -left-2 -top-2 animate-bounce text-2xl">✨</div>
+                <div className="absolute -right-2 -top-2 animate-bounce text-2xl [animation-delay:0.15s]">
+                  ✨
+                </div>
+                <div className="absolute -bottom-2 left-1/3 animate-bounce text-2xl [animation-delay:0.3s]">
+                  🌟
+                </div>
+              </div>
+            )}
+            <Button
+              type="button"
+              onClick={handlePlayGame}
+              data-testid="play-game-cta"
+              aria-label="Play your game"
+              className="h-auto w-full rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 px-6 py-4 text-lg font-bold text-white shadow-lg transition-transform hover:scale-105 hover:from-purple-700 hover:to-pink-700 focus:outline-none focus:ring-4 focus:ring-purple-300"
+            >
+              ▶ Play your game!
+            </Button>
+          </div>
+        )}
       </div>
     );
-  }, [dialogueState, dialogueHelpers, handleOptionSelectWithAction, advance, deviceState.isMobile]);
+  }, [
+    dialogueState,
+    dialogueHelpers,
+    handleOptionSelectWithAction,
+    advance,
+    deviceState.isMobile,
+    isWizardComplete,
+    handlePlayGame,
+    showCelebration,
+  ]);
 
   // Reset progress handler
   const handleResetProgress = useCallback(() => {
@@ -731,40 +794,37 @@ export default function UniversalWizard({
           navigateToNode('learnPath');
           break;
         case 'exportGame':
-          // Export the complete game as Python file
-          console.log('Exporting game from PixelMenu...');
-          console.log('sessionActions.selectedComponents:', sessionActions.selectedComponents);
-          console.log('selectedAssets:', selectedAssets);
-
-          try {
-            const pythonCode = compilePythonGame(
-              sessionActions.selectedComponents || {},
-              selectedAssets
-            );
-            console.log('Python code compiled, length:', pythonCode.length);
-
-            const filename = `my_game_${Date.now()}.py`;
-            console.log('Downloading as:', filename);
-
-            downloadPythonFile(pythonCode, filename);
-            console.log('Download triggered successfully from PixelMenu');
-
-            // Show success message if toast is available
-            const toast =
-              (window as Window & { toast?: (msg: unknown) => void }).toast || console.log;
-            toast('Game exported successfully!');
-          } catch (error) {
-            console.error('Error during export from PixelMenu:', error);
-
-            // Show error message if toast is available
-            const toast =
-              (window as Window & { toast?: (msg: unknown) => void }).toast || console.log;
-            toast('Failed to export game. Please try again.');
-          }
+          // P6 BLOCKER — full ZIP bundle export. Async; we kick off without
+          // awaiting (this is a switch case in a sync callback) and surface
+          // failure via the toast inside the catch.
+          exportProjectAsZip({
+            selectedComponents: sessionActions.selectedComponents || {},
+            selectedAssets,
+            title: sessionActions.gameName || 'My Pygame Game',
+          })
+            .then(async (exported) => {
+              const action = await shareOrDownload(exported);
+              if (action !== 'cancelled') {
+                toast({
+                  title: 'Game exported!',
+                  description: `Saved as ${exported.filename}.`,
+                });
+              }
+            })
+            .catch((error) => {
+              console.error('Export from PixelMenu failed:', error);
+              toast({
+                title: "Couldn't export your game",
+                description: 'Something went wrong saving the ZIP — try again in a moment.',
+                variant: 'destructive',
+              });
+            });
           break;
         case 'viewProgress':
-          // TODO: Implement progress view
-          console.log('View progress');
+          // P8 — dedicated lessons index page with overall + per-lesson
+          // progress. SPA navigation via wouter preserves the wizard's
+          // in-memory state so the kid can come right back.
+          setLocation('/lessons');
           break;
         case 'resetProgress':
           handleResetProgress();
@@ -787,6 +847,7 @@ export default function UniversalWizard({
       handleToggleTheme,
       sessionActions,
       selectedAssets,
+      setLocation,
     ]
   );
 
@@ -845,6 +906,13 @@ export default function UniversalWizard({
         } else if (asset.type === 'sound') {
           assetManager.addSound(asset.id);
         }
+      });
+
+      // Persist asset IDs to wizard state so a navigation away (e.g.,
+      // setLocation('/lessons')) doesn't drop them. Stored as IDs only —
+      // the asset catalog is the source of truth for metadata.
+      saveWizardStateDebounced({
+        selectedAssetIds: assetsArray.map((a) => a.id),
       });
 
       // Close browser and continue dialogue

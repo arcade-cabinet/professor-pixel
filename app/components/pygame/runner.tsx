@@ -4,8 +4,9 @@ import { Play, Pause, RefreshCw, Download, Maximize, Minimize, X } from 'lucide-
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { compilePythonGame } from '@lib/pygame/runtime/compiler';
-import { getPyodide } from '@lib/python/pyodide-singleton';
+import { getPyodide, recoverPyodide } from '@lib/python/pyodide-singleton';
 import type { GameAsset } from '@lib/assets/types';
+import { getEducationalError, type EducationalError } from '@lib/errors/educational';
 
 interface PygameRunnerProps {
   selectedComponents?: Record<string, string>;
@@ -31,7 +32,10 @@ export default function PygameRunner({
   const animationFrameRef = useRef<number | undefined>(undefined);
   const [isRunning, setIsRunning] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  // We hold both the friendly mapped message (shown to the kid) and the raw
+  // exception text (tucked behind a "Show details" disclosure). Keeping them
+  // paired lets us never have to choose between teaching tone and debuggability.
+  const [error, setError] = useState<EducationalError | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   // Initialize Pyodide. setupCanvasBridge is intentionally NOT in deps:
@@ -48,10 +52,11 @@ export default function PygameRunner({
       await setupCanvasBridge();
       setIsLoading(false);
     } catch (err) {
-      const errorMsg = `Failed to initialize Pyodide: ${err}`;
-      setError(errorMsg);
+      const raw = err instanceof Error ? err.message : String(err);
+      const friendly = getEducationalError(raw);
+      setError(friendly);
       setIsLoading(false);
-      if (onError) onError(errorMsg);
+      if (onError) onError(raw);
     }
   }, [onError]);
 
@@ -127,13 +132,18 @@ class Surface:
         pass  # No-op for mock
     
     def get_rect(self, **kwargs):
+        # Bind outer Surface dims into locals so the inner Rect can close
+        # over them. Reading self.width inside Rect.__init__ would raise
+        # AttributeError because Rect.__init__ has its own self.
+        w = self.width
+        h = self.height
         class Rect:
             def __init__(self):
                 self.x = 0
                 self.y = 0
-                self.width = self.width
-                self.height = self.height
-                self.center = kwargs.get('center', (self.width//2, self.height//2))
+                self.width = w
+                self.height = h
+                self.center = kwargs.get('center', (w // 2, h // 2))
         return Rect()
     
     def blit(self, source, dest):
@@ -296,7 +306,7 @@ MockPygame.key.get_pressed = lambda: global_key_state
     }
 
     if (!pyodideRef.current) {
-      setError('Pyodide not initialized');
+      setError(getEducationalError('Pyodide not initialized'));
       return;
     }
 
@@ -311,27 +321,12 @@ MockPygame.key.get_pressed = lambda: global_key_state
       // We don't modify the code directly - let the mock pygame handle it
       const browserCode = pythonCode.replace(/if __name__ == "__main__":/g, 'if True:'); // Always run in browser
 
-      // Set up a simple auto-progression for demo (press SPACE after 3 seconds)
-      setTimeout(() => {
-        if (pyodideRef.current) {
-          pyodideRef.current.runPython(`
-# Simulate SPACE key press to progress from title screen
-if 'global_key_state' in globals():
-    global_key_state.set_key(32, True)  # Press SPACE
-    # Release after a moment
-    import threading
-    timer = threading.Timer(0.1, lambda: global_key_state.set_key(32, False))
-    timer.start() if hasattr(threading, 'Timer') else None
-          `);
-        }
-      }, 3000);
-
       // Run the game with our pygame mock
       await pyodideRef.current.runPythonAsync(browserCode);
     } catch (err) {
-      const errorMsg = `Game execution error: ${err}`;
-      setError(errorMsg);
-      if (onError) onError(errorMsg);
+      const raw = err instanceof Error ? err.message : String(err);
+      setError(getEducationalError(raw));
+      if (onError) onError(raw);
     } finally {
       setIsRunning(false);
     }
@@ -451,9 +446,44 @@ if 'global_key_state' in globals():
               <p>Loading Pyodide...</p>
             </div>
           ) : error ? (
-            <div className="text-red-500 text-center max-w-md">
-              <p className="font-bold mb-2">Error</p>
-              <p className="text-sm">{error}</p>
+            <div className="text-center max-w-md text-white" data-testid="runner-error-panel">
+              <p className="font-bold mb-2 text-2xl">😟 {error.friendlyMessage}</p>
+              <p className="text-sm mb-4 opacity-80 break-words">{error.explanation}</p>
+              <p className="text-sm mb-4">
+                Don&apos;t worry — this kind of thing happens. Click below to reset the Python
+                runtime and try again. Your wizard progress is safe.
+              </p>
+              <details className="text-left text-xs opacity-70 mb-4">
+                <summary className="cursor-pointer hover:opacity-100">Show details</summary>
+                <pre className="mt-2 whitespace-pre-wrap break-words">{error.originalError}</pre>
+              </details>
+              <Button
+                onClick={async () => {
+                  recoverPyodide();
+                  // recoverPyodide() drops the singleton + window.pyodide,
+                  // but pyodideRef still points at the now-stale instance.
+                  // Clear the local ref so initPyodide() runs a real fresh
+                  // bootstrap rather than skipping the work because the ref
+                  // looks populated.
+                  pyodideRef.current = null;
+                  setError(null);
+                  // initPyodide owns its own loading state. The finally
+                  // guarantees the spinner unblocks even if a future refactor
+                  // breaks initPyodide's internal isLoading reset.
+                  try {
+                    await initPyodide();
+                  } catch {
+                    // setError already fired inside initPyodide's catch.
+                  } finally {
+                    setIsLoading(false);
+                  }
+                }}
+                data-testid="runner-recover-button"
+                className="bg-purple-600 hover:bg-purple-700"
+              >
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Try again
+              </Button>
             </div>
           ) : (
             <canvas

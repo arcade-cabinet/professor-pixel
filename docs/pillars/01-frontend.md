@@ -1,6 +1,6 @@
 ---
 title: Pillar 1 — Frontend
-updated: 2026-05-04
+updated: 2026-05-05
 status: current
 domain: technical
 ---
@@ -14,7 +14,7 @@ domain: technical
 
 | Layer | Choice |
 |-------|--------|
-| Framework | React 18 (functional components only — no class components) |
+| Framework | React 19 (functional components only — no class components) |
 | Language | TypeScript 5.6, `strict: true` |
 | Build | Vite 5 |
 | Routing | wouter |
@@ -104,6 +104,90 @@ The aggregate today reflects the unit project only. Integration and component te
 ## Debug surfaces
 
 `app/components/dev-hud.tsx` — fixed bottom-right floating panel showing Pyodide cold-start ms, current Pyodide state (`uninitialized` / `loading` / `ready` / `error`), and the rendering host. Mounted at the App root, gated by `useDebugFlag()` (`?debug=1` query param OR `localStorage.debug='1'`). Collapse state persists in `localStorage.debug-hud-collapsed`. The HUD polls the singleton state every 500ms — keep it small and fast; don't grow it into a devtools panel.
+
+## Audio surface (TTS + SFX)
+
+`src/audio/` is the only place that touches the Web Speech and Web Audio APIs. Two surfaces:
+
+- **TTS (`tts.ts`)** — `speak(text)` strips emoji via a `\p{Extended_Pictographic}` regex (covers ZWJ + Fitzpatrick + variation selectors), hands the cleaned text to `SpeechSynthesisUtterance`, and routes through `window.speechSynthesis`. A `voiceschanged` listener is installed on the first `speak()` call so Chrome's async voice catalog populates correctly. Voice selection prefers a child-friendly voice if one is available; otherwise the default voice ships.
+- **SFX (`sfx.ts`)** — procedural Web Audio tones for `playSuccess` (C5/E5/G5 chord), `playError`, and `playPop` (option-select feedback). No audio assets — the tones are oscillator-synthesized at play time, so they cost zero bundle weight.
+
+User-facing toggle lives in the Pixel menu (`app/components/pixel/menu.tsx`) as a `Voice On/Off` button (`role="button"` + `aria-label` that flips with state). The toggle persists to `localStorage.pp.audioEnabled` (key managed by `setAudioEnabled` / `isAudioEnabled` in `src/audio/tts.ts`); both `speak` and `playPop` no-op when off. The toggle defaults to **off** for new sessions — kids opt in via the menu so we never autoplay TTS without explicit consent.
+
+Cross-tab and same-tab reactivity flows through `subscribeAudioEnabled(listener)`. It dispatches a `pp:audio-changed` `CustomEvent` on every flip and also listens for the native `storage` event, so a flip in tab A propagates to tab B without a refresh and a flip in the same tab updates every subscriber on the next tick. Consumers (dialogue engine, Pixel menu) subscribe in a `useEffect` cleanup-tracked subscription rather than polling `isAudioEnabled()` per render.
+
+The dialogue engine (`app/components/wizard/dialogue-engine.tsx`) calls `speak()` once per node transition, gated on the reactive `audioEnabled` state from `subscribeAudioEnabled`. When the kid flips audio off mid-sentence the engine calls `cancelSpeech()` from its effect cleanup so playback halts immediately. The simulator and grader pillars do not import from `src/audio/` — only the wizard / option-handler / celebration surfaces do.
+
+## Accessibility surface
+
+The wizard and editor surfaces meet a baseline a11y bar without an explicit framework:
+
+- **Live regions** — dialogue text is wrapped in `<p role="status" aria-live="polite" aria-atomic>` so screen readers announce node transitions without the user having to refocus.
+- **Option groups** — the multiple-choice option list in `option-handler.tsx` is `role="group"` with `aria-label="Choose one"`; each option button has its own `aria-label` that includes the option text plus state.
+- **Touch targets** — every interactive element on a touch-primary viewport has `min-h-[44px]` (Apple HIG / WCAG SC 2.5.5 target). Toolbar icons collapse from labeled buttons to icon-only buttons under `sm` breakpoint, but the hit area stays 44px+.
+- **Reduced motion** — the celebration sparkle (P1.4) is gated on `window.matchMedia('(prefers-reduced-motion: reduce)').matches === false`. Users who set the OS-level preference get the success copy without animation.
+- **Focus management** — drawer scrims in the WYSIWYG editor are `tabIndex={-1} aria-hidden="true"` so the dialog content owns the natural tab order. Esc on a `role="dialog"` closes the drawer.
+
+Axe-core regression suite lives in `tests/integration/axe-*.test.tsx` (added during the modernization pillar M3.2). Add coverage when surfacing new interactive components.
+
+## Editor responsiveness
+
+The WYSIWYG editor (`app/components/editor/`) adapts via `useViewport()` (`src/hooks/use-viewport.ts` — width + isCompact + isTouchPrimary, reactive to resize / orientation / `(pointer: coarse)` / `(any-pointer: fine)` matchMedia changes).
+
+Layout breakpoints:
+
+- **`>= lg` (≥1024px)** — three-column flex: palette left, canvas center, properties right. Drag-and-drop via react-dnd's HTML5Backend works on mouse-primary devices.
+- **`< lg`** — palette and properties collapse to absolute drawers (`translate-x-full` / `-translate-x-full` off-screen, slid in via toolbar buttons). Properties auto-opens when a component is selected. The toolbar buttons collapse from labeled to icon-only under `sm`.
+
+For touch-primary devices (where the HTML5 drag backend doesn't fire), `armedComponentId` provides a tap-to-arm-then-tap-to-place fallback: tap a palette tile to arm it (`aria-pressed=true`), tap the canvas to place at the click point. The same component re-tapped disarms.
+
+Canvas coordinate scaling: the canvas drawing buffer is fixed at 800×600 internal pixels but rendered at `width: 100%` capped at 800px CSS-wide. Both the click handler and the DnD drop handler scale CSS-pixel offsets to internal coordinates via `(canvas.width / rect.width)` so the two placement paths agree on where a component lands.
+
+## Project export
+
+`src/pygame/runtime/exporter.ts` is the V1 handoff to a real text editor — kids who want to keep editing their game outside the visual editor get a runnable ZIP.
+
+`exportProjectAsZip(opts: ExportProjectOptions)` returns an `ExportedProject` object (`{ blob: Blob; filename: string }`) that the caller hands to `shareOrDownload`. The bundle contains:
+
+- `game.py` — the generated Pygame source (also inlined as a base64 string in `index.html` so the bundle works under `file://`).
+- `index.html` — Pyodide CDN bootstrap. When opened over http(s):// it `fetch()`es `game.py` so kids can edit the file and refresh; under `file://` (or if `fetch()` fails) it falls back to the inlined base64 copy.
+- `README.md` — how to run locally, how to share.
+- `assets/<basename>` — every selected `GameAsset.path` copied in. Basenames are sanitized (`[^a-zA-Z0-9._-]` → `_`) as defense-in-depth against path traversal in the consumer's unzip step. Failed fetches land in `assets/MISSING.txt` rather than aborting the whole bundle.
+
+`shareOrDownload(exported: ExportedProject)` returns one of `'shared' | 'downloaded' | 'cancelled'`:
+
+- `'shared'` — Web Share API succeeded (`navigator.share` with a `File` object, MIME `application/zip`). Lights up "Save to Files" / "AirDrop" / "Save to Drive" on iOS / Android / Chromebook respectively.
+- `'cancelled'` — user explicitly dismissed the share sheet (`AbortError`). We deliberately do **not** auto-fall-back to a download here; re-pushing the file would override their intent. Callers can show a "Save instead" affordance.
+- `'downloaded'` — fell through to a synthetic `<a download>` click. Triggered when `navigator.share` is unavailable, when `canShare()` returns false, when share rejects with anything other than `AbortError`, or silently when share rejects with `NotAllowedError` (transient activation expired — common on iOS Safari when the export step takes a few hundred ms).
+
+Pyodide CDN version is pinned via `PYODIDE_CDN_VERSION` constant in the exporter; bump the constant when the Pyodide vendor in `public/pyodide/` updates.
+
+## WYSIWYG editor — code-sync boundary (V1)
+
+`app/components/editor/` hosts the visual editor (`wysiwyg.tsx` shell, `palette.tsx`, `canvas.tsx`, `properties.tsx`, `code-panel.tsx`). The editor maintains a single source of truth: `placedComponents: PlacedComponent[]` in `wysiwyg.tsx`. Switching the Tabs control between **Visual** and **Code** does not mutate that state.
+
+### Sync direction is intentionally one-way (V1)
+
+```text
+Visual edits  →  PlacedComponent[]  →  generated Python
+                 (canonical)           (read-only view)
+```
+
+`code-panel.tsx` `useMemo`'s the Python source from `placedComponents` — every `componentDef.generateCode()` call is invoked at render. The displayed `<pre><code>` is **read-only**: there is no parser that turns hand-edited Python back into `PlacedComponent[]`. A learner who copy/pastes the code into an external editor and edits it owns those edits; the visual editor does not see them.
+
+The Code tab surfaces this explicitly with a callout above the source so a kid (or their parent) doesn't expect their edits to "stick" if they switch back to Visual mode.
+
+### Why one-way (V1)
+
+- **Zero round-trip risk.** A Python → AST → component-tree round-trip would silently lose anything the kid wrote that doesn't map to a registered component (free-form helper functions, custom event handlers, comments). One-way generation keeps the visual editor honest about what it can represent.
+- **Audience.** The target user is a kid learning Pygame. Forcing Python edits to be reversible would either constrain what they can write (turning the code panel into a structured-edit toy) or force a "your edits will be lost" warning every time they touch the file. Both are worse than the current "Code is generated; edit components in Visual mode" framing.
+- **Asset weight.** A real Python parser in the browser (Pyodide's `ast` module, or `tree-sitter-python` via WASM) costs hundreds of KB. We already pay for Pyodide; loading `ast` *just* for round-tripping the editor would push first-paint past the budget.
+
+### Out-of-scope for the V1 player-experience pillar
+
+Full bidirectional sync (parsing edited Python back into the component graph) is **explicitly P-future**. If we revisit it, the design likely splits the code panel into two regions: the generated portion (still read-only) and a "your additions" region (free-form, executed alongside but not parsed). That keeps the round-trip risk surface bounded.
+
+For now, learners who want to keep editing their Python use `pnpm export` / the **Project export** ZIP (`src/pygame/runtime/exporter.ts`) as the handoff to a real text editor.
 
 ## TypeScript discipline
 

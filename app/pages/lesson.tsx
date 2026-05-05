@@ -26,6 +26,7 @@ import { getPyodide } from '@lib/python/pyodide-singleton';
 import { loadLessons } from '@lib/lessons';
 import { getClientStorage } from '@lib/storage/mode';
 import { gradeCode, type GradingContext } from '@lib/grading';
+import { getEducationalError } from '@lib/errors/educational';
 
 // Import Pixel images
 import pixelHappy from '@assets/pixel/Pixel_happy_excited_expression_22a41625.png';
@@ -199,7 +200,12 @@ export default function LessonEnhanced() {
       });
 
       if (result.error) {
-        setError(result.error);
+        // result.error is raw stderr from the Pyodide worker — same kid-
+        // facing surface as the outer catch below. Route through the
+        // educational mapper so the editor doesn't render a verbatim
+        // SyntaxError / NameError header.
+        const friendly = getEducationalError(result.error);
+        setError(`${friendly.friendlyMessage} ${friendly.explanation}`);
         setPixelDialogue(getRandomDialogue(pixelDialogues.stepError));
         setPixelImage(pixelThinking);
 
@@ -249,9 +255,15 @@ export default function LessonEnhanced() {
           }
         } catch (gradingError) {
           console.error('Grading error:', gradingError);
+          // Raw exception messages ("TypeError: Cannot read properties of
+          // undefined") confuse and scare kids. Route through the educational
+          // mapper so we say "We couldn't check your code" with a real next-step
+          // hint, not the JS error class name.
+          const raw = gradingError instanceof Error ? gradingError.message : String(gradingError);
+          const friendly = getEducationalError(raw);
           setGradingResult({
             passed: false,
-            feedback: `Grading failed: ${gradingError instanceof Error ? gradingError.message : String(gradingError)}`,
+            feedback: `${friendly.friendlyMessage} ${friendly.explanation}`,
             actualOutput: result.output,
           });
           updateProgressMutation.mutate({ code });
@@ -262,8 +274,15 @@ export default function LessonEnhanced() {
         updateProgressMutation.mutate({ code });
       }
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'An error occurred';
-      setError(errorMessage);
+      // Route runtime errors (Pyodide crash inside runSnippet, network blip
+      // fetching the lesson, etc.) through the educational mapper too — not
+      // just the grader-catch above. Otherwise a "TypeError: Cannot read
+      // properties of undefined" would still leak verbatim to the kid in
+      // the editor's error <pre>.
+      const raw = err instanceof Error ? err.message : 'An error occurred';
+      console.error('[lesson] executeCode failed:', raw);
+      const friendly = getEducationalError(raw);
+      setError(`${friendly.friendlyMessage} ${friendly.explanation}`);
       setPixelDialogue(getRandomDialogue(pixelDialogues.stepError));
       setPixelImage(pixelThinking);
     }
@@ -404,15 +423,18 @@ export default function LessonEnhanced() {
   }
 
   if (!lesson) {
+    // Don't render <Header lesson={lesson!} ...> here — Header dereferences
+    // lesson.order/title and the non-null assertion was hiding a guaranteed
+    // undefined access from TypeScript. The friendly "Lesson not found" card
+    // is enough; chrome-less is fine for a dead-end page.
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-yellow-50 dark:from-gray-900 dark:via-purple-900/10 dark:to-pink-900/10">
-        <Header lesson={lesson!} progress={0} onBack={() => setLocation('/playground')} />
-        <div className="flex items-center justify-center h-[calc(100vh-4rem)]">
+        <div className="flex items-center justify-center h-screen">
           <Card className="p-8 bg-white/80 dark:bg-gray-800/80 backdrop-blur">
             <img src={pixelThinking} alt="Pixel confused" className="w-20 h-20 mx-auto mb-4" />
             <p className="text-center text-gray-600 dark:text-gray-400">Lesson not found</p>
             <Button
-              onClick={() => setLocation('/')}
+              onClick={() => setLocation('/lessons')}
               className="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500"
             >
               Back to Lessons

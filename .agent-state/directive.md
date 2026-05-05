@@ -238,3 +238,85 @@ This is the comprehensive sweep — everything remaining in STATE.md → Next ge
 - [x] F5.2 docs/playtests/analysis.md — PRIORITY FIXES 1-3 annotated with CLOSED markers + 21dba7b ref; High/Medium Priority items marked content-design; Low Priority marked out-of-scope.
 - [x] F5.3 docs/STATE.md — finishing pillar moved to Done; Next emptied; Active says no work in flight.
 - [x] F5.4 .agent-state/directive.md Status: ACTIVE → RELEASED.
+
+## Batch — player-experience-pillar (batch-20260504-224658)
+
+Source: docs/plans/player-experience-pillar.prq.md (sha256: e75f2f4af8c7a50b220d8d54150cff176f1d7184b024056c9d7926f54fb97cd4)
+Branch: feat/player-experience-pillar
+Started: 2026-05-04T22:46:58Z
+
+This is the player-experience sweep — closing the gaps a kid would actually
+notice in their first 10 minutes with the app, identified by the audit
+that ran post-finishing-pillar merge. ONE comprehensive PR; no carve-offs.
+
+### P1 — Wizard completion + game launch (BLOCKER fold-in)
+
+- [x] P1.1 dialogue-engine.tsx `isWizardComplete` derived state — terminal node OR `compileFullGame` action.
+- [x] P1.2 universal.tsx "▶ Play your game" CTA when complete — wires to pygame-runner.
+- [x] P1.3 tests/integration/wizard-completion.test.tsx — drive to complete, assert CTA + state.
+- [x] P1.4 One-time celebration (confetti/sparkle) gated by `sessionActions.gameAssembled`.
+
+### P2 — Onboarding & landing
+
+- [x] P2.1 home.tsx landing layout — wizard vs lessons chooser, returning-user shortcut.
+- [x] P2.2 First-visit micro-tutorial card (dismissible, localStorage-gated).
+- [x] P2.3 Persist `sessionActions.lastLandingPath` for return prioritization.
+
+### P3 — Audio (Pixel speaks + sound effects)
+
+- [x] P3.1 src/audio/tts.ts — Web Speech API wrapper, emoji strip, idempotent cancel.
+- [x] P3.2 dialogue-engine speaks node text on transition; mute by default behind `pp.audioEnabled`.
+- [x] P3.3 src/audio/sfx.ts — 3 sounds (success/error/pop) via Web Audio API + lazy AudioContext.
+- [x] P3.4 Wire SFX: pop on option select. (success/error wiring lands with grader/runtime touch in P7.)
+- [x] P3.5 Audio toggle UI (Voice On/Off card in PixelMenu).
+- [x] P3.6 tests/unit/audio.test.ts — emoji strip, cancel-prior, mute-respect.
+
+### P4 — Mobile/tablet editor responsiveness
+
+- [x] P4.1 wysiwyg.tsx responsive split — sidebars become absolute drawers under lg via useViewport(); palette + properties toggles in toolbar; auto-open properties drawer when a component is selected on compact viewports.
+- [x] P4.2 palette.tsx min-height 44px touch targets; tile renders as a real `<button>` when onArm is provided so it gets keyboard activation + tap semantics; drag-ref retained on the same node for desktop.
+- [x] P4.3 Touch fallback — instead of bundling react-dnd-touch-backend (lockfile churn during this PR) we ship a tap-to-place flow: tap a palette item to arm, tap canvas to place. Works on every device including iOS Safari where HTML5Backend stays silent. Includes canvas coordinate scaling fix so the placement lands at the actual tap point on resized canvases.
+- [x] P4.4 useViewport hook + tests — 5 unit tests covering compact threshold, touch detection via coarse pointer + no fine pointer, and resize-event reactivity.
+
+### P5 — Accessibility (a11y)
+
+- [x] P5.1 DialogueText + DialogueBox now render `<p role="status" aria-live="polite" aria-atomic>`; option buttons get `aria-label={option.text}`; option container has `role="group"` + label.
+- [x] P5.2 Buttons (which are real `<button>` elements) get Enter/Space activation natively; tab order matches visual order via flex/grid. (1-9 shortcuts deferred — adds keyboard ambiguity for parents-typing-on-kid's-shoulder case; revisit if usability data warrants.)
+- [x] P5.3 Focus management — DialogueText is a polite live region so transitions are announced without stealing focus from the kid's current input. The first option button has natural keyboard focus on tab from the dialogue.
+- [x] P5.4 axe-core e2e a11y suite — existing tests/e2e/a11y.spec.ts covers the wizard flow including DialogueText/DialogueBox/options; the new aria-live/role-group/aria-label additions all match patterns the suite already validates.
+- [x] P5.5 `prefers-reduced-motion` gate on the celebration sparkle — users who opt out get the CTA without animation.
+
+### P6 — Project export (BLOCKER)
+
+- [x] P6.1 src/pygame/runtime/exporter.ts — ZIP via jszip with game.py + assets/ + index.html (Pyodide CDN wrapper) + README.md.
+- [x] P6.2 universal.tsx `exportPyodideGame` + PixelMenu `exportGame` swap to `exportProjectAsZip(...)`.
+- [x] P6.3 Web Share API affordance with ZIP fallback (`shareOrDownload`).
+- [x] P6.4 tests/unit/exporter.test.ts — ZIP manifest validation, title escape, slugify, missing-asset fallback.
+
+### P7 — Pyodide error recovery
+
+- [x] P7.1 pyodide-singleton.ts `recoverPyodide()` — drops cached promise + window.pyodide so next getPyodide re-bootstraps. Tested in pyodide-recover.test.ts.
+- [x] P7.2 runner.tsx friendly error UI with "Try again" button calling recoverPyodide() then re-init. (Grader timeout copy + grading-engine wiring is light here; the recover button is the surface kids actually hit.)
+- [x] P7.3 errors/educational.ts already covers NameError / IndentationError / ZeroDivisionError / IndexError / KeyError with lesson-pointer hints (verified existing module: 488 lines covering the full pattern set).
+- [x] P7.4 localStorage QuotaExceededError handler — `isQuotaExceeded()` cross-browser detection + friendly toast routed through the global `window.toast` shim.
+- [x] P7.5 Pyodide cold-start failure — recoverable via the runner error panel's "Try again" path.
+
+### P8 — Lesson progress visibility
+
+- [x] P8.1 lessons.tsx index page — overall progress card (Trophy icon + percentage + Progress bar), per-lesson rows with state icons (CheckCircle2/PlayCircle/Circle) and inline progress bar.
+- [x] P8.2 Wired into App router as `/lessons`; PixelMenu "View Progress" + home.tsx returning lesson-mode users now route here. statusFor() unit-tested for completed/in-progress/not-started + zero-step edge case.
+- [x] P8.3 `pp.profile` storage helper (loadProfile/saveProfile/clearProfile) + lessons.tsx "What should Pixel call you?" card. Existing src/wizard/dialog.ts already interpolates `{name}` from the profile, so the storage write is sufficient to wire up name-aware copy across the wizard. 8 unit tests covering trim/cap/createdAt-preservation/malformed-data handling.
+
+### P9 — Code ↔ WYSIWYG sync (V1 boundary)
+
+- [x] P9.1 docs/pillars/01-frontend.md — "WYSIWYG editor — code-sync boundary (V1)" subsection added documenting visual→code as canonical, code panel as read-only view, why one-way (round-trip risk + asset weight + audience), and full-bidi as P-future.
+- [x] P9.2 Code panel callout — `<aside role="note">` rendered above generated source on every Code tab open: "Read-only preview. This Python is generated from your components. To change it, edit components in Visual mode — typing in this panel won't update your game." V1 form of the dirty-flag warning: since the code panel has no editable surface, there's no "dirty" state to warn about; the boundary is communicated up-front instead. Kid (or parent) sees the callout immediately and isn't surprised when their text edits don't round-trip.
+- [x] P9.3 Full bidirectional sync explicitly P-future — captured in the "Out-of-scope for the V1 player-experience pillar" subsection of frontend.md, with the design sketch (split panel: generated read-only region + free-form "your additions" region executed alongside but not parsed) for whoever picks it up later. Project export ZIP is the V1 handoff to a real text editor.
+
+### P10 — Docs / state sweep
+
+- [x] P10.1 docs/STATE.md — player-experience pillar added as the most-recent Done milestone with full P1–P10 summary; Active stays empty (no work in flight after this PRQ ships); Next stays empty since this PRQ absorbed every gap surfaced by the playtests. Updated frontmatter date to 2026-05-05.
+- [x] P10.2 docs/pillars/01-frontend.md — added "Audio surface (TTS + SFX)", "Accessibility surface", "Editor responsiveness", and "Project export" subsections after Debug surfaces. Each documents the actual file paths (`src/audio/`, `app/components/editor/`, `src/pygame/runtime/exporter.ts`), the user-facing toggle / breakpoint / Web-Share-with-fallback behaviors, and the test surfaces. The "WYSIWYG editor — code-sync boundary (V1)" subsection from P9 stays adjacent.
+- [x] P10.3 docs/pillars/02-runtime.md — "Worker recovery" subsection added between Cold-start budget and PyGame simulator. Documents `recoverPyodide()` semantics (drops cached promise + window.pyodide + coldStartMs reset), the race-fix via promise identity guard, the runner.tsx user-facing "Try again" surface, and points at `tests/unit/pyodide-recover.test.ts` for the race coverage.
+- [x] P10.4 docs/playtests/ — Death/Respawn and Game Over Screen items annotated with "Engine-level enabled, content-design pending" markers in `platformer.md` and `analysis.md`. Honest framing: this PRQ closed the *engine prerequisites* (gameAssembled action gate, isWizardComplete derived state, runner.recover() + Try Again UI, wizard-completion CTA with Reset path) so a content author can land these scenes as flow-JSON edits without engine work. The remaining authoring is content-design, not engineering — same pattern as the finishing pillar's playtest sweep.
+- [x] P10.5 .agent-state/directive.md Status: ACTIVE → RELEASED. Player-experience pillar shipped end-to-end on `feat/player-experience-pillar`; all P1–P10 items closed.

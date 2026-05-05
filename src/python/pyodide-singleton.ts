@@ -55,24 +55,53 @@ async function loadPyodideScript(scriptSrc: string): Promise<void> {
   await new Promise<void>((resolve, reject) => {
     const existing = document.querySelector<HTMLScriptElement>(`script[src="${scriptSrc}"]`);
     if (existing) {
+      // Three sub-cases:
+      //   1) loadPyodide already on window → script ran successfully; resolve.
+      //   2) script's load/error already fired but window.loadPyodide isn't set
+      //      → dead tag (CDN failure, recover-after-failure). Adding listeners
+      //      to a finished script never fires; we'd hang forever. Remove the
+      //      tag and fall through to creating a fresh one.
+      //   3) Script still loading → attach listeners and wait.
       if (window.loadPyodide) {
         resolve();
         return;
       }
-      existing.addEventListener('load', () => resolve(), { once: true });
-      existing.addEventListener(
-        'error',
-        () => reject(new PyodideLoadError(`Failed to load ${scriptSrc}`)),
-        { once: true }
-      );
-      return;
+      const status = existing.dataset.pyodideStatus;
+      // 'loaded' and 'error' tags are dead — load/error already fired, so
+      // attaching listeners would hang forever. Replace.
+      //
+      // 'loading' on a retry path is also suspect: if we got here with
+      // bootstrapPromise === null (i.e. recoverPyodide() ran or a previous
+      // attempt threw) AND window.loadPyodide is still falsy, the prior
+      // attempt's network request was likely abandoned. Listeners attached
+      // to a tag whose request was already cancelled never fire, so the
+      // retry would hang. Replace and re-issue.
+      if (status === 'loaded' || status === 'error' || status === 'loading') {
+        existing.remove();
+        // fall through to fresh-create below
+      } else {
+        existing.addEventListener('load', () => resolve(), { once: true });
+        existing.addEventListener(
+          'error',
+          () => reject(new PyodideLoadError(`Failed to load ${scriptSrc}`)),
+          { once: true }
+        );
+        return;
+      }
     }
 
     const script = document.createElement('script');
     script.src = scriptSrc;
     script.async = true;
-    script.onload = () => resolve();
-    script.onerror = () => reject(new PyodideLoadError(`Failed to load ${scriptSrc}`));
+    script.dataset.pyodideStatus = 'loading';
+    script.onload = () => {
+      script.dataset.pyodideStatus = 'loaded';
+      resolve();
+    };
+    script.onerror = () => {
+      script.dataset.pyodideStatus = 'error';
+      reject(new PyodideLoadError(`Failed to load ${scriptSrc}`));
+    };
     document.head.appendChild(script);
   });
 }
@@ -109,7 +138,9 @@ async function bootstrap(opts: BootstrapOptions): Promise<PyodideInstance> {
       stdout: opts.stdout,
       stderr: opts.stderr,
     });
-    window.pyodide = instance;
+    // window.pyodide is set by getPyodide()'s .then handler so the supersede
+    // guard there can prevent a stale post-recovery boot from clobbering a
+    // fresh one. Returning the instance here is enough; do not stash globals.
     return instance;
   } catch (cause) {
     throw new PyodideLoadError('Pyodide initialization failed', { cause });
@@ -119,9 +150,27 @@ async function bootstrap(opts: BootstrapOptions): Promise<PyodideInstance> {
 export function getPyodide(opts: BootstrapOptions = {}): Promise<PyodideInstance> {
   if (!bootstrapPromise) {
     const start = typeof performance !== 'undefined' ? performance.now() : Date.now();
-    bootstrapPromise = bootstrap(opts)
+    // Capture the promise identity so a recoverPyodide() that clears
+    // bootstrapPromise mid-flight can be detected. The .then below checks
+    // `myPromise === bootstrapPromise` — if not, recovery happened and the
+    // stale instance must NOT win the window.pyodide race.
+    let myPromise: Promise<PyodideInstance>;
+    myPromise = bootstrap(opts)
       .then((instance) => {
         const end = typeof performance !== 'undefined' ? performance.now() : Date.now();
+        // If we were superseded by recoverPyodide(), the cleared bootstrapPromise
+        // means a fresh boot is already in flight (or done). Drop this stale
+        // instance on the floor — don't write window.pyodide, don't record timing.
+        if (myPromise !== bootstrapPromise) {
+          throw new PyodideLoadError('Pyodide bootstrap superseded by recovery');
+        }
+        // Stash the instance globally for isPyodideReady() and consumers that
+        // read window.pyodide directly. Doing this in the .then (rather than
+        // inside bootstrap()) lets the supersede guard above prevent a stale
+        // post-recovery boot from overwriting a fresh one.
+        if (typeof window !== 'undefined') {
+          window.pyodide = instance;
+        }
         coldStartMs = end - start;
         if (coldStartMs > COLD_START_BUDGET_MS) {
           console.warn(
@@ -133,9 +182,14 @@ export function getPyodide(opts: BootstrapOptions = {}): Promise<PyodideInstance
         return instance;
       })
       .catch((err) => {
-        bootstrapPromise = null;
+        // Only clear bootstrapPromise if we're still the active one — otherwise
+        // we'd null out a fresh post-recovery boot.
+        if (myPromise === bootstrapPromise) {
+          bootstrapPromise = null;
+        }
         throw err;
       });
+    bootstrapPromise = myPromise;
   }
   return bootstrapPromise;
 }
@@ -165,6 +219,29 @@ export function getPyodideState(): PyodideState {
 /** Test-only: drop the cached promise so the next call re-bootstraps. */
 export function __resetPyodideForTests(): void {
   bootstrapPromise = null;
+  if (typeof window !== 'undefined') {
+    delete (window as Window).pyodide;
+  }
+}
+
+/**
+ * P7 — runtime recovery. Drops the cached Pyodide instance and bootstrap
+ * promise so the next `getPyodide()` call re-initializes from scratch.
+ *
+ * Use cases:
+ *   - User's game crashed with a Python exception that left the runtime in
+ *     a poisoned state (e.g., a custom `__init__` raised mid-construction
+ *     and left a partially-initialized class).
+ *   - Pyodide's bootstrap failed (network blip during package install) and
+ *     the user clicks "try again."
+ *   - Memory pressure: Pyodide's WASM heap grew unbounded across many runs.
+ *
+ * This does NOT reload the page — kids lose their wizard state on a refresh.
+ * It just resets the runtime singleton.
+ */
+export function recoverPyodide(): void {
+  bootstrapPromise = null;
+  coldStartMs = null;
   if (typeof window !== 'undefined') {
     delete (window as Window).pyodide;
   }

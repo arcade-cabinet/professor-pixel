@@ -1,6 +1,6 @@
 ---
 title: Pillar 2 — Runtime
-updated: 2026-05-04
+updated: 2026-05-05
 status: current
 domain: technical
 ---
@@ -123,6 +123,26 @@ If the warning lands consistently in production, the answer is **not** to raise 
 1. Precache `python_stdlib.zip` in the service worker (largest single chunk).
 2. Pre-warm a worker on idle so user code lands on a hot Python heap.
 3. Strip unused stdlib modules at vendor time (currently we ship the full set).
+
+## Worker recovery
+
+Pyodide can wedge in two narrow ways the cached singleton doesn't auto-recover from. The bootstrap path itself is already self-healing: `getPyodide()`'s `.catch` handler nulls `bootstrapPromise` on rejection, so a plain network-blip bootstrap failure is **not** sticky — the next `getPyodide()` call retries from scratch. `recoverPyodide()` exists for the cases where that's not enough.
+
+```ts
+import { recoverPyodide, getPyodide } from '@lib/python';
+
+recoverPyodide();              // drops in-flight or ready instance + window.pyodide
+const pyodide = await getPyodide();   // fresh bootstrap
+```
+
+The two cases `recoverPyodide()` handles that `.catch` on the singleton can't:
+
+1. **Poisoned ready instance.** Bootstrap succeeded, but a kid's runaway script ate the heap or left a partially-initialized class on `window.pyodide`. The singleton is happy (`isPyodideReady()` returns true), but the next `runPython()` will misbehave. `recoverPyodide()` deletes `window.pyodide` and nulls `bootstrapPromise` so a fresh boot replaces the poisoned instance.
+2. **Supersede an in-flight boot.** A user clicks "Try again" while the original `loadPyodide()` is still pending (network slow, not failed). `recoverPyodide()` nulls `bootstrapPromise` and resets `coldStartMs`; when the original eventually resolves, its `.then` handler observes `myPromise !== bootstrapPromise` and discards the stale instance instead of writing it to `window.pyodide`. The race-fix lives in `getPyodide()`'s `.then` body.
+
+`recoverPyodide()` is idempotent and safe to call from any surface (error boundary, debug HUD, "Try again" button). The user-facing surface is `app/components/pygame/runner.tsx` — when the runner catches a Pyodide error, it shows a friendly error UI with a **Try again** button that calls `recoverPyodide()`, clears the local `pyodideRef`, then re-runs `initPyodide()`. The button's `onClick` uses `try / catch / finally` so `isLoading` always unblocks, even if the fresh bootstrap fails.
+
+Test coverage in `tests/unit/pyodide-recover.test.ts` (4 tests, including the in-flight supersede race).
 
 ## PyGame simulator
 

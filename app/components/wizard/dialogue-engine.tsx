@@ -15,6 +15,7 @@ import {
   loadWizardState,
   PersistedWizardState,
 } from '@lib/storage/persistence';
+import { speak, cancelSpeech, subscribeAudioEnabled } from '@lib/audio';
 
 interface UseWizardDialogueProps {
   initialNodeId?: string;
@@ -108,6 +109,33 @@ export function useWizardDialogue({
       updatedAt: new Date().toISOString(),
     });
   }, [dialogueState.currentNodeId, sessionActions, loadedFlowPath, hasLoadedPersistedState]);
+
+  // P3.2 — Pixel speaks the current node text when it changes (audio off by
+  // default, gated on `pp.audioEnabled`). Cancels any in-flight speech first
+  // so back-to-back transitions don't queue. Cleanup cancels on unmount.
+  // Compute the derived text outside the effect so the effect depends on the
+  // resolved string rather than on the sessionActions object identity —
+  // sessionActions reshapes on every state update, so depending on it would
+  // re-fire speech on every keystroke, not just when the visible text changes.
+  const currentText = getCurrentText(
+    dialogueState.currentNode,
+    dialogueState.dialogueStep,
+    sessionActions
+  );
+  // Reactive audio-enabled — subscribe so the speech effect fires when the
+  // kid toggles voice on while parked on a node, not only on the *next*
+  // node transition. subscribeAudioEnabled fires on same-tab toggles
+  // (custom event) and cross-tab toggles (storage event).
+  const [audioEnabled, setAudioEnabledState] = useState(false);
+  useEffect(() => subscribeAudioEnabled(setAudioEnabledState), []);
+
+  useEffect(() => {
+    if (!audioEnabled) return;
+    if (currentText) speak(currentText);
+    return () => {
+      cancelSpeech();
+    };
+  }, [currentText, audioEnabled]);
 
   // Load wizard flow data
   useEffect(() => {
@@ -344,7 +372,11 @@ export function useWizardDialogue({
     loadedFlowPath,
     wizardData,
     isFlowLoading,
-    failedFlowPaths.has,
+    // The Set itself, not Set.prototype.has — the prototype method is a
+    // stable reference and would never re-fire this effect when a flow is
+    // marked failed. setFailedFlowPaths always allocates a new Set, so
+    // depending on the instance correctly invalidates the effect.
+    failedFlowPaths,
     dialogueState.currentNodeId,
   ]);
 
@@ -464,11 +496,46 @@ export function useWizardDialogue({
     if (target) navigateToNode(target);
   }, [dialogueState, navigateToNode]);
 
+  // P1.1 — wizard-completion derived state.
+  //
+  // Two signals mark the wizard complete:
+  // (a) `currentNode.action === 'compileFullGame'` — the explicit author
+  //     contract every -flow.json file uses.
+  // (b) Structurally terminal AND `sessionActions.gameAssembled` is true —
+  //     a node with no forward navigation, but only AFTER a previous step
+  //     has actually built something the runner can launch. Without the
+  //     `gameAssembled` gate, any "you canceled" / "come back later" leaf
+  //     would surface the CTA against an empty project.
+  //
+  // For multiStep nodes, we only consider the FINAL step terminal — earlier
+  // dialogue steps still have content to show. `dialogueStep` is checked
+  // against `multiStep.length - 1`.
+  //
+  // `!isLoading` guards a narrow hydration window: persisted state can
+  // restore `currentNodeId` (and therefore `currentNode`) before a fresh
+  // flow fetch completes, leaving us with a non-null currentNode but an
+  // in-flight load. Without this guard we'd flash the CTA in that window.
+  const currentNode = dialogueState.currentNode;
+  const onLastMultiStep =
+    !currentNode?.multiStep?.length ||
+    dialogueState.dialogueStep >= currentNode.multiStep.length - 1;
+  const structurallyTerminal =
+    !!currentNode &&
+    !currentNode.options?.length &&
+    onLastMultiStep &&
+    !!sessionActions.gameAssembled;
+  const isWizardComplete = !!(
+    currentNode &&
+    !isLoading &&
+    (currentNode.action === 'compileFullGame' || structurallyTerminal)
+  );
+
   return {
     wizardData,
     dialogueState,
     sessionActions,
     isLoading,
+    isWizardComplete,
     navigateToNode,
     handleOptionSelect,
     advance,
@@ -494,7 +561,19 @@ export function DialogueText({ text, nodeId, dialogueStep, className = '' }: Dia
       animate={{ opacity: 1, y: 0 }}
       className={`text-center ${className}`}
     >
-      <p className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed">{text}</p>
+      <p
+        // P5 a11y — assertive live region so screen readers announce each new
+        // dialogue node as the wizard advances. Pixel speaking IS the primary
+        // content surface; falling silent on screen readers would gate the
+        // whole product. role="status" + aria-live="polite" balances
+        // announcement against interrupting the user mid-input.
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed"
+      >
+        {text}
+      </p>
     </motion.div>
   );
 }
@@ -519,7 +598,12 @@ export function DialogueBox({ text, className = '', variant = 'default' }: Dialo
       transition={{ delay: ANIMATIONS.FADE_IN.delay }}
     >
       <div className={`w-full ${baseStyles} ${paddingStyles}`}>
-        <p className={`text-center ${textSize} text-gray-700 dark:text-gray-300 leading-relaxed`}>
+        <p
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+          className={`text-center ${textSize} text-gray-700 dark:text-gray-300 leading-relaxed`}
+        >
           {text}
         </p>
       </div>
