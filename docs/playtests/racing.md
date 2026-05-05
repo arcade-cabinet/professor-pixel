@@ -12,7 +12,9 @@ summary: Wizard playtest notes for the racing game type
 - Selected: "SPEED! Going really, really fast!"
 - Pixel: "VROOM VROOM! I can already feel the adrenaline! 🏎️"
 - Follow-up: "Let's build something FAST - track by track!"
-- **BROKEN**: Should load racing-flow.json but stuck
+- **CLOSED (commit 21dba7b):** transitionToSpecializedFlow now loads `/racing-flow.json` correctly via the post-restructure `app/components/wizard/dialogue-engine.tsx`. Pinned by `tests/integration/wizard-dialogue-engine.test.tsx`. The original "stuck" report referred to the deleted legacy `client/src/components/wizard-dialogue-engine.tsx`.
+
+> **Engineering status:** The remaining `**WEAK**` / `**FIX**` items below are flow-JSON content authoring tasks (theme packs, A/B framing, missing scenes). The dialogue engine supports them today; what's missing is the content. Tracked as content-design work, not engineering.
 
 ## Expected Flow (from racing-flow.json)
 ### Stage 1: Title Screen

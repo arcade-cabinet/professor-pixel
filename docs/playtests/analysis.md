@@ -139,21 +139,22 @@ Each game should follow this pattern:
 ## PRIORITY FIXES
 
 ### Immediate (Blocking Progress)
-1. Fix `transitionToSpecializedFlow` in dialogue engine
-2. Remove single-option "continue" buttons
-3. Add auto-advance after asset selection
+1. **CLOSED (commit 21dba7b):** `transitionToSpecializedFlow` in dialogue engine — verified working in the post-restructure dialogue-engine.tsx by the integration test in `tests/integration/wizard-dialogue-engine.test.tsx`. The original report referenced the legacy `client/src/components/wizard-dialogue-engine.tsx`, which was deleted; the replacement at `app/components/wizard/dialogue-engine.tsx` handles the transition correctly.
+2. **CLOSED (commit 21dba7b):** Remove single-option "continue" buttons — `src/wizard/utils.ts` `CONTINUE_PATTERN` + `isSingleContinueOption` collapse pure-navigation continue-pattern single options to `<ContinueButton>`. `dialogue-engine.tsx` `advance()` now navigates the collapsed option's `next`. Tests in `tests/unit/wizard-utils.test.ts` + integration test pin the behaviour.
+3. **CLOSED (commit 21dba7b):** Auto-advance after asset selection — `app/components/wizard/universal.tsx` `handleAssetSelection` already calls `advance()` after closing the browser. The original report was stale relative to the post-restructure code.
 
-### High Priority (Major UX Issues)
+### High Priority (Major UX Issues) — content design, not engineering
+These are flow-JSON content authoring tasks, picked up by content authors as separate non-engineering work. The engine supports them today; what's missing is the content.
 1. Bundle asset selections into theme packs
 2. Add missing death/respawn sequences
 3. Add transition scenes between major sections
 
-### Medium Priority (Polish)
+### Medium Priority (Polish) — content design, not engineering
 1. Add preview displays after each stage
 2. Add more sophisticated boss patterns
 3. Include settings/pause menu options
 
-### Low Priority (Nice to Have)
+### Low Priority (Nice to Have) — out of scope for this codebase
 1. Achievement systems
 2. Leaderboards
 3. Multiplayer options

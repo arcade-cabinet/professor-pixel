@@ -1,6 +1,6 @@
 # Continuous Work Directive — professor-pixel
 
-**Status:** ACTIVE
+**Status:** RELEASED
 **Owner:** jbogaty
 
 ## What CONTINUOUS means
@@ -218,23 +218,23 @@ This is the comprehensive sweep — everything remaining in STATE.md → Next ge
 
 ### F2 — Wizard dialogue integration tests
 
-- [ ] F2.1 tests/integration/wizard-dialogue-engine.test.tsx (recreated for post-restructure dialogue-engine.tsx) — flow load, option select, advance, persisted-state restore, transitionToSpecializedFlow.
+- [x] F2.1 tests/integration/wizard-dialogue-engine.test.tsx (recreated for post-restructure dialogue-engine.tsx) — flow load, option select, advance, persisted-state restore, transitionToSpecializedFlow.
 
 ### F3 — Simulator harness + frame-rate test
 
-- [ ] F3.1 tests/helpers/simulator-harness.ts: createFakeCanvasContext + controlledTime.
-- [ ] F3.2 src/pygame/runtime/simulator.ts: getCurrentFPS() probe.
-- [ ] F3.3 tests/unit/pygame-simulator.test.ts: drawCommand enqueue, flushFrameBuffer playback, M4.2 frame-rate band.
+- [x] F3.1 tests/helpers/simulator-harness.ts: createFakeCanvasContext + controlledTime.
+- [x] F3.2 src/pygame/runtime/simulator.ts: getCurrentFPS() probe.
+- [x] F3.3 tests/unit/pygame-simulator.test.ts: drawCommand enqueue, flushFrameBuffer playback, M4.2 frame-rate band.
 
 ### F4 — Playtest analysis fixes
 
-- [ ] F4.1 transitionToSpecializedFlow engine path — fix the bug analysis.md flagged; integration test asserts specialized flow loads.
-- [ ] F4.2 Remove single-option "continue" buttons — shouldShowContinue/shouldShowOptions in src/wizard/utils.ts route 1-item continue-pattern options to <ContinueButton>.
-- [ ] F4.3 Auto-advance after asset selection — handleOptionSelect in dialogue-engine.tsx; test for it.
+- [x] F4.1 transitionToSpecializedFlow engine path — already correct in post-restructure dialogue-engine.tsx; pinned by integration test asserting `/platformer-flow.json` loads. Original bug was in deleted legacy `client/src/components/wizard-dialogue-engine.tsx`.
+- [x] F4.2 Remove single-option "continue" buttons — `CONTINUE_PATTERN` regex + `isSingleContinueOption` predicate in `src/wizard/utils.ts`; `advance()` consumes the collapsed option. Tests in `tests/unit/wizard-utils.test.ts` (6) + `tests/integration/wizard-dialogue-engine.test.tsx`.
+- [x] F4.3 Auto-advance after asset selection — already correct in post-restructure `app/components/wizard/universal.tsx` `handleAssetSelection` calling `advance()` after browser close. Original report was stale.
 
 ### F5 — Docs / state sweep
 
-- [ ] F5.1 docs/playtests/{platformer,dungeon,puzzle,rpg,racing,space}.md — annotate resolved CRITICAL WEAK POINTS with **CLOSED:** + commit ref.
-- [ ] F5.2 docs/playtests/analysis.md — same annotation treatment for PRIORITY FIXES.
-- [ ] F5.3 docs/STATE.md — finishing pillar Next → Done; Next becomes empty. Active flips to RELEASED.
-- [ ] F5.4 .agent-state/directive.md Status: ACTIVE → RELEASED.
+- [x] F5.1 docs/playtests/{platformer,dungeon,puzzle,rpg,racing,space}.md — annotated transitionToSpecializedFlow CLOSED markers against commit 21dba7b; reframed remaining `**WEAK**`/`**FIX**` items as content-design (not engineering).
+- [x] F5.2 docs/playtests/analysis.md — PRIORITY FIXES 1-3 annotated with CLOSED markers + 21dba7b ref; High/Medium Priority items marked content-design; Low Priority marked out-of-scope.
+- [x] F5.3 docs/STATE.md — finishing pillar moved to Done; Next emptied; Active says no work in flight.
+- [x] F5.4 .agent-state/directive.md Status: ACTIVE → RELEASED.

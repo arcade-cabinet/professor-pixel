@@ -11,14 +11,15 @@ domain: context
 
 ## Active
 
-_No work in flight. The grader-followups pillar (`feat/grader-followups-pillar`) and the `any` cleanup pillar (`feat/any-cleanup-pillar`, PR #21) are queued for review and squash-merge to `main`._
+_No work in flight._
 
 ## Done (recent milestones)
 
 | Milestone | When | Notes |
 |-----------|------|-------|
-| Grader follow-ups pillar (worker-side variableExists + dev HUD) | 2026-05 | Branch: `feat/grader-followups-pillar`. G1: `runtimeRules.variableExists` now reads from a worker-collected `globals` snapshot (`inspectGlobals` plumbed through `RunOptions → CodeRunnerOptions → runSnippet`), fixing the silent-false bug where main-thread Pyodide never saw worker-routed snippets' globals. G2: `app/components/dev-hud.tsx` floating panel reading cold-start ms + Pyodide state, gated by `useDebugFlag()` (`?debug=1` or `localStorage.debug='1'`). |
-| `any` cleanup pillar (TypeScript discipline) | 2026-05 | Branch: `feat/any-cleanup-pillar`. 213 `any` annotations → 0; Biome `noExplicitAny` flipped from `warn` → `error`. Authored `PyodideInstance` ambient; defensive `ErrorShape` probe pattern for catch blocks; `PyGameComponent<P extends object>` generic + `AnyPyGameComponent` erased view at registry boundary; `PygameColor` / `PygameRectArg` / `PygameSprite` runtime types in simulator with tuple-cast destructures per renderer case; debounce branded as `<TArgs extends unknown[]>`. |
+| Finishing pillar (coverage ratchet + wizard tests + simulator harness + F4.2 single-continue collapse + playtest doc sweep) | 2026-05 | Branch: `feat/finishing-pillar`. F1: Vitest coverage thresholds re-enabled at 6/4/4/6 against baseline 6.07/4.55/4.24/6.08 (ratchet doctrine: pin floor just above current, raise per-PR). F2: `tests/integration/wizard-dialogue-engine.test.tsx` (6 tests) covers default-flow load, handleOptionSelect navigation, sessionActions.choices, advance() through multiStep, persisted-state restore, transitionToSpecializedFlow → platformer-flow.json. F3: `tests/helpers/simulator-harness.ts` (Proxy-based fake CanvasRenderingContext2D + controlledTime via `vi.spyOn(performance, 'now')`); `tests/unit/pygame-simulator.test.ts` (5 tests, including M4.2 frame-rate band). F4: F4.2 single-continue option collapse (`CONTINUE_PATTERN` regex in `src/wizard/utils.ts` + `advance()` consumes single-continue option) — F4.1 `transitionToSpecializedFlow` and F4.3 auto-advance after asset selection were already correct in the post-restructure code, pinned by tests. F5: docs/playtests/{analysis,platformer,dungeon,puzzle,racing,rpg,space}.md annotated — engine-level CRITICAL items closed against 21dba7b; remaining `**WEAK**`/`**FIX**` items reframed as content-design, not engineering. |
+| Grader follow-ups pillar (worker-side variableExists + dev HUD) | 2026-05 | Branch: `feat/grader-followups-pillar`, PR #22. G1: `runtimeRules.variableExists` now reads from a worker-collected `globals` snapshot (`inspectGlobals` plumbed through `RunOptions → CodeRunnerOptions → runSnippet`), fixing the silent-false bug where main-thread Pyodide never saw worker-routed snippets' globals. G2: `app/components/dev-hud.tsx` floating panel reading cold-start ms + Pyodide state, gated by `useDebugFlag()` (`?debug=1` or `localStorage.debug='1'`). |
+| `any` cleanup pillar (TypeScript discipline) | 2026-05 | Branch: `feat/any-cleanup-pillar`, PR #21. 213 `any` annotations → 0; Biome `noExplicitAny` flipped from `warn` → `error`. Authored `PyodideInstance` ambient; defensive `ErrorShape` probe pattern for catch blocks; `PyGameComponent<P extends object>` generic + `AnyPyGameComponent` erased view at registry boundary; `PygameColor` / `PygameRectArg` / `PygameSprite` runtime types in simulator with tuple-cast destructures per renderer case; debounce branded as `<TArgs extends unknown[]>`. |
 | Modernization pillar (toolchain bumps + correctness gaps) | 2026-05 | Branch: `feat/modernization-pillar`. M1.1–M1.5 toolchain (pnpm 10, TS 6, Vite 8 + Vitest 4, React 19, Biome 2.4); M2.3 quarantined wizard test removed; M3.1 visual regression baseline; M3.2 axe-core a11y suite; M4.1 cold-start budget instrumentation; M4.3 worker-side stdout truncation; M5.1 sys.settrace functionCalled instrumentation; M5.2 input() call counter; M6.1 lessons 7-9 (lists, files, classes). |
 | Stabilization pillar (banner, type seam, grader e2e) | 2026-05 | Squashed into `8f478f8` on main; PR #20 |
 | Foundations pillar (Pyodide worker, Zod lessons, AST grading, 6 lessons) | 2026-05 | Squashed into `f4f418d` on main; PR #19 |
@@ -33,25 +34,9 @@ _No work in flight. The grader-followups pillar (`feat/grader-followups-pillar`)
 
 ## Next (queued, no commitment yet)
 
-Sized roughly so any one item is a single PR.
+_Empty. The finishing pillar absorbed every remaining engineering carve-off (coverage ratchet, wizard tests, simulator harness, F4.2 single-continue collapse, playtest CLOSED markers). Subsequent work is unowned and unscoped — pick the next user-driven request._
 
-### Wizard / coverage / simulator-harness PRQ (carved off modernization-M2.2 + -M2.3 + -M4.2)
-
-- Re-enable Vitest coverage thresholds — currently statements: 7.15% / branches: 5%. Setting 90/85/90/90 today would lock CI red. Strategy: ratchet thresholds up incrementally (start at 10/10/10/10, raise per-PR).
-- Focused integration tests for whichever wizard-flow paths still need coverage after the dialogue-engine restructure (replaces the deleted `wizard-dialogue-engine.test.tsx`).
-- Simulator test harness: stand up a deterministic mounting API for `src/pygame/runtime/simulator.ts` so the frame-rate test (M4.2 deferred) can actually be authored.
-
-### Per-game-type playtest follow-ups
-
-Each `docs/playtests/` file lists open tuning items; convert the most-blocking into wizard PRs.
-
-- `docs/playtests/breakout.md` — calibration on launch angle and brick row count.
-- `docs/playtests/collecting.md` — drop rate vs movement speed balance.
-- `docs/playtests/platformer.md` — jump arc tuning across keyboard / touch.
-- `docs/playtests/pong.md` — paddle control feel on mobile.
-- `docs/playtests/shooter.md` — projectile cooldown and enemy density.
-
-(One item per playtest file with a one-line note of the most-blocking tune.)
+The remaining `**WEAK**` / `**FIX**` items in `docs/playtests/*.md` are flow-JSON content authoring (theme packs, A/B framing of asset pickers, missing scene additions). The dialogue engine supports them today; what's missing is content. Tracked as content-design work, not engineering.
 
 ## Blocked / waiting
 

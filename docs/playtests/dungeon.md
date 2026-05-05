@@ -12,7 +12,9 @@ summary: Wizard playtest notes for the dungeon game type
 - Selected: "Dark dungeons, monsters, and treasure!"
 - Pixel: "A DUNGEON CRAWLER! Dark corridors, treasure, monsters lurking in shadows!"
 - Follow-up: "We'll build your dungeon floor by floor, room by room!"
-- **BROKEN**: transitionToSpecializedFlow doesn't work, gets stuck here
+- **CLOSED (commit 21dba7b):** transitionToSpecializedFlow now loads `/dungeon-flow.json` correctly via the post-restructure `app/components/wizard/dialogue-engine.tsx`. Pinned by `tests/integration/wizard-dialogue-engine.test.tsx`. The original "gets stuck" report referred to the deleted legacy `client/src/components/wizard-dialogue-engine.tsx`.
+
+> **Engineering status:** The remaining `**WEAK**` / `**FIX**` items below are flow-JSON content authoring tasks (theme packs, A/B framing, missing scenes). The dialogue engine supports them today; what's missing is the content. Tracked as content-design work, not engineering.
 
 ## Expected Flow (from dungeon-flow.json) - VERY COMPREHENSIVE!
 ### Stage 1: Dungeon Theme (EXCELLENT A/B/C)

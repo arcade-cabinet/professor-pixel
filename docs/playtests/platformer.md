@@ -23,7 +23,9 @@ summary: Wizard playtest notes for the platformer game type
 - Pixel says: "Awesome! I LOVE platformers! There's something so satisfying about nailing that perfect jump!"
 - Follow-up: "Let's build this scene by scene - first up: your title screen!"
 - Action: `transitionToSpecializedFlow`
-- **PROBLEM**: Flow should transition to platformer-flow.json but gets stuck
+- **CLOSED (commit 21dba7b):** transitionToSpecializedFlow now loads `/platformer-flow.json` correctly via the post-restructure `app/components/wizard/dialogue-engine.tsx`. Pinned by `tests/integration/wizard-dialogue-engine.test.tsx` (`transitionToSpecializedFlow loads the specialized flow JSON`). The original "gets stuck" report referred to the deleted legacy `client/src/components/wizard-dialogue-engine.tsx`.
+
+> **Engineering status:** The `**WEAK POINT**` / `**SOLUTION**` items below are flow-JSON content authoring tasks (theme packs, A/B framing, missing scenes). The dialogue engine supports them today; what's missing is the content. Tracked as content-design work, not engineering.
 
 ## Expected Flow (from platformer-flow.json)
 ### Stage 1: Title Screen Building

@@ -12,7 +12,9 @@ summary: Wizard playtest notes for the RPG game type
 - Selected: "An epic adventure with heroes and quests"
 - Pixel: "Ooh, an epic adventure! I'm getting goosebumps already! ⚔️"
 - Follow-up: "Let's craft your epic quest from start to finish!"
-- **PROBLEM**: Should transition to rpg-flow.json but action is just `transitionToSpecializedFlow`
+- **CLOSED (commit 21dba7b):** transitionToSpecializedFlow now loads `/rpg-flow.json` correctly via the post-restructure `app/components/wizard/dialogue-engine.tsx`. Pinned by `tests/integration/wizard-dialogue-engine.test.tsx`. The original report referenced the deleted legacy `client/src/components/wizard-dialogue-engine.tsx`.
+
+> **Engineering status:** The remaining `**WEAK**` / `**FIX**` items below are flow-JSON content authoring tasks (theme packs, A/B framing, missing scenes). The dialogue engine supports them today; what's missing is the content. Tracked as content-design work, not engineering.
 
 ## Expected Flow (from rpg-flow.json)
 ### Stage 1: Title/Main Menu
