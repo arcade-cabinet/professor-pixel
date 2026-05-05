@@ -5,6 +5,7 @@ import {
   loadWizardProject,
   deleteWizardProject,
   renameWizardProject,
+  cloneWizardProject,
 } from '@lib/storage/projects';
 
 // Reset all client-storage state between tests so each one starts fresh —
@@ -199,6 +200,38 @@ describe('wizard projects (P5)', () => {
     expect(retry.id).toBe(first.id);
     const list = await listWizardProjects();
     expect(list).toHaveLength(1);
+  });
+
+  it('clones a project with a "— Remix N" suffix and tight integer numbering (P4.18)', async () => {
+    // Sequential remixes should pick the smallest free integer so the
+    // suffix stays compact. Three remixes → Remix 1, 2, 3.
+    const original = await saveWizardProject({ ...baseSnapshot, name: 'Knight Quest' });
+    const r1 = await cloneWizardProject(original.id);
+    const r2 = await cloneWizardProject(original.id);
+    const r3 = await cloneWizardProject(original.id);
+    expect(r1.name).toBe('Knight Quest — Remix 1');
+    expect(r2.name).toBe('Knight Quest — Remix 2');
+    expect(r3.name).toBe('Knight Quest — Remix 3');
+    // Each clone gets its own id and copies template + files.
+    expect(r1.id).not.toBe(original.id);
+    expect(r1.template).toBe(original.template);
+    expect(r1.files).toHaveLength(original.files.length);
+  });
+
+  it('reuses freed integers when a remix in the middle is deleted (P4.18)', async () => {
+    // Lowest-free-integer policy means deleting Remix 2 then re-cloning
+    // produces another Remix 2 — not Remix 4. Keeps suffixes tight.
+    const original = await saveWizardProject({ ...baseSnapshot, name: 'Robot' });
+    const r1 = await cloneWizardProject(original.id);
+    const r2 = await cloneWizardProject(original.id);
+    await deleteWizardProject(r2.id);
+    const r2Again = await cloneWizardProject(original.id);
+    expect(r1.name).toBe('Robot — Remix 1');
+    expect(r2Again.name).toBe('Robot — Remix 2');
+  });
+
+  it('throws when cloneWizardProject is given a missing id (P4.18)', async () => {
+    await expect(cloneWizardProject('missing-id')).rejects.toThrow(/not found/i);
   });
 
   it('keeps distinct rows when name matches but template differs (P4.11)', async () => {

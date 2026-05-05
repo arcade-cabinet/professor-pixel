@@ -96,6 +96,15 @@ export const strings = {
       cancelRename: 'Cancel',
       renameErrorTitle: "Couldn't rename that game",
       renameErrorBody: 'Try a different name and save again.',
+      // P4.18 — Remix (clone) a project so a kid can spin off variants
+      // without losing the original. Suffix is "{name} — Remix N".
+      remix: 'Remix',
+      remixing: 'Remixing…',
+      remixAriaLabel: (name: string) => `Remix ${name}`,
+      remixSuccessTitle: 'Remix created!',
+      remixSuccessBody: (name: string) => `Opening "${name}" in the wizard.`,
+      remixErrorTitle: "Couldn't remix that game",
+      remixErrorBody: 'Try again in a moment.',
       // P4.17 — Export-as-ZIP affordance on each project row.
       exportLabel: 'Export',
       exporting: 'Exporting…',

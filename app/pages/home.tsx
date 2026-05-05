@@ -7,6 +7,7 @@ import {
   loadWizardProject,
   deleteWizardProject,
   renameWizardProject,
+  cloneWizardProject,
 } from '@lib/storage/projects';
 import { exportSavedProject } from '@lib/pygame/runtime/exporter';
 import { queryClient } from '@lib/net/query-client';
@@ -122,6 +123,41 @@ export default function Home() {
       toast({
         title: strings.home.project.renameErrorTitle,
         description: strings.home.project.renameErrorBody,
+        variant: 'destructive',
+      });
+    },
+  });
+
+  // P4.18 — Remix mutation. After the clone lands, the row list
+  // refetches and the new project opens directly in the wizard so the
+  // kid can start tweaking immediately. The activeProjectId hand-off
+  // mirrors the openProject path so the wizard's first save targets
+  // the clone (not the original).
+  const remixProjectMutation = useMutation({
+    mutationFn: (id: string) => cloneWizardProject(id),
+    onSuccess: async (clone) => {
+      queryClient.invalidateQueries({ queryKey: ['wizard-projects'] });
+      try {
+        const snapshot = await loadWizardProject(clone.id);
+        if (snapshot) {
+          saveWizardState(snapshot.wizardState);
+        }
+        localStorage.setItem('pp.activeProjectId', clone.id);
+      } catch {
+        // Quota or privacy mode — kid lands in wizard from a fresh
+        // start; not the end of the world.
+      }
+      toast({
+        title: strings.home.project.remixSuccessTitle,
+        description: strings.home.project.remixSuccessBody(clone.name),
+      });
+      setSkipChooser(true);
+    },
+    onError: (err) => {
+      console.error('Failed to remix project:', err);
+      toast({
+        title: strings.home.project.remixErrorTitle,
+        description: strings.home.project.remixErrorBody,
         variant: 'destructive',
       });
     },
@@ -401,6 +437,18 @@ export default function Home() {
                         aria-label={strings.home.project.exportAriaLabel(project.name)}
                       >
                         {exportingId === project.id ? strings.home.project.exporting : '📦'}
+                      </Button>
+                      <Button
+                        onClick={() => remixProjectMutation.mutate(project.id)}
+                        disabled={remixProjectMutation.isPending}
+                        variant="outline"
+                        data-testid={`my-game-remix-${project.id}`}
+                        aria-label={strings.home.project.remixAriaLabel(project.name)}
+                      >
+                        {remixProjectMutation.isPending &&
+                        remixProjectMutation.variables === project.id
+                          ? strings.home.project.remixing
+                          : '🎨'}
                       </Button>
                       <Button
                         onClick={() => setConfirmDeleteId(project.id)}

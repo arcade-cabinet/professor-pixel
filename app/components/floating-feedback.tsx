@@ -63,7 +63,13 @@ export default function FloatingFeedback({
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key !== '?') return;
-      if (event.metaKey || event.ctrlKey || event.altKey) return;
+      // metaKey blocks Cmd+? on macOS. We deliberately do NOT block
+      // altKey: on Windows/Linux non-US layouts (German, Scandinavian)
+      // the `?` glyph is produced via AltGr, which browsers surface
+      // as both ctrlKey and altKey true. event.key is layout-resolved
+      // so we receive the literal '?' regardless. Blocking altKey
+      // would silently kill the shortcut for non-US users.
+      if (event.metaKey) return;
       const t = event.target as HTMLElement | null;
       if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) {
         return;

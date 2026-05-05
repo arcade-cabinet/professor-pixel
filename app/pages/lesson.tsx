@@ -90,18 +90,22 @@ export default function LessonEnhanced() {
   // the worker's Pyodide bootstraps once.
   const pythonRunner = useMemo(() => (pyodide ? getWorkerRunner() : null), [pyodide]);
 
+  // Fetch the full catalog once and derive both the current lesson and
+  // the next-lesson lookup from it. The previous shape held two queries
+  // (`['lessons', lessonId]` returning a single match + `['lessons']`
+  // returning the full list) — same data, different cache entries,
+  // double the network and double the staleness churn.
   const {
-    data: lesson,
+    data: allLessonsQuery,
     isLoading: lessonLoading,
     error: lessonError,
-  } = useQuery<Lesson | undefined>({
-    queryKey: ['lessons', lessonId],
-    queryFn: async () => {
-      const lessons = await loadLessons();
-      return lessons.find((l) => l.id === lessonId);
-    },
+  } = useQuery<Lesson[]>({
+    queryKey: ['lessons'],
+    queryFn: () => loadLessons(),
     enabled: !!lessonId,
   });
+  const allLessons = allLessonsQuery;
+  const lesson = useMemo(() => allLessons?.find((l) => l.id === lessonId), [allLessons, lessonId]);
 
   const { data: progress } = useQuery<UserProgress | undefined>({
     queryKey: ['progress', lessonId],
@@ -293,19 +297,11 @@ export default function LessonEnhanced() {
 
   const [showCompletionOptions, setShowCompletionOptions] = useState(false);
 
-  // Drive next-lesson lookup from the loaded lesson catalog rather than a
-  // hardcoded order map. Folds forward a task-014 reviewer finding: the
-  // hardcoded map silently lied for any lesson id outside its 10 entries
-  // (e.g., a future `pygame-sprites` lesson would falsely trigger the
-  // "You finished them all!" branch). Returns null for an unknown id
-  // (kid is on a lesson that's not in the catalog — defensive) or when
-  // the current id is the last entry. We rely on the catalog already
-  // being loaded by the parent useQuery; if it isn't yet, we treat the
-  // current lesson as terminal so the modal doesn't flash a wrong cta.
-  const allLessons = useQuery<Lesson[]>({
-    queryKey: ['lessons'],
-    queryFn: () => loadLessons(),
-  }).data;
+  // Drive next-lesson lookup from the same catalog query that powers
+  // the current lesson lookup — no separate fetch, no parallel cache
+  // entry. Returns null for an unknown id or when the current id is
+  // the last entry. The single source of truth means refetches stay
+  // synchronized.
   const getNextLessonId = (currentId: string): string | null => {
     if (!allLessons) return null;
     const idx = allLessons.findIndex((l) => l.id === currentId);

@@ -403,7 +403,7 @@ Branch: feat/player-experience-pillar-4
 
 ### task-018 "Remix" button on project rows → clones with -remix-N suffix
 
-- [ ] task-018 cloneWizardProject in projects.ts; home.tsx Remix button + activeProjectId hand-off
+- [x] task-018 cloneWizardProject in projects.ts; home.tsx Remix button + activeProjectId hand-off
 
 ### task-019 Trim, length-cap, non-empty check on profile name
 

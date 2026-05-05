@@ -58,11 +58,16 @@ describe('FloatingFeedback `?` keyboard shortcut (P4.16)', () => {
     expect(isPanelVisible()).toBe(true);
   });
 
-  it('does NOT toggle when a modifier key is held', () => {
+  it('does NOT toggle when meta (Cmd) is held', () => {
+    // metaKey is the only modifier we explicitly block — Cmd+? is a
+    // real macOS browser shortcut. ctrlKey+? is left permissive on
+    // purpose: on Windows/Linux non-US keyboards (German, Scandinavian)
+    // `?` is produced via AltGr, which the browser surfaces as
+    // ctrlKey+altKey both true. Blocking ctrlKey would silently kill
+    // the shortcut for those users; event.key is layout-resolved so
+    // the gate by glyph alone is sufficient.
     render(<FloatingFeedback {...baseProps} />);
     fireEvent.keyDown(document, { key: '?', metaKey: true });
-    expect(isPanelVisible()).toBe(true);
-    fireEvent.keyDown(document, { key: '?', ctrlKey: true });
     expect(isPanelVisible()).toBe(true);
   });
 

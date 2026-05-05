@@ -148,6 +148,46 @@ export async function deleteWizardProject(id: string): Promise<void> {
 }
 
 /**
+ * P4.18 — Clone a project. Used by the /home Remix button so a kid can
+ * spin off a variant ("what if my Knight game had ninjas instead?")
+ * without losing the original. The clone gets a "{name} — Remix N"
+ * suffix where N is the smallest integer that doesn't collide with an
+ * existing project name (kid clicks Remix three times → Remix 1, Remix
+ * 2, Remix 3). Files, template, and thumbnail are copied verbatim from
+ * the source. Returns the new project so the caller can route into it.
+ *
+ * Throws if the source id doesn't exist (kid clicked Remix on a row
+ * that was deleted from another tab).
+ */
+export async function cloneWizardProject(sourceId: string): Promise<Project> {
+  const storage = getClientStorage();
+  const source = await storage.getProject(sourceId);
+  if (!source) {
+    throw new Error(`Project ${sourceId} not found`);
+  }
+  const allProjects = await storage.listProjects(ANON_USER_ID);
+  // Find a non-colliding remix name. We pick the lowest free integer
+  // rather than max+1 so a kid who deleted Remix 1 between attempts
+  // doesn't land on Remix 4 — the suffixes stay tight.
+  const baseName = source.name.replace(/ — Remix \d+$/, '');
+  let n = 1;
+  while (allProjects.some((p) => p.name === `${baseName} — Remix ${n}`)) {
+    n += 1;
+  }
+  const cloneName = `${baseName} — Remix ${n}`;
+  return storage.createProject({
+    userId: ANON_USER_ID,
+    name: cloneName,
+    template: source.template,
+    description: source.description,
+    published: false,
+    thumbnailDataUrl: source.thumbnailDataUrl,
+    files: source.files.map((f) => ({ ...f })),
+    assets: source.assets.map((a) => ({ ...a })),
+  });
+}
+
+/**
  * Rename a project in place — touches `name` only, leaving files / template /
  * assets / thumbnail untouched. Used by the inline rename affordance on the
  * /home project rows so a kid can fix a typo without opening the wizard.
