@@ -451,7 +451,7 @@ Branch: feat/player-experience-pillar-4
 
 ### task-030 Audit Monaco theme colors for WCAG AA against editor background
 
-- [ ] task-030 Monaco theme tokens hit AA contrast on light + dark; chosen palette + ratios noted in code comment
+- [x] task-030 Monaco theme tokens hit AA contrast on light + dark; chosen palette + ratios noted in code comment
 
 ### task-031 "Expected output" + tooltip explanation
 

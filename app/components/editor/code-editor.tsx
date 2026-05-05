@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Play, RotateCcw, Keyboard, CheckCircle2, Target } from 'lucide-react';
 import { cn } from '@lib/utils/cn';
 import { strings } from '@lib/i18n';
+import { registerPpDarkTheme } from '@lib/python/monaco-theme';
 
 // Monaco Editor types — a minimal surface of the editor instance API we
 // actually consume. Full Monaco types would require @types/monaco-editor as a
@@ -24,6 +25,7 @@ interface MonacoEditorInstance {
 interface MonacoNamespace {
   editor: {
     create(container: HTMLElement, options: Record<string, unknown>): MonacoEditorInstance;
+    defineTheme(name: string, theme: unknown): void;
   };
   KeyMod: { CtrlCmd: number; Shift: number; Alt: number };
   KeyCode: { Enter: number; KeyR: number; [key: string]: number };
@@ -179,10 +181,15 @@ export default function CodeEditor({
             return;
           }
           try {
+            // P4.30 — register the WCAG-AA-tuned theme before create so
+            // the editor mounts with verified contrast tokens. Tokens
+            // are exported from src/python/monaco-theme.ts and tested
+            // for ratio in tests/unit/monaco-theme.test.ts.
+            const themeName = registerPpDarkTheme(window.monaco);
             monacoEditorRef.current = window.monaco.editor.create(editorRef.current, {
               value: code || '',
               language: 'python',
-              theme: 'vs-dark',
+              theme: themeName,
               fontSize: 18,
               lineHeight: 26,
               fontFamily: 'JetBrains Mono, Consolas, monospace',

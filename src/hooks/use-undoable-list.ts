@@ -33,7 +33,7 @@ interface HistoryState<T> {
 }
 
 type Action<T> =
-  | { type: 'set'; value: T }
+  | { type: 'set'; value: T | ((prev: T) => T) }
   | { type: 'undo' }
   | { type: 'redo' }
   | { type: 'reset'; value: T };
@@ -41,15 +41,24 @@ type Action<T> =
 function reducer<T>(state: HistoryState<T>, action: Action<T>): HistoryState<T> {
   switch (action.type) {
     case 'set': {
-      // No-op when the value is identical — pushing the same reference
-      // onto past would just clutter history.
-      if (action.value === state.present) return state;
+      // Resolve functional updates against the reducer's OWN state so
+      // two `set` calls in the same React batch see each other's
+      // intermediate values (just like useState's functional form).
+      // Folded forward from task-029 review.
+      const resolved =
+        typeof action.value === 'function'
+          ? (action.value as (prev: T) => T)(state.present)
+          : action.value;
+      // Reference-equality skip: useful for primitive state (the
+      // hook accepts `T` not just `T[]`) and harmless for arrays
+      // since callers always produce a new reference per mutation.
+      if (resolved === state.present) return state;
       const past = [...state.past, state.present];
       // Trim the oldest entry once we exceed the cap. Drops the head,
       // which is the FURTHEST-back state — the kid can still undo a
       // long way, just not all the way to the dawn of time.
       if (past.length > HISTORY_LIMIT) past.shift();
-      return { past, present: action.value, future: [] };
+      return { past, present: resolved, future: [] };
     }
     case 'undo': {
       if (state.past.length === 0) return state;
@@ -86,11 +95,11 @@ export function useUndoableList<T>(initial: T): UndoableList<T> {
   } satisfies HistoryState<T>);
 
   const set = useCallback(
-    (next: T | ((prev: T) => T)) => {
-      const value = typeof next === 'function' ? (next as (prev: T) => T)(hs.present) : next;
-      dispatch({ type: 'set', value });
-    },
-    [hs.present]
+    // Pass the value (or the function) through — the reducer resolves
+    // functional updates against its OWN latest state. Stable ref
+    // because dispatch is stable; no closure over hs.present.
+    (next: T | ((prev: T) => T)) => dispatch({ type: 'set', value: next }),
+    []
   );
 
   const undo = useCallback(() => dispatch({ type: 'undo' }), []);
