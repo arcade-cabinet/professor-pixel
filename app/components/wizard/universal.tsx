@@ -790,8 +790,11 @@ export default function UniversalWizard({
             });
           break;
         case 'viewProgress':
-          // TODO: Implement progress view
-          console.log('View progress');
+          // P8 will add the dedicated progress UI; until then, View Progress
+          // routes to the lesson list, which IS the progress surface kids
+          // already understand. This is the same path home.tsx routes to
+          // for returning lesson-mode players.
+          window.location.assign('/lesson/lesson-1');
           break;
         case 'resetProgress':
           handleResetProgress();

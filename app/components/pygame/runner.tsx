@@ -4,7 +4,7 @@ import { Play, Pause, RefreshCw, Download, Maximize, Minimize, X } from 'lucide-
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { compilePythonGame } from '@lib/pygame/runtime/compiler';
-import { getPyodide } from '@lib/python/pyodide-singleton';
+import { getPyodide, recoverPyodide } from '@lib/python/pyodide-singleton';
 import type { GameAsset } from '@lib/assets/types';
 
 interface PygameRunnerProps {
@@ -451,9 +451,30 @@ if 'global_key_state' in globals():
               <p>Loading Pyodide...</p>
             </div>
           ) : error ? (
-            <div className="text-red-500 text-center max-w-md">
-              <p className="font-bold mb-2">Error</p>
-              <p className="text-sm">{error}</p>
+            <div className="text-center max-w-md text-white" data-testid="runner-error-panel">
+              <p className="font-bold mb-2 text-2xl">😟 Something went wrong</p>
+              <p className="text-sm mb-4 opacity-80 break-words">{error}</p>
+              <p className="text-sm mb-4">
+                Don&apos;t worry — this kind of thing happens. Click below to reset the Python
+                runtime and try again. Your wizard progress is safe.
+              </p>
+              <Button
+                onClick={async () => {
+                  recoverPyodide();
+                  setError(null);
+                  setIsLoading(true);
+                  try {
+                    await initPyodide();
+                  } catch {
+                    /* error already surfaced via setError inside initPyodide */
+                  }
+                }}
+                data-testid="runner-recover-button"
+                className="bg-purple-600 hover:bg-purple-700"
+              >
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Try again
+              </Button>
             </div>
           ) : (
             <canvas

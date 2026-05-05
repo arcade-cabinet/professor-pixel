@@ -61,11 +61,12 @@ export async function exportProjectAsZip(options: ExportProjectOptions): Promise
     throw new Error('Failed to create assets/ folder in zip');
   }
   for (const asset of selectedAssets) {
-    const src =
-      (asset as { url?: string; path?: string }).url ??
-      (asset as { url?: string; path?: string }).path;
+    // GameAsset.path is required per src/assets/types.ts. The defensive
+    // string check protects against partially-formed objects that slip in
+    // from mocks or future schema drift.
+    const src = asset.path;
     if (!src) {
-      failed.push(`${asset.name ?? 'unnamed asset'} (no url/path)`);
+      failed.push(`${asset.name ?? 'unnamed asset'} (no path)`);
       continue;
     }
     try {

@@ -57,16 +57,47 @@ function debounce<TArgs extends unknown[]>(
   };
 }
 
-// Error handler for storage operations
+// Detect a quota-exceeded error across browsers. Firefox uses NS_ERROR_DOM_QUOTA_REACHED
+// (code 1014); Chrome/Safari use QuotaExceededError (code 22). DOMException name is
+// the most reliable signal post-2018, but older Safari still returns string names.
+export function isQuotaExceeded(error: unknown): boolean {
+  if (!(error instanceof Error)) return false;
+  const name = error.name;
+  const code = (error as Error & { code?: number }).code;
+  return (
+    name === 'QuotaExceededError' ||
+    name === 'NS_ERROR_DOM_QUOTA_REACHED' ||
+    code === 22 ||
+    code === 1014 ||
+    /quota/i.test(error.message)
+  );
+}
+
+// Error handler for storage operations. On QuotaExceeded we surface a kid-
+// friendly toast (if the host page wires one up) so the player isn't blindsided
+// by a silent save failure mid-session.
 function handleStorageError(error: Error, operation: string): void {
   console.error(`Storage operation failed (${operation}):`, error);
+
+  if (isQuotaExceeded(error) && typeof window !== 'undefined') {
+    const winWithToast = window as Window & { toast?: (msg: unknown) => void };
+    if (typeof winWithToast.toast === 'function') {
+      winWithToast.toast(
+        "Looks like your saved games are full! Open the menu to clear old data, or your browser's site settings."
+      );
+    }
+  }
 
   // Send error to monitoring if available
   const winWithTrack = window as Window & {
     trackError?: (err: Error, context: Record<string, unknown>) => void;
   };
   if (typeof window !== 'undefined' && winWithTrack.trackError) {
-    winWithTrack.trackError(error, { operation, type: 'storage' });
+    winWithTrack.trackError(error, {
+      operation,
+      type: 'storage',
+      quotaExceeded: isQuotaExceeded(error),
+    });
   }
 }
 

@@ -80,7 +80,7 @@ describe('exportProjectAsZip', () => {
         id: 'robot',
         name: 'Robot Hero',
         type: 'character',
-        url: '/assets/robot.png',
+        path: '/assets/robot.png',
       } as unknown as GameAsset,
     ];
 
@@ -102,12 +102,17 @@ describe('exportProjectAsZip', () => {
     });
 
     const assets: GameAsset[] = [
-      { id: 'a', name: 'OK', type: 'character', url: '/assets/exists.png' } as unknown as GameAsset,
+      {
+        id: 'a',
+        name: 'OK',
+        type: 'character',
+        path: '/assets/exists.png',
+      } as unknown as GameAsset,
       {
         id: 'b',
         name: 'Broken',
         type: 'character',
-        url: '/assets/broken.png',
+        path: '/assets/broken.png',
       } as unknown as GameAsset,
     ];
 

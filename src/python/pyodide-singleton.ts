@@ -169,3 +169,26 @@ export function __resetPyodideForTests(): void {
     delete (window as Window).pyodide;
   }
 }
+
+/**
+ * P7 — runtime recovery. Drops the cached Pyodide instance and bootstrap
+ * promise so the next `getPyodide()` call re-initializes from scratch.
+ *
+ * Use cases:
+ *   - User's game crashed with a Python exception that left the runtime in
+ *     a poisoned state (e.g., a custom `__init__` raised mid-construction
+ *     and left a partially-initialized class).
+ *   - Pyodide's bootstrap failed (network blip during package install) and
+ *     the user clicks "try again."
+ *   - Memory pressure: Pyodide's WASM heap grew unbounded across many runs.
+ *
+ * This does NOT reload the page — kids lose their wizard state on a refresh.
+ * It just resets the runtime singleton.
+ */
+export function recoverPyodide(): void {
+  bootstrapPromise = null;
+  coldStartMs = null;
+  if (typeof window !== 'undefined') {
+    delete (window as Window).pyodide;
+  }
+}
