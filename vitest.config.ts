@@ -1,5 +1,6 @@
 import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
+import { playwright } from '@vitest/browser-playwright';
 import path from 'node:path';
 
 // Single Vitest config with `projects` (Vitest 3 native) declaring three test
@@ -67,7 +68,7 @@ export default defineConfig({
           setupFiles: ['./tests/setup/common.ts'],
           browser: {
             enabled: true,
-            provider: 'playwright',
+            provider: playwright(),
             headless: true,
             instances: [{ browser: 'chromium' }],
           },
