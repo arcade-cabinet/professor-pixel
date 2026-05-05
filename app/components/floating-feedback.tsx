@@ -87,9 +87,10 @@ export default function FloatingFeedback({
   // also be triggered from anywhere else that wants to surface the
   // hint — e.g., a future "?" floating button on the wizard surface.
   useEffect(() => {
-    // Functional setter: skip the no-op render when the panel is already
-    // visible (Ctrl+Space spam shouldn't churn the AnimatePresence subtree).
-    const onRequestHint = () => setIsVisible((v) => (v ? v : true));
+    // React already bails out of re-renders when setState is called with
+    // the current value, so plain setIsVisible(true) is sufficient — the
+    // earlier functional form here was theatre.
+    const onRequestHint = () => setIsVisible(true);
     document.addEventListener('pp:request-hint', onRequestHint);
     return () => document.removeEventListener('pp:request-hint', onRequestHint);
   }, []);

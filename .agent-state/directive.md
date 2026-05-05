@@ -431,7 +431,7 @@ Branch: feat/player-experience-pillar-4
 
 ### task-025 Add loading="lazy" on lesson Pixel images
 
-- [ ] task-025 below-fold mascot images set loading=lazy in lesson.tsx and avatar-display.tsx
+- [x] task-025 below-fold mascot images set loading=lazy in lesson.tsx and avatar-display.tsx
 
 ### task-026 Cross-tab sync of saved-project mutations
 

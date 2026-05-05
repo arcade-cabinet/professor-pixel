@@ -198,6 +198,7 @@ export default function PixelMenu({
                     alt={strings.pixelMenu.pixelAlt}
                     className="w-20 h-20 rounded-full shadow-lg"
                     style={{ imageRendering: 'crisp-edges' }}
+                    loading="lazy"
                     animate={{
                       rotate: [0, 5, -5, 0],
                       scale: [1, 1.05, 1],

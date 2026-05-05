@@ -58,6 +58,7 @@ export default function PixelMinimizeAnimation({
                   alt="Pixel"
                   className="w-32 h-32 object-cover rounded-full shadow-xl"
                   style={{ imageRendering: 'crisp-edges' }}
+                  loading="lazy"
                 />
                 {/* Sparkle effects */}
                 <motion.div
@@ -116,6 +117,7 @@ export default function PixelMinimizeAnimation({
                   alt="Pixel"
                   className="w-32 h-32 object-cover rounded-full shadow-xl"
                   style={{ imageRendering: 'crisp-edges' }}
+                  loading="lazy"
                   animate={{
                     filter: ['brightness(1)', 'brightness(1.3)', 'brightness(1)'],
                   }}

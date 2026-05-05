@@ -25,9 +25,14 @@ describe('icon-button aria-labels (P4.24)', () => {
   });
 
   it('uses distinct strings for enter/exit fullscreen so SR announces the action', () => {
-    expect(strings.iconButtons.runnerEnterFullscreen).not.toBe(
-      strings.iconButtons.runnerExitFullscreen
-    );
+    const enter = strings.iconButtons.runnerEnterFullscreen;
+    const exit = strings.iconButtons.runnerExitFullscreen;
+    expect(enter).not.toBe(exit);
+    // Stronger contract: the labels must differ in user-visible content,
+    // not just by trailing whitespace or a hidden-character typo. Each
+    // contains its own action verb.
+    expect(enter.toLowerCase()).toContain('enter');
+    expect(exit.toLowerCase()).toContain('exit');
   });
 
   it('exposes a dismiss label for the floating-feedback X button', () => {

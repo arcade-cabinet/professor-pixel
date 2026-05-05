@@ -198,6 +198,7 @@ export default function PixelMinimized({
               alt="Pixel Assistant"
               className="w-full h-full object-cover"
               style={{ imageRendering: 'crisp-edges' }}
+              loading="lazy"
               animate={
                 idleAnimation === 'blink'
                   ? {

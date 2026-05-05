@@ -467,6 +467,7 @@ export default function LessonEnhanced() {
                         src={pixelCelebrating}
                         alt={strings.lesson.pixelAlt.celebrating}
                         className="w-24 h-24 mx-auto mb-4"
+                        loading="lazy"
                         animate={{ y: [0, -10, 0], rotate: [0, 5, -5, 0] }}
                         transition={{ duration: 2, repeat: Infinity }}
                       />
