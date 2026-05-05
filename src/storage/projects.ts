@@ -24,6 +24,8 @@ import {
   loadOpfsProject,
   saveOpfsProject,
 } from '@lib/storage/opfs-projects';
+import { compilePythonGame } from '@lib/pygame/runtime/compiler';
+import { assetManager } from '@lib/assets/manager';
 import type { GameAsset } from '@lib/assets/types';
 
 const ANON_USER_ID = 'anonymous-user';
@@ -219,13 +221,6 @@ async function saveWizardProjectOpfs(
   const assetIds = (snapshot.wizardState as { selectedAssetIds?: string[] }).selectedAssetIds ?? [];
   let gamePy: string | undefined;
   if (Object.keys(selectedComponents).length > 0) {
-    // Lazy-load compiler + assetManager so importing this storage module
-    // doesn't pull in the asset-catalog graph for every read-only listing
-    // call. Save-time is the only path that needs them.
-    const [{ compilePythonGame }, { assetManager }] = await Promise.all([
-      import('@lib/pygame/runtime/compiler'),
-      import('@lib/assets/manager'),
-    ]);
     const selectedAssets = assetIds
       .map((id) => assetManager.getAssetById(id))
       .filter((a): a is GameAsset => Boolean(a));
