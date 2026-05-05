@@ -509,7 +509,7 @@ Branch: feat/post-launcher-consolidation (after PR #30 squash-merges)
 
 - [x] C2.1 PR #16 (jsdom 27→29) squash-merged into main
 - [ ] C2.2 PR #18 (@types/node 20→25) — triggered @dependabot rebase after #16 changed lockfile; will squash-merge once green
-- [ ] C2.3 react-resizable-panels 2→4 with import/ref-type rewrite across editor + wizard layout-manager
+- [x] C2.3 react-resizable-panels 2→4 — only `app/components/ui/resizable.tsx` touched the v2 names (PanelGroup, PanelResizeHandle); v4 renamed those to Group + Separator. Updated the shadcn wrapper to use the new primitive names but kept the consumer-facing exports (ResizablePanelGroup, ResizableHandle) unchanged so no other call sites need rewriting. Closes Dependabot PR #14 (we land the bump on our launcher branch instead of merging the dep PR; the dep PR can be closed)
 - [ ] C2.4 PR #24 bundle (45 minor/patch) — triggered @dependabot rebase; will squash-merge once green
 - [ ] C2.5 Close remaining Dependabot alerts as "covered by overrides" with citation, OR bump if direct
 
