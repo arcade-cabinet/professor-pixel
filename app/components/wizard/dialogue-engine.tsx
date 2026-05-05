@@ -464,11 +464,26 @@ export function useWizardDialogue({
     if (target) navigateToNode(target);
   }, [dialogueState, navigateToNode]);
 
+  // P1.1 — wizard-completion derived state. The flow JSONs end on a node
+  // whose `action` is `compileFullGame` (every -flow.json file has one); we
+  // also treat any reachable node with no options AND no multiStep as
+  // terminal so authors can compose new flows without wiring the action.
+  // Surfaced so the UI can render a "▶ Play your game" CTA at the end of
+  // the wizard journey.
+  const currentNode = dialogueState.currentNode;
+  const isWizardComplete = !!(
+    currentNode &&
+    !isLoading &&
+    (currentNode.action === 'compileFullGame' ||
+      (!currentNode.options?.length && !currentNode.multiStep?.length))
+  );
+
   return {
     wizardData,
     dialogueState,
     sessionActions,
     isLoading,
+    isWizardComplete,
     navigateToNode,
     handleOptionSelect,
     advance,

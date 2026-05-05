@@ -58,6 +58,7 @@ export default function UniversalWizard({
     dialogueState,
     sessionActions,
     isLoading,
+    isWizardComplete,
     navigateToNode,
     handleOptionSelect,
     advance,
@@ -651,6 +652,18 @@ export default function UniversalWizard({
     [handleOptionSelect, setSessionActions, sessionActions, selectedAssets]
   );
 
+  // P1.2 — Launch the user's game when the wizard reaches its terminal node
+  // (`compileFullGame` action OR an options-less / multiStep-less node). This
+  // is the "▶ Play your game" CTA the audit flagged as missing.
+  const handlePlayGame = useCallback(() => {
+    setUiState((prev) => ({
+      ...prev,
+      embeddedComponent: 'pygame-runner',
+      pyodideMode: true,
+      previewMode: 'full',
+    }));
+  }, []);
+
   // Render dialogue content for desktop/tablet
   const renderDialogue = useCallback(() => {
     const { currentNode } = dialogueState;
@@ -679,9 +692,30 @@ export default function UniversalWizard({
         )}
 
         {showContinue && <ContinueButton onClick={advance} isMobile={deviceState.isMobile} />}
+
+        {/* P1.2 wizard-completion CTA — terminal node reached, kid can play */}
+        {isWizardComplete && (
+          <button
+            type="button"
+            onClick={handlePlayGame}
+            data-testid="play-game-cta"
+            aria-label="Play your game"
+            className="w-full rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 px-6 py-4 text-lg font-bold text-white shadow-lg transition-transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-purple-300"
+          >
+            ▶ Play your game!
+          </button>
+        )}
       </div>
     );
-  }, [dialogueState, dialogueHelpers, handleOptionSelectWithAction, advance, deviceState.isMobile]);
+  }, [
+    dialogueState,
+    dialogueHelpers,
+    handleOptionSelectWithAction,
+    advance,
+    deviceState.isMobile,
+    isWizardComplete,
+    handlePlayGame,
+  ]);
 
   // Reset progress handler
   const handleResetProgress = useCallback(() => {

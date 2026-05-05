@@ -251,9 +251,9 @@ that ran post-finishing-pillar merge. ONE comprehensive PR; no carve-offs.
 
 ### P1 — Wizard completion + game launch (BLOCKER fold-in)
 
-- [ ] P1.1 dialogue-engine.tsx `isWizardComplete` derived state — terminal node OR `compileFullGame` action.
-- [ ] P1.2 universal.tsx "▶ Play your game" CTA when complete — wires to pygame-runner.
-- [ ] P1.3 tests/integration/wizard-completion.test.tsx — drive to complete, assert CTA + state.
+- [x] P1.1 dialogue-engine.tsx `isWizardComplete` derived state — terminal node OR `compileFullGame` action.
+- [x] P1.2 universal.tsx "▶ Play your game" CTA when complete — wires to pygame-runner.
+- [x] P1.3 tests/integration/wizard-completion.test.tsx — drive to complete, assert CTA + state.
 - [ ] P1.4 One-time celebration (confetti/sparkle) gated by `sessionActions.gameAssembled`.
 
 ### P2 — Onboarding & landing
