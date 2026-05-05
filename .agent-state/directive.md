@@ -419,7 +419,7 @@ Branch: feat/player-experience-pillar-4
 
 ### task-022 Ctrl+Space in editor requests next hint from the floating feedback panel
 
-- [ ] task-022 Monaco addAction for Ctrl+Space wired to floating-feedback via custom event; native autocomplete preserved on alternate key
+- [x] task-022 Monaco addAction for Ctrl+Space wired to floating-feedback via custom event; native autocomplete preserved on alternate key
 
 ### task-023 Apply consistent focus-visible ring class across editor / palette / pixel-menu
 

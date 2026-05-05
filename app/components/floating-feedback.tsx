@@ -81,6 +81,17 @@ export default function FloatingFeedback({
     return () => document.removeEventListener('keydown', onKeyDown);
   }, []);
 
+  // P4.22 — Ctrl+Space inside Monaco fires a `pp:request-hint` custom
+  // event (see code-editor.tsx). The panel responds by becoming
+  // visible (in case the kid had dismissed it). Same listener can
+  // also be triggered from anywhere else that wants to surface the
+  // hint — e.g., a future "?" floating button on the wizard surface.
+  useEffect(() => {
+    const onRequestHint = () => setIsVisible(true);
+    document.addEventListener('pp:request-hint', onRequestHint);
+    return () => document.removeEventListener('pp:request-hint', onRequestHint);
+  }, []);
+
   useEffect(() => {
     if (showNext) {
       // Celebrate when step is completed

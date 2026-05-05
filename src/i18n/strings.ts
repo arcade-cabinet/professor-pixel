@@ -419,6 +419,16 @@ export const strings = {
     },
   },
 
+  /* ─── Code editor (code-editor.tsx) ────────────────────────────────── */
+  codeEditor: {
+    resetConfirm: {
+      title: 'Reset your code?',
+      body: "This puts the starter code back. Anything you've written in this step will be erased.",
+      cancel: 'Keep my code',
+      confirm: 'Reset',
+    },
+  },
+
   /* ─── Help modal (help-modal.tsx — task-015) ───────────────────────── */
   help: {
     title: 'How can Pixel help?',

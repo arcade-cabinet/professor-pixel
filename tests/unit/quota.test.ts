@@ -17,11 +17,16 @@ import {
 beforeEach(() => {
   _resetQuotaWarning();
   setEstimateImpl(undefined);
+  // shouldWarnQuota now also probes localStorage byte size; clear it
+  // so accumulation from a previous suite doesn't put us over the
+  // 4MB threshold and cross-contaminate the threshold tests.
+  localStorage.clear();
 });
 
 afterEach(() => {
   _resetQuotaWarning();
   setEstimateImpl(undefined);
+  localStorage.clear();
 });
 
 describe('quota monitoring (P4.20)', () => {

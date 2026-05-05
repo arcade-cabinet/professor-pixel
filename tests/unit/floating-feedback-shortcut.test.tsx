@@ -8,7 +8,7 @@
 // Ctrl+?, Alt+?) are also ignored to leave browser shortcuts alone.
 
 import { describe, expect, it, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import '@testing-library/jest-dom/vitest';
 import FloatingFeedback from '@/components/floating-feedback';
 
@@ -78,6 +78,30 @@ describe('FloatingFeedback `?` keyboard shortcut (P4.16)', () => {
     // At least one of the removeEventListener calls is for keydown.
     const keydownRemovals = removeSpy.mock.calls.filter((c) => c[0] === 'keydown');
     expect(keydownRemovals.length).toBeGreaterThan(0);
+    removeSpy.mockRestore();
+  });
+
+  it('reveals the hidden panel when a `pp:request-hint` event fires (P4.22)', () => {
+    // Ctrl+Space inside Monaco dispatches the same event; the panel
+    // re-opens regardless of how it became hidden (X button or the
+    // `?` shortcut). This is what wires the editor shortcut to the
+    // floating panel without a parent-mediated callback.
+    render(<FloatingFeedback {...baseProps} />);
+    fireEvent.keyDown(document, { key: '?' });
+    expect(isPanelVisible()).toBe(false);
+
+    act(() => {
+      document.dispatchEvent(new CustomEvent('pp:request-hint', { detail: { source: 'editor' } }));
+    });
+    expect(isPanelVisible()).toBe(true);
+  });
+
+  it('removes the pp:request-hint listener on unmount (P4.22)', () => {
+    const removeSpy = vi.spyOn(document, 'removeEventListener');
+    const { unmount } = render(<FloatingFeedback {...baseProps} />);
+    unmount();
+    const hintRemovals = removeSpy.mock.calls.filter((c) => c[0] === 'pp:request-hint');
+    expect(hintRemovals.length).toBeGreaterThan(0);
     removeSpy.mockRestore();
   });
 });

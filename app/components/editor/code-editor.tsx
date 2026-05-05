@@ -5,6 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import { Play, RotateCcw, Keyboard, CheckCircle2, Target } from 'lucide-react';
 import { cn } from '@lib/utils/cn';
+import { strings } from '@lib/i18n';
 
 // Monaco Editor types — a minimal surface of the editor instance API we
 // actually consume. Full Monaco types would require @types/monaco-editor as a
@@ -235,6 +236,31 @@ export default function CodeEditor({
                 }
               }
             );
+            // P4.22 — Ctrl+Space asks Pixel for the next hint. Monaco's
+            // default Ctrl+Space binding is "Trigger Suggestions" (the
+            // built-in autocomplete). For a kid learning Python, the
+            // hint from the lesson is more valuable than autocomplete
+            // out of an empty buffer; we override Ctrl+Space and route
+            // the IDE-style autocomplete to Ctrl+Shift+Space, which is
+            // less likely to be hit by accident. The hint is dispatched
+            // as a custom DOM event so the FloatingFeedback panel (or
+            // any future listener — wizard-side hint surface, etc.)
+            // can subscribe without prop-drilling a callback through
+            // the lesson page.
+            const Space = window.monaco.KeyCode.Space;
+            if (typeof Space === 'number') {
+              monacoEditorRef.current.addCommand(window.monaco.KeyMod.CtrlCmd | Space, () => {
+                document.dispatchEvent(
+                  new CustomEvent('pp:request-hint', { detail: { source: 'editor' } })
+                );
+              });
+              monacoEditorRef.current.addCommand(
+                window.monaco.KeyMod.CtrlCmd | window.monaco.KeyMod.Shift | Space,
+                () => {
+                  monacoEditorRef.current?.getAction('editor.action.triggerSuggest')?.run();
+                }
+              );
+            }
           } catch (err) {
             console.error('Error adding keyboard shortcut:', err);
           }
@@ -280,6 +306,12 @@ export default function CodeEditor({
   // there's no initialCode to restore (wizard editor, future contexts).
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const canReset = typeof currentStep?.initialCode === 'string';
+  // Refs so the dialog can move focus to the cancel button on open
+  // (WAI-ARIA alertdialog requirement) and restore focus to the
+  // Reset button when it closes (so a keyboard kid lands back where
+  // they started).
+  const resetButtonRef = useRef<HTMLButtonElement>(null);
+  const cancelButtonRef = useRef<HTMLButtonElement>(null);
   const resetCode = () => {
     if (!canReset) return;
     setShowResetConfirm(true);
@@ -295,6 +327,21 @@ export default function CodeEditor({
       setShowResetConfirm(false);
     }
   };
+  // Focus the cancel button on open (so Enter doesn't accidentally
+  // confirm a destructive action); restore focus to the Reset button
+  // on close (so keyboard navigation lands where the kid was). The
+  // hadOpenedRef gates the restore so we don't steal initial focus
+  // from Monaco on mount.
+  const hadOpenedRef = useRef(false);
+  useEffect(() => {
+    if (showResetConfirm) {
+      hadOpenedRef.current = true;
+      cancelButtonRef.current?.focus();
+    } else if (hadOpenedRef.current) {
+      const t = window.setTimeout(() => resetButtonRef.current?.focus(), 0);
+      return () => window.clearTimeout(t);
+    }
+  }, [showResetConfirm]);
 
   return (
     <div
@@ -349,6 +396,7 @@ export default function CodeEditor({
             </Button>
             {canReset && (
               <Button
+                ref={resetButtonRef}
                 onClick={resetCode}
                 variant="secondary"
                 className="min-h-[44px] sm:min-h-[48px] px-3 sm:px-5 text-sm sm:text-base font-medium bg-amber-500 text-gray-900 hover:bg-amber-400"
@@ -503,21 +551,22 @@ export default function CodeEditor({
               id="reset-confirm-title"
               className="text-lg font-bold text-gray-900 dark:text-gray-100"
             >
-              Reset your code?
+              {strings.codeEditor.resetConfirm.title}
             </h3>
             <p id="reset-confirm-body" className="mt-2 text-sm text-gray-700 dark:text-gray-300">
-              This puts the starter code back. Anything you've written in this step will be erased.
+              {strings.codeEditor.resetConfirm.body}
             </p>
             <div className="mt-4 flex justify-end gap-2">
               <Button
+                ref={cancelButtonRef}
                 variant="outline"
                 onClick={() => setShowResetConfirm(false)}
                 data-testid="reset-cancel"
               >
-                Keep my code
+                {strings.codeEditor.resetConfirm.cancel}
               </Button>
               <Button variant="destructive" onClick={confirmReset} data-testid="reset-confirm">
-                Reset
+                {strings.codeEditor.resetConfirm.confirm}
               </Button>
             </div>
           </div>

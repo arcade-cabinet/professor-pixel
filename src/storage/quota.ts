@@ -23,6 +23,21 @@
 
 const WARNING_THRESHOLD = 0.8;
 const SESSION_KEY = 'pp.quotaWarningShown';
+// Conservative cap aligned with the smallest documented per-origin
+// localStorage limit across modern browsers (Safari iOS ~5MB). The
+// fallback measurement (sum of localStorage keys + values) gives a
+// real signal even on browsers where navigator.storage.estimate
+// reports the full origin quota — which dwarfs the localStorage cap
+// and would otherwise leave the warning effectively inert (Chrome
+// reports ~hundreds of MB to several GB; localStorage is exhausted
+// long before that ratio crosses 80%). 4MB warning threshold so kids
+// get a heads-up with ~1MB headroom remaining.
+const LOCAL_STORAGE_WARN_BYTES = 4 * 1024 * 1024;
+// Module-level secondary gate for private-mode browsers where
+// sessionStorage throws on access. Without this, a kid in iOS
+// private mode hovering above the threshold would re-toast every
+// /home mount because the disk-side gate is permanently empty.
+let warnedThisSession = false;
 
 export interface StorageEstimate {
   /** Bytes currently used by the origin (if known). */
@@ -76,26 +91,61 @@ export async function getUsageRatio(): Promise<number | null> {
 }
 
 /**
- * Check the current usage ratio against the warning threshold. Returns
- * true if the threshold is exceeded AND we haven't already warned in
- * this session. The session-once gating is deliberate: a kid hovering
- * at 81% should hear about it once, not every time they auto-save.
+ * Sum the size of all localStorage entries (keys + values, UTF-16
+ * pairs counted as 2 bytes each). Returns null when localStorage
+ * itself is unavailable. This is the signal we actually care about:
+ * the app's persistence layer writes to localStorage, and the
+ * silent-failure mode the warning is meant to head off is
+ * QuotaExceededError on a localStorage write.
+ */
+function measureLocalStorageBytes(): number | null {
+  if (typeof localStorage === 'undefined') return null;
+  try {
+    let total = 0;
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key === null) continue;
+      const value = localStorage.getItem(key) ?? '';
+      // UTF-16 — JS strings are 2 bytes per code unit. Surrogate
+      // pairs count as 4 bytes, which String.length already reports
+      // as 2 each (correct for the byte count).
+      total += (key.length + value.length) * 2;
+    }
+    return total;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Check the current usage against the warning threshold. Returns true
+ * if the kid is over budget AND we haven't already warned this
+ * session. We check TWO sources, in order:
  *
- * The session flag lives in sessionStorage (cleared on tab close)
- * rather than localStorage — that way a kid who closed and reopened
- * the tab gets a fresh warning if they're still over the threshold.
+ * 1. Direct localStorage byte count — this is the resource that
+ *    actually fails first, and the count is reliable on every
+ *    browser. Warns at >= 4MB out of an assumed 5MB cap.
+ * 2. navigator.storage.estimate() ratio — best-effort signal for
+ *    environments where origin storage is constrained as a whole
+ *    (some mobile browsers, embedded webviews). Warns at >= 80%.
+ *
+ * The session-once gate uses BOTH a sessionStorage flag (survives
+ * navigation) AND an in-memory boolean (survives sessionStorage
+ * exceptions in private-mode Safari). Without the in-memory gate
+ * a kid in private mode would re-toast on every /home mount.
  */
 export async function shouldWarnQuota(): Promise<boolean> {
+  if (warnedThisSession) return false;
   if (typeof sessionStorage !== 'undefined') {
     try {
       if (sessionStorage.getItem(SESSION_KEY) === '1') return false;
     } catch {
-      // Safari throws when accessing sessionStorage in private mode —
-      // surface a fresh warning each invocation; not ideal but better
-      // than silent. Subsequent calls in the same render pass dedupe
-      // via the call site.
+      // Private-mode Safari throws here. The in-memory gate above
+      // protects against repeat-toasting on this code path.
     }
   }
+  const bytes = measureLocalStorageBytes();
+  if (bytes !== null && bytes >= LOCAL_STORAGE_WARN_BYTES) return true;
   const ratio = await getUsageRatio();
   if (ratio === null) return false;
   return ratio >= WARNING_THRESHOLD;
@@ -107,6 +157,7 @@ export async function shouldWarnQuota(): Promise<boolean> {
  * invokes this AFTER showing the toast.
  */
 export function markQuotaWarned(): void {
+  warnedThisSession = true;
   if (typeof sessionStorage !== 'undefined') {
     try {
       sessionStorage.setItem(SESSION_KEY, '1');
@@ -118,6 +169,7 @@ export function markQuotaWarned(): void {
 
 /** Test helper to clear the session-once flag between tests. */
 export function _resetQuotaWarning(): void {
+  warnedThisSession = false;
   if (typeof sessionStorage !== 'undefined') {
     try {
       sessionStorage.removeItem(SESSION_KEY);
