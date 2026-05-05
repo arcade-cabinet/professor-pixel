@@ -313,8 +313,12 @@ export default function InteractiveGameCanvas({
           {scene?.entities.map((entity) => (
             <div
               key={entity.id}
+              role="button"
+              tabIndex={isPlaying ? -1 : 0}
+              aria-label={`Entity ${entity.name}`}
+              aria-pressed={selectedEntity === entity.id}
               className={cn(
-                'absolute border rounded transition-all',
+                'absolute border rounded transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-1',
                 selectedEntity === entity.id
                   ? 'border-primary ring-2 ring-primary/20'
                   : 'border-muted-foreground/30 hover:border-muted-foreground',
@@ -328,6 +332,12 @@ export default function InteractiveGameCanvas({
                 zIndex: entity.layer || 0,
               }}
               onClick={() => !isPlaying && setSelectedEntity(entity.id)}
+              onKeyDown={(e) => {
+                if (!isPlaying && (e.key === 'Enter' || e.key === ' ')) {
+                  e.preventDefault();
+                  setSelectedEntity(entity.id);
+                }
+              }}
               onMouseDown={(e) => {
                 if (!isPlaying && e.button === 0) {
                   const startX = e.clientX;

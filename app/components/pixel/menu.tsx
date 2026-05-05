@@ -248,8 +248,9 @@ export default function PixelMenu({
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.2 }}
                   >
-                    <Card
-                      className="p-4 flex flex-col items-center justify-center hover:bg-purple-100 dark:hover:bg-purple-900/30 cursor-pointer transition-colors"
+                    <button
+                      type="button"
+                      className="rounded-lg border bg-card text-card-foreground shadow-sm p-4 flex flex-col items-center justify-center hover:bg-purple-100 dark:hover:bg-purple-900/30 cursor-pointer transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-1"
                       onClick={onChangeGame}
                       data-testid="change-game-button"
                     >
@@ -257,10 +258,11 @@ export default function PixelMenu({
                       <span className="text-sm font-medium text-center">
                         {strings.pixelMenu.actions.changeGame}
                       </span>
-                    </Card>
+                    </button>
 
-                    <Card
-                      className="p-4 flex flex-col items-center justify-center hover:bg-blue-100 dark:hover:bg-blue-900/30 cursor-pointer transition-colors"
+                    <button
+                      type="button"
+                      className="rounded-lg border bg-card text-card-foreground shadow-sm p-4 flex flex-col items-center justify-center hover:bg-blue-100 dark:hover:bg-blue-900/30 cursor-pointer transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-1"
                       onClick={onSwitchLesson}
                       data-testid="switch-lesson-button"
                     >
@@ -268,10 +270,11 @@ export default function PixelMenu({
                       <span className="text-sm font-medium text-center">
                         {strings.pixelMenu.actions.switchLesson}
                       </span>
-                    </Card>
+                    </button>
 
-                    <Card
-                      className="p-4 flex flex-col items-center justify-center hover:bg-green-100 dark:hover:bg-green-900/30 cursor-pointer transition-colors"
+                    <button
+                      type="button"
+                      className="rounded-lg border bg-card text-card-foreground shadow-sm p-4 flex flex-col items-center justify-center hover:bg-green-100 dark:hover:bg-green-900/30 cursor-pointer transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-1"
                       onClick={onExportGame}
                       data-testid="export-game-button"
                     >
@@ -279,10 +282,11 @@ export default function PixelMenu({
                       <span className="text-sm font-medium text-center">
                         {strings.pixelMenu.actions.exportGame}
                       </span>
-                    </Card>
+                    </button>
 
-                    <Card
-                      className="p-4 flex flex-col items-center justify-center hover:bg-orange-100 dark:hover:bg-orange-900/30 cursor-pointer transition-colors"
+                    <button
+                      type="button"
+                      className="rounded-lg border bg-card text-card-foreground shadow-sm p-4 flex flex-col items-center justify-center hover:bg-orange-100 dark:hover:bg-orange-900/30 cursor-pointer transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-1"
                       onClick={onViewProgress}
                       data-testid="view-progress-button"
                     >
@@ -290,11 +294,11 @@ export default function PixelMenu({
                       <span className="text-sm font-medium text-center">
                         {strings.pixelMenu.actions.viewProgress}
                       </span>
-                    </Card>
+                    </button>
 
                     <button
                       type="button"
-                      className="p-4 flex flex-col items-center justify-center rounded-md border bg-card hover:bg-indigo-100 dark:hover:bg-indigo-900/30 cursor-pointer transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                      className="rounded-lg border bg-card text-card-foreground shadow-sm p-4 flex flex-col items-center justify-center hover:bg-indigo-100 dark:hover:bg-indigo-900/30 cursor-pointer transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-1"
                       onClick={() => {
                         const next = !audioOn;
                         setAudioEnabled(next);
@@ -320,8 +324,9 @@ export default function PixelMenu({
                       </span>
                     </button>
 
-                    <Card
-                      className="p-4 flex flex-col items-center justify-center hover:bg-pink-100 dark:hover:bg-pink-900/30 cursor-pointer transition-colors"
+                    <button
+                      type="button"
+                      className="rounded-lg border bg-card text-card-foreground shadow-sm p-4 flex flex-col items-center justify-center hover:bg-pink-100 dark:hover:bg-pink-900/30 cursor-pointer transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-1"
                       onClick={onReturnCurrent}
                       data-testid="return-current-button"
                     >
@@ -329,18 +334,19 @@ export default function PixelMenu({
                       <span className="text-sm font-medium">
                         {strings.pixelMenu.actions.returnCurrent}
                       </span>
-                    </Card>
+                    </button>
 
                     {/* P4.15 — Help / FAQ launcher. Opens a focus-trapped modal
                         with 6 common-question answers from the i18n catalog. */}
-                    <Card
-                      className="p-4 flex flex-col items-center justify-center hover:bg-yellow-100 dark:hover:bg-yellow-900/30 cursor-pointer transition-colors"
+                    <button
+                      type="button"
+                      className="rounded-lg border bg-card text-card-foreground shadow-sm p-4 flex flex-col items-center justify-center hover:bg-yellow-100 dark:hover:bg-yellow-900/30 cursor-pointer transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-1"
                       onClick={() => setHelpOpen(true)}
                       data-testid="help-button"
                     >
                       <HelpCircle className="h-8 w-8 mb-2 text-yellow-600 dark:text-yellow-400" />
                       <span className="text-sm font-medium">{strings.help.title}</span>
-                    </Card>
+                    </button>
                   </motion.div>
                 ) : (
                   /* Session History */

@@ -423,7 +423,7 @@ Branch: feat/player-experience-pillar-4
 
 ### task-023 Apply consistent focus-visible ring class across editor / palette / pixel-menu
 
-- [ ] task-023 palette + canvas + pixel-menu add focus-visible:ring-2 ring-purple-400 ring-offset-1 to clickable elements
+- [x] task-023 palette + canvas + pixel-menu add focus-visible:ring-2 ring-purple-400 ring-offset-1 to clickable elements
 
 ### task-024 Audit + add aria-label to every icon-only button
 
