@@ -83,3 +83,4 @@
 {"ts":"2026-05-05T08:25:19.060Z","sha":"9cc96a844c74","subject":"feat(player-experience): Q12 — private-mode / storage-blocked notice","decision":null,"why":null,"resolves":["Q12"],"overrides":[]}
 {"ts":"2026-05-05T08:57:18.468Z","sha":"a8bc1bb913f3","subject":"chore(directive): queue player-experience-pillar-4 from comprehensive scout","decision":null,"why":null,"resolves":["directive seeding for player-experience-pillar-4"],"overrides":[]}
 {"ts":"2026-05-05T08:58:24.445Z","sha":"abdff3e64a20","subject":"perf(pyodide): preload vendored loader + preconnect CDN fallback (P4.2)","decision":"preload the local loader only, not the full Pyodide bundle —","why":null,"resolves":["task-002 of player-experience-pillar-4"],"overrides":[]}
+{"ts":"2026-05-05T09:04:09.171Z","sha":"d54265950d02","subject":"feat(i18n): catalog scaffold + chrome banners + home + not-found (P4.1a)","decision":null,"why":null,"resolves":["task-001a of player-experience-pillar-4"],"overrides":[]}
