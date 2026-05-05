@@ -1,16 +1,18 @@
-// Project exporter — bundles a kid's compiled game into a self-contained
-// ZIP they can share, post, or run offline by opening index.html.
+// Project exporter — bundles a kid's compiled game into a shareable ZIP.
+// The bundle is send-mode only: it does NOT include Pyodide and is NOT
+// double-click runnable. Kids play games inside the launcher (Pixel's
+// PyGame Palace at /play/:projectId); the export is for handing the
+// source to a friend, archiving, or running game.py with a local Python
+// interpreter. See the longer architecture note below.
 //
 // Bundle layout:
-//   index.html            — Pyodide bootstrap, points at game.py
+//   index.html            — Static landing page that points back at the
+//                           launcher and explains how to play game.py locally
 //   game.py               — generated Python source (from compilePythonGame)
-//   README.md             — friendly "how to run" + "share this with friends"
+//   README.md             — instructions: launch via platform, or run game.py
+//                           with a native Python install
 //   assets/<asset_name>   — each selected asset, fetched from public/ at
 //                           export time
-//
-// Pyodide is loaded from the official CDN at runtime by index.html. We don't
-// vendor Pyodide into the ZIP (megabytes of WASM that we'd have to keep
-// up-to-date). The CDN URL is pinned to a known-good version.
 
 import JSZip from 'jszip';
 import { compilePythonGame } from './compiler';

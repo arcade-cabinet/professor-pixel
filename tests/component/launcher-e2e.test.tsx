@@ -24,8 +24,8 @@ import '@testing-library/jest-dom/vitest';
 import { Router, Route } from 'wouter';
 import { memoryLocation } from 'wouter/memory-location';
 import PlayPage from '@/pages/play';
-import { __clearAllOpfsProjectsForTests, saveOpfsProject } from '@lib/storage/opfs-projects';
-import { __resetOpfsRoutingForTests } from '@lib/storage/projects';
+import { __clearAllOpfsProjectsForTests } from '@lib/storage/opfs-projects';
+import { __resetOpfsRoutingForTests, saveWizardProject } from '@lib/storage/projects';
 
 // Minimal-but-real wizard state with at least one selectedComponent
 // so /play takes the ready → running path (not the unfinished one).
@@ -34,7 +34,15 @@ const WIZARD_STATE = {
   selectedAssetIds: [],
   gameType: 'platformer',
   updatedAt: new Date().toISOString(),
-  sessionActions: { selectedComponents: { hero: 'platformer-hero' } },
+  sessionActions: {
+    choices: [],
+    createdAssets: [],
+    gameType: 'platformer',
+    currentProject: null,
+    completedSteps: [],
+    unlockedEditor: false,
+    selectedComponents: { hero: 'platformer-hero' },
+  },
 };
 
 describe('Launcher end-to-end (real Pyodide)', () => {
@@ -50,13 +58,18 @@ describe('Launcher end-to-end (real Pyodide)', () => {
   });
 
   it('saves to OPFS, loads on /play, runs through real Pyodide without crashing', async () => {
-    const meta = await saveOpfsProject({
+    // Seed via the public launcher save path so the test exercises
+    // dedup + save-time compilation + gamePy persistence — the same
+    // contract /play depends on. Going through saveOpfsProject would
+    // skip compilePythonGame and the deduping behavior, masking
+    // regressions in the wizard-save → play flow.
+    const created = await saveWizardProject({
       name: 'E2E Game',
       template: 'platformer',
       wizardState: WIZARD_STATE,
     });
 
-    const { hook } = memoryLocation({ path: `/play/${meta.id}` });
+    const { hook } = memoryLocation({ path: `/play/${created.id}` });
     render(
       <Router hook={hook}>
         <Route path="/play/:projectId" component={PlayPage} />
@@ -75,23 +88,36 @@ describe('Launcher end-to-end (real Pyodide)', () => {
     await userEvent.click(screen.getByTestId('button-play-game'));
 
     // Page transitions to 'running' (status indicator visible)
-    // while Pyodide cold-starts. Within the 30s budget the run
+    // while Pyodide cold-starts. Within the 25s budget the run
     // either finishes (state stays 'running' with the canvas
     // mounted) or errors (transitions to runtime-error). Anything
     // except crashing is acceptable here — the canvas-rendering
     // contract is owned by the per-game pygame loop, not the
     // launcher. We're testing that the launcher's wiring DOESN'T
     // throw on real WASM execution.
+    //
+    // We initially wait for the spinner OR error testid to confirm
+    // the click handler fired. This alone could pass before Pyodide
+    // does any work (running state flips before getPyodide()), so
+    // we then sleep past a realistic cold-start budget and re-check
+    // for runtime-error. Real Pyodide cold-start is 5-10s; if it's
+    // going to fail it will fail by 15s. Surviving that window with
+    // running still asserted is the post-bootstrap signal — the
+    // browser actually did the WASM work and the pygame loop is
+    // running.
     await waitFor(
       () => {
-        // One of: still running (long pygame loop), or errored.
-        // The crash-or-not assertion is what matters.
         const running = screen.queryByTestId('play-running-status');
         const errored = screen.queryByTestId('play-runtime-error');
         expect(running || errored).toBeTruthy();
       },
       { timeout: 25_000 }
     );
+
+    // Wait past the cold-start window so the assertion below is
+    // gated on real WASM execution finishing or failing, not just
+    // the click-handler state flip.
+    await new Promise((resolve) => setTimeout(resolve, 15_000));
 
     // Specifically: if it errored, fail the test loudly. We want
     // to know about real launcher regressions; a silent fall to
@@ -101,5 +127,5 @@ describe('Launcher end-to-end (real Pyodide)', () => {
       const message = errored.querySelector('pre')?.textContent ?? '';
       throw new Error(`Launcher e2e: /play landed in runtime-error. Pyodide message: ${message}`);
     }
-  }, 35_000);
+  }, 55_000);
 });

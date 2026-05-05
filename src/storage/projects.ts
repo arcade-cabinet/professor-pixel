@@ -328,6 +328,21 @@ export async function loadWizardProject(id: string): Promise<WizardProjectSnapsh
       // migration sentinel was written before the kid's project row
       // got copied (rare partial-migration recovery path).
     } else {
+      // Validate the OPFS-loaded wizardState through the same Zod
+      // schema the localStorage path uses below. Without this, a
+      // schema-drifted or corrupted OPFS snapshot would reach /play
+      // and the wizard while localStorage rejected it — backend
+      // parity matters because OPFS will become the only path once
+      // the migration sentinel seals.
+      const wizardResult = persistedWizardStateSchema.safeParse(loaded.wizardState);
+      if (!wizardResult.success) {
+        console.warn(
+          '[projects] OPFS wizard snapshot failed schema validation',
+          wizardResult.error.issues
+        );
+        if (loaded.thumbnailUrl) URL.revokeObjectURL(loaded.thumbnailUrl);
+        return null;
+      }
       let thumbnailDataUrl: string | undefined;
       if (loaded.thumbnailUrl) {
         try {
@@ -340,7 +355,7 @@ export async function loadWizardProject(id: string): Promise<WizardProjectSnapsh
         }
       }
       return {
-        wizardState: loaded.wizardState as PersistedWizardState,
+        wizardState: wizardResult.data as PersistedWizardState,
         name: loaded.meta.name,
         template: loaded.meta.template,
         thumbnailDataUrl,
@@ -504,7 +519,21 @@ export async function renameWizardProject(id: string, newName: string): Promise<
     if (!loaded) {
       throw new Error(`Project ${id} not found`);
     }
-    if (loaded.thumbnailUrl) URL.revokeObjectURL(loaded.thumbnailUrl);
+    // Materialize the existing thumbnail as a data URL BEFORE we
+    // revoke the object URL. Optimistic listings that consume this
+    // returned Project (e.g. project-card pre-refetch) would
+    // otherwise blank the tile until the next list-projects fetch.
+    let thumbnailDataUrl: string | undefined;
+    if (loaded.thumbnailUrl) {
+      try {
+        const res = await fetch(loaded.thumbnailUrl);
+        thumbnailDataUrl = await blobToDataUrl(await res.blob());
+      } catch {
+        // Tile renders gradient on failure.
+      } finally {
+        URL.revokeObjectURL(loaded.thumbnailUrl);
+      }
+    }
     const meta = await saveOpfsProject({
       id,
       name: trimmed,
@@ -522,7 +551,7 @@ export async function renameWizardProject(id: string, newName: string): Promise<
       template: meta.template,
       description: undefined,
       published: false,
-      thumbnailDataUrl: undefined,
+      thumbnailDataUrl,
       files: [{ path: SNAPSHOT_FILE, content: JSON.stringify(loaded.wizardState) }],
       assets: [],
       createdAt: new Date(meta.created_at),

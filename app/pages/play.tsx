@@ -269,9 +269,8 @@ export default function PlayPage() {
           id="canvas"
           width={800}
           height={600}
-          className="rounded-xl border-2 border-gray-300 bg-black shadow-lg dark:border-gray-700"
+          className="rounded-xl border-2 border-gray-300 bg-black shadow-lg dark:border-gray-700 [image-rendering:pixelated]"
           data-testid="play-canvas"
-          style={{ imageRendering: 'pixelated' }}
         />
 
         {state.kind === 'ready' && (
