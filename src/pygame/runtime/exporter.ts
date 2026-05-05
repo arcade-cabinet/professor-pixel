@@ -195,7 +195,13 @@ export async function exportSavedProject(
   return shareOrDownload(exported);
 }
 
-function slugify(s: string): string {
+/**
+ * Slugify a project name for use as a filename. Exported so callers
+ * (toasts, share-sheet titles) report the same string the actual
+ * download uses — a kid told "Saved as my-cool-game.zip" should find
+ * exactly that file in their Downloads folder.
+ */
+export function slugify(s: string): string {
   return (
     s
       .toLowerCase()

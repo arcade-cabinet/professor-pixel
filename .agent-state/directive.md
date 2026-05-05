@@ -411,7 +411,7 @@ Branch: feat/player-experience-pillar-4
 
 ### task-020 Warn when approaching localStorage limit
 
-- [ ] task-020 src/storage/quota.ts using navigator.storage.estimate w/ fallback; warning toast above 80% once per session
+- [x] task-020 src/storage/quota.ts using navigator.storage.estimate w/ fallback; warning toast above 80% once per session
 
 ### task-021 "Reset Code" button restores lesson starter code with confirm
 

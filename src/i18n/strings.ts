@@ -77,6 +77,13 @@ export const strings = {
       bodySuffix: ' if you want to learn Python first. You can always switch between them.',
       dismiss: 'Got it!',
     },
+    // P4.20 — surfaced from the /home mount when localStorage usage
+    // crosses the warning threshold.
+    quota: {
+      warningTitle: 'Storage is getting full',
+      warningBody:
+        "There's not much room left for new games. Try deleting one you don't play anymore.",
+    },
     project: {
       open: 'Open',
       delete: 'Delete',

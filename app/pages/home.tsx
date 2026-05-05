@@ -9,7 +9,8 @@ import {
   renameWizardProject,
   cloneWizardProject,
 } from '@lib/storage/projects';
-import { exportSavedProject } from '@lib/pygame/runtime/exporter';
+import { exportSavedProject, slugify } from '@lib/pygame/runtime/exporter';
+import { shouldWarnQuota, markQuotaWarned } from '@lib/storage/quota';
 import { queryClient } from '@lib/net/query-client';
 import UniversalWizard from '@/components/wizard/universal';
 import { Button } from '@/components/ui/button';
@@ -219,7 +220,21 @@ export default function Home() {
     if (!readHasSeenIntro()) {
       setShowIntroCard(true);
     }
-  }, [setLocation]);
+
+    // P4.20 — Warn if the kid is approaching the localStorage cap.
+    // Fires at most once per tab session; subsequent visits to /home
+    // in the same tab don't re-toast even if usage is still high.
+    // Wrapped in a void IIFE so the async work doesn't block the mount.
+    void (async () => {
+      if (await shouldWarnQuota()) {
+        toast({
+          title: strings.home.quota.warningTitle,
+          description: strings.home.quota.warningBody,
+        });
+        markQuotaWarned();
+      }
+    })();
+  }, [setLocation, toast]);
 
   const dismissIntro = () => {
     writeHasSeenIntro();
@@ -409,7 +424,9 @@ export default function Home() {
                                 title: strings.home.project.exportSharedTitle,
                               });
                             } else if (action === 'downloaded') {
-                              const filename = `${project.name.replace(/[^a-z0-9]+/gi, '-').toLowerCase() || 'my-game'}.zip`;
+                              // Mirror the exporter's slugify so the toast
+                              // names the exact file that landed in Downloads.
+                              const filename = `${slugify(project.name)}.zip`;
                               toast({
                                 title: strings.home.project.exportSuccessTitle,
                                 description: strings.home.project.exportSuccessBody(filename),
@@ -431,7 +448,7 @@ export default function Home() {
                             setExportingId(null);
                           }
                         }}
-                        disabled={exportingId === project.id}
+                        disabled={exportingId !== null}
                         variant="outline"
                         data-testid={`my-game-export-${project.id}`}
                         aria-label={strings.home.project.exportAriaLabel(project.name)}
@@ -440,7 +457,10 @@ export default function Home() {
                       </Button>
                       <Button
                         onClick={() => remixProjectMutation.mutate(project.id)}
-                        disabled={remixProjectMutation.isPending}
+                        disabled={
+                          remixProjectMutation.isPending &&
+                          remixProjectMutation.variables === project.id
+                        }
                         variant="outline"
                         data-testid={`my-game-remix-${project.id}`}
                         aria-label={strings.home.project.remixAriaLabel(project.name)}
