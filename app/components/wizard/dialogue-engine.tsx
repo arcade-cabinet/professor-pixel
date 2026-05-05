@@ -396,12 +396,36 @@ export function useWizardDialogue({
     }
   }, [dialogueState.currentNodeId, wizardData]);
 
+  // Per-session back-stack of prior nodeIds. In-memory only — persisted
+  // state already restores `currentNodeId` on refresh, so reviving the
+  // back-stack across reloads would let the kid press Back into a node
+  // their session never actually visited (the prior browsing trail).
+  // Cleared whenever the wizard reaches a structurally-terminal completion
+  // so a fresh run starts with no Back affordance.
+  const historyRef = useRef<string[]>([]);
+  const [historyDepth, setHistoryDepth] = useState(0);
+
   // Navigation functions
-  const navigateToNode = useCallback((nodeId: string) => {
-    setDialogueState((prev) => ({
-      ...prev,
-      currentNodeId: nodeId,
-    }));
+  const navigateToNode = useCallback((nodeId: string, options?: { skipHistory?: boolean }) => {
+    setDialogueState((prev) => {
+      // Self-navigation (re-entering the same node) is a no-op for the
+      // back-stack — pushing the same id would let Back re-stick the kid
+      // on the page they're already on.
+      if (!options?.skipHistory && prev.currentNodeId && prev.currentNodeId !== nodeId) {
+        historyRef.current.push(prev.currentNodeId);
+        setHistoryDepth(historyRef.current.length);
+      }
+      return { ...prev, currentNodeId: nodeId };
+    });
+  }, []);
+
+  const goBack = useCallback(() => {
+    if (historyRef.current.length === 0) return;
+    const previousNodeId = historyRef.current.pop()!;
+    setHistoryDepth(historyRef.current.length);
+    // Use the skipHistory flag so going Back doesn't itself add an entry —
+    // otherwise Back-then-Back would cycle between two nodes forever.
+    setDialogueState((prev) => ({ ...prev, currentNodeId: previousNodeId }));
   }, []);
 
   const handleOptionSelect = useCallback(
@@ -540,6 +564,8 @@ export function useWizardDialogue({
     handleOptionSelect,
     advance,
     setSessionActions,
+    goBack,
+    canGoBack: historyDepth > 0,
   };
 }
 

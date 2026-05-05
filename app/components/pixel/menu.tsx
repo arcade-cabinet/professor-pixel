@@ -71,8 +71,10 @@ export default function PixelMenu({
   // synchronously with the current value on first call.
   useEffect(() => subscribeAudioEnabled(setAudioOn), []);
 
-  // Mock session history if not provided
-  const defaultActions: SessionAction[] =
+  // Mock session history when no real actions are provided. The mock copy
+  // lives in the catalog so the empty-state surface stays auditable for
+  // reading-level + voice consistency the same as every other surface.
+  const actions: SessionAction[] =
     sessionActions.length > 0
       ? sessionActions
       : [
@@ -101,8 +103,6 @@ export default function PixelMenu({
             icon: Trophy,
           },
         ];
-
-  const actions = sessionActions.length > 0 ? sessionActions : defaultActions;
 
   // Swipe handlers to close menu
   const swipeHandlers = useSwipeable({

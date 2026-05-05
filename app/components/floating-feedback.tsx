@@ -74,13 +74,13 @@ export default function FloatingFeedback({
       setJustCopied(true);
       setTimeout(() => setJustCopied(false), 2000);
       toast({
-        title: strings.floatingFeedback.copyToast.successTitle,
-        description: strings.floatingFeedback.copyToast.successDescription,
+        title: strings.floatingFeedback.copySuccessTitle,
+        description: strings.floatingFeedback.copySuccessDescription,
       });
     } catch (_err) {
       toast({
-        title: strings.floatingFeedback.copyToast.errorTitle,
-        description: strings.floatingFeedback.copyToast.errorDescription,
+        title: strings.floatingFeedback.copyErrorTitle,
+        description: strings.floatingFeedback.copyErrorDescription,
         variant: 'destructive',
       });
     }
@@ -89,8 +89,8 @@ export default function FloatingFeedback({
   const handleApplySolution = () => {
     onApplySolution(step.solution);
     toast({
-      title: strings.floatingFeedback.applyToast.title,
-      description: strings.floatingFeedback.applyToast.description,
+      title: strings.floatingFeedback.applyTitle,
+      description: strings.floatingFeedback.applyDescription,
     });
   };
 

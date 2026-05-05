@@ -326,16 +326,12 @@ export const strings = {
     copySolution: 'Copy Solution',
     copied: 'Copied!',
     applyToEditor: 'Apply to Editor',
-    copyToast: {
-      successTitle: 'Solution copied!',
-      successDescription: 'The solution has been copied to your clipboard.',
-      errorTitle: 'Failed to copy',
-      errorDescription: 'Please try selecting and copying the text manually.',
-    },
-    applyToast: {
-      title: 'Solution applied!',
-      description: 'The solution has been added to the code editor.',
-    },
+    copySuccessTitle: 'Solution copied!',
+    copySuccessDescription: 'The solution has been copied to your clipboard.',
+    copyErrorTitle: 'Failed to copy',
+    copyErrorDescription: 'Please try selecting and copying the text manually.',
+    applyTitle: 'Solution applied!',
+    applyDescription: 'The solution has been added to the code editor.',
   },
 
   /* ─── Wizard (wizard/universal.tsx) ────────────────────────────────── */
@@ -362,6 +358,10 @@ export const strings = {
         'Are you sure you want to reset your progress? This will clear all saved wizard data.',
       allDataConfirm:
         'Are you sure you want to clear ALL data including preferences? This action cannot be undone.',
+    },
+    back: {
+      label: 'Back',
+      ariaLabel: 'Go back to the previous step',
     },
     nameDialog: {
       title: 'Name Your Game',

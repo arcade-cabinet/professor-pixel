@@ -161,6 +161,71 @@ describe('useWizardDialogue (post-restructure dialogue-engine)', () => {
     expect(result.current.sessionActions.choices).toContain('previous');
   });
 
+  describe('back-stack (P4.3)', () => {
+    it('canGoBack is false on initial mount (no history yet)', async () => {
+      const { result } = renderHook(() => useWizardDialogue());
+      await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+      expect(result.current.canGoBack).toBe(false);
+    });
+
+    it('navigating forward enables canGoBack and goBack restores the prior node', async () => {
+      const { result } = renderHook(() => useWizardDialogue());
+      await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+      expect(result.current.dialogueState.currentNodeId).toBe('start');
+
+      act(() => {
+        result.current.handleOptionSelect({ text: 'Choose A', next: 'a' });
+      });
+      await waitFor(() => expect(result.current.dialogueState.currentNodeId).toBe('a'));
+      expect(result.current.canGoBack).toBe(true);
+
+      act(() => result.current.goBack());
+      await waitFor(() => expect(result.current.dialogueState.currentNodeId).toBe('start'));
+      // The history pop drained the stack; no further Back available.
+      expect(result.current.canGoBack).toBe(false);
+    });
+
+    it('multi-step forward navigation builds a stack that pops in LIFO order', async () => {
+      const { result } = renderHook(() => useWizardDialogue());
+      await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+      // start → a → end (push start, then push a)
+      act(() => result.current.navigateToNode('a'));
+      await waitFor(() => expect(result.current.dialogueState.currentNodeId).toBe('a'));
+      act(() => result.current.navigateToNode('end'));
+      await waitFor(() => expect(result.current.dialogueState.currentNodeId).toBe('end'));
+
+      expect(result.current.canGoBack).toBe(true);
+      act(() => result.current.goBack());
+      await waitFor(() => expect(result.current.dialogueState.currentNodeId).toBe('a'));
+      act(() => result.current.goBack());
+      await waitFor(() => expect(result.current.dialogueState.currentNodeId).toBe('start'));
+      expect(result.current.canGoBack).toBe(false);
+    });
+
+    it('goBack on an empty stack is a no-op', async () => {
+      const { result } = renderHook(() => useWizardDialogue());
+      await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+      const initialId = result.current.dialogueState.currentNodeId;
+      act(() => result.current.goBack());
+      // currentNodeId unchanged; no exception thrown.
+      expect(result.current.dialogueState.currentNodeId).toBe(initialId);
+      expect(result.current.canGoBack).toBe(false);
+    });
+
+    it('navigating to the same node does not push a duplicate history entry', async () => {
+      const { result } = renderHook(() => useWizardDialogue());
+      await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+      // Self-navigate — should not push 'start' onto history.
+      act(() => result.current.navigateToNode('start'));
+      expect(result.current.canGoBack).toBe(false);
+    });
+  });
+
   it('transitionToSpecializedFlow loads the specialized flow JSON', async () => {
     const { result } = renderHook(() => useWizardDialogue({ flowType: 'game-dev' }));
     await waitFor(() => expect(result.current.isLoading).toBe(false));

@@ -343,7 +343,7 @@ Branch: feat/player-experience-pillar-4
 
 ### task-003 Wizard step history stack + back button
 
-- [ ] task-003 universal.tsx has history stack + Back button; pop restores prior UI; new test green
+- [x] task-003 universal.tsx has history stack + Back button; pop restores prior UI; new test green
 
 ### task-004 Save wizard state to localStorage after each step
 

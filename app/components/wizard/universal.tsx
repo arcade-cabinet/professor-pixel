@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, ArrowLeft } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -69,6 +69,8 @@ export default function UniversalWizard({
     handleOptionSelect,
     advance,
     setSessionActions,
+    goBack,
+    canGoBack,
   } = useWizardDialogue({ flowType });
 
   const [, setLocation] = useLocation();
@@ -765,6 +767,27 @@ export default function UniversalWizard({
           />
         )}
 
+        {/* Back button — only renders once the kid has navigated forward at
+            least once. Pops the in-memory back-stack so they can revisit a
+            prior choice without restarting the whole wizard. Hidden on the
+            terminal completion node (the wizard run is over there; "Back"
+            from "your game is ready" is confusing). */}
+        {canGoBack && !isWizardComplete && (
+          <div className="flex justify-start">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={goBack}
+              data-testid="wizard-back-button"
+              aria-label={strings.wizard.back.ariaLabel}
+              className="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
+            >
+              <ArrowLeft className="h-4 w-4 mr-1" />
+              {strings.wizard.back.label}
+            </Button>
+          </div>
+        )}
+
         {showOptions && currentNode.options && currentNode.options.length > 0 && (
           <WizardOptionHandler
             options={currentNode.options}
@@ -816,6 +839,8 @@ export default function UniversalWizard({
     isWizardComplete,
     handlePlayGame,
     showCelebration,
+    canGoBack,
+    goBack,
   ]);
 
   // Reset progress handler
