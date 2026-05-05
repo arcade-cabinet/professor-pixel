@@ -77,3 +77,4 @@
 {"ts":"2026-05-05T07:59:03.711Z","sha":"bc0ea42349b2","subject":"feat(player-experience): P8 — global audio toggle in chrome + P7 reviewer fixes","decision":null,"why":null,"resolves":["P8.1 P8.2 P8.3 P8.4 P7R.1 P7R.2 P7R.3"],"overrides":[]}
 {"ts":"2026-05-05T08:02:21.272Z","sha":"da87bfd2d48b","subject":"feat(player-experience): P9 — recovery preserves project + P8 reviewer fixes","decision":null,"why":null,"resolves":["P9.1 P9.2 P9.3 P8R.1 P8R.2"],"overrides":[]}
 {"ts":"2026-05-05T08:06:31.401Z","sha":"ba8f2bd91a65","subject":"fix(player-experience): fold P9 reviewer findings forward","decision":null,"why":null,"resolves":["P9R.1 P9R.2 P9R.3 P9R.4 P9R.5"],"overrides":[]}
+{"ts":"2026-05-05T08:09:06.727Z","sha":"05db778c10d3","subject":"fix(player-experience): pillar 3 absorbable items — Q4 clipboard + Q5 SafeImage","decision":null,"why":null,"resolves":["Q4.1 Q4.2 Q4.3 Q5.1 Q5.2 Q5.3"],"overrides":[]}

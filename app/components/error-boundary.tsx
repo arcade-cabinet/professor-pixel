@@ -136,13 +136,12 @@ export class ErrorBoundary extends Component<Props, State> {
 
     if (errorMessage.includes('permission') || errorMessage.includes('access')) {
       return {
-        title: 'Access Issue',
+        title: 'Hmm, something is blocked',
         explanation:
-          "The app doesn't have permission to access something it needs. This is usually a browser security feature.",
+          'Your browser is being extra careful and blocked something Pixel needs. A refresh usually fixes this.',
         suggestions: [
           'Try refreshing the page',
-          'Check if your browser is blocking any features',
-          "Make sure you're logged in properly",
+          "Ask a grown-up if your browser has settings that block 'cookies' or 'storage'",
         ],
         severity: 'warning' as const,
       };
@@ -281,7 +280,7 @@ export class ErrorBoundary extends Component<Props, State> {
                 <div className="text-center">
                   <div className="flex items-center justify-center gap-2 text-sm text-gray-600 dark:text-gray-400">
                     <MessageCircle className="h-4 w-4" />
-                    <span>If this problem continues, please let your instructor know</span>
+                    <span>If this keeps happening, ask a grown-up to check it out with you</span>
                   </div>
                 </div>
               </CardContent>
