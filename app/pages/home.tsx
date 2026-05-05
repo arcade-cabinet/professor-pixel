@@ -269,9 +269,16 @@ export default function Home() {
                           ) {
                             return;
                           }
+                          // Pass `trimmed` rather than `renameDraft`.
+                          // renameWizardProject does its own trim, but
+                          // threading the trimmed value through keeps
+                          // the value sent to storage matched to the
+                          // value the guard validated against, so
+                          // future changes in trim semantics stay
+                          // consistent across both call sites.
                           renameProjectMutation.mutate({
                             id: project.id,
-                            name: renameDraft,
+                            name: trimmed,
                           });
                         }}
                         className="flex flex-col gap-2"

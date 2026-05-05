@@ -109,6 +109,7 @@ export async function loadWizardProject(id: string): Promise<WizardProjectSnapsh
       wizardState: result.data as PersistedWizardState,
       name: project.name,
       template: project.template,
+      thumbnailDataUrl: project.thumbnailDataUrl,
     };
   } catch {
     // Corrupt snapshot — caller treats null as "no resumable state".

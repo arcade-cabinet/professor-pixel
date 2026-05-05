@@ -354,6 +354,10 @@ export const strings = {
       ariaLabel: 'Play your game',
       cta: '▶ Play your game!',
     },
+    save: {
+      toastTitle: 'Saved!',
+      toastDescription: 'Your game is in My Games.',
+    },
     export: {
       successTitle: 'Game exported!',
       successDescription: (filename: string) => `Saved as ${filename}.`,

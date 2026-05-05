@@ -371,7 +371,7 @@ Branch: feat/player-experience-pillar-4
 
 ### task-010 Brief "Saved" toast on successful auto-save
 
-- [ ] task-010 universal.tsx fires a toast once per real save; test asserts exactly one fire per mutation
+- [x] task-010 universal.tsx fires a toast once per real save; test asserts exactly one fire per mutation
 
 ### task-011 Block creating a duplicate-named project; offer overwrite
 

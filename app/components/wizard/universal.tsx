@@ -181,6 +181,15 @@ export default function UniversalWizard({
       return null;
     })()
   );
+  // Identity slice of the most recent toasted save. The save effect
+  // re-runs on every dep change (gameAssembled / gameName / gameType),
+  // including StrictMode double-invokes and ancillary deps that don't
+  // really mean a new save. Toasting on every fire would spam "Saved!"
+  // multiple times for one logical user action. Comparing a hash of
+  // the just-saved payload to the last toasted hash drops the
+  // duplicates without needing to instrument every dep.
+  const lastToastedSaveKeyRef = useRef<string | null>(null);
+
   useEffect(() => {
     if (!sessionActions.gameAssembled) return;
     const draft = loadWizardState();
@@ -190,29 +199,91 @@ export default function UniversalWizard({
     // exposes — the WYSIWYG editor canvas uses a different testid, so we
     // try both. toDataURL can throw on tainted canvases (cross-origin
     // imagery without CORS); if it does, omit the thumbnail rather than
-    // failing the whole save. JPEG at 0.7 keeps the data URL well under
-    // the localStorage per-project budget for a 320x180 thumbnail.
-    let thumbnailDataUrl: string | undefined;
-    try {
-      const canvas = (document.querySelector('[data-testid="canvas-main-preview"]') ||
-        document.querySelector('[data-testid="place-canvas"]')) as HTMLCanvasElement | null;
-      if (canvas instanceof HTMLCanvasElement) {
-        thumbnailDataUrl = canvas.toDataURL('image/jpeg', 0.7);
-      }
-    } catch (err) {
-      console.warn('[universal] thumbnail capture skipped:', err);
-    }
-    saveWizardProject(
-      {
-        wizardState: draft,
-        name: sessionActions.gameName || draft.gameType || strings.wizard.defaultGameName,
-        template: sessionActions.gameType || draft.gameType || 'unknown',
-        thumbnailDataUrl,
-      },
-      savedProjectIdRef.current ?? undefined
-    )
+    // failing the whole save.
+    //
+    // Two correctness gates here:
+    // 1. The gameAssembled flip and the canvas mount run in the same
+    //    React commit batch, so a synchronous querySelector inside this
+    //    effect almost always returns null on the first fire — the
+    //    canvas hasn't painted yet. Defer the capture into a
+    //    requestAnimationFrame so the DOM has reached the post-commit
+    //    paint phase before we read it.
+    // 2. The source canvas is 800x600 in production; a JPEG q=0.7 of
+    //    that comes out around 80–160KB base64-encoded, and engaged
+    //    kids end up with 10+ projects, blowing through the 5–10MB
+    //    localStorage budget. Resize through an offscreen canvas to
+    //    320x180 before toDataURL so each thumbnail is ~5–15KB.
+    const captureThumbnail = (): Promise<string | undefined> =>
+      new Promise((resolve) => {
+        requestAnimationFrame(() => {
+          try {
+            const canvas = (document.querySelector('[data-testid="canvas-main-preview"]') ||
+              document.querySelector('[data-testid="place-canvas"]')) as HTMLCanvasElement | null;
+            if (!(canvas instanceof HTMLCanvasElement)) {
+              resolve(undefined);
+              return;
+            }
+            // Skip capture for an unrendered (zero-dimension) canvas.
+            if (canvas.width === 0 || canvas.height === 0) {
+              resolve(undefined);
+              return;
+            }
+            const off = document.createElement('canvas');
+            off.width = 320;
+            off.height = 180;
+            const ctx = off.getContext('2d');
+            if (!ctx) {
+              resolve(undefined);
+              return;
+            }
+            ctx.drawImage(canvas, 0, 0, 320, 180);
+            resolve(off.toDataURL('image/jpeg', 0.7));
+          } catch (err) {
+            console.warn('[universal] thumbnail capture skipped:', err);
+            resolve(undefined);
+          }
+        });
+      });
+
+    // Sequence: capture then save. The capture is fast (one rAF +
+    // a synchronous drawImage) and short-circuits to undefined on
+    // failure modes, so awaiting it doesn't introduce a meaningful
+    // delay before the save lands. Hoist the captured URL into the
+    // outer scope so the fallback create path can re-use it without
+    // re-running rAF (the canvas may have unmounted between the
+    // primary save and the fallback retry).
+    let capturedThumbnail: string | undefined;
+    captureThumbnail()
+      .then((thumbnailDataUrl) => {
+        capturedThumbnail = thumbnailDataUrl;
+        return saveWizardProject(
+          {
+            wizardState: draft,
+            name: sessionActions.gameName || draft.gameType || strings.wizard.defaultGameName,
+            template: sessionActions.gameType || draft.gameType || 'unknown',
+            thumbnailDataUrl,
+          },
+          savedProjectIdRef.current ?? undefined
+        );
+      })
       .then((project) => {
         savedProjectIdRef.current = project.id;
+        // P4.10 — brief "Saved" toast so the kid knows their work landed.
+        // Dedupe by hashing the saved payload's identity slice: if the
+        // wizardState's currentNodeId + gameName + template are unchanged
+        // from the last toast'd save, this fire was a no-op (StrictMode
+        // double-invoke or a sessionActions re-derive with no real
+        // mutation) — silently absorb. Only a state-changing save
+        // surfaces UI noise.
+        const saveKey = `${draft.currentNodeId ?? ''}|${project.name}|${project.template}`;
+        if (lastToastedSaveKeyRef.current !== saveKey) {
+          lastToastedSaveKeyRef.current = saveKey;
+          toast({
+            title: strings.wizard.save.toastTitle,
+            description: strings.wizard.save.toastDescription,
+            duration: 1500,
+          });
+        }
       })
       .catch(async (err) => {
         // If the existingId path failed (stale id — someone deleted the row
@@ -225,9 +296,18 @@ export default function UniversalWizard({
               wizardState: draft,
               name: sessionActions.gameName || draft.gameType || strings.wizard.defaultGameName,
               template: sessionActions.gameType || draft.gameType || 'unknown',
-              thumbnailDataUrl,
+              thumbnailDataUrl: capturedThumbnail,
             });
             savedProjectIdRef.current = project.id;
+            const saveKey = `${draft.currentNodeId ?? ''}|${project.name}|${project.template}`;
+            if (lastToastedSaveKeyRef.current !== saveKey) {
+              lastToastedSaveKeyRef.current = saveKey;
+              toast({
+                title: strings.wizard.save.toastTitle,
+                description: strings.wizard.save.toastDescription,
+                duration: 1500,
+              });
+            }
             return;
           } catch (fallbackErr) {
             console.warn('Failed to save project to My Games (fallback):', fallbackErr);
