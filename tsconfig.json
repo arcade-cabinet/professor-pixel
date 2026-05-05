@@ -17,7 +17,6 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "verbatimModuleSyntax": false,
-    "baseUrl": ".",
     "types": ["node", "vite/client"],
     "paths": {
       "@/*": ["./app/*"],
