@@ -379,7 +379,7 @@ Branch: feat/player-experience-pillar-4
 
 ### task-012 Live thumbnail of selected character/background while still on the picker step
 
-- [ ] task-012 asset-browser shows inline preview on selection; test verifies preview updates without advance
+- [x] task-012 asset-browser shows inline preview on selection; test verifies preview updates without advance
 
 ### task-013 Replace text loader with a Skeleton row matching the lesson card shape
 
