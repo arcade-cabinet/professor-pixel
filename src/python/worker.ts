@@ -21,8 +21,7 @@ import * as Comlink from 'comlink';
 // In Capacitor and dev BASE_URL is `/`, so this resolves to `/pyodide/`
 // just like before. Without this, on Pages the worker 404s on its first
 // `import('/pyodide/pyodide.mjs')` and Pyodide never boots.
-const RAW_BASE =
-  (typeof import.meta !== 'undefined' && import.meta.env?.BASE_URL) || '/';
+const RAW_BASE = (typeof import.meta !== 'undefined' && import.meta.env?.BASE_URL) || '/';
 const PYODIDE_BASE = `${RAW_BASE.endsWith('/') ? RAW_BASE : `${RAW_BASE}/`}pyodide/`;
 
 export interface RunResult {
