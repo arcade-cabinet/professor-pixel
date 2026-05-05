@@ -25,6 +25,15 @@ export interface RunResult {
   inputCalls: number;
   /** Per-function call counts for any names passed in `runSnippet`'s `trackFunctions` arg. */
   functionCalls: Record<string, number>;
+  /**
+   * Snapshot of post-execution globals for any names passed in `runSnippet`'s
+   * `inspectGlobals` arg. Variables that were never defined are omitted from
+   * the record, so consumers can use `name in globals` for an existence check
+   * (Pyodide returns `undefined` for unknown names, but it also returns
+   * `undefined` for legitimately-undefined Python values; the worker's "omit
+   * absent" contract is what makes existence-vs-falsy distinguishable).
+   */
+  globals: Record<string, unknown>;
 }
 
 // Default mirrors worker-runner.ts; main thread's RunOptions.maxStdout overrides per-call.
@@ -81,7 +90,8 @@ class WorkerRunner {
     code: string,
     input?: string,
     maxStdout?: number,
-    trackFunctions?: string[]
+    trackFunctions?: string[],
+    inspectGlobals?: string[]
   ): Promise<RunResult> {
     const pyodide = await this.getPyodide();
     this.stdoutBuffer = [];
@@ -149,8 +159,44 @@ else:
         runErr ?? (this.stderrBuffer.length ? this.stderrBuffer.join('') : null),
       inputCalls: Number(pyodide.globals.get('__pp_input_calls') ?? 0),
       functionCalls: extractFunctionCalls(pyodide),
+      globals: extractInspectedGlobals(pyodide, inspectGlobals ?? []),
     };
   }
+}
+
+/**
+ * Pulls the named globals out of the worker's post-execution Pyodide. Names
+ * that are never defined (or hold a Python `None` whose Pyodide bridge returns
+ * `undefined`) are omitted, so the caller can use `name in result.globals`
+ * for existence. PyProxy values (dicts, lists, custom objects) are converted
+ * to plain JS via `toJs({ dict_converter: Object.fromEntries })` when available;
+ * primitives pass through. Errors during conversion are swallowed and the key
+ * is omitted — this is grading metadata, not load-bearing IO.
+ */
+function extractInspectedGlobals(
+  pyodide: PyodideInstance,
+  names: string[]
+): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+  for (const name of names) {
+    try {
+      const value = pyodide.globals.get(name);
+      if (value === undefined) continue;
+      if (value !== null && typeof value === 'object') {
+        const toJs = (
+          value as { toJs?: (opts?: { dict_converter?: typeof Object.fromEntries }) => unknown }
+        ).toJs;
+        if (typeof toJs === 'function') {
+          out[name] = toJs.call(value, { dict_converter: Object.fromEntries });
+          continue;
+        }
+      }
+      out[name] = value;
+    } catch {
+      // Conversion failure on a single name shouldn't kill the whole snapshot.
+    }
+  }
+  return out;
 }
 
 function extractFunctionCalls(pyodide: PyodideInstance): Record<string, number> {

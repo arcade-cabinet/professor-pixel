@@ -19,6 +19,7 @@ export async function gradeCode(
     error: string | null;
     inputCalls?: number;
     functionCalls?: Record<string, number>;
+    globals?: Record<string, unknown>;
   }
 ): Promise<GradeResult> {
   const { code, step, input, runner, pyodide } = context;
@@ -27,12 +28,14 @@ export async function gradeCode(
   let executionError: string | null = null;
   let inputCalls = 0;
   let functionCalls: Record<string, number> = {};
+  let globals: Record<string, unknown> = {};
 
   if (preExecutionResult) {
     actualOutput = preExecutionResult.output;
     executionError = preExecutionResult.error;
     inputCalls = preExecutionResult.inputCalls ?? 0;
     functionCalls = preExecutionResult.functionCalls ?? {};
+    globals = preExecutionResult.globals ?? {};
   } else {
     // Step caps: take the *minimum* timeout across all rule-mode tests so a
     // single fast test doesn't get a generous cap meant for a slower one.
@@ -40,12 +43,24 @@ export async function gradeCode(
     // Collect every functionCalled name across the step's tests so the worker
     // tracer wraps them all in one pass (one runSnippet, not one per name).
     const trackFunctions = collectTrackFunctions(step.tests ?? []);
+    // Same idea for variableExists — one snapshot covering every rule's name.
+    // The worker reads these from its post-execution Python globals (not the
+    // main-thread Pyodide passed in `context.pyodide`), which is the only
+    // Pyodide that actually executed the user's code.
+    const inspectGlobals = collectInspectGlobals(step.tests ?? []);
     try {
-      const result = await runner.runSnippet({ code, input, ...stepCaps, trackFunctions });
+      const result = await runner.runSnippet({
+        code,
+        input,
+        ...stepCaps,
+        trackFunctions,
+        inspectGlobals,
+      });
       actualOutput = result.output;
       executionError = result.error;
       inputCalls = result.inputCalls;
       functionCalls = result.functionCalls;
+      globals = result.globals;
     } catch (err) {
       if (err instanceof PythonTimeoutError) {
         return {
@@ -101,9 +116,9 @@ export async function gradeCode(
         actualOutput,
         test.runtimeRules,
         input,
-        pyodide,
         inputCalls,
-        functionCalls
+        functionCalls,
+        globals
       );
       astAll.push(...astResults);
       runtimeAll.push(...runtimeResults);
@@ -154,6 +169,16 @@ function collectTrackFunctions(tests: TestSpec[]): string[] {
   const seen = new Set<string>();
   for (const t of tests) {
     for (const name of t.runtimeRules?.functionCalled ?? []) {
+      seen.add(name);
+    }
+  }
+  return [...seen];
+}
+
+function collectInspectGlobals(tests: TestSpec[]): string[] {
+  const seen = new Set<string>();
+  for (const t of tests) {
+    for (const name of t.runtimeRules?.variableExists ?? []) {
       seen.add(name);
     }
   }

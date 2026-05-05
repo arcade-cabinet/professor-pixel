@@ -20,6 +20,15 @@ export interface RunOptions {
    * `RunResult.functionCalls[name]` for each — zero if defined but not called.
    */
   trackFunctions?: string[];
+  /**
+   * Variable names to inspect after the snippet runs. The worker reads each
+   * from its post-execution Python globals and returns `RunResult.globals[name]`
+   * (omitted if the variable was never defined). This is the load-bearing seam
+   * for `runtimeRules.variableExists` on worker-routed lessons — main-thread
+   * Pyodide never sees the worker's globals, so the legacy
+   * `pyodide.globals.get(name)` lookup was silently false.
+   */
+  inspectGlobals?: string[];
 }
 
 const DEFAULT_TIMEOUT_MS = 5000;
@@ -51,7 +60,7 @@ export class WorkerPythonRunner {
 
     try {
       const result = await Promise.race([
-        remote.runSnippet(opts.code, opts.input, maxStdout, opts.trackFunctions),
+        remote.runSnippet(opts.code, opts.input, maxStdout, opts.trackFunctions, opts.inspectGlobals),
         timeoutPromise,
       ]);
       if (timer) clearTimeout(timer);
@@ -131,6 +140,7 @@ function verifyClippedResult(result: RunResult, maxStdout: number): RunResult {
     error: result.error,
     inputCalls: result.inputCalls,
     functionCalls: result.functionCalls,
+    globals: result.globals,
   };
 }
 

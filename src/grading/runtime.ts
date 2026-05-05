@@ -5,8 +5,15 @@ import type { RuleResult, RuntimeRules } from './types';
  *   outputContains[], outputMatches, variableExists[], functionCalled[],
  *   acceptsUserInput, outputIncludesInput.
  *
- * variableExists / functionCalled require a Pyodide instance (the variables
- * live in the just-executed Python globals); the others are stdout-only.
+ * `variableExists` reads from the `globals` snapshot the engine collected
+ * via the worker (`runSnippet`'s `inspectGlobals` arg). The legacy `pyodide`
+ * parameter still drives AST validation paths but is *not* consulted for
+ * variableExists — it's the main-thread Pyodide and never executed the
+ * worker-routed snippet, so its globals are the wrong source of truth.
+ *
+ * `functionCalled` reads from the worker's sys.settrace counter (engine
+ * collects names from each step's tests and threads them through as
+ * `trackFunctions`). The other rules are stdout-only.
  *
  * T5.3 caps (timeoutMs, maxStdout) live one level up in the engine —
  * runtime validation only sees output that's already been sized.
@@ -15,9 +22,9 @@ export async function validateRuntime(
   output: string,
   rules: RuntimeRules | undefined,
   input: string | undefined,
-  pyodide: PyodideInstance | null,
   inputCalls: number = 0,
-  functionCalls: Record<string, number> = {}
+  functionCalls: Record<string, number> = {},
+  globals: Record<string, unknown> = {}
 ): Promise<RuleResult[]> {
   if (!rules) return [];
   const results: RuleResult[] = [];
@@ -51,9 +58,11 @@ export async function validateRuntime(
   }
 
   for (const name of rules.variableExists ?? []) {
-    // Use `!== undefined` so falsy Python values (0, '', False, None) still count
-    // as defined. Boolean() would erroneously fail a student who set count = 0.
-    const exists = pyodide ? pyodide.globals.get(name) !== undefined : false;
+    // Use `name in globals` so falsy Python values (0, '', False, None) still
+    // count as defined — the worker's snapshot omits *absent* names from the
+    // record, so the `in` check is precisely existence-vs-absence.
+    // Boolean(value) would erroneously fail a student who set `count = 0`.
+    const exists = name in globals;
     results.push({
       id: `runtime.variableExists:${name}`,
       passed: exists,

@@ -39,10 +39,10 @@ describe('WorkerPythonRunner', () => {
   });
 
   it('returns the worker result on a normal run', async () => {
-    fakeRunSnippet.mockResolvedValueOnce({ output: 'hi\n', error: null, inputCalls: 0, functionCalls: {} });
+    fakeRunSnippet.mockResolvedValueOnce({ output: 'hi\n', error: null, inputCalls: 0, functionCalls: {}, globals: {} });
     const runner = new WorkerPythonRunner();
     const result = await runner.runSnippet({ code: "print('hi')" });
-    expect(result).toEqual({ output: 'hi\n', error: null, inputCalls: 0, functionCalls: {} });
+    expect(result).toEqual({ output: 'hi\n', error: null, inputCalls: 0, functionCalls: {}, globals: {} });
     expect(fakeReady).toHaveBeenCalledOnce();
   });
 
@@ -61,25 +61,25 @@ describe('WorkerPythonRunner', () => {
       runner.runSnippet({ code: 'while True: pass', timeoutMs: 30 })
     ).rejects.toBeInstanceOf(PythonTimeoutError);
     // Next call must rebuild the worker via ensure()
-    fakeRunSnippet.mockResolvedValueOnce({ output: 'ok', error: null, inputCalls: 0, functionCalls: {} });
+    fakeRunSnippet.mockResolvedValueOnce({ output: 'ok', error: null, inputCalls: 0, functionCalls: {}, globals: {} });
     const result = await runner.runSnippet({ code: "print('ok')" });
     expect(result.output).toBe('ok');
     expect(fakeReady).toHaveBeenCalledTimes(2); // bootstrapped twice
   });
 
   it('passes maxStdout through to the worker (worker enforces; wrapper verifies)', async () => {
-    fakeRunSnippet.mockResolvedValueOnce({ output: 'x'.repeat(48), error: null, inputCalls: 0, functionCalls: {} });
+    fakeRunSnippet.mockResolvedValueOnce({ output: 'x'.repeat(48), error: null, inputCalls: 0, functionCalls: {}, globals: {} });
     const runner = new WorkerPythonRunner();
     await runner.runSnippet({ code: 'whatever', maxStdout: 50 });
     // Wrapper passes maxStdout as the third arg so the worker can truncate during stdout callbacks.
-    expect(fakeRunSnippet).toHaveBeenCalledWith('whatever', undefined, 50, undefined);
+    expect(fakeRunSnippet).toHaveBeenCalledWith('whatever', undefined, 50, undefined, undefined);
   });
 
   it('main-thread fallback re-clips if the worker overshoots the cap (defense-in-depth)', async () => {
     // Worker is supposed to truncate during the stdout callback, but if it
     // returned more than cap + slack we re-clip on the main thread and warn.
     const overshoot = 'x'.repeat(2000);
-    fakeRunSnippet.mockResolvedValueOnce({ output: overshoot, error: null, inputCalls: 0, functionCalls: {} });
+    fakeRunSnippet.mockResolvedValueOnce({ output: overshoot, error: null, inputCalls: 0, functionCalls: {}, globals: {} });
     const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     const runner = new WorkerPythonRunner();
     const result = await runner.runSnippet({ code: 'whatever', maxStdout: 50 });

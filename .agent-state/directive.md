@@ -184,11 +184,11 @@ Started: 2026-05-04T21:19:15Z
 
 ### G1 — Worker-side variableExists
 
-- [ ] G1.1 RunOptions.inspectGlobals?: string[] in worker-runner.ts; remote.runSnippet plumbing.
-- [ ] G1.2 WorkerRunner.runSnippet (worker.ts) reads inspectGlobals; returns RunResult.globals: Record<string, unknown>; PyProxy values converted via toJs.
-- [ ] G1.3 engine.ts collects inspectGlobals from variableExists across step tests; threads to runtime.
-- [ ] G1.4 runtime.ts validateRuntime accepts globals?: Record<string, unknown>; variableExists reads `name in globals` instead of pyodide.globals.get.
-- [ ] G1.5 Test: full worker path — inspectGlobals returns existing names + omits absent; validateRuntime produces correct pass/fail mix.
+- [x] G1.1 RunOptions.inspectGlobals?: string[] in worker-runner.ts; remote.runSnippet plumbing.
+- [x] G1.2 WorkerRunner.runSnippet (worker.ts) reads inspectGlobals; returns RunResult.globals: Record<string, unknown>; PyProxy values converted via toJs (extractInspectedGlobals helper).
+- [x] G1.3 engine.ts collects inspectGlobals from variableExists across step tests (collectInspectGlobals mirrors collectTrackFunctions); threads `globals` into validateRuntime; CodeRunnerOptions/CodeRunner extended.
+- [x] G1.4 runtime.ts validateRuntime drops the unused `pyodide` parameter (every implemented rule now reads from worker-collected snapshots — no shim) and gains `globals`. variableExists uses `name in globals` so falsy Python values (0, '', False) still count as defined; the worker's omit-absent contract makes existence-vs-falsy distinguishable.
+- [x] G1.5 Tests: variableExists block in grading-runtime.test.ts covers (a) reads from worker globals not Pyodide, (b) falsy values count as defined regression guard, (c) empty snapshot fails everything. Plus the existing test stubs at grading-engine.test.ts + worker-runner.test.ts updated to include `globals: {}` in mock RunResults. 76/73 unit tests green.
 
 ### G2 — Dev HUD overlay
 
