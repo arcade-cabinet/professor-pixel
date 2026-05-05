@@ -74,4 +74,22 @@ describe('validateAst malformed-JSON guard (omnibus task-002)', () => {
     expect(result[0]).toMatchObject({ id: 'main', passed: true });
     expect(warnSpy).not.toHaveBeenCalled();
   });
+
+  it('returns [] when the JSON is valid but the shape is wrong (schema guard)', async () => {
+    // JSON-valid but RuleResult-invalid: `passed` as a string, missing
+    // `message`, etc. Without schema validation this would flow into
+    // the grading engine and produce silent incorrect verdicts.
+    const pyodide = makeFakePyodide(JSON.stringify([{ id: 'main', passed: 'yes', message: 'ok' }]));
+    const result = await validateAst('def main(): pass', RULES, pyodide as never);
+    expect(result).toEqual([]);
+    expect(warnSpy).toHaveBeenCalled();
+    expect(warnSpy.mock.calls[0][0]).toMatch(/schema validation/);
+  });
+
+  it('returns [] when the payload is a JSON-valid non-array', async () => {
+    const pyodide = makeFakePyodide(JSON.stringify({ rules: [] }));
+    const result = await validateAst('def main(): pass', RULES, pyodide as never);
+    expect(result).toEqual([]);
+    expect(warnSpy).toHaveBeenCalled();
+  });
 });

@@ -1,3 +1,5 @@
+import { z } from 'zod';
+
 interface GameObject {
   type: string;
   x: number;
@@ -5,6 +7,28 @@ interface GameObject {
   color: string;
   size: number;
 }
+
+// Schemas for the python-side json.dumps payloads. The Pyodide
+// templates are internal and well-controlled, but a runtime upgrade
+// or a stray exception that escapes the inner try/except can produce
+// JSON-valid-but-shape-wrong output. Validating at the boundary fails
+// closed (return safe default) instead of letting downstream code
+// crash on `result.errors.join` or false-positive readiness from a
+// truthy non-boolean.
+const VerificationResultSchema = z.object({
+  pygame_available: z.boolean().optional(),
+  basic_functionality: z.boolean().optional(),
+  rendering_bridge: z.boolean().optional(),
+  errors: z.array(z.string()).optional(),
+});
+
+const PygameStatusSchema = z.object({
+  isAvailable: z.boolean(),
+  modules: z.array(z.string()),
+  errors: z.array(z.string()),
+  capabilities: z.array(z.string()),
+  renderingBridge: z.boolean(),
+});
 
 interface SimulationResult {
   fps: number;
@@ -991,9 +1015,9 @@ json.dumps(verification)
     // "Pyodide globals lookup failed" — different fixes. Inline guard
     // also locks the safe-false-default if a future refactor moves
     // the outer try.
-    let result: { pygame_available?: unknown; basic_functionality?: unknown; errors?: string[] };
+    let parsed: unknown;
     try {
-      result = JSON.parse(verificationResult as string);
+      parsed = JSON.parse(verificationResult as string);
     } catch (parseError) {
       // Avoid logging raw Pyodide stdout — same rationale as
       // grading/ast.ts. The verifier template is internal, not user-
@@ -1007,6 +1031,19 @@ json.dumps(verification)
       });
       return false;
     }
+    // Schema validation: a JSON-valid payload with the wrong shape
+    // (string `pygame_available`, errors as `null`, etc.) would
+    // otherwise fall through to `result.errors.join` and throw, or
+    // report ready off a truthy non-boolean. Fail closed.
+    const validated = VerificationResultSchema.safeParse(parsed);
+    if (!validated.success) {
+      console.warn(
+        '[pygame/verifyPygameShim] verifier output failed schema validation; treating as not-ready.',
+        { issues: validated.error.issues.slice(0, 5) }
+      );
+      return false;
+    }
+    const result = validated.data;
 
     if (result.pygame_available && result.basic_functionality) {
       console.log('✅ Pygame shim verification successful');
@@ -1126,8 +1163,9 @@ json.dumps(status)
     // Defensive parse — same rationale as verifyPygameShimReady. The
     // outer try/catch covers it, but a parse-specific failure message
     // helps a dev triage template-emit-error vs runtime-glue-error.
+    let parsed: unknown;
     try {
-      return JSON.parse(statusResult as string);
+      parsed = JSON.parse(statusResult as string);
     } catch (parseError) {
       const raw = String(statusResult);
       console.warn(
@@ -1141,6 +1179,19 @@ json.dumps(status)
       defaultStatus.errors.push('comprehensive check returned malformed JSON');
       return defaultStatus;
     }
+    // Schema validation: a JSON-valid payload missing isAvailable or
+    // with errors[] as null would otherwise propagate downstream as a
+    // typed-but-wrong status object. Fail closed to defaultStatus.
+    const validated = PygameStatusSchema.safeParse(parsed);
+    if (!validated.success) {
+      console.warn(
+        '[pygame/comprehensivePygameCheck] status template payload failed schema validation; returning default.',
+        { issues: validated.error.issues.slice(0, 5) }
+      );
+      defaultStatus.errors.push('comprehensive check returned mis-shaped payload');
+      return defaultStatus;
+    }
+    return validated.data;
   } catch (error) {
     defaultStatus.errors.push(`Error during comprehensive pygame status check: ${error}`);
     return defaultStatus;

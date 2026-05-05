@@ -61,6 +61,15 @@ describe('simulator JSON.parse guards (omnibus task-003)', () => {
       );
       expect(verifyPygameShimReady(pyodide as never)).toBe(false);
     });
+
+    it('returns false on JSON-valid but shape-invalid output (schema guard)', () => {
+      // pygame_available as a string would be truthy and report
+      // ready off a non-boolean — schema fails closed instead.
+      const pyodide = makeFakePyodide(
+        JSON.stringify({ pygame_available: 'yes', basic_functionality: 'yes' })
+      );
+      expect(verifyPygameShimReady(pyodide as never)).toBe(false);
+    });
   });
 
   describe('getPygameStatus', () => {
@@ -88,6 +97,18 @@ describe('simulator JSON.parse guards (omnibus task-003)', () => {
       expect(result.isAvailable).toBe(true);
       expect(result.modules).toContain('pygame');
       expect(warnSpy).not.toHaveBeenCalled();
+    });
+
+    it('returns default safe status on JSON-valid but shape-wrong payload (schema guard)', () => {
+      // errors as null rather than [] would crash any caller that
+      // expected to .join it. Schema fails closed.
+      const pyodide = makeFakePyodide(
+        JSON.stringify({ isAvailable: true, modules: [], errors: null, capabilities: [] })
+      );
+      const result = getPygameStatus(pyodide as never);
+      expect(result.isAvailable).toBe(false);
+      expect(result.errors.some((e) => /mis-shaped/.test(e))).toBe(true);
+      expect(warnSpy).toHaveBeenCalled();
     });
   });
 });

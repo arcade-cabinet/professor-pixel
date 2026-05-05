@@ -1,4 +1,4 @@
-import type { AstRules, RuleResult } from '@lib/grading/types';
+import { RuleResultArraySchema, type AstRules, type RuleResult } from '@lib/grading/types';
 
 /**
  * AST-based grading. Runs the full rule set in a single Pyodide call —
@@ -43,8 +43,9 @@ export async function validateAst(
   // the validator template is the actual culprit. Empty rule-results
   // is the same fallback the early-return branches use, so the
   // grading engine is already shaped to handle it.
+  let parsed: unknown;
   try {
-    return JSON.parse(text) as RuleResult[];
+    parsed = JSON.parse(text);
   } catch (parseError) {
     // Don't dump the raw Python output verbatim — a stray
     // `print(user_code)` in the validator could echo learner-authored
@@ -62,6 +63,20 @@ export async function validateAst(
     );
     return [];
   }
+  // Schema validation, not just JSON validation. A JSON-valid payload
+  // with the wrong shape (missing `passed`, non-string `id`, an extra
+  // free-form field with disallowed types, etc.) would otherwise flow
+  // into the grading engine and produce silent incorrect verdicts. Zod
+  // boundary check at the parse site fails closed — same [] fallback.
+  const validated = RuleResultArraySchema.safeParse(parsed);
+  if (!validated.success) {
+    console.warn(
+      '[grading/ast] AST validator output failed schema validation; treating as no rules evaluated.',
+      { issues: validated.error.issues.slice(0, 5) }
+    );
+    return [];
+  }
+  return validated.data satisfies RuleResult[];
 }
 
 // The Python validator. Kept as a single string so it ships in one Pyodide
