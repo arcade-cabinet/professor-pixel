@@ -10,8 +10,14 @@
 // - Idempotent cancel: calling speak() while a previous utterance is in flight
 //   cancels and replaces it. Audio surface is one-at-a-time.
 
+// Strips full emoji sequences including ZWJ-joined glyphs (👨‍👩‍👧),
+// skin-tone modifiers (👋🏿), and emoji-presentation variation selectors
+// (✊️). Uses Unicode property escapes so we don't have to enumerate
+// every block; \p{Extended_Pictographic} catches all emoji codepoints,
+// \p{Emoji_Modifier} catches Fitzpatrick modifiers, and the inner repeat
+// captures ZWJ chains like family glyphs.
 const EMOJI_RE =
-  /[\u{1F300}-\u{1F9FF}\u{2600}-\u{27BF}\u{1F000}-\u{1F02F}\u{1F0A0}-\u{1F0FF}\u{1F100}-\u{1F1FF}\u{1F200}-\u{1F2FF}\u{1FA00}-\u{1FAFF}]/gu;
+  /\p{Extended_Pictographic}(?:️|\p{Emoji_Modifier})?(?:‍\p{Extended_Pictographic}(?:️|\p{Emoji_Modifier})?)*/gu;
 
 export function stripEmoji(text: string): string {
   return text
@@ -25,9 +31,26 @@ export function isTTSAvailable(): boolean {
 }
 
 let preferredVoice: SpeechSynthesisVoice | null = null;
+let voicesChangedListenerInstalled = false;
+
+function ensureVoicesChangedListener(): void {
+  if (voicesChangedListenerInstalled) return;
+  if (!isTTSAvailable()) return;
+  const synth = window.speechSynthesis;
+  // Voices load asynchronously in Chrome (and TTS-extension voices can arrive
+  // hundreds of ms after page load). Reset the cache when the list changes so
+  // a higher-quality voice can be picked up on the next speak().
+  if (typeof synth.addEventListener === 'function') {
+    synth.addEventListener('voiceschanged', () => {
+      preferredVoice = null;
+    });
+    voicesChangedListenerInstalled = true;
+  }
+}
 
 function pickVoice(): SpeechSynthesisVoice | null {
   if (!isTTSAvailable()) return null;
+  ensureVoicesChangedListener();
   if (preferredVoice) return preferredVoice;
   const voices = window.speechSynthesis.getVoices();
   if (!voices.length) return null;

@@ -288,10 +288,10 @@ that ran post-finishing-pillar merge. ONE comprehensive PR; no carve-offs.
 
 ### P6 — Project export (BLOCKER)
 
-- [ ] P6.1 src/export/bundle.ts — ZIP via jszip with game.py + assets/ + index.html (Pyodide CDN wrapper) + README.md.
-- [ ] P6.2 code-panel.tsx `handleDownload` swap to `bundleProject(...)`.
-- [ ] P6.3 Web Share API affordance with ZIP fallback.
-- [ ] P6.4 tests/unit/export-bundle.test.ts — ZIP manifest validation.
+- [x] P6.1 src/pygame/runtime/exporter.ts — ZIP via jszip with game.py + assets/ + index.html (Pyodide CDN wrapper) + README.md.
+- [x] P6.2 universal.tsx `exportPyodideGame` + PixelMenu `exportGame` swap to `exportProjectAsZip(...)`.
+- [x] P6.3 Web Share API affordance with ZIP fallback (`shareOrDownload`).
+- [x] P6.4 tests/unit/exporter.test.ts — ZIP manifest validation, title escape, slugify, missing-asset fallback.
 
 ### P7 — Pyodide error recovery
 

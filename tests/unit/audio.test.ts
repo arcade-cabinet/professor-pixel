@@ -24,6 +24,21 @@ describe('audio/tts — stripEmoji', () => {
   it('returns empty string when input is just emoji', () => {
     expect(stripEmoji('🎮🎉✨')).toBe('');
   });
+
+  it('strips skin-tone modifier sequences (Fitzpatrick)', () => {
+    // 👋 + 🏿 (dark skin tone modifier)
+    expect(stripEmoji('Hello 👋🏿 friend')).toBe('Hello friend');
+  });
+
+  it('strips ZWJ-joined family / multi-glyph emoji', () => {
+    // 👨‍👩‍👧 (man + ZWJ + woman + ZWJ + girl)
+    expect(stripEmoji('My family 👨‍👩‍👧 is here')).toBe('My family is here');
+  });
+
+  it('strips emoji with variation selector U+FE0F', () => {
+    // ✊ + U+FE0F (emoji presentation)
+    expect(stripEmoji('Power ✊️ up')).toBe('Power up');
+  });
 });
 
 describe('audio/tts — availability + enabled flag', () => {

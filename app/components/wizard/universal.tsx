@@ -31,7 +31,7 @@ import PygameComponentSelector from '@/components/pygame/component-selector';
 import { GameAsset, AssetType } from '@lib/assets/types';
 import { assetManager } from '@lib/assets/manager';
 import { ICON_SIZES, STYLES } from '@lib/wizard/constants';
-import { compilePythonGame, downloadPythonFile } from '@lib/pygame/runtime/compiler';
+import { exportProjectAsZip, shareOrDownload } from '@lib/pygame/runtime/exporter';
 import {
   saveSessionState,
   loadSessionState,
@@ -319,7 +319,7 @@ export default function UniversalWizard({
 
   // Wrap handleOptionSelect to handle actions
   const handleOptionSelectWithAction = useCallback(
-    (option: WizardOption) => {
+    async (option: WizardOption) => {
       console.log('handleOptionSelectWithAction called with option:', option);
       // For selectComponentVariant, handle the action first before dialogue navigation
       // This ensures the selection is saved properly without triggering flow changes
@@ -576,25 +576,15 @@ export default function UniversalWizard({
           pyodideMode: true,
         }));
       } else if (option.action === 'exportPyodideGame') {
-        // Export the complete game as Python file
-        console.log('exportPyodideGame action triggered');
-        console.log('sessionActions.selectedComponents:', sessionActions.selectedComponents);
-        console.log('selectedAssets:', selectedAssets);
-
+        // P6 BLOCKER — export full ZIP bundle (Python + assets + index.html
+        // Pyodide bootstrap + README) so the kid can share or run offline.
         try {
-          const pythonCode = compilePythonGame(
-            sessionActions.selectedComponents || {},
-            selectedAssets
-          );
-          console.log('Python code compiled, length:', pythonCode.length);
-
-          const filename = `my_game_${Date.now()}.py`;
-          console.log('Downloading as:', filename);
-
-          downloadPythonFile(pythonCode, filename);
-          console.log('Download triggered successfully');
-
-          // Show a success message to the user
+          const exported = await exportProjectAsZip({
+            selectedComponents: sessionActions.selectedComponents || {},
+            selectedAssets,
+            title: sessionActions.gameName || 'My Pygame Game',
+          });
+          await shareOrDownload(exported);
           const toast =
             (window as Window & { toast?: (msg: unknown) => void }).toast || console.log;
           toast('Game exported successfully!');
@@ -609,15 +599,6 @@ export default function UniversalWizard({
       } else if (option.action === 'tweakDifficulty') {
         // Adjust game difficulty settings
         console.log('Adjusting difficulty');
-      } else if (option.action === 'launchPyodideGame') {
-        // Launch the game with Pyodide runner
-        console.log('Launching game with Pyodide...');
-        setUiState((prev) => ({
-          ...prev,
-          embeddedComponent: 'pygame-runner',
-          previewMode: 'full',
-          gameRunnerOpen: true,
-        }));
       } else if (
         option.action === 'previewScene' ||
         option.action === 'previewGameplay' ||
@@ -787,36 +768,26 @@ export default function UniversalWizard({
           navigateToNode('learnPath');
           break;
         case 'exportGame':
-          // Export the complete game as Python file
-          console.log('Exporting game from PixelMenu...');
-          console.log('sessionActions.selectedComponents:', sessionActions.selectedComponents);
-          console.log('selectedAssets:', selectedAssets);
-
-          try {
-            const pythonCode = compilePythonGame(
-              sessionActions.selectedComponents || {},
-              selectedAssets
-            );
-            console.log('Python code compiled, length:', pythonCode.length);
-
-            const filename = `my_game_${Date.now()}.py`;
-            console.log('Downloading as:', filename);
-
-            downloadPythonFile(pythonCode, filename);
-            console.log('Download triggered successfully from PixelMenu');
-
-            // Show success message if toast is available
-            const toast =
-              (window as Window & { toast?: (msg: unknown) => void }).toast || console.log;
-            toast('Game exported successfully!');
-          } catch (error) {
-            console.error('Error during export from PixelMenu:', error);
-
-            // Show error message if toast is available
-            const toast =
-              (window as Window & { toast?: (msg: unknown) => void }).toast || console.log;
-            toast('Failed to export game. Please try again.');
-          }
+          // P6 BLOCKER — full ZIP bundle export. Async; we kick off without
+          // awaiting (this is a switch case in a sync callback) and surface
+          // failure via the toast inside the catch.
+          exportProjectAsZip({
+            selectedComponents: sessionActions.selectedComponents || {},
+            selectedAssets,
+            title: sessionActions.gameName || 'My Pygame Game',
+          })
+            .then(async (exported) => {
+              await shareOrDownload(exported);
+              const toast =
+                (window as Window & { toast?: (msg: unknown) => void }).toast || console.log;
+              toast('Game exported successfully!');
+            })
+            .catch((error) => {
+              console.error('Export from PixelMenu failed:', error);
+              const toast =
+                (window as Window & { toast?: (msg: unknown) => void }).toast || console.log;
+              toast('Failed to export game. Please try again.');
+            });
           break;
         case 'viewProgress':
           // TODO: Implement progress view
