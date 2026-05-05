@@ -36,13 +36,15 @@ export default function PygameWysiwygEditor({
   onClose,
   initialComponents = [],
 }: PygameWysiwygEditorProps) {
+  // canUndo/canRedo are intentionally not destructured — undo/redo are
+  // currently keyboard-only (Ctrl+Z / Ctrl+Shift+Z) so the disabled-state
+  // booleans have no UI to drive. If a visual undo/redo button lands,
+  // re-add canUndo/canRedo here.
   const {
     state: placedComponents,
     set: setPlacedComponents,
     undo: undoPlacements,
     redo: redoPlacements,
-    canUndo,
-    canRedo,
     reset: resetPlacements,
   } = useUndoableList<PlacedComponent[]>(initialComponents);
   const [selectedComponentId, setSelectedComponentId] = useState<string | null>(null);
