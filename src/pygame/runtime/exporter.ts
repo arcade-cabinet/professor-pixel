@@ -76,7 +76,13 @@ export async function exportProjectAsZip(options: ExportProjectOptions): Promise
         continue;
       }
       const buf = await res.arrayBuffer();
-      const fname = src.split('/').pop() ?? `${asset.id ?? 'asset'}.bin`;
+      // Sanitize the basename: even though `asset.path` comes from our own
+      // catalog today, a future ingestion path could allow user-supplied
+      // values. Strip the directory prefix, then collapse anything that
+      // isn't a safe filename character to '_'. Belt-and-suspenders against
+      // CWE-22 path traversal in the consumer's unzip step.
+      const rawName = src.split('/').pop() ?? `${asset.id ?? 'asset'}.bin`;
+      const fname = rawName.replace(/[^a-zA-Z0-9._-]/g, '_') || 'asset.bin';
       assetsFolder.file(fname, buf);
     } catch (err) {
       failed.push(`${src} (${(err as Error).message})`);

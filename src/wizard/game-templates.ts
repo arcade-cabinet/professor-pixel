@@ -554,27 +554,26 @@ class Game:
         self.clock = pygame.time.Clock()
         self.running = True
         
-        # TODO: Initialize your game objects here
-        
+        # Add your own game objects below — try a Player(), an enemy, or a score!
+
     def handle_events(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.running = False
             elif event.type == pygame.KEYDOWN:
-                # TODO: Handle key presses here
+                # Add more keys below — pygame.K_LEFT, pygame.K_UP, pygame.K_a, etc.
                 if event.key == pygame.K_SPACE:
                     print("Spacebar pressed!")
-    
+
     def update(self):
-        # TODO: Update your game logic here
-        # This runs every frame
+        # Game logic runs every frame here — move things, check collisions, count score.
         pass
-    
+
     def draw(self):
         # Clear the screen
         self.screen.fill(BLACK)
-        
-        # TODO: Draw your game objects here
+
+        # Draw your own things below — pygame.draw.rect, pygame.draw.circle, etc.
         
         # Example: Draw a white circle in the center
         center_x = SCREEN_WIDTH // 2
@@ -735,8 +734,8 @@ class Game:
             Platform(550, 150, 150, 20),
         ]
         
-        # TODO: Add enemies, collectibles, or other game objects
-    
+        # Add enemies, coins, or moving platforms to the list below!
+
     def handle_events(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -748,24 +747,24 @@ class Game:
                     self.player.y = SCREEN_HEIGHT - 100
                     self.player.vel_x = 0
                     self.player.vel_y = 0
-    
+
     def update(self):
         self.player.update(self.platforms)
-        
-        # TODO: Update enemies, collectibles, check win conditions
-    
+
+        # Update your enemies and check win conditions here.
+
     def draw(self):
         # Sky background
         self.screen.fill(BLUE)
-        
+
         # Draw platforms
         for platform in self.platforms:
             platform.draw(self.screen)
-        
+
         # Draw player
         self.player.draw(self.screen)
-        
-        # TODO: Draw enemies, collectibles, UI elements
+
+        # Draw enemies, coins, or your score here.
         
         # Instructions
         font = pygame.font.Font(None, 24)
@@ -1434,7 +1433,7 @@ class Game:
     def update(self):
         self.grid.update()
         
-        # TODO: Add scoring system, level progression, special gems
+        # Try adding a scoring system, level progression, or special rare gems!
     
     def draw(self):
         self.screen.fill(GRAY)

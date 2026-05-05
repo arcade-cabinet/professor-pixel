@@ -6,6 +6,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { AppErrorBoundary, PageErrorBoundary } from '@/components/error-boundary';
 import { globalErrorHandler } from '@lib/errors/global-handler';
+import { useDebugFlag } from '@lib/hooks/use-debug-flag';
 import NotFound from '@/pages/not-found';
 import Home from '@/pages/home';
 import LessonPage from '@/pages/lesson';
@@ -18,6 +19,12 @@ import PygamePreviewTest from '@/pages/_dev/pygame-preview';
 import PersistenceTest from '@/pages/_dev/persistence';
 
 function Router() {
+  // _dev/ pages (asset-test, pygame-preview-test, persistence-test) only mount
+  // behind the debug flag (?debug=1 or localStorage.debug='1'). They're internal
+  // engineering screens — kids and search-engine crawlers should not be able to
+  // reach them by URL guess in production.
+  const debugEnabled = useDebugFlag();
+
   return (
     <Switch>
       <Route
@@ -60,30 +67,36 @@ function Router() {
           </PageErrorBoundary>
         )}
       />
-      <Route
-        path="/asset-test"
-        component={() => (
-          <PageErrorBoundary context="Asset Library Test">
-            <AssetLibraryTest />
-          </PageErrorBoundary>
-        )}
-      />
-      <Route
-        path="/pygame-preview-test"
-        component={() => (
-          <PageErrorBoundary context="Pygame Preview Test">
-            <PygamePreviewTest />
-          </PageErrorBoundary>
-        )}
-      />
-      <Route
-        path="/persistence-test"
-        component={() => (
-          <PageErrorBoundary context="Persistence Test">
-            <PersistenceTest />
-          </PageErrorBoundary>
-        )}
-      />
+      {debugEnabled && (
+        <Route
+          path="/asset-test"
+          component={() => (
+            <PageErrorBoundary context="Asset Library Test">
+              <AssetLibraryTest />
+            </PageErrorBoundary>
+          )}
+        />
+      )}
+      {debugEnabled && (
+        <Route
+          path="/pygame-preview-test"
+          component={() => (
+            <PageErrorBoundary context="Pygame Preview Test">
+              <PygamePreviewTest />
+            </PageErrorBoundary>
+          )}
+        />
+      )}
+      {debugEnabled && (
+        <Route
+          path="/persistence-test"
+          component={() => (
+            <PageErrorBoundary context="Persistence Test">
+              <PersistenceTest />
+            </PageErrorBoundary>
+          )}
+        />
+      )}
       <Route
         component={() => (
           <PageErrorBoundary context="Not Found Page">

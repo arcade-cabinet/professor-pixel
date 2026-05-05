@@ -127,13 +127,18 @@ class Surface:
         pass  # No-op for mock
     
     def get_rect(self, **kwargs):
+        # Bind outer Surface dims into locals so the inner Rect can close
+        # over them. Reading self.width inside Rect.__init__ would raise
+        # AttributeError because Rect.__init__ has its own self.
+        w = self.width
+        h = self.height
         class Rect:
             def __init__(self):
                 self.x = 0
                 self.y = 0
-                self.width = self.width
-                self.height = self.height
-                self.center = kwargs.get('center', (self.width//2, self.height//2))
+                self.width = w
+                self.height = h
+                self.center = kwargs.get('center', (w // 2, h // 2))
         return Rect()
     
     def blit(self, source, dest):
@@ -310,21 +315,6 @@ MockPygame.key.get_pressed = lambda: global_key_state
       // Prepare the game code for browser execution
       // We don't modify the code directly - let the mock pygame handle it
       const browserCode = pythonCode.replace(/if __name__ == "__main__":/g, 'if True:'); // Always run in browser
-
-      // Set up a simple auto-progression for demo (press SPACE after 3 seconds)
-      setTimeout(() => {
-        if (pyodideRef.current) {
-          pyodideRef.current.runPython(`
-# Simulate SPACE key press to progress from title screen
-if 'global_key_state' in globals():
-    global_key_state.set_key(32, True)  # Press SPACE
-    # Release after a moment
-    import threading
-    timer = threading.Timer(0.1, lambda: global_key_state.set_key(32, False))
-    timer.start() if hasattr(threading, 'Timer') else None
-          `);
-        }
-      }, 3000);
 
       // Run the game with our pygame mock
       await pyodideRef.current.runPythonAsync(browserCode);

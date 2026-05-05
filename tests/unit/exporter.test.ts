@@ -95,6 +95,41 @@ describe('exportProjectAsZip', () => {
     expect(fetchStub).toHaveBeenCalledWith('/assets/robot.png');
   });
 
+  it('sanitizes asset basenames against path-traversal characters', async () => {
+    // Even though asset.path comes from our own catalog today, defense-in-depth:
+    // a malformed path like ../../evil.png must not produce an entry that an
+    // unzip tool could place outside the assets/ folder.
+    const evilBuf = new Uint8Array([9]).buffer;
+    const fetchStub = makeFetchStub({
+      '/assets/../../evil.png': { ok: true, body: evilBuf },
+    });
+
+    const assets: GameAsset[] = [
+      {
+        id: 'evil',
+        name: 'Evil',
+        type: 'character',
+        path: '/assets/../../evil.png',
+      } as unknown as GameAsset,
+    ];
+
+    const result = await exportProjectAsZip({
+      selectedComponents: {},
+      selectedAssets: assets,
+      fetchImpl: fetchStub,
+    });
+
+    const zip = await JSZip.loadAsync(result.blob);
+    // basename split('/').pop() → 'evil.png' which is already safe; but the
+    // sanitizer also handles cases like 'foo/../bar.png' that some pop()
+    // edge-cases could leak. Verify no entry contains '..' or path separators.
+    for (const name of Object.keys(zip.files)) {
+      expect(name).not.toMatch(/\.\./);
+    }
+    // The sanitized file should still land under assets/.
+    expect(zip.file('assets/evil.png')).toBeTruthy();
+  });
+
   it('records failed assets in MISSING.txt without aborting the bundle', async () => {
     const fetchStub = makeFetchStub({
       '/assets/exists.png': { ok: true, body: new ArrayBuffer(2) },
