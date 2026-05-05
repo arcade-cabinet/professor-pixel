@@ -164,7 +164,7 @@ EOF
 # Upload to https://play.google.com/console/
 ```
 
-CI (`.github/workflows/cd-mobile.yml`) builds the **debug** APK on every push to `main` and uploads it as a workflow artifact. The signed Play Store build runs only on manual workflow dispatch and consumes the `ANDROID_KEYSTORE_BASE64` + `ANDROID_KEYSTORE_PASSWORD` + `ANDROID_KEY_ALIAS` + `ANDROID_KEY_PASSWORD` repository secrets.
+CI (`.github/workflows/cd-mobile.yml`) builds the **debug** APK on every push to `main` and uploads it as a workflow artifact. The signed Play Store build runs only on manual workflow dispatch from a trusted ref (`main` or a `refs/tags/*` ref — selecting an arbitrary feature branch from the workflow_dispatch UI is rejected by the job's `if:` guard) and consumes the `ANDROID_KEYSTORE_BASE64` + `ANDROID_KEYSTORE_PASSWORD` + `ANDROID_KEY_ALIAS` + `ANDROID_KEY_PASSWORD` repository secrets. Versioning: pass `VERSION_CODE` and `VERSION_NAME` as `-P` properties to gradle (or set them in `gradle.properties`) so the release build numbers can increment per Play Store upload without editing `android/app/build.gradle`.
 
 ### iOS workflow
 
