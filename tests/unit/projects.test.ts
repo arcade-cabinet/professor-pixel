@@ -175,6 +175,32 @@ describe('wizard projects (P5)', () => {
     expect(list).toHaveLength(1);
   });
 
+  it('treats name as case- and whitespace-insensitive in the dup-name guard (P4.11)', async () => {
+    // Kids type erratically. "Robot Quest" in one session and "robot quest "
+    // in the next describe the same logical game; without normalization the
+    // guard misses and creates a duplicate. The template id is stable
+    // (from flow JSON), so strict equality there stands.
+    const first = await saveWizardProject({ ...baseSnapshot, name: 'Robot Quest' });
+    const second = await saveWizardProject({ ...baseSnapshot, name: 'robot quest ' });
+    expect(second.id).toBe(first.id);
+    const list = await listWizardProjects();
+    expect(list).toHaveLength(1);
+  });
+
+  it('fallback create after a stale-id rejection still produces exactly one row (P4.11)', async () => {
+    // Simulates the universal.tsx catch path: primary save with a stale
+    // id rejects, the caller clears its ref, the retry uses no existingId.
+    // The duplicate-name guard must resolve the retry to the existing row
+    // (created by an earlier successful save in this session) rather than
+    // adding a second row. If the guard ever regresses, this test fails.
+    const first = await saveWizardProject(baseSnapshot);
+    await expect(saveWizardProject(baseSnapshot, 'stale-id')).rejects.toThrow();
+    const retry = await saveWizardProject(baseSnapshot);
+    expect(retry.id).toBe(first.id);
+    const list = await listWizardProjects();
+    expect(list).toHaveLength(1);
+  });
+
   it('keeps distinct rows when name matches but template differs (P4.11)', async () => {
     // Same name across templates is intentional — a "Knight" platformer and
     // a "Knight" shooter are different games. The guard scopes to the

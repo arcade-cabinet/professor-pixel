@@ -73,9 +73,14 @@ export async function saveWizardProject(
 
   let resolvedId = existingId;
   if (!resolvedId) {
+    // Compare on a normalized (trim + lowercase) name so "Robot Quest" and
+    // "robot quest" don't spawn two rows for the same logical game. The
+    // template id comes from flow JSON constants so it's already stable;
+    // strict equality is fine there.
+    const targetName = snapshot.name.trim().toLowerCase();
     const existing = await storage.listProjects(ANON_USER_ID);
     const match = existing.find(
-      (p) => p.name === snapshot.name && p.template === snapshot.template
+      (p) => p.name.trim().toLowerCase() === targetName && p.template === snapshot.template
     );
     if (match) {
       resolvedId = match.id;

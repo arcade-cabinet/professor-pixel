@@ -18,6 +18,7 @@ import { Card } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Skeleton } from '@/components/ui/skeleton';
 import OfflineBanner from '@/components/ui/offline-banner';
 import StorageBlockedNotice from '@/components/ui/storage-blocked-notice';
 import { loadLessons, statusFor } from '@lib/lessons';
@@ -70,10 +71,37 @@ export default function LessonsIndex() {
     return Math.round((completedCount / lessons.length) * 100);
   }, [lessons, progressByLesson]);
 
+  // P4.13 — Skeleton row matching the lesson-card shape (icon + 2-line
+  // text). The previous loader was a one-line "Loading…" string centred in
+  // the viewport; that gave kids no visual hint of what was about to
+  // appear. Rendering placeholder rows in the same layout the real list
+  // will take eliminates the layout shift on data-arrival and primes the
+  // eye for the list (Zeldman/Nielsen progressive disclosure). aria-busy
+  // signals the loading state to AT users; the visually-hidden label
+  // tells them what's loading.
   if (lessonsLoading || progressLoading) {
     return (
-      <LessonsShell centered>
-        <p className="text-gray-700 dark:text-gray-300">{strings.lessons.loading}</p>
+      <LessonsShell>
+        <main className="mx-auto max-w-4xl" aria-busy="true" data-testid="lessons-loading-skeleton">
+          <span className="sr-only">{strings.lessons.loading}</span>
+          <header className="mb-8 text-center">
+            <Skeleton className="mx-auto h-10 w-64" />
+            <Skeleton className="mx-auto mt-2 h-4 w-48" />
+          </header>
+          <ul className="space-y-3">
+            {Array.from({ length: 4 }, (_, idx) => (
+              <li key={idx}>
+                <Card className="flex items-center gap-4 p-4">
+                  <Skeleton className="h-8 w-8 flex-shrink-0 rounded-full" />
+                  <div className="min-w-0 flex-1 space-y-2">
+                    <Skeleton className="h-4 w-3/4" />
+                    <Skeleton className="h-3 w-1/3" />
+                  </div>
+                </Card>
+              </li>
+            ))}
+          </ul>
+        </main>
       </LessonsShell>
     );
   }

@@ -383,7 +383,7 @@ Branch: feat/player-experience-pillar-4
 
 ### task-013 Replace text loader with a Skeleton row matching the lesson card shape
 
-- [ ] task-013 lessons.tsx loading state uses Skeleton inside LessonsShell; banners still render during load
+- [x] task-013 lessons.tsx loading state uses Skeleton inside LessonsShell; banners still render during load
 
 ### task-014 Style "Next Lesson" as primary, show next lesson thumbnail/title
 
