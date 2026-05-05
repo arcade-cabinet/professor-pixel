@@ -114,6 +114,12 @@ async function handlePyodideRequest(request, url) {
 async function readFromOpfs(fileName) {
   const dir = await getOpfsDir();
   if (!dir) return null;
+  // Defensive: a previous SW version (or an interrupted write before
+  // the atomic-rename refactor) may have left a half-written file at
+  // the canonical name. The atomic write below ensures new writes
+  // never publish a partial file, but old caches need to be tolerated
+  // — if anything looks off we drop and re-fetch instead of serving
+  // truncated bytes that would crash WebAssembly.compileStreaming.
   let fileHandle;
   try {
     fileHandle = await dir.getFileHandle(fileName);
@@ -121,6 +127,13 @@ async function readFromOpfs(fileName) {
     return null; // Not in cache.
   }
   const file = await fileHandle.getFile();
+  if (file.size === 0) {
+    // Zero-byte sentinel = aborted write from an older SW. Evict.
+    try {
+      await dir.removeEntry(fileName);
+    } catch (_err) {}
+    return null;
+  }
   // Re-derive Content-Type from the extension. We could store
   // headers as sidecar metadata but the only consumers are Pyodide's
   // fetch + WebAssembly.compileStreaming, both of which key off
@@ -139,10 +152,52 @@ async function readFromOpfs(fileName) {
 async function writeToOpfs(fileName, response) {
   const dir = await getOpfsDir();
   if (!dir) return;
-  const fileHandle = await dir.getFileHandle(fileName, { create: true });
-  const writable = await fileHandle.createWritable();
-  // Stream straight from the network response body into OPFS.
-  await response.body.pipeTo(writable);
+  // Atomic write: stream the body into <fileName>.tmp, then once the
+  // pipe completes successfully, swap the temp into place. A reader
+  // that opens <fileName> mid-write either sees the previous version
+  // or a NotFound; never a half-streamed truncated file. Without
+  // this, an interrupted pipeTo (tab close, network drop) leaves a
+  // partial file at the canonical name and the next cold start
+  // serves it from OPFS with X-Cache: opfs-hit, crashing pyodide.
+  const tmpName = `${fileName}.tmp`;
+  // Clean up any stale .tmp from a prior interrupted write before
+  // creating a fresh one.
+  try {
+    await dir.removeEntry(tmpName);
+  } catch (_err) {}
+  const tmpHandle = await dir.getFileHandle(tmpName, { create: true });
+  const writable = await tmpHandle.createWritable();
+  try {
+    await response.body.pipeTo(writable);
+  } catch (err) {
+    // pipeTo rejected — writable is already aborted by spec. Make
+    // sure no .tmp lingers to confuse the next write.
+    try {
+      await dir.removeEntry(tmpName);
+    } catch (_e) {}
+    throw err;
+  }
+  // pipeTo resolved → writable is closed and the bytes are flushed.
+  // Now atomically promote tmp → fileName. Prefer move() (single
+  // rename, no readers can observe an in-between state); fall back to
+  // copy-then-delete on browsers that don't ship FileSystemFileHandle
+  // .move() yet (Safari < 17.4).
+  try {
+    if (typeof tmpHandle.move === 'function') {
+      await tmpHandle.move(fileName);
+      return;
+    }
+  } catch (_err) {
+    // move() not supported or failed — fall through to copy fallback.
+  }
+  const finalHandle = await dir.getFileHandle(fileName, { create: true });
+  const finalWritable = await finalHandle.createWritable();
+  const tmpFile = await tmpHandle.getFile();
+  await finalWritable.write(tmpFile);
+  await finalWritable.close();
+  try {
+    await dir.removeEntry(tmpName);
+  } catch (_err) {}
 }
 
 async function getOpfsDir() {

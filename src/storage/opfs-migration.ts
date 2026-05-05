@@ -43,8 +43,24 @@ export interface MigrationResult {
 
 export function migrateLocalStorageProjectsToOpfs(): Promise<MigrationResult> {
   if (migrationPromise) return migrationPromise;
-  migrationPromise = run();
+  migrationPromise = runWithLock();
   return migrationPromise;
+}
+
+async function runWithLock(): Promise<MigrationResult> {
+  // Cross-tab race: two tabs opened simultaneously on a fresh browser
+  // both pass the sentinel check, both enumerate the same set of
+  // localStorage projects, and both call saveOpfsProject for each.
+  // saveOpfsProject is by-id so the file payloads end up consistent,
+  // but the in-flight writes can interleave at the OPFS layer and
+  // produce truncated writes on Safari (which serializes writers
+  // differently than Chromium). Web Locks gives us a one-writer
+  // guarantee scoped to the origin — the second tab waits for the
+  // first to finish, then sees the sentinel and short-circuits.
+  if (typeof navigator === 'undefined' || !navigator.locks?.request) {
+    return run();
+  }
+  return navigator.locks.request('opfs-migration-v1', () => run());
 }
 
 async function run(): Promise<MigrationResult> {

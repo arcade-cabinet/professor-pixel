@@ -183,19 +183,16 @@ async function saveWizardProjectOpfs(
     );
     if (match) {
       resolvedId = match.id;
-      // We acquired URLs from listOpfsProjects; revoke the rest to
-      // avoid leaking object URLs. Only the matched one is consumed
-      // below (and only via the launcher's own revoke path on next
-      // load); the others are dropped now.
-      for (const item of existing) {
-        if (item.id !== resolvedId && item.thumbnailUrl) {
-          URL.revokeObjectURL(item.thumbnailUrl);
-        }
-      }
-    } else {
-      for (const item of existing) {
-        if (item.thumbnailUrl) URL.revokeObjectURL(item.thumbnailUrl);
-      }
+    }
+    // Every URL from listOpfsProjects() must be revoked here — the
+    // save path doesn't return any of them to the caller, so nothing
+    // downstream owns the lifetime. Even the matched id's URL is
+    // discarded: saveOpfsProject below writes a fresh thumbnail.png
+    // (or leaves the existing one untouched), and the next list/load
+    // call mints its own object URL. Skipping the matched id leaks
+    // ~one URL per save.
+    for (const item of existing) {
+      if (item.thumbnailUrl) URL.revokeObjectURL(item.thumbnailUrl);
     }
   }
 

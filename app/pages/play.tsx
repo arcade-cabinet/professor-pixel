@@ -23,7 +23,7 @@ import { loadWizardProject } from '@lib/storage/projects';
 import { compilePythonGame } from '@lib/pygame/runtime/compiler';
 import { assetManager } from '@lib/assets/manager';
 import type { GameAsset } from '@lib/assets/types';
-import { getPyodide } from '@lib/python/pyodide-singleton';
+import { getPyodide, recoverPyodide } from '@lib/python/pyodide-singleton';
 import { strings } from '@lib/i18n';
 
 type State =
@@ -44,7 +44,23 @@ export default function PlayPage() {
   useEffect(() => {
     let cancelled = false;
     void (async () => {
-      const snapshot = await loadWizardProject(projectId);
+      // loadWizardProject can throw — OPFS quota exceeded, schema
+      // version mismatch, corrupted JSON. Without try/catch the
+      // unhandled rejection leaves the page stuck in 'loading'
+      // forever (the `void` prefix swallows it from devtools too).
+      // Treat any load failure as a compile-error so the kid sees
+      // an actionable message and a path back to the library.
+      let snapshot: Awaited<ReturnType<typeof loadWizardProject>>;
+      try {
+        snapshot = await loadWizardProject(projectId);
+      } catch (err) {
+        if (cancelled) return;
+        setState({
+          kind: 'compile-error',
+          message: (err as Error).message ?? 'Failed to load saved game',
+        });
+        return;
+      }
       if (cancelled) return;
       if (!snapshot) {
         setState({ kind: 'not-found' });
@@ -94,6 +110,15 @@ export default function PlayPage() {
   // Step 2: when the kid clicks Play, boot Pyodide and run.
   const onPlay = async () => {
     if (state.kind !== 'ready' && state.kind !== 'runtime-error') return;
+    // Retry path: a previous run crashed Pyodide. The singleton holds
+    // a now-poisoned bootstrap promise (or worse, a Pyodide instance
+    // whose Python heap is in an unknown state after a kid-game
+    // exception). Reset it so getPyodide() below mints a fresh one
+    // instead of replaying the failed boot or running on top of the
+    // broken interpreter.
+    if (state.kind === 'runtime-error') {
+      recoverPyodide();
+    }
     setState({ kind: 'running', pythonCode: state.pythonCode, title: state.title });
     try {
       const pyodide = await getPyodide();
