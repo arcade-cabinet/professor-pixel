@@ -1,6 +1,6 @@
 ---
 title: Architecture
-updated: 2026-05-04
+updated: 2026-05-05
 status: current
 domain: technical
 ---
@@ -119,8 +119,26 @@ GitHub Pages deploy: `.github/workflows/cd.yml` runs `vite build` with a compute
 |---------|-----------|-----|
 | GitHub Pages | Static SPA (`dist/`) | `.github/workflows/cd.yml` on `push: main` |
 | Local preview | Static SPA (`dist/`) | `pnpm preview` |
+| PWA install | Same `dist/`, installed to home screen | `public/manifest.webmanifest` + Chrome install prompt / iOS Safari Add-to-Home-Screen |
+| Android (Capacitor) | `android/` shell wrapping `dist/` | `.github/workflows/cd-mobile.yml` on `push: main` (debug) or `workflow_dispatch` (signed release) |
+| iOS (Capacitor) | `ios/` shell wrapping `dist/` | Manual Mac+Xcode flow → TestFlight |
 
 See [`DEPLOYMENT.md`](DEPLOYMENT.md) for environment specifics.
+
+## Storage + Pyodide cache
+
+Two persistence layers, both per-origin and OPFS-backed.
+
+**Saved games library (`src/storage/`).** Kid-saved projects live in OPFS at `/games/{id}/{project.json, wizard-state.json, game.py, thumbnail.png}` (see `src/storage/opfs-projects.ts`). The dual-backend `src/storage/projects.ts` routes through a cached `shouldUseOpfs()` probe: jsdom and private-mode browsers fall through to the legacy `localStorage["pygame_academy_projects"]` blob. A one-shot `src/storage/opfs-migration.ts` runs at app boot under `navigator.locks.request('opfs-migration-v1')` (cross-tab safe) and copies legacy localStorage rows into OPFS the first time the app sees a browser where OPFS is available. The migration sentinel (`migration-from-localstorage-v1.done`) only seals when zero OPFS write failures occurred — transient I/O failures retry on the next boot.
+
+**Pyodide WASM cache (`public/pyodide-sw.js`).** The vendored Pyodide payload (~12MB: pyodide.asm.wasm + python_stdlib.zip + pyodide.asm.js) is intercepted by a service worker that serves cache hits from OPFS and atomic-writes misses through `<file>.tmp` rename so an interrupted pipe (tab close, network drop) never publishes a half-written file. The worker rejects requests outside an allowlist of `[wasm js mjs json zip data]` extensions and only persists 200 OK responses whose Content-Type matches the expected MIME, defending against CDN misroute and captive-portal HTML poisoning the cache. Version bumps (`PYODIDE_VERSION` in the SW) purge older `pyodide-cache-vN/` directories on activate. Inside the Capacitor WebView (`window.location.protocol === 'capacitor:'`) SW registration is skipped — the WASM is shipped directly in the APK/IPA bundle, so there's nothing to cache.
+
+## Launcher vs export
+
+Two distinct distribution channels for kid-built games:
+
+- **Launcher (`/play/:projectId`).** The app's own first-class run-mode. Reads from OPFS, compiles via the same `compilePythonGame` the export pipeline uses (single source of truth), boots Pyodide, runs the saved `game.py`. No wizard chrome, no editor — just title + canvas + Back/Edit. The kid's library lives entirely in-app.
+- **Export (`src/pygame/runtime/exporter.ts`).** One-way send-mode bundle for sharing to Drive / iCloud. Produces a zip with `game.py` + assets + a landing `index.html` that points back at the platform launcher. There is no import-from-zip — re-loading a shared zip into the app would be fragile to schema drift and a real security surface (arbitrary `game.py` execution from an attacker-controlled file). Kids who receive a shared zip read it as source code; if they want to remix, they fork the project in their own copy of the platform.
 
 ## See also
 

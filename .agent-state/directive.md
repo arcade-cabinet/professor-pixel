@@ -523,8 +523,8 @@ Branch: feat/post-launcher-consolidation (after PR #30 squash-merges)
 
 ### C4 — Docs sweep (no errata files)
 
-- [ ] C4.1 docs/STATE.md flip "Next" entries done in PR #30; M2.2 + M4.2 → "In flight"; bump last_updated
-- [ ] C4.2 docs/architecture/launcher.md NEW (only new doc): OPFS layout, /play state machine, shouldUseOpfs() routing, launcher-vs-export split, SW atomic-write contract
-- [ ] C4.3 docs/architecture/pyodide.md add OPFS cache section with version-bump eviction protocol
-- [ ] C4.4 docs/deployment/README.md expand to cover web/PWA/mobile tracks, link per-OS docs from C3
-- [ ] C4.5 docs/plans/modernization-pillar.prq.md flip M2.2 + M4.2 once C1.x lands; ACTIVE → RELEASED if all M-tasks done; same for foundations-pillar-completion
+- [x] C4.1 docs/STATE.md updated: Active row points at PR #30 with fold-forward batches landed; new "Done" row for post-launcher consolidation; new "Done" row for the launcher itself (was missing); "Next" rebuilt to list PR #30 squash, dep PR rebases (#18, #24), react-resizable-panels major bump (#14), Play Store rollout, iOS TestFlight, content tracks
+- [x] C4.2 No new file — folded the Launcher + OPFS cache architecture into existing docs/ARCHITECTURE.md (per user directive: "no errata files, update existing docs in place"). New "Storage + Pyodide cache" and "Launcher vs export" sections cover OPFS layout, /play state machine, shouldUseOpfs() routing, launcher-vs-export split, SW atomic-write contract, version-keyed eviction, allowlist + Content-Type defense
+- [x] C4.3 Folded into ARCHITECTURE.md "Storage + Pyodide cache" section; no separate pyodide.md needed
+- [x] C4.4 docs/DEPLOYMENT.md Targets table extended to PWA / Android (Capacitor) / iOS (Capacitor); new Mobile (Capacitor) section covers WebView differences, per-iteration Android workflow, keystore generation, signed-release CI flow, manual iOS Mac+Xcode TestFlight loop
+- [x] C4.5 No flip needed — modernization-pillar.prq.md M2.2 and M4.2 are already [x] (M4.2 satisfied via the omnibus-cleanup PRQ task-004 frame-rate test; M2.2 satisfied via finishing pillar's coverage ratchet, then re-ratcheted in C1.2). foundations-pillar-completion.prq.md status check deferred — separate sweep when those PRQs are next touched
