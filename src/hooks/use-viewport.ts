@@ -48,7 +48,7 @@ export function useViewport(): ViewportState {
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    const onResize = () => {
+    const onChange = () => {
       const width = window.innerWidth;
       const coarsePointer = window.matchMedia?.('(pointer: coarse)').matches ?? false;
       const noFinePointer = !(window.matchMedia?.('(any-pointer: fine)').matches ?? true);
@@ -58,11 +58,20 @@ export function useViewport(): ViewportState {
         isTouchPrimary: coarsePointer || noFinePointer,
       });
     };
-    window.addEventListener('resize', onResize, { passive: true });
-    window.addEventListener('orientationchange', onResize, { passive: true });
+    window.addEventListener('resize', onChange, { passive: true });
+    window.addEventListener('orientationchange', onChange, { passive: true });
+    // Pointer-modality can change without a resize (plug a mouse into an
+    // iPad, dock a tablet to a keyboard). matchMedia change events fire
+    // independently of resize so the touch fallback UI updates correctly.
+    const coarseMql = window.matchMedia?.('(pointer: coarse)');
+    const fineMql = window.matchMedia?.('(any-pointer: fine)');
+    coarseMql?.addEventListener?.('change', onChange);
+    fineMql?.addEventListener?.('change', onChange);
     return () => {
-      window.removeEventListener('resize', onResize);
-      window.removeEventListener('orientationchange', onResize);
+      window.removeEventListener('resize', onChange);
+      window.removeEventListener('orientationchange', onChange);
+      coarseMql?.removeEventListener?.('change', onChange);
+      fineMql?.removeEventListener?.('change', onChange);
     };
   }, []);
 

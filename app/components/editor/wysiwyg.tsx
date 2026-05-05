@@ -3,7 +3,6 @@ import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { Play, Pause, RotateCw, Code, Eye, Grid3x3, Package, Settings2, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
@@ -108,11 +107,16 @@ export default function PygameWysiwygEditor({
   // when they pick a component is the obvious behavior; otherwise the
   // settings drawer stays hidden behind the canvas with no signal that
   // it has any state to show.
+  // Depend only on selectedComponentId — re-firing on isCompact change
+  // would re-open the drawer after a user explicitly closed it whenever
+  // the viewport straddles the lg breakpoint (rotate device, resize).
+  // The isCompact gate is read via closure at firing time.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: see comment
   useEffect(() => {
     if (isCompact && selectedComponentId) {
       setPropertiesOpen(true);
     }
-  }, [isCompact, selectedComponentId]);
+  }, [selectedComponentId]);
 
   const handlePropertyChange = useCallback(
     (id: string, property: string, value: ComponentPropertyValue) => {
@@ -238,8 +242,9 @@ export default function PygameWysiwygEditor({
               {paletteOpen && (
                 <button
                   type="button"
+                  tabIndex={-1}
+                  aria-hidden="true"
                   className="absolute inset-0 bg-black/40 z-10"
-                  aria-label="Close palette"
                   onClick={() => setPaletteOpen(false)}
                 />
               )}
@@ -315,8 +320,9 @@ export default function PygameWysiwygEditor({
                 {propertiesOpen && (
                   <button
                     type="button"
+                    tabIndex={-1}
+                    aria-hidden="true"
                     className="absolute inset-0 bg-black/40 z-10"
-                    aria-label="Close component settings"
                     onClick={() => setPropertiesOpen(false)}
                   />
                 )}

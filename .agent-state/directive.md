@@ -309,9 +309,9 @@ that ran post-finishing-pillar merge. ONE comprehensive PR; no carve-offs.
 
 ### P9 — Code ↔ WYSIWYG sync (V1 boundary)
 
-- [ ] P9.1 docs/pillars/01-frontend.md — document one-way sync limitation as intentional V1 boundary.
-- [ ] P9.2 Code mode / Visual mode toggle with dirty-flag warning before discard.
-- [ ] P9.3 Full bidirectional sync explicitly out-of-scope (P-future).
+- [x] P9.1 docs/pillars/01-frontend.md — "WYSIWYG editor — code-sync boundary (V1)" subsection added documenting visual→code as canonical, code panel as read-only view, why one-way (round-trip risk + asset weight + audience), and full-bidi as P-future.
+- [x] P9.2 Code panel callout — `<aside role="note">` rendered above generated source on every Code tab open: "Read-only preview. This Python is generated from your components. To change it, edit components in Visual mode — typing in this panel won't update your game." V1 form of the dirty-flag warning: since the code panel has no editable surface, there's no "dirty" state to warn about; the boundary is communicated up-front instead. Kid (or parent) sees the callout immediately and isn't surprised when their text edits don't round-trip.
+- [x] P9.3 Full bidirectional sync explicitly P-future — captured in the "Out-of-scope for the V1 player-experience pillar" subsection of frontend.md, with the design sketch (split panel: generated read-only region + free-form "your additions" region executed alongside but not parsed) for whoever picks it up later. Project export ZIP is the V1 handoff to a real text editor.
 
 ### P10 — Docs / state sweep
 

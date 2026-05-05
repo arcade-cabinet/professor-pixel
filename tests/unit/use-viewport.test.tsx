@@ -4,7 +4,12 @@ import { useViewport } from '@lib/hooks/use-viewport';
 
 afterEach(() => {
   vi.unstubAllGlobals();
+  mediaListeners.clear();
 });
+
+// Captures matchMedia change listeners by query so tests can simulate a
+// pointer-modality flip (mouse plugged in, tablet docked) without resizing.
+const mediaListeners = new Map<string, Set<() => void>>();
 
 function stubViewport(width: number, opts: { coarse?: boolean; fine?: boolean } = {}) {
   const { coarse = false, fine = true } = opts;
@@ -12,9 +17,18 @@ function stubViewport(width: number, opts: { coarse?: boolean; fine?: boolean } 
   vi.stubGlobal('matchMedia', (q: string) => ({
     matches: (q.includes('pointer: coarse') && coarse) || (q.includes('any-pointer: fine') && fine),
     media: q,
-    addEventListener: () => undefined,
-    removeEventListener: () => undefined,
+    addEventListener: (_: string, cb: () => void) => {
+      if (!mediaListeners.has(q)) mediaListeners.set(q, new Set());
+      mediaListeners.get(q)!.add(cb);
+    },
+    removeEventListener: (_: string, cb: () => void) => {
+      mediaListeners.get(q)?.delete(cb);
+    },
   }));
+}
+
+function fireMediaChange(query: string) {
+  mediaListeners.get(query)?.forEach((cb) => cb());
 }
 
 describe('useViewport', () => {
@@ -41,6 +55,22 @@ describe('useViewport', () => {
     stubViewport(800, { coarse: false, fine: false });
     const { result } = renderHook(() => useViewport());
     expect(result.current.isTouchPrimary).toBe(true);
+  });
+
+  it('reacts to pointer-modality change without a resize', () => {
+    // Tablet starts coarse-only (no fine pointer at all)
+    stubViewport(1100, { coarse: true, fine: false });
+    const { result } = renderHook(() => useViewport());
+    expect(result.current.isTouchPrimary).toBe(true);
+
+    // User docks the tablet to a keyboard/mouse: any-pointer: fine becomes
+    // true and pointer: coarse flips to false. No resize fires.
+    act(() => {
+      stubViewport(1100, { coarse: false, fine: true });
+      fireMediaChange('(any-pointer: fine)');
+    });
+
+    expect(result.current.isTouchPrimary).toBe(false);
   });
 
   it('updates on window resize', () => {

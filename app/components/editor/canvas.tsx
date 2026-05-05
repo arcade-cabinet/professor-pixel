@@ -2,7 +2,7 @@ import { useRef, useEffect, useState } from 'react';
 import { useDrop } from 'react-dnd';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Trash2, Move } from 'lucide-react';
+import { Trash2 } from 'lucide-react';
 import { cn } from '@lib/utils/cn';
 import { PlacedComponent } from './wysiwyg';
 import { getComponentById } from '@lib/pygame/components/registry';
@@ -45,11 +45,17 @@ export default function PygameEditorCanvas({
     accept: 'pygame-component',
     drop: (item: { componentId: string }, monitor) => {
       const offset = monitor.getClientOffset();
-      const container = containerRef.current;
-      if (offset && container) {
-        const rect = container.getBoundingClientRect();
-        const x = offset.x - rect.left;
-        const y = offset.y - rect.top;
+      const canvas = canvasRef.current;
+      if (offset && canvas) {
+        // Match the click-place coordinate system: canvas is rendered at
+        // CSS-pixel size but its drawing buffer is fixed at 800x600. Scale
+        // CSS-pixel offsets up to internal canvas pixels so DnD drop and
+        // tap-to-place agree on where the component lands.
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        const x = (offset.x - rect.left) * scaleX;
+        const y = (offset.y - rect.top) * scaleY;
         onDrop(item.componentId, x, y);
       }
     },

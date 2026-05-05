@@ -105,6 +105,33 @@ The aggregate today reflects the unit project only. Integration and component te
 
 `app/components/dev-hud.tsx` — fixed bottom-right floating panel showing Pyodide cold-start ms, current Pyodide state (`uninitialized` / `loading` / `ready` / `error`), and the rendering host. Mounted at the App root, gated by `useDebugFlag()` (`?debug=1` query param OR `localStorage.debug='1'`). Collapse state persists in `localStorage.debug-hud-collapsed`. The HUD polls the singleton state every 500ms — keep it small and fast; don't grow it into a devtools panel.
 
+## WYSIWYG editor — code-sync boundary (V1)
+
+`app/components/editor/` hosts the visual editor (`wysiwyg.tsx` shell, `palette.tsx`, `canvas.tsx`, `properties.tsx`, `code-panel.tsx`). The editor maintains a single source of truth: `placedComponents: PlacedComponent[]` in `wysiwyg.tsx`. Switching the Tabs control between **Visual** and **Code** does not mutate that state.
+
+### Sync direction is intentionally one-way (V1)
+
+```
+Visual edits  →  PlacedComponent[]  →  generated Python
+                 (canonical)           (read-only view)
+```
+
+`code-panel.tsx` `useMemo`'s the Python source from `placedComponents` — every `componentDef.generateCode()` call is invoked at render. The displayed `<pre><code>` is **read-only**: there is no parser that turns hand-edited Python back into `PlacedComponent[]`. A learner who copy/pastes the code into an external editor and edits it owns those edits; the visual editor does not see them.
+
+The Code tab surfaces this explicitly with a callout above the source so a kid (or their parent) doesn't expect their edits to "stick" if they switch back to Visual mode.
+
+### Why one-way (V1)
+
+- **Zero round-trip risk.** A Python → AST → component-tree round-trip would silently lose anything the kid wrote that doesn't map to a registered component (free-form helper functions, custom event handlers, comments). One-way generation keeps the visual editor honest about what it can represent.
+- **Audience.** The target user is a kid learning Pygame. Forcing Python edits to be reversible would either constrain what they can write (turning the code panel into a structured-edit toy) or force a "your edits will be lost" warning every time they touch the file. Both are worse than the current "Code is generated; edit components in Visual mode" framing.
+- **Asset weight.** A real Python parser in the browser (Pyodide's `ast` module, or `tree-sitter-python` via WASM) costs hundreds of KB. We already pay for Pyodide; loading `ast` *just* for round-tripping the editor would push first-paint past the budget.
+
+### Out-of-scope for the V1 player-experience pillar
+
+Full bidirectional sync (parsing edited Python back into the component graph) is **explicitly P-future**. If we revisit it, the design likely splits the code panel into two regions: the generated portion (still read-only) and a "your additions" region (free-form, executed alongside but not parsed). That keeps the round-trip risk surface bounded.
+
+For now, learners who want to keep editing their Python use `pnpm export` / the **Project export** ZIP (`src/pygame/runtime/exporter.ts`) as the handoff to a real text editor.
+
 ## TypeScript discipline
 
 Biome's `noExplicitAny` is `error`-level. The codebase carries zero `any` annotations; new code must hold that line. Patterns to use instead:
