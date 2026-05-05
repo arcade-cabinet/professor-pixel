@@ -48,10 +48,10 @@ export default function LessonsIndex() {
     },
   });
 
-  // Surface query failures to the page error boundary instead of falling
-  // through to "0% progress / no lessons" — which is indistinguishable
-  // from "you're a new user" and silently hides real failures.
-  if (lessonsError) throw lessonsError;
+  // Progress fetch failure is the only one we throw to the boundary — without
+  // progress data the per-lesson row state is meaningless. Lessons-fetch
+  // failure has a kid-friendly in-page recovery branch below (with Refresh +
+  // Skip-to-wizard escape hatches), so we don't throw on that.
   if (progressError) throw progressError;
 
   const progressByLesson = useMemo(() => {
@@ -70,6 +70,68 @@ export default function LessonsIndex() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-pink-50 dark:from-gray-900 dark:to-purple-950">
         <p className="text-gray-700 dark:text-gray-300">Loading lessons…</p>
+      </div>
+    );
+  }
+
+  // Distinguish "fetch blew up" (couldn't reach the JSON catalog) from "fetch
+  // returned an empty list" (deploy ran but lessons.json is empty). Same
+  // gradient + Pixel framing as the rest of the app; two recovery paths so
+  // a kid is never stuck staring at a blank screen.
+  if (lessonsError) {
+    return (
+      <div
+        className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-pink-50 dark:from-gray-900 dark:to-purple-950 px-4"
+        data-testid="lessons-error-state"
+      >
+        <Card className="max-w-md w-full p-8 bg-white/90 dark:bg-gray-800/90 text-center">
+          <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+            We couldn&apos;t reach the lesson library
+          </p>
+          <p className="text-gray-700 dark:text-gray-300 mb-6">
+            Check your internet connection and try again — Pixel will be right here.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Button
+              onClick={() => window.location.reload()}
+              className="bg-gradient-to-r from-purple-500 to-pink-500"
+              data-testid="lessons-error-refresh"
+            >
+              Refresh
+            </Button>
+            <Link href="/wizard">
+              <Button variant="outline" data-testid="lessons-error-skip">
+                Skip to the wizard
+              </Button>
+            </Link>
+          </div>
+        </Card>
+      </div>
+    );
+  }
+
+  if (!lessons || lessons.length === 0) {
+    return (
+      <div
+        className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-pink-50 dark:from-gray-900 dark:to-purple-950 px-4"
+        data-testid="lessons-empty-state"
+      >
+        <Card className="max-w-md w-full p-8 bg-white/90 dark:bg-gray-800/90 text-center">
+          <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+            No lessons available yet
+          </p>
+          <p className="text-gray-700 dark:text-gray-300 mb-6">
+            We&apos;ll add some soon! In the meantime, you can build a game from scratch.
+          </p>
+          <Link href="/wizard">
+            <Button
+              className="bg-gradient-to-r from-purple-500 to-pink-500"
+              data-testid="lessons-empty-skip"
+            >
+              Start the wizard
+            </Button>
+          </Link>
+        </Card>
       </div>
     );
   }
