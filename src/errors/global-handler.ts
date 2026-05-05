@@ -49,7 +49,8 @@ class GlobalErrorHandler {
     window.addEventListener('unhandledrejection', this.handlePromiseRejection.bind(this));
 
     // Add global error tracking function for Error Boundaries and other components
-    (window as any).__trackError = this.track.bind(this);
+    (window as Window & { __trackError?: GlobalErrorHandler['track'] }).__trackError =
+      this.track.bind(this);
 
     // Handle visibility change to persist errors before tab close
     document.addEventListener('visibilitychange', this.handleVisibilityChange.bind(this));
@@ -132,7 +133,7 @@ class GlobalErrorHandler {
 
   private setupConsoleInterception() {
     const originalError = console.error;
-    console.error = (...args: any[]) => {
+    console.error = (...args: unknown[]) => {
       // Track console.error calls as potential application errors
       const errorMessage = args
         .map((arg) => (typeof arg === 'string' ? arg : JSON.stringify(arg)))
@@ -375,6 +376,10 @@ export const debugUtils = {
 
 // Make debug utils available globally in development
 if (import.meta.env.DEV) {
-  (window as any).__debugUtils = debugUtils;
-  (window as any).__errorHandler = globalErrorHandler;
+  const w = window as Window & {
+    __debugUtils?: typeof debugUtils;
+    __errorHandler?: typeof globalErrorHandler;
+  };
+  w.__debugUtils = debugUtils;
+  w.__errorHandler = globalErrorHandler;
 }

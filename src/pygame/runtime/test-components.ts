@@ -134,6 +134,7 @@ export function runComponentTests() {
 
 // Export for use in console
 if (typeof window !== 'undefined') {
-  (window as any).testPygameComponents = runComponentTests;
+  (window as Window & { testPygameComponents?: typeof runComponentTests }).testPygameComponents =
+    runComponentTests;
   console.log('💡 Pygame Component System loaded. Run testPygameComponents() in console to test.');
 }

@@ -13,11 +13,16 @@ import {
   setCookie,
   getCookie,
 } from '@lib/storage/persistence';
+import type {
+  PersistedWizardState,
+  PersistedSessionState,
+  UserPreferences,
+} from '@lib/storage/persistence';
 
 export default function PersistenceTest() {
-  const [wizardState, setWizardState] = useState<any>(null);
-  const [sessionState, setSessionState] = useState<any>(null);
-  const [preferences, setPreferences] = useState<any>(null);
+  const [wizardState, setWizardState] = useState<PersistedWizardState | null>(null);
+  const [sessionState, setSessionState] = useState<PersistedSessionState | null>(null);
+  const [preferences, setPreferences] = useState<UserPreferences | null>(null);
   const [testCookie, setTestCookie] = useState<string | null>(null);
 
   const refreshStates = () => {

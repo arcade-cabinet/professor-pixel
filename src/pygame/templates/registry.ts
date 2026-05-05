@@ -43,7 +43,7 @@ export function getAllTemplates(): GameTemplate[] {
 
 // Export for testing in browser console
 if (typeof window !== 'undefined') {
-  (window as any).testPygameTemplates = () => {
+  (window as Window & { testPygameTemplates?: () => GameTemplate[] }).testPygameTemplates = () => {
     console.log('🎮 PyGame Templates Available:');
     gameTemplates.forEach((template) => {
       console.log(`  - ${template.name} (${template.id}): ${template.description}`);

@@ -70,20 +70,21 @@ class PerformanceMonitor {
     // Monitor resource loading
     if (performance.getEntriesByType) {
       const resources = performance.getEntriesByType('resource');
-      resources.forEach((resource: any) => {
-        if (resource.duration > 100) {
+      resources.forEach((resource) => {
+        const r = resource as PerformanceResourceTiming;
+        if (r.duration > 100) {
           // Only track resources that take > 100ms
           this.addMetric({
-            id: `resource-${resource.name}`,
-            name: resource.name.split('/').pop() || 'Unknown Resource',
+            id: `resource-${r.name}`,
+            name: r.name.split('/').pop() || 'Unknown Resource',
             type: 'system',
-            startTime: resource.startTime,
-            endTime: resource.responseEnd,
-            duration: resource.duration,
+            startTime: r.startTime,
+            endTime: r.responseEnd,
+            duration: r.duration,
             status: 'completed',
             metadata: {
-              size: resource.transferSize,
-              type: resource.initiatorType,
+              size: r.transferSize,
+              type: r.initiatorType,
             },
             timestamp: new Date(),
           });
@@ -352,9 +353,12 @@ class PerformanceMonitor {
 
   // Memory monitoring
   getMemoryUsage(): { used: number; total: number; percentage: number } | null {
-    if ('memory' in performance && performance.memory) {
-      const used = Math.round((performance as any).memory.usedJSHeapSize / 1024 / 1024);
-      const total = Math.round((performance as any).memory.totalJSHeapSize / 1024 / 1024);
+    const perfWithMemory = performance as Performance & {
+      memory?: { usedJSHeapSize: number; totalJSHeapSize: number };
+    };
+    if (perfWithMemory.memory) {
+      const used = Math.round(perfWithMemory.memory.usedJSHeapSize / 1024 / 1024);
+      const total = Math.round(perfWithMemory.memory.totalJSHeapSize / 1024 / 1024);
       const percentage = Math.round((used / total) * 100);
 
       return { used, total, percentage };
@@ -477,7 +481,8 @@ export const measurePythonAsync = <T>(code: string, executeFn: () => Promise<T>)
 
 // Make performance monitor available globally in development
 if (import.meta.env.DEV) {
-  (window as any).__performanceMonitor = performanceMonitor;
+  (window as Window & { __performanceMonitor?: typeof performanceMonitor }).__performanceMonitor =
+    performanceMonitor;
 }
 
 export default performanceMonitor;

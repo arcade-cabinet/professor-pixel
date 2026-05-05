@@ -21,7 +21,7 @@ import { getPyodide } from '@lib/python/pyodide-singleton';
 // Pyodide globals are declared in src/types/pyodide.d.ts.
 
 export default function PygamePreviewTest() {
-  const [pyodide, setPyodide] = useState<any>(null);
+  const [pyodide, setPyodide] = useState<PyodideInstance | null>(null);
   const [pyodideLoading, setPyodideLoading] = useState(false);
   const [pyodideError, setPyodideError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('wizard');
@@ -78,7 +78,7 @@ export default function PygamePreviewTest() {
     }
   };
 
-  const setupPygameEnvironment = async (pyodideInstance: any) => {
+  const setupPygameEnvironment = async (pyodideInstance: PyodideInstance) => {
     try {
       // Import pygame module from our simulation
       const pygameCode = `

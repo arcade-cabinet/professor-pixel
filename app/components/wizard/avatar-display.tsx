@@ -58,8 +58,8 @@ export default function WizardAvatarDisplay({
   return (
     <motion.div
       animate={{
-        scale: ANIMATIONS.AVATAR_BOUNCE.scale as any,
-        rotate: ANIMATIONS.AVATAR_BOUNCE.rotate as any,
+        scale: [...ANIMATIONS.AVATAR_BOUNCE.scale],
+        rotate: [...ANIMATIONS.AVATAR_BOUNCE.rotate],
       }}
       transition={{
         duration: ANIMATIONS.AVATAR_BOUNCE.duration,
@@ -78,7 +78,7 @@ export default function WizardAvatarDisplay({
       {showStatusIndicator && (
         <motion.div
           className={`absolute ${statusIndicatorPosition} ${statusIndicatorSize} ${STYLES.PIXEL_STATUS_INDICATOR} ${statusIndicatorBorder}`}
-          animate={{ scale: ANIMATIONS.AVATAR_PULSE.scale as any }}
+          animate={{ scale: [...ANIMATIONS.AVATAR_PULSE.scale] }}
           transition={{
             duration: ANIMATIONS.AVATAR_PULSE.duration,
             repeat: Infinity,

@@ -10,7 +10,10 @@ export interface GamePatch {
     | 'component_change'
     | 'scene_update'
     | 'settings_update';
-  data: any;
+  /** Patch payload — shape depends on `type`; the Python receiver narrows via
+   * the discriminator. We keep `unknown` here because each patch kind packs
+   * its own shape (entity_add: full Entity; entity_move: {id, x, y}; etc.). */
+  data: unknown;
   timestamp: number;
   version: number;
 }

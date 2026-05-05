@@ -42,3 +42,4 @@
 {"ts":"2026-05-05T01:44:38.562Z","sha":"42fd800dab89","subject":"refactor(types): unknown + instanceof guards across log/event payloads","decision":null,"why":null,"resolves":["A2.1","A2.2","A2.3","A2.4 of any-cleanup-pillar batch"],"overrides":[]}
 {"ts":"2026-05-05T01:47:24.584Z","sha":"8f02a7e53ef2","subject":"refactor(types): narrow storage + schema bags to unknown / typed shapes","decision":null,"why":null,"resolves":["A3.1","A3.2 of any-cleanup-pillar batch"],"overrides":[]}
 {"ts":"2026-05-05T01:53:41.710Z","sha":"d6ccc9564fc7","subject":"refactor(types): typed component / editor / wizard refs replace any","decision":null,"why":null,"resolves":["A4.1","A4.2","A4.3 of any-cleanup-pillar batch"],"overrides":[]}
+{"ts":"2026-05-05T01:57:02.598Z","sha":"8fed482104f2","subject":"refactor(types): zero any in pygame simulator via tuple-cast renderer","decision":null,"why":null,"resolves":["A5.1","A5.2 of any-cleanup-pillar batch"],"overrides":[]}

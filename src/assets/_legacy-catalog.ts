@@ -48,7 +48,7 @@ export class AssetCatalog {
   private memoryUsage: number = 0;
   private maxMemoryUsage: number = 500 * 1024 * 1024; // 500MB default
   private hotSwapEnabled: boolean = true;
-  private assetCache: Map<string, { data: any; timestamp: number }> = new Map();
+  private assetCache: Map<string, { data: unknown; timestamp: number }> = new Map();
   private cacheTimeout: number = 60000; // 1 minute
 
   constructor(maxMemory?: number) {
@@ -429,7 +429,7 @@ export class AssetCatalog {
     }
   }
 
-  private async simulateAssetLoad(metadata: AssetMetadata): Promise<any> {
+  private async simulateAssetLoad(metadata: AssetMetadata): Promise<unknown> {
     // Simulate network delay
     await new Promise((resolve) => setTimeout(resolve, Math.random() * 100));
 

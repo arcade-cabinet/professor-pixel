@@ -155,9 +155,9 @@ Cascade: pygame/components/registry now exports `AnyPyGameComponent` (preview/ge
 
 ### A6 — Net + hooks tail
 
-- [ ] A6.1 update-bridge.ts — non-Pyodide `any` → typed bridge-message union
-- [ ] A6.2 net/data.ts — 4 `any`s on cached-response payload → `unknown`
-- [ ] A6.3 hooks/use-debug.ts — 4 `any`s on debug-panel rows → `Record<string, unknown>`
+- [x] A6.1 update-bridge.ts — `GamePatch.data: any` → `unknown` (each kind packs its own shape, Python receiver narrows via discriminator)
+- [x] A6.2 net/data.ts — `apiRequest(data)` → `unknown`; `updateUserProgress`/`createProject`/`updateProject` consume `Partial<UserProgress>` / `Omit<InsertProject, 'userId'>` / `Partial<Project>` directly (mirrors A3.1 storage adapter)
+- [x] A6.3 hooks/use-debug.ts — `logDebugInfo(label, data)`, `logProps`, `logState`, `logEffect` all `any` → `unknown`/`unknown[]`. Plus monitoring/performance.ts (PerformanceResourceTiming cast on resource entries; precise Performance & {memory?} cast for heap stats; narrow Window cast for __performanceMonitor); errors/global-handler.ts (console.error rest args → `unknown[]`; narrow Window casts for `__trackError` / `__debugUtils` / `__errorHandler`); ambient.d.ts `__debugUtils` typed as `Record<string, unknown>` since dev tools panels extend it at runtime; src/wizard/types.ts `ComponentType<any>` → `ComponentType<{className?, size?}>`; src/wizard/utils.ts/constants.ts → typed `LucideIcon` from lucide-react; avatar-display.tsx framer-motion `as any` → spread `[...]` to make the array mutable; persistence.tsx + pygame-preview.tsx + test-components.ts + templates/registry.ts + _legacy-catalog.ts cleaned up
 
 ### A7 — Test helpers
 

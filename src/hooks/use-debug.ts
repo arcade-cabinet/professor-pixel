@@ -70,7 +70,7 @@ export function useDebug() {
   }, []);
 
   const logDebugInfo = useCallback(
-    (label: string, data: any) => {
+    (label: string, data: unknown) => {
       if (isDebugMode) {
         console.group(`🐛 Debug: ${label}`);
         console.log(data);
@@ -232,21 +232,21 @@ export function useComponentDebug(componentName: string) {
   });
 
   const logProps = useCallback(
-    (props: any) => {
+    (props: unknown) => {
       logDebugInfo(`${componentName} Props`, props);
     },
     [componentName, logDebugInfo]
   );
 
   const logState = useCallback(
-    (state: any) => {
+    (state: unknown) => {
       logDebugInfo(`${componentName} State`, state);
     },
     [componentName, logDebugInfo]
   );
 
   const logEffect = useCallback(
-    (effectName: string, dependencies?: any[]) => {
+    (effectName: string, dependencies?: unknown[]) => {
       logDebugInfo(`${componentName} Effect: ${effectName}`, { dependencies });
     },
     [componentName, logDebugInfo]

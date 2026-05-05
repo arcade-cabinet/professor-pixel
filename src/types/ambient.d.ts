@@ -3,14 +3,11 @@
 declare global {
   interface Window {
     /**
-     * Debug utilities for development
+     * Debug utilities for development. Loosely typed because dev tools panels
+     * + console hooks all extend this bag at runtime; the global-handler
+     * module installs its own typed view via a narrow Window cast.
      */
-    __debugUtils?: {
-      getState: () => any;
-      setState: (state: any) => void;
-      clearCache: () => void;
-      [key: string]: any;
-    };
+    __debugUtils?: Record<string, unknown>;
 
     /**
      * Input getter for testing and debugging

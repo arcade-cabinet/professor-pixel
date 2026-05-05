@@ -1,4 +1,5 @@
 import { isStaticMode, StorageAdapter } from '@lib/storage/mode';
+import type { UserProgress, Project, InsertProject } from '@lib/types/schema';
 
 // Centralized data layer that switches between API and static storage
 class DataService {
@@ -12,7 +13,7 @@ class DataService {
   }
 
   // Helper to make API requests in non-static mode
-  private async apiRequest(method: string, url: string, data?: any) {
+  private async apiRequest(method: string, url: string, data?: unknown) {
     const response = await fetch(url, {
       method,
       headers: {
@@ -58,7 +59,7 @@ class DataService {
     return this.apiRequest('GET', `/api/progress/${lessonId}`);
   }
 
-  async updateUserProgress(lessonId: string, progressData: any) {
+  async updateUserProgress(lessonId: string, progressData: Partial<UserProgress>) {
     if (isStaticMode()) {
       return this.getStorageAdapter().updateUserProgress(lessonId, progressData);
     }
@@ -80,14 +81,14 @@ class DataService {
     return this.apiRequest('GET', `/api/projects/${id}`);
   }
 
-  async createProject(project: any) {
+  async createProject(project: Omit<InsertProject, 'userId'>) {
     if (isStaticMode()) {
       return this.getStorageAdapter().createProject(project);
     }
     return this.apiRequest('POST', '/api/projects', project);
   }
 
-  async updateProject(id: string, updates: any) {
+  async updateProject(id: string, updates: Partial<Project>) {
     if (isStaticMode()) {
       return this.getStorageAdapter().updateProject(id, updates);
     }

@@ -1,4 +1,5 @@
 import { WizardNode, DeviceState, LayoutMode, SessionActions } from './types';
+import type { LucideIcon } from 'lucide-react';
 import { BREAKPOINTS, GAME_TYPE_ICONS } from './constants';
 
 // Device detection utilities
@@ -31,7 +32,7 @@ export const extractGameType = (optionText: string): string | null => {
 };
 
 // Get icon for game type
-export const getGameTypeIcon = (optionText: string): any => {
+export const getGameTypeIcon = (optionText: string): LucideIcon | null => {
   const gameType = extractGameType(optionText);
   if (gameType && GAME_TYPE_ICONS[gameType]) {
     return GAME_TYPE_ICONS[gameType];
