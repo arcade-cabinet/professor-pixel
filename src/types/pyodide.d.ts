@@ -27,7 +27,17 @@ declare global {
   interface Window {
     loadPyodide?: (options?: PyodideLoadOptions) => Promise<PyodideInstance>;
     pyodide?: PyodideInstance;
+    /**
+     * Legacy alias for `window.pyodide` consulted by the enhanced-error capture
+     * factory. Kept distinct so we can differentiate "set by app bootstrap" from
+     * "set explicitly by error-handler test fixtures."
+     */
+    pyodideInstance?: PyodideInstance;
   }
+
+  // Some bootstrap paths set `globalThis.pyodideInstance` directly.
+  // eslint-disable-next-line no-var
+  var pyodideInstance: PyodideInstance | undefined;
 }
 
 export {};

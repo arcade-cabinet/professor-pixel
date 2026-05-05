@@ -44,7 +44,7 @@ interface PygameLivePreviewProps {
   onInteraction?: (action: string, details?: any) => void;
   className?: string;
   pixelComments?: string[];
-  pyodide?: any;
+  pyodide?: PyodideInstance;
 }
 
 interface PreviewState {

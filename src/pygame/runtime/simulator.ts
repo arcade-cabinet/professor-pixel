@@ -838,7 +838,7 @@ export const pygameShim = {
 
 // Function to register pygame shim in Pyodide
 // Pygame shim verification functions
-export function verifyPygameShimReady(pyodide: any): boolean {
+export function verifyPygameShimReady(pyodide: PyodideInstance | null | undefined): boolean {
   if (!pyodide) {
     console.warn('Pyodide instance not available for pygame verification');
     return false;
@@ -882,7 +882,7 @@ except Exception as e:
 json.dumps(verification)
 `);
 
-    const result = JSON.parse(verificationResult);
+    const result = JSON.parse(verificationResult as string);
 
     if (result.pygame_available && result.basic_functionality) {
       console.log('✅ Pygame shim verification successful');
@@ -897,7 +897,7 @@ json.dumps(verification)
   }
 }
 
-export function getPygameStatus(pyodide: any): {
+export function getPygameStatus(pyodide: PyodideInstance | null | undefined): {
   isAvailable: boolean;
   modules: string[];
   errors: string[];
@@ -997,14 +997,14 @@ except Exception as e:
 json.dumps(status)
 `);
 
-    return JSON.parse(statusResult);
+    return JSON.parse(statusResult as string);
   } catch (error) {
     defaultStatus.errors.push(`Error during comprehensive pygame status check: ${error}`);
     return defaultStatus;
   }
 }
 
-export function registerPygameShim(pyodide: any) {
+export function registerPygameShim(pyodide: PyodideInstance) {
   try {
     console.log('Registering enhanced pygame shim with real rendering...');
 
@@ -1633,7 +1633,7 @@ export function handlePygameError(error: Error, context: string): string {
 }
 
 // Enhanced diagnostics for pygame shim debugging
-export function createPygameDiagnostics(pyodide: any): {
+export function createPygameDiagnostics(pyodide: PyodideInstance | null | undefined): {
   fullReport: () => string;
   quickCheck: () => boolean;
   moduleStatus: () => { [key: string]: boolean };
@@ -1678,7 +1678,7 @@ else:
 
 json.dumps(report, indent=2)
 `);
-        return report;
+        return report as string;
       } catch (error) {
         return `Diagnostics error: ${error}`;
       }
@@ -1695,7 +1695,7 @@ try:
     True
 except:
     False
-`);
+`) as boolean;
       } catch {
         return false;
       }
@@ -1719,7 +1719,7 @@ else:
 
 json.dumps(status)
 `);
-        return JSON.parse(status);
+        return JSON.parse(status as string);
       } catch {
         return { error: 'Failed to check module status' };
       }

@@ -124,9 +124,9 @@ Branch: feat/any-cleanup-pillar
 
 ### A1 — Pyodide site sweep
 
-- [ ] A1.1 Replace `pyodide: any` / `useRef<any>` (Pyodide shape) with `PyodideInstance` across with-preview, live-preview, runner, update-bridge, error-handler, simulator
-- [ ] A1.2 Replace `(window as any).pyodide` / `(globalThis as any).pyodideInstance` with typed `Window.pyodide` ambient — health.ts, error-handler.ts
-- [ ] A1.3 Add explicit return-type casts at `pyodide.runPython` consumer sites where compile fails after A1.1
+- [x] A1.1 Replace `pyodide: any` / `useRef<any>` (Pyodide shape) with `PyodideInstance` across with-preview, live-preview, runner, update-bridge, error-handler, simulator
+- [x] A1.2 Replace `(window as any).pyodide` / `(globalThis as any).pyodideInstance` with typed `Window.pyodide` ambient — health.ts, error-handler.ts; extended pyodide.d.ts with `pyodideInstance` ambient + `var pyodideInstance` for legacy bootstrap path
+- [x] A1.3 Add explicit return-type casts at `pyodide.runPython` consumer sites where compile fails after A1.1 — update-bridge globals.get callable casts; error-handler stdout/stderr/errorInfo; simulator JSON.parse + diagnostics return casts
 
 ### A2 — Log/event payload sweep
 

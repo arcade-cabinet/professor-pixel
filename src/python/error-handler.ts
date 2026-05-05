@@ -388,7 +388,7 @@ export function createEnhancedErrorCapture(): {
     hasError: boolean;
   }>;
 } {
-  let pyodideInstance: any = null;
+  let pyodideInstance: PyodideInstance | null = null;
   let isSetup = false;
 
   return {
@@ -399,7 +399,7 @@ export function createEnhancedErrorCapture(): {
      */
     setupErrorCapture(): boolean {
       // Get pyodide instance from global window if available
-      pyodideInstance = (globalThis as any).pyodideInstance || (window as any).pyodideInstance;
+      pyodideInstance = globalThis.pyodideInstance ?? window.pyodideInstance ?? null;
 
       if (!pyodideInstance) {
         console.warn('Pyodide instance not found during setupErrorCapture');
@@ -599,7 +599,7 @@ hasattr(sys.excepthook, '__self__') and hasattr(sys.excepthook.__self__, 'last_t
     }> {
       // Ensure pyodide instance is available
       if (!pyodideInstance) {
-        pyodideInstance = (globalThis as any).pyodideInstance || (window as any).pyodideInstance;
+        pyodideInstance = globalThis.pyodideInstance ?? window.pyodideInstance ?? null;
       }
 
       if (!pyodideInstance) {
@@ -665,9 +665,18 @@ except Exception as e:
         }
 
         // Always get output and error info
-        stdout = pyodideInstance.runPython('sys.stdout.getvalue()');
-        stderr = pyodideInstance.runPython('sys.stderr.getvalue()');
-        const errorInfo = pyodideInstance.runPython('get_enhanced_error_info()').toJs();
+        stdout = pyodideInstance.runPython('sys.stdout.getvalue()') as string;
+        stderr = pyodideInstance.runPython('sys.stderr.getvalue()') as string;
+        const errorInfo = (
+          pyodideInstance.runPython('get_enhanced_error_info()') as {
+            toJs: () => {
+              traceback?: string;
+              type?: string;
+              message?: string;
+              [key: string]: unknown;
+            };
+          }
+        ).toJs();
 
         // Check if we have any error information
         if (
@@ -754,7 +763,10 @@ except Exception as e:
 /**
  * Legacy function for backward compatibility - will be deprecated
  */
-export function createEnhancedErrorCaptureWithPyodide(pyodide: any, context?: ErrorContext) {
+export function createEnhancedErrorCaptureWithPyodide(
+  pyodide: PyodideInstance,
+  context?: ErrorContext,
+) {
   return {
     /**
      * Set up enhanced error capture in Pyodide environment
@@ -881,9 +893,18 @@ except Exception as e:
         }
 
         // Always get output and error info
-        stdout = pyodide.runPython('sys.stdout.getvalue()');
-        stderr = pyodide.runPython('sys.stderr.getvalue()');
-        const errorInfo = pyodide.runPython('get_enhanced_error_info()').toJs();
+        stdout = pyodide.runPython('sys.stdout.getvalue()') as string;
+        stderr = pyodide.runPython('sys.stderr.getvalue()') as string;
+        const errorInfo = (
+          pyodide.runPython('get_enhanced_error_info()') as {
+            toJs: () => {
+              traceback?: string;
+              type?: string;
+              message?: string;
+              [key: string]: unknown;
+            };
+          }
+        ).toJs();
 
         // Check if we have any error information
         if (

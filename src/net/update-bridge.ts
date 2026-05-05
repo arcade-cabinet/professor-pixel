@@ -17,14 +17,14 @@ export interface GamePatch {
 
 // Game update bridge for real-time sync
 export class GameUpdateBridge {
-  private pyodide: any;
+  private pyodide: PyodideInstance;
   private currentVersion: number = 0;
   private pendingPatches: GamePatch[] = [];
   private isInitialized: boolean = false;
   private updateInterval: NodeJS.Timer | null = null;
   private lastConfig: GameConfig | null = null;
 
-  constructor(pyodide: any) {
+  constructor(pyodide: PyodideInstance) {
     this.pyodide = pyodide;
   }
 
@@ -146,7 +146,7 @@ print("Game Update Bridge initialized in Python")
 
     try {
       // Reset Python state
-      await this.pyodide.globals.get('reset_game_state')();
+      await (this.pyodide.globals.get('reset_game_state') as () => Promise<void>)();
 
       // Add all entities from main scene
       const mainScene = config.scenes.find((s) => s.isMainScene) || config.scenes[0];
@@ -213,7 +213,9 @@ print("Game Update Bridge initialized in Python")
 
     try {
       const patchJson = JSON.stringify(patch);
-      const result = await this.pyodide.globals.get('apply_game_patch')(patchJson);
+      const result = await (this.pyodide.globals.get('apply_game_patch') as (
+        patch: string,
+      ) => Promise<boolean>)(patchJson);
       return result;
     } catch (error) {
       console.error('Failed to apply patch:', error);
@@ -258,11 +260,11 @@ print("Game Update Bridge initialized in Python")
   }
 
   // Get current game state from Python
-  async getGameState(): Promise<any> {
+  async getGameState(): Promise<unknown> {
     if (!this.isInitialized || !this.pyodide) return null;
 
     try {
-      const stateJson = await this.pyodide.globals.get('get_game_state')();
+      const stateJson = await (this.pyodide.globals.get('get_game_state') as () => Promise<string>)();
       return JSON.parse(stateJson);
     } catch (error) {
       console.error('Failed to get game state:', error);
@@ -390,7 +392,7 @@ print("Game Update Bridge initialized in Python")
 // Singleton instance
 let bridgeInstance: GameUpdateBridge | null = null;
 
-export function getGameUpdateBridge(pyodide?: any): GameUpdateBridge {
+export function getGameUpdateBridge(pyodide?: PyodideInstance): GameUpdateBridge {
   if (!bridgeInstance && pyodide) {
     bridgeInstance = new GameUpdateBridge(pyodide);
   }

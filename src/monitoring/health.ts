@@ -62,7 +62,7 @@ class HealthMonitor {
           }
 
           // Check if pyodide instance exists
-          const pyodideInstance = (window as any).pyodide;
+          const pyodideInstance = window.pyodide;
           if (!pyodideInstance) {
             return {
               status: 'warning',
@@ -110,7 +110,7 @@ class HealthMonitor {
       check: async () => {
         try {
           const startTime = performance.now();
-          const pyodideInstance = (window as any).pyodide;
+          const pyodideInstance = window.pyodide;
 
           if (!pyodideInstance) {
             return {

@@ -11,7 +11,7 @@ import PygameLivePreview, { GameChoice } from '@/components/pygame/live-preview'
 import type { WizardOption, GameChoice as GameChoiceType } from '@lib/wizard/types';
 
 interface WizardWithPreviewProps {
-  pyodide?: any;
+  pyodide?: PyodideInstance;
   className?: string;
 }
 
