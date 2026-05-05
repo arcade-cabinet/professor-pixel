@@ -17,6 +17,10 @@ interface PygameEditorCanvasProps {
   onSelect: (id: string | null) => void;
   onMove: (id: string, x: number, y: number) => void;
   onDelete: (id: string) => void;
+  /** P4 — when set, a tap on empty canvas places this component at the
+   *  click point. This is the touch fallback for environments where the
+   *  HTML5 drag backend doesn't fire. */
+  armedComponentId?: string | null;
   className?: string;
 }
 
@@ -29,6 +33,7 @@ export default function PygameEditorCanvas({
   onSelect,
   onMove,
   onDelete,
+  armedComponentId,
   className,
 }: PygameEditorCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -135,8 +140,20 @@ export default function PygameEditorCanvas({
     if (!canvas) return;
 
     const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    // Account for CSS scaling — the canvas is rendered at 800x600 internal
+    // coords but drawn at width:100% (capped at 800px). Without this, taps on
+    // a phone-portrait canvas land at the wrong spot when armed-place fires.
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const x = (e.clientX - rect.left) * scaleX;
+    const y = (e.clientY - rect.top) * scaleY;
+
+    // P4 tap-to-place — if a palette item is armed, the next canvas tap places
+    // it at the click point (centered on the cursor) instead of selecting.
+    if (armedComponentId) {
+      onDrop(armedComponentId, x - 30, y - 30);
+      return;
+    }
 
     // Check if clicking on a component
     let clickedComponent: PlacedComponent | undefined;
@@ -155,8 +172,8 @@ export default function PygameEditorCanvas({
       if (!draggedComponent) {
         setDraggedComponent(clickedComponent.id);
         const handleMouseMove = (e: MouseEvent) => {
-          const newX = e.clientX - rect.left;
-          const newY = e.clientY - rect.top;
+          const newX = (e.clientX - rect.left) * scaleX;
+          const newY = (e.clientY - rect.top) * scaleY;
           onMove(clickedComponent.id, newX - 30, newY - 30);
         };
         const handleMouseUp = () => {
@@ -185,9 +202,14 @@ export default function PygameEditorCanvas({
     >
       <canvas
         ref={canvasRef}
-        className="cursor-crosshair"
+        className={cn(armedComponentId ? 'cursor-copy' : 'cursor-crosshair')}
         onClick={handleCanvasClick}
         style={{ width: '100%', height: '100%', maxWidth: '800px', maxHeight: '600px' }}
+        aria-label={
+          armedComponentId
+            ? 'Tap anywhere to place the armed component'
+            : 'Game canvas — click a component to select it'
+        }
       />
 
       {selectedId && (
@@ -204,9 +226,11 @@ export default function PygameEditorCanvas({
         </div>
       )}
 
-      {components.length === 0 && (
+      {components.length === 0 && !armedComponentId && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <p className="text-gray-400 text-lg">Drag components here to start building!</p>
+          <p className="text-gray-400 text-base sm:text-lg text-center px-4">
+            Drag components here, or tap one to arm it and tap to place.
+          </p>
         </div>
       )}
     </Card>

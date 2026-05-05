@@ -21,6 +21,12 @@ import { getAllComponents, PyGameComponent } from '@lib/pygame/components/regist
 
 interface PygameEditorPaletteProps {
   className?: string;
+  /** Currently armed component (tap-to-place fallback). */
+  armedComponentId?: string | null;
+  /** When provided, palette items become tappable to arm (touch fallback)
+   *  in addition to draggable. Pass undefined on desktop to disable the
+   *  tap UI and keep drag-only semantics. */
+  onArm?: (componentId: string) => void;
 }
 
 // Helper function to determine category based on component type
@@ -57,7 +63,13 @@ const componentIcons: Record<string, React.ReactNode> = {
   healthBar: <Heart className="w-5 h-5" />,
 };
 
-function DraggableComponent({ component }: { component: PyGameComponent }) {
+interface DraggableComponentProps {
+  component: PyGameComponent;
+  isArmed: boolean;
+  onArm?: (componentId: string) => void;
+}
+
+function DraggableComponent({ component, isArmed, onArm }: DraggableComponentProps) {
   const [{ isDragging }, drag] = useDrag(() => ({
     type: 'pygame-component',
     item: { componentId: component.id },
@@ -66,18 +78,22 @@ function DraggableComponent({ component }: { component: PyGameComponent }) {
     }),
   }));
 
-  return (
-    <div
-      ref={(node) => {
-        drag(node);
-      }}
-      className={cn(
-        'p-3 rounded-lg border-2 border-purple-200 bg-white hover:bg-purple-50',
-        'cursor-move transition-all hover:shadow-md hover:border-purple-400',
-        'flex items-start gap-3 group',
-        isDragging && 'opacity-50'
-      )}
-    >
+  // P4 — when onArm is provided (touch-primary or compact viewport) we render
+  // the tile as a real button so it gets keyboard activation + tap semantics.
+  // Drag still works (the ref is the same node), so a desktop user with a
+  // touchscreen gets both behaviors.
+  const baseClassName = cn(
+    'w-full text-left p-3 rounded-lg border-2 bg-white hover:bg-purple-50',
+    'transition-all hover:shadow-md flex items-start gap-3 group',
+    isArmed
+      ? 'border-purple-500 ring-2 ring-purple-300 cursor-pointer'
+      : 'border-purple-200 hover:border-purple-400',
+    onArm ? 'min-h-[44px]' : 'cursor-move',
+    isDragging && 'opacity-50'
+  );
+
+  const inner = (
+    <>
       <div className="mt-1 text-purple-600 group-hover:scale-110 transition-transform">
         {componentIcons[component.type] || <Package className="w-5 h-5" />}
       </div>
@@ -87,12 +103,49 @@ function DraggableComponent({ component }: { component: PyGameComponent }) {
         <Badge variant="secondary" className="mt-2 text-xs">
           {getCategoryForComponent(component)}
         </Badge>
+        {isArmed && (
+          <p className="text-xs font-semibold text-purple-700 mt-1">Tap the canvas to place →</p>
+        )}
       </div>
+    </>
+  );
+
+  if (onArm) {
+    return (
+      <button
+        type="button"
+        ref={(node) => {
+          drag(node);
+        }}
+        className={baseClassName}
+        onClick={() => onArm(component.id)}
+        aria-pressed={isArmed}
+        aria-label={`${component.name}. ${isArmed ? 'Armed — tap canvas to place.' : 'Tap to arm, or drag to canvas.'}`}
+        data-testid={`palette-item-${component.id}`}
+      >
+        {inner}
+      </button>
+    );
+  }
+
+  return (
+    <div
+      ref={(node) => {
+        drag(node);
+      }}
+      className={baseClassName}
+      data-testid={`palette-item-${component.id}`}
+    >
+      {inner}
     </div>
   );
 }
 
-export default function PygameEditorPalette({ className }: PygameEditorPaletteProps) {
+export default function PygameEditorPalette({
+  className,
+  armedComponentId,
+  onArm,
+}: PygameEditorPaletteProps) {
   const components = getAllComponents();
 
   // Group components by category
@@ -126,7 +179,12 @@ export default function PygameEditorPalette({ className }: PygameEditorPalettePr
               </h4>
               <div className="space-y-2">
                 {comps.map((component) => (
-                  <DraggableComponent key={component.id} component={component} />
+                  <DraggableComponent
+                    key={component.id}
+                    component={component}
+                    isArmed={armedComponentId === component.id}
+                    onArm={onArm}
+                  />
                 ))}
               </div>
             </div>

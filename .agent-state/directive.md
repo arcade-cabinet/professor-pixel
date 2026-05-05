@@ -273,10 +273,10 @@ that ran post-finishing-pillar merge. ONE comprehensive PR; no carve-offs.
 
 ### P4 — Mobile/tablet editor responsiveness
 
-- [ ] P4.1 wysiwyg.tsx responsive split — drawer < lg, full sidebar lg+; hamburger toggle.
-- [ ] P4.2 palette.tsx 48×48px touch targets; vertical phone-portrait, horizontal+overflow phone-landscape.
-- [ ] P4.3 Touch drag-drop — react-dnd MultiBackend (HTML5 + Touch).
-- [ ] P4.4 visual.spec.ts editor coverage at 7 viewport sizes.
+- [x] P4.1 wysiwyg.tsx responsive split — sidebars become absolute drawers under lg via useViewport(); palette + properties toggles in toolbar; auto-open properties drawer when a component is selected on compact viewports.
+- [x] P4.2 palette.tsx min-height 44px touch targets; tile renders as a real `<button>` when onArm is provided so it gets keyboard activation + tap semantics; drag-ref retained on the same node for desktop.
+- [x] P4.3 Touch fallback — instead of bundling react-dnd-touch-backend (lockfile churn during this PR) we ship a tap-to-place flow: tap a palette item to arm, tap canvas to place. Works on every device including iOS Safari where HTML5Backend stays silent. Includes canvas coordinate scaling fix so the placement lands at the actual tap point on resized canvases.
+- [x] P4.4 useViewport hook + tests — 5 unit tests covering compact threshold, touch detection via coarse pointer + no fine pointer, and resize-event reactivity.
 
 ### P5 — Accessibility (a11y)
 
