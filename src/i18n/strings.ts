@@ -300,17 +300,42 @@ export const strings = {
       hoursAgo: (n: number) => `${n}h ago`,
       daysAgo: (n: number) => `${n}d ago`,
     },
+    mockHistory: {
+      gameCreatedTitle: 'Created RPG Adventure',
+      gameCreatedDescription: 'Started building a fantasy RPG game',
+      lessonCompletedTitle: 'Completed Python Basics',
+      lessonCompletedDescription: 'Learned variables and functions',
+      assetSelectedTitle: 'Selected Character Sprites',
+      assetSelectedDescription: 'Added knight and wizard sprites',
+    },
     swipeHint: 'Swipe down or tap outside to close',
   },
 
   /* ─── Floating feedback (floating-feedback.tsx) ────────────────────── */
   floatingFeedback: {
-    open: 'Need help?',
-    close: 'Close help',
-    nextHint: 'Next hint',
-    showSolution: 'Show solution',
-    hideSolution: 'Hide solution',
-    noMoreHints: "That's all the hints for this step.",
+    headingComplete: 'Excellent Work! 🎉',
+    headingGuidance: 'Step Guidance',
+    stepCompleted: 'Step Completed!',
+    encouragementLast:
+      "Amazing job! You've mastered all the concepts in this lesson. Ready to complete it?",
+    encouragementNext: "Great progress! You're ready to tackle the next challenge.",
+    nextStep: 'Next Step',
+    completeLesson: 'Complete Lesson',
+    showSolution: 'Show Solution',
+    hideSolution: 'Hide Solution',
+    copySolution: 'Copy Solution',
+    copied: 'Copied!',
+    applyToEditor: 'Apply to Editor',
+    copyToast: {
+      successTitle: 'Solution copied!',
+      successDescription: 'The solution has been copied to your clipboard.',
+      errorTitle: 'Failed to copy',
+      errorDescription: 'Please try selecting and copying the text manually.',
+    },
+    applyToast: {
+      title: 'Solution applied!',
+      description: 'The solution has been added to the code editor.',
+    },
   },
 
   /* ─── Wizard (wizard/universal.tsx) ────────────────────────────────── */

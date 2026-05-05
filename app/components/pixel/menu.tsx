@@ -79,24 +79,24 @@ export default function PixelMenu({
           {
             id: '1',
             type: 'game_created',
-            title: 'Created RPG Adventure',
-            description: 'Started building a fantasy RPG game',
+            title: strings.pixelMenu.mockHistory.gameCreatedTitle,
+            description: strings.pixelMenu.mockHistory.gameCreatedDescription,
             timestamp: new Date(Date.now() - 1000 * 60 * 30), // 30 mins ago
             icon: Gamepad2,
           },
           {
             id: '2',
             type: 'lesson_completed',
-            title: 'Completed Python Basics',
-            description: 'Learned variables and functions',
+            title: strings.pixelMenu.mockHistory.lessonCompletedTitle,
+            description: strings.pixelMenu.mockHistory.lessonCompletedDescription,
             timestamp: new Date(Date.now() - 1000 * 60 * 45), // 45 mins ago
             icon: BookOpen,
           },
           {
             id: '3',
             type: 'asset_selected',
-            title: 'Selected Character Sprites',
-            description: 'Added knight and wizard sprites',
+            title: strings.pixelMenu.mockHistory.assetSelectedTitle,
+            description: strings.pixelMenu.mockHistory.assetSelectedDescription,
             timestamp: new Date(Date.now() - 1000 * 60 * 15), // 15 mins ago
             icon: Trophy,
           },

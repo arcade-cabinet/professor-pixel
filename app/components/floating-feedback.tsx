@@ -14,6 +14,7 @@ import {
 import { useState, useEffect } from 'react';
 import { useToast } from '@lib/hooks/use-toast';
 import { motion, AnimatePresence } from 'framer-motion';
+import { strings } from '@lib/i18n';
 
 interface FloatingFeedbackProps {
   step: {
@@ -73,13 +74,13 @@ export default function FloatingFeedback({
       setJustCopied(true);
       setTimeout(() => setJustCopied(false), 2000);
       toast({
-        title: 'Solution copied!',
-        description: 'The solution has been copied to your clipboard.',
+        title: strings.floatingFeedback.copyToast.successTitle,
+        description: strings.floatingFeedback.copyToast.successDescription,
       });
     } catch (_err) {
       toast({
-        title: 'Failed to copy',
-        description: 'Please try selecting and copying the text manually.',
+        title: strings.floatingFeedback.copyToast.errorTitle,
+        description: strings.floatingFeedback.copyToast.errorDescription,
         variant: 'destructive',
       });
     }
@@ -88,8 +89,8 @@ export default function FloatingFeedback({
   const handleApplySolution = () => {
     onApplySolution(step.solution);
     toast({
-      title: 'Solution applied!',
-      description: 'The solution has been added to the code editor.',
+      title: strings.floatingFeedback.applyToast.title,
+      description: strings.floatingFeedback.applyToast.description,
     });
   };
 
@@ -140,7 +141,9 @@ export default function FloatingFeedback({
                 </motion.div>
                 <div className="flex-1">
                   <h4 className="text-lg font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                    {showNext ? 'Excellent Work! 🎉' : 'Step Guidance'}
+                    {showNext
+                      ? strings.floatingFeedback.headingComplete
+                      : strings.floatingFeedback.headingGuidance}
                   </h4>
                 </div>
               </motion.div>
@@ -168,12 +171,12 @@ export default function FloatingFeedback({
                 <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} className="space-y-3">
                   <div className="flex items-center gap-2 text-success">
                     <CheckCircle className="h-5 w-5" />
-                    <span className="font-semibold">Step Completed!</span>
+                    <span className="font-semibold">{strings.floatingFeedback.stepCompleted}</span>
                   </div>
                   <p className="text-base text-muted-foreground leading-relaxed">
                     {isLastStep
-                      ? "Amazing job! You've mastered all the concepts in this lesson. Ready to complete it?"
-                      : "Great progress! You're ready to tackle the next challenge."}
+                      ? strings.floatingFeedback.encouragementLast
+                      : strings.floatingFeedback.encouragementNext}
                   </p>
                 </motion.div>
               ) : (
@@ -214,12 +217,16 @@ export default function FloatingFeedback({
                       {isLastStep ? (
                         <>
                           <Trophy className="h-5 w-5 mr-2" />
-                          <span className="text-base font-semibold">Complete Lesson</span>
+                          <span className="text-base font-semibold">
+                            {strings.floatingFeedback.completeLesson}
+                          </span>
                           <Zap className="h-4 w-4 ml-1 group-hover:animate-pulse" />
                         </>
                       ) : (
                         <>
-                          <span className="text-base font-semibold">Next Step</span>
+                          <span className="text-base font-semibold">
+                            {strings.floatingFeedback.nextStep}
+                          </span>
                           <ArrowRight className="h-5 w-5 ml-2 group-hover:translate-x-1 transition-transform" />
                         </>
                       )}
@@ -235,7 +242,9 @@ export default function FloatingFeedback({
                     data-testid="button-show-solution"
                   >
                     <Code className="h-4 w-4 mr-2" />
-                    {showSolution ? 'Hide Solution' : 'Show Solution'}
+                    {showSolution
+                      ? strings.floatingFeedback.hideSolution
+                      : strings.floatingFeedback.showSolution}
                   </Button>
                 </motion.div>
               </div>
@@ -271,12 +280,12 @@ export default function FloatingFeedback({
                           {justCopied ? (
                             <>
                               <CheckCircle className="h-4 w-4 text-success" />
-                              <span>Copied!</span>
+                              <span>{strings.floatingFeedback.copied}</span>
                             </>
                           ) : (
                             <>
                               <Copy className="h-4 w-4" />
-                              <span>Copy Solution</span>
+                              <span>{strings.floatingFeedback.copySolution}</span>
                             </>
                           )}
                         </Button>
@@ -291,7 +300,7 @@ export default function FloatingFeedback({
                           data-testid="button-apply-solution"
                         >
                           <Code className="h-4 w-4" />
-                          Apply to Editor
+                          {strings.floatingFeedback.applyToEditor}
                         </Button>
                       </motion.div>
                     </div>
