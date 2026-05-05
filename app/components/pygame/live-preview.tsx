@@ -27,6 +27,7 @@ import {
 import { PythonRunner } from '@lib/python/runner';
 import { generatePygameCode } from '@lib/wizard/code-generator';
 import { strings } from '@lib/i18n';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 export interface GameChoice {
   type: 'character' | 'enemy' | 'collectible' | 'background' | 'rule' | 'mechanic';
@@ -489,9 +490,22 @@ export default function PygameLivePreview({
                   className="w-full h-auto cursor-pointer"
                   data-testid="canvas-comparison-preview"
                 />
-                <Badge className="absolute top-2 right-2" variant="outline">
-                  Alternative
-                </Badge>
+                <TooltipProvider delayDuration={200}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Badge
+                        className="absolute top-2 right-2 cursor-help"
+                        variant="outline"
+                        data-testid="badge-expected-output"
+                      >
+                        {strings.livePreview.alternativeBadge}
+                      </Badge>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p className="max-w-xs">{strings.livePreview.alternativeTooltip}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </div>
             )}
           </div>
@@ -533,10 +547,19 @@ export default function PygameLivePreview({
               </Button>
 
               {showComparison && (
-                <Button size="sm" variant="outline" data-testid="button-toggle-split">
-                  <Split className="h-4 w-4 mr-1" />
-                  Compare
-                </Button>
+                <TooltipProvider delayDuration={200}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button size="sm" variant="outline" data-testid="button-toggle-split">
+                        <Split className="h-4 w-4 mr-1" />
+                        Compare
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p className="max-w-xs">{strings.livePreview.compareButtonTooltip}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               )}
             </div>
 

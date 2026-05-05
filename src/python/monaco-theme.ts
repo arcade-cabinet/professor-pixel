@@ -29,7 +29,7 @@ export const PP_DARK_LINE_NUMBER_ACTIVE = '#ffffff'; // 16.10:1
 export const PP_DARK_CURSOR = '#ffd866';
 // Syntax tokens
 export const PP_DARK_KEYWORD = '#7cc3ff'; // 7.94:1 vs bg (was #569cd6)
-export const PP_DARK_STRING = '#ce9178'; // 5.21:1 (vs-dark default — already AA)
+export const PP_DARK_STRING = '#ce9178'; // 6.31:1 vs bg (vs-dark default already comfortable)
 export const PP_DARK_COMMENT = '#7eb478'; // 6.27:1 vs bg (was #6a9955)
 export const PP_DARK_NUMBER = '#b5cea8'; // 9.97:1 vs bg
 export const PP_DARK_FUNCTION = '#dcdcaa'; // 12.25:1 vs bg

@@ -49,6 +49,31 @@ describe('Monaco pp-dark theme contrast (P4.30)', () => {
     }
   });
 
+  it('vs-dark inherited tokens (decorator, variable, default) clear AA against the bg', () => {
+    // Folded forward from task-030 review: pp-dark inherits from
+    // vs-dark via `inherit: true`. Tokens we don't explicitly
+    // override (decorator/c586c0, default text/d4d4d4, identifier/
+    // 9cdcfe, type/4ec9b0, number/b5cea8, function/dcdcaa) must
+    // still hit AA against the background. They do, but the test
+    // pins the contract so a future Monaco upgrade that retunes
+    // the base theme can't silently regress us below threshold.
+    const inherited: Array<[string, string]> = [
+      ['default-text', '#d4d4d4'],
+      ['function', '#dcdcaa'],
+      ['identifier', '#9cdcfe'],
+      ['decorator', '#c586c0'],
+      ['type', '#4ec9b0'],
+      ['number', '#b5cea8'],
+    ];
+    for (const [name, color] of inherited) {
+      const ratio = contrastRatio(color, PP_DARK_BACKGROUND);
+      expect(
+        meetsAaNormal(color, PP_DARK_BACKGROUND),
+        `inherited ${name} = ${color} → ${ratio.toFixed(2)}:1 (AA needs ≥ 4.50:1)`
+      ).toBe(true);
+    }
+  });
+
   it('clears AA with comfortable headroom on tokens that vs-dark cuts close', () => {
     // The vs-dark defaults squeak past AA but sit close to the
     // 4.5:1 floor where antialiasing erodes effective contrast on

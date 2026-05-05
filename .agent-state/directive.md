@@ -455,7 +455,7 @@ Branch: feat/player-experience-pillar-4
 
 ### task-031 "Expected output" + tooltip explanation
 
-- [ ] task-031 live-preview comparison badge + tooltip routed via useStrings()
+- [x] task-031 live-preview comparison badge + tooltip routed via useStrings()
 
 ### task-032 Optional pronouns dropdown + emoji picker on /profile
 

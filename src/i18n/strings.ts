@@ -395,6 +395,11 @@ export const strings = {
     // when the Resume button is scrolled below the canvas. Lean on the
     // keyboard hint plus a generic "Resume button below" pointer.
     pauseHint: 'Press P or tap the Resume button below to keep playing',
+    // P4.31 — "Expected output" / Alternative badge tooltip.
+    alternativeBadge: 'Expected output',
+    alternativeTooltip:
+      'This is what your game should look like — compare it to your version on the left.',
+    compareButtonTooltip: 'Show your game and the expected output side by side',
   },
 
   /* ─── Wizard (wizard/universal.tsx) ────────────────────────────────── */
