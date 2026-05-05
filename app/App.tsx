@@ -1,4 +1,4 @@
-import { Switch, Route, useLocation } from 'wouter';
+import { Switch, Route, Router as WouterRouter, useLocation } from 'wouter';
 import { useEffect } from 'react';
 import { queryClient } from '@lib/net/query-client';
 import { QueryClientProvider } from '@tanstack/react-query';
@@ -126,12 +126,32 @@ function Router() {
   );
 }
 
-function App() {
+// Strip the trailing slash from Vite's BASE_URL so wouter's Router
+// matches `path="/"` against the base. On GitHub Pages this is
+// `/professor-pixel`; in dev it's the empty string. Without this,
+// every route renders NotFound on a Pages subpath deploy.
+function getRouterBase(): string {
+  const raw = (typeof import.meta !== 'undefined' && import.meta.env?.BASE_URL) || '/';
+  const trimmed = raw.endsWith('/') ? raw.slice(0, -1) : raw;
+  return trimmed === '' ? '' : trimmed;
+}
+
+function AppShell() {
   const [location, setLocation] = useLocation();
 
+  return (
+    <>
+      <Toaster />
+      <Router />
+      <PixelPresence onNavigate={setLocation} currentPath={location} />
+      <DevHud />
+    </>
+  );
+}
+
+function App() {
   // Initialize global error handling
   useEffect(() => {
-    // Ensure global error handler is initialized
     globalErrorHandler.initialize();
   }, []);
 
@@ -139,12 +159,9 @@ function App() {
     <AppErrorBoundary>
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
-          <>
-            <Toaster />
-            <Router />
-            <PixelPresence onNavigate={setLocation} currentPath={location} />
-            <DevHud />
-          </>
+          <WouterRouter base={getRouterBase()}>
+            <AppShell />
+          </WouterRouter>
         </TooltipProvider>
       </QueryClientProvider>
     </AppErrorBoundary>
