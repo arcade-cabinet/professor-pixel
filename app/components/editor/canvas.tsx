@@ -34,7 +34,7 @@ export default function PygameEditorCanvas({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [draggedComponent, setDraggedComponent] = useState<string | null>(null);
-  const animationFrameRef = useRef<number>();
+  const animationFrameRef = useRef<number | undefined>(undefined);
 
   const [{ isOver }, drop] = useDrop(() => ({
     accept: 'pygame-component',

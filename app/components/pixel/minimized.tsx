@@ -54,7 +54,7 @@ export default function PixelMinimized({
   const [showEncouragement, setShowEncouragement] = useState(false);
   const [encouragementMessage, setEncouragementMessage] = useState(encouragementMessages[0]);
   const [idleAnimation, setIdleAnimation] = useState<'blink' | 'wave' | null>(null);
-  const timeoutRef = useRef<NodeJS.Timeout>();
+  const timeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
   // Position based on device
   const position = isMobile 

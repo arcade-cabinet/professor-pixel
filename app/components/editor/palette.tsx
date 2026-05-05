@@ -59,7 +59,9 @@ function DraggableComponent({ component }: { component: PyGameComponent }) {
 
   return (
     <div
-      ref={drag}
+      ref={(node) => {
+        drag(node);
+      }}
       className={cn(
         "p-3 rounded-lg border-2 border-purple-200 bg-white hover:bg-purple-50",
         "cursor-move transition-all hover:shadow-md hover:border-purple-400",

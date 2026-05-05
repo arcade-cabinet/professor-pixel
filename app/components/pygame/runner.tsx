@@ -27,7 +27,7 @@ export default function PygameRunner({
 }: PygameRunnerProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const pyodideRef = useRef<any>(null);
-  const animationFrameRef = useRef<number>();
+  const animationFrameRef = useRef<number | undefined>(undefined);
   const [isRunning, setIsRunning] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
