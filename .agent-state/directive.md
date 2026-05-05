@@ -1,6 +1,6 @@
 # Continuous Work Directive — professor-pixel
 
-**Status:** RELEASED
+**Status:** ACTIVE
 **Owner:** jbogaty
 
 ## What CONTINUOUS means
@@ -74,3 +74,44 @@ Branch: feat/stabilization-pillar
 - [x] S3 Unify or document the pygame-component type seam — `src/pygame/components/types.ts` vs `system-types.ts`; `npm run check` clean
 - [x] S4 Grader e2e via worker — new `tests/component/grader-e2e.test.tsx` runs each lesson's `solution` through the worker, asserts `score === 1.0` for every step
 - [x] SD.1 Update `docs/STATE.md` — move stabilized items from Next → Done; refresh; queue `no-explicit-any` cleanup as a separate PRQ at 209-instance impact
+
+## Batch — modernization-pillar (batch-20260504-193000)
+
+Source: docs/plans/modernization-pillar.prq.md (sha256: 98b175231f3d92f9872f21d62752889eac7667b3b6496b006a768c828f2df1f1)
+Started: 2026-05-04T19:30:00Z
+Branch: feat/modernization-pillar
+
+### M1 — Toolchain modernization
+
+- [ ] M1.1 pnpm 10 replaces npm — `packageManager` set, `pnpm-lock.yaml` committed, `package-lock.json` deleted, GitHub Actions use `pnpm/action-setup@v4` + `corepack enable`, `pnpm install --frozen-lockfile` is CI install
+- [ ] M1.2 TypeScript 6.x bump — `pnpm check` clean, deprecated compiler options dropped, Pyodide ambient still resolves
+- [ ] M1.3 Vite 8 + Vitest 4 + @vitest/browser 4 — all dev/build/test scripts green, Pyodide worker import still works
+- [ ] M1.4 React 19 — `react`/`react-dom` at ^19.x, no deprecation warnings, forwardRef migrations applied
+- [ ] M1.5 Biome 2.4 replaces ESLint+Prettier — `biome.json` configured with `noExplicitAny: error`, eslint/prettier devDeps removed, CI uses `biome check`
+
+### M2 — Type / schema / test config cleanup
+
+- [ ] M2.1 Fix the 209 `any`s — `pnpm biome check .` clean with `noExplicitAny: error`; net deletions, no shims
+- [ ] M2.2 Re-enable Vitest coverage thresholds — 90/85/90/90; lcov reporter for CI artifact upload
+- [ ] M2.3 Wizard-dialogue integration tests refresh — rewrite or replace `wizard-dialogue-engine.test.tsx`; remove exclude
+
+### M3 — Visual + accessibility baseline
+
+- [ ] M3.1 Playwright visual-regression baseline — `tests/e2e/visual.spec.ts` per route × viewport; CI artifact diff
+- [ ] M3.2 `@axe-core/playwright` checks — `tests/e2e/a11y.spec.ts` zero WCAG 2.2 AA violations on major routes
+
+### M4 — Pyodide / PyGame correctness
+
+- [ ] M4.1 Cold-start budget — perf timer on `getPyodide()`; budget documented in `docs/pillars/02-runtime.md`; dev HUD overlay
+- [ ] M4.2 Frame-rate test — simulator with realistic component count holds <16.67ms mean frame time over 2s
+- [ ] M4.3 Worker-side stdout truncation — enforce `maxStdout` in worker stdout callback; `clipResult` becomes verification
+
+### M5 — Grader instrumentation
+
+- [ ] M5.1 Real `functionCalled` instrumentation — worker `runWithCallTracking` API; engine uses real counts
+- [ ] M5.2 Real `acceptsUserInput` instrumentation — count `input()` invocations in worker; engine asserts count > 0
+
+### M6 — Content + STATE.md
+
+- [ ] M6.1 Three new lessons — lesson-7 (lists), lesson-8 (files), lesson-9 (classes); grader-e2e green for each
+- [ ] M6.2 STATE.md final pass — move all M-tasks Active → Done; trim Next; add per-game-type playtest follow-ups
