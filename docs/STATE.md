@@ -11,30 +11,13 @@ domain: context
 
 ## Active
 
-### Modernization pillar (this branch: `feat/modernization-pillar`)
-
-Bundle every remaining toolchain bump + correctness gap from the prior STATE.md → Next into one coordinated PR with one commit per concern. Source PRQ: [`docs/plans/modernization-pillar.prq.md`](plans/modernization-pillar.prq.md).
-
-- [x] M1.1 — pnpm 10.33 replaces npm. `packageManager: pnpm@10.33.2` pinned, `pnpm-lock.yaml` committed, all three GitHub Actions (`ci.yml`, `cd.yml`, `release.yml`) use `pnpm/action-setup@v4` with `cache: 'pnpm'`.
-- [x] M1.2 — TypeScript 6.0.3 bump. Dropped deprecated `baseUrl` from `tsconfig.json` (paths still resolve relative to tsconfig dir). One source migration: `getFromLocalStorage<T>` JSON.parse cast tightened.
-- [x] M1.3 — Vite 8.0.10 + Vitest 4.1.5 + @vitest/browser 4.1.5 single coordinated bump. New dep `@vitest/browser-playwright` 4.1.5 (Vitest 4 split the provider out); vitest.config.ts uses `provider: playwright()` (callable) instead of `'playwright'` (string). Pyodide worker `await import('pyodide.mjs')` still bundles + loads.
-- [x] M1.4 — React 19.2.5 + framer-motion 12.38.0. Source migrations: `useRef<T>()` now requires explicit initial value (3 hooks), JSX namespace dropped from global (1 type import added in `layout-manager.tsx`), react-dnd's `ConnectDragSource` no longer assignable directly to `Ref<T>` (1 callback-ref wrapping in `palette.tsx`).
-- [x] M1.5 — Biome 2.4.14 replaces ESLint + Prettier. New `biome.json` matched to old ESLint rule set (recommended: false; targeted: noUnusedVariables, useExhaustiveDependencies, useHookAtTopLevel, noExplicitAny, noDoubleEquals, noArrayIndexKey). 218 files reformatted by `biome format --write` (no semantic changes). `pnpm lint` is now blocking in CI; ESLint/Prettier devDeps removed.
-- [x] M2.3 — Quarantined `wizard-dialogue-engine.test.tsx` deleted (per "stubs are bugs" rule); exclude removed from vitest.config.ts. Focused replacement queued for the wizard-coverage PRQ.
-- [x] M4.1 — Pyodide cold-start instrumented with `performance.now()`; budget (3s mid-tier laptop / 8s Chromebook) documented in `docs/pillars/02-runtime.md` with the remediation hierarchy. `getColdStartMs()` exposed for HUD use.
-- [x] M4.3 — Stdout truncation moved into the worker's stdout callback (`appendStdout`); main-thread `verifyClippedResult` now defense-in-depth, not primary enforcement. New unit test proves the cap-miss fallback path.
-- [ ] M3.1 — Playwright visual-regression baseline. `tests/e2e/visual.spec.ts` per route × viewport.
-- [ ] M3.2 — `@axe-core/playwright` accessibility checks. `tests/e2e/a11y.spec.ts` zero WCAG 2.2 AA violations on major routes.
-- [ ] M4.2 — Frame-rate test for the simulator. Component-project test asserts mean frame time <16.67ms over 2s with realistic component count.
-- [ ] M5.1 — Real `functionCalled` instrumentation via worker-side monkey-patching.
-- [ ] M5.2 — Real `acceptsUserInput` instrumentation via worker-side `input()` counter.
-- [ ] M6.1 — Three more lessons: lesson-7 (lists), lesson-8 (files), lesson-9 (classes).
-- [ ] M6.2 — STATE.md final pass (this entry, recursively).
+_No work in flight. The modernization pillar (`feat/modernization-pillar`) is queued for review and squash-merge to `main`._
 
 ## Done (recent milestones)
 
 | Milestone | When | Notes |
 |-----------|------|-------|
+| Modernization pillar (toolchain bumps + correctness gaps) | 2026-05 | Branch: `feat/modernization-pillar`. M1.1–M1.5 toolchain (pnpm 10, TS 6, Vite 8 + Vitest 4, React 19, Biome 2.4); M2.3 quarantined wizard test removed; M3.1 visual regression baseline; M3.2 axe-core a11y suite; M4.1 cold-start budget instrumentation; M4.3 worker-side stdout truncation; M5.1 sys.settrace functionCalled instrumentation; M5.2 input() call counter; M6.1 lessons 7-9 (lists, files, classes). |
 | Stabilization pillar (banner, type seam, grader e2e) | 2026-05 | Squashed into `8f478f8` on main; PR #20 |
 | Foundations pillar (Pyodide worker, Zod lessons, AST grading, 6 lessons) | 2026-05 | Squashed into `f4f418d` on main; PR #19 |
 | Capacitor-style layout + browser-only deploy | 2026-05 | Squashed into `ec275bd` on main; R1–R11 phases |
@@ -50,9 +33,9 @@ Bundle every remaining toolchain bump + correctness gap from the prior STATE.md 
 
 Sized roughly so any one item is a single PR.
 
-### `any` cleanup PRQ (carved off M2.1)
+### `any` cleanup PRQ (carved off modernization-M2.1)
 
-Bulk `any → unknown` replacement was attempted during the modernization pillar and rolled back: replacing 209 instances mechanically caused 60+ cascading TS errors (Pyodide instances typed as `any` everywhere; runtime/error-handler/persistence shapes that need real types, not `unknown`). The fix is structural, not per-instance:
+Bulk `any → unknown` was attempted in the modernization pillar and rolled back: replacing 209 instances mechanically caused 60+ cascading TS errors. The fix is structural, not per-instance:
 
 1. Author a real Pyodide type covering `runPython`, `runPythonAsync`, `globals.set/get`, `loadPackage` — replace `pyodide: any` with that type across simulator, error-handler, runner.
 2. Type the legacy state shapes for `storage/persistence` migration (currently `Partial<unknown>` blows up the spread).
@@ -60,14 +43,28 @@ Bulk `any → unknown` replacement was attempted during the modernization pillar
 
 Once 1+2+3 land, flip Biome's `noExplicitAny` to `error`.
 
-### Wizard / coverage PRQ (carved off M2.2 + M2.3 follow-up)
+### Wizard / coverage / simulator-harness PRQ (carved off modernization-M2.2 + -M2.3 + -M4.2)
 
-- Re-enable Vitest coverage thresholds — currently statements: 7.15% / branches: 5%. Setting 90/85/90/90 today would lock CI red. Strategy: ratchet thresholds up incrementally as tests are added (start at 10/10/10/10, raise per-PR).
-- Focused integration tests for whichever wizard-flow paths still need coverage after the dialogue-engine restructure.
+- Re-enable Vitest coverage thresholds — currently statements: 7.15% / branches: 5%. Setting 90/85/90/90 today would lock CI red. Strategy: ratchet thresholds up incrementally (start at 10/10/10/10, raise per-PR).
+- Focused integration tests for whichever wizard-flow paths still need coverage after the dialogue-engine restructure (replaces the deleted `wizard-dialogue-engine.test.tsx`).
+- Simulator test harness: stand up a deterministic mounting API for `src/pygame/runtime/simulator.ts` so the frame-rate test (M4.2 deferred) can actually be authored.
 
-### Content
+### Grader follow-ups (carved off modernization-M5.x)
 
-- **Per-game-type playtest follow-ups.** Each `docs/playtests/` file lists open tuning items; convert the most-blocking into wizard PRs.
+- `runtimeRules.variableExists` consults the main-thread Pyodide globals, but the worker runs the code in its own Pyodide. Today the rule is effectively unusable for worker-routed lessons. Move the lookup to the worker side — `runSnippet` should accept `inspectGlobals: string[]` and return their values, mirroring the `trackFunctions` plumbing landed in M5.1.
+- Dev HUD overlay for cold-start (deferred from M4.1 — needs a small floating debug-info panel).
+
+### Per-game-type playtest follow-ups
+
+Each `docs/playtests/` file lists open tuning items; convert the most-blocking into wizard PRs.
+
+- `docs/playtests/breakout.md` — calibration on launch angle and brick row count.
+- `docs/playtests/collecting.md` — drop rate vs movement speed balance.
+- `docs/playtests/platformer.md` — jump arc tuning across keyboard / touch.
+- `docs/playtests/pong.md` — paddle control feel on mobile.
+- `docs/playtests/shooter.md` — projectile cooldown and enemy density.
+
+(One item per playtest file with a one-line note of the most-blocking tune.)
 
 ## Blocked / waiting
 

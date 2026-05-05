@@ -1,6 +1,6 @@
 # Continuous Work Directive — professor-pixel
 
-**Status:** ACTIVE
+**Status:** RELEASED
 **Owner:** jbogaty
 
 ## What CONTINUOUS means
@@ -114,4 +114,4 @@ Branch: feat/modernization-pillar
 ### M6 — Content + STATE.md
 
 - [x] M6.1 Three new lessons — lesson-7 (lists, 3 steps), lesson-8 (files via Pyodide virtual FS, 2 steps), lesson-9 (classes, 3 steps). Each step has full AST rules (variable_assignment, loop, function_call, defines_class, calls_method) plus appropriate runtimeRules.outputContains. Grader-e2e green: all 9 lessons × all steps score 1.0 through the worker.
-- [ ] M6.2 STATE.md final pass — move all M-tasks Active → Done; trim Next; add per-game-type playtest follow-ups
+- [x] M6.2 STATE.md final pass — modernization pillar moved Active → Done as a single milestone row; Next now reflects 4 carve-off PRQs (any-cleanup, wizard/coverage/simulator-harness, grader follow-ups, playtest follow-ups). Per-game-type playtest stubs seeded.
