@@ -109,7 +109,7 @@ Branch: feat/modernization-pillar
 ### M5 — Grader instrumentation
 
 - [ ] M5.1 Real `functionCalled` instrumentation — worker `runWithCallTracking` API; engine uses real counts
-- [ ] M5.2 Real `acceptsUserInput` instrumentation — count `input()` invocations in worker; engine asserts count > 0
+- [x] M5.2 Real `acceptsUserInput` instrumentation — worker monkey-patch counts `builtins.input()` calls into `__pp_input_calls`; RunResult exposes `inputCalls`; engine threads through to validateRuntime; rule passes only if `inputCalls > 0` (not "test provided input")
 
 ### M6 — Content + STATE.md
 

@@ -15,7 +15,8 @@ export async function validateRuntime(
   output: string,
   rules: RuntimeRules | undefined,
   input: string | undefined,
-  pyodide: PyodideInstance | null
+  pyodide: PyodideInstance | null,
+  inputCalls: number = 0
 ): Promise<RuleResult[]> {
   if (!rules) return [];
   const results: RuleResult[] = [];
@@ -73,11 +74,15 @@ export async function validateRuntime(
   }
 
   if (rules.acceptsUserInput) {
-    const ok = typeof input === 'string' && input.length > 0;
+    // Real instrumentation: the worker monkey-patches builtins.input and counts
+    // each call; engine threads `inputCalls` here. A test that provides input
+    // but whose code never calls `input()` now fails this rule (previously it
+    // passed because the legacy heuristic only checked "did the test pass input?").
+    const ok = inputCalls > 0;
     results.push({
       id: 'runtime.acceptsUserInput',
       passed: ok,
-      message: ok ? 'Code accepts user input' : 'Code should accept input()',
+      message: ok ? 'Code accepts user input' : 'Code should call input() to read user input',
     });
   }
 

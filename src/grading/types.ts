@@ -53,6 +53,8 @@ export interface CodeRunner {
   runSnippet: (args: { code: string } & CodeRunnerOptions) => Promise<{
     output: string;
     error: string | null;
+    /** Number of times the snippet called `input()`. Worker-only — non-worker runners may report 0. */
+    inputCalls: number;
   }>;
 }
 

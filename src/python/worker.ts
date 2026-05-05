@@ -21,6 +21,8 @@ const PYODIDE_BASE = '/pyodide/';
 export interface RunResult {
   output: string;
   error: string | null;
+  /** Number of times the user code called `input()`. Zero if the snippet never read stdin. */
+  inputCalls: number;
 }
 
 // Default mirrors worker-runner.ts; main thread's RunOptions.maxStdout overrides per-call.
@@ -89,15 +91,20 @@ class WorkerRunner {
     pyodide.globals.set('__pp_has_input__', input !== undefined);
     pyodide.runPython(`
 import builtins, io
+__pp_input_calls = 0
 if __pp_has_input__:
     _pp_buf = io.StringIO(__pp_input__ + ('' if __pp_input__.endswith('\\n') else '\\n'))
     def __pp_input(prompt=''):
+        global __pp_input_calls
+        __pp_input_calls += 1
         line = _pp_buf.readline()
         if line == '':
             raise EOFError('EOF when reading a line')
         return line[:-1] if line.endswith('\\n') else line
 else:
     def __pp_input(prompt=''):
+        global __pp_input_calls
+        __pp_input_calls += 1
         raise EOFError('EOF when reading a line')
 builtins.input = __pp_input
 `);
@@ -107,6 +114,7 @@ builtins.input = __pp_input
       return {
         output: this.stdoutBuffer.join(''),
         error: this.stderrBuffer.length ? this.stderrBuffer.join('') : null,
+        inputCalls: Number(pyodide.globals.get('__pp_input_calls') ?? 0),
       };
     } catch (err) {
       // Pyodide wraps Python tracebacks in a JS Error.
@@ -114,6 +122,7 @@ builtins.input = __pp_input
       return {
         output: this.stdoutBuffer.join(''),
         error: message,
+        inputCalls: Number(pyodide.globals.get('__pp_input_calls') ?? 0),
       };
     }
   }

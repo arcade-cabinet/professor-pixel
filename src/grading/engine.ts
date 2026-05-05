@@ -14,16 +14,18 @@ import type { GradeResult, GradingContext, RuleResult, TestSpec } from './types'
  */
 export async function gradeCode(
   context: GradingContext,
-  preExecutionResult?: { output: string; error: string | null }
+  preExecutionResult?: { output: string; error: string | null; inputCalls?: number }
 ): Promise<GradeResult> {
   const { code, step, input, runner, pyodide } = context;
 
   let actualOutput: string;
   let executionError: string | null = null;
+  let inputCalls = 0;
 
   if (preExecutionResult) {
     actualOutput = preExecutionResult.output;
     executionError = preExecutionResult.error;
+    inputCalls = preExecutionResult.inputCalls ?? 0;
   } else {
     // Step caps: take the *minimum* timeout across all rule-mode tests so a
     // single fast test doesn't get a generous cap meant for a slower one.
@@ -32,6 +34,7 @@ export async function gradeCode(
       const result = await runner.runSnippet({ code, input, ...stepCaps });
       actualOutput = result.output;
       executionError = result.error;
+      inputCalls = result.inputCalls;
     } catch (err) {
       if (err instanceof PythonTimeoutError) {
         return {
@@ -83,7 +86,13 @@ export async function gradeCode(
   for (const test of tests) {
     if (test.mode === 'rules' && (test.astRules || test.runtimeRules)) {
       const astResults = await validateAst(code, test.astRules, pyodide);
-      const runtimeResults = await validateRuntime(actualOutput, test.runtimeRules, input, pyodide);
+      const runtimeResults = await validateRuntime(
+        actualOutput,
+        test.runtimeRules,
+        input,
+        pyodide,
+        inputCalls
+      );
       astAll.push(...astResults);
       runtimeAll.push(...runtimeResults);
     } else {

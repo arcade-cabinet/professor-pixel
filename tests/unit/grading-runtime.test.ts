@@ -29,11 +29,17 @@ describe('validateRuntime', () => {
     expect(r[0].message).toContain('Invalid');
   });
 
-  it('checks acceptsUserInput', async () => {
-    const ok = await validateRuntime('out', { acceptsUserInput: true }, 'hello', null);
+  it('checks acceptsUserInput against real input() call count, not test-input shape', async () => {
+    // Code that called input() at least once: passes.
+    const ok = await validateRuntime('out', { acceptsUserInput: true }, 'hello', null, 1);
     expect(ok[0].passed).toBe(true);
-    const bad = await validateRuntime('out', { acceptsUserInput: true }, undefined, null);
+    // Code that never called input() — even though the test provided input — fails.
+    // (This is the new contract: previously passing input was enough; now you must use it.)
+    const bad = await validateRuntime('out', { acceptsUserInput: true }, 'hello', null, 0);
     expect(bad[0].passed).toBe(false);
+    // Default for inputCalls (omitted) is 0 → fails.
+    const badDefault = await validateRuntime('out', { acceptsUserInput: true }, undefined, null);
+    expect(badDefault[0].passed).toBe(false);
   });
 
   it('checks outputIncludesInput', async () => {

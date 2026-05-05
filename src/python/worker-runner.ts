@@ -124,6 +124,7 @@ function verifyClippedResult(result: RunResult, maxStdout: number): RunResult {
       result.output.slice(0, maxStdout) +
       `\n[output truncated — main-thread fallback at ${maxStdout} bytes]`,
     error: result.error,
+    inputCalls: result.inputCalls,
   };
 }
 
