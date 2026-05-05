@@ -177,7 +177,11 @@ function extractInspectedGlobals(
   pyodide: PyodideInstance,
   names: string[]
 ): Record<string, unknown> {
-  const out: Record<string, unknown> = {};
+  // Object.create(null) — no prototype chain. The downstream check in
+  // validateRuntime is `name in globals`, which walks the prototype chain;
+  // a plain `{}` would falsely report `toString`, `hasOwnProperty`, etc. as
+  // "defined" even when the student's code never declared them.
+  const out: Record<string, unknown> = Object.create(null);
   for (const name of names) {
     try {
       const value = pyodide.globals.get(name);

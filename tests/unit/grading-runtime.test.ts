@@ -35,8 +35,7 @@ describe('validateRuntime', () => {
       'unrelated output',
       { functionCalled: ['greet'] },
       undefined,
-      0,
-      { greet: 1 }
+      { functionCalls: { greet: 1 } }
     );
     expect(ok[0].passed).toBe(true);
     expect(ok[0].message).toContain('1×');
@@ -48,19 +47,18 @@ describe('validateRuntime', () => {
       'greet was here', // legacy heuristic would pass on this substring match
       { functionCalled: ['greet'] },
       undefined,
-      0,
-      { greet: 0 }
+      { functionCalls: { greet: 0 } }
     );
     expect(bad[0].passed).toBe(false);
   });
 
   it('checks acceptsUserInput against real input() call count, not test-input shape', async () => {
     // Code that called input() at least once: passes.
-    const ok = await validateRuntime('out', { acceptsUserInput: true }, 'hello', 1);
+    const ok = await validateRuntime('out', { acceptsUserInput: true }, 'hello', { inputCalls: 1 });
     expect(ok[0].passed).toBe(true);
     // Code that never called input() — even though the test provided input — fails.
     // (This is the new contract: previously passing input was enough; now you must use it.)
-    const bad = await validateRuntime('out', { acceptsUserInput: true }, 'hello', 0);
+    const bad = await validateRuntime('out', { acceptsUserInput: true }, 'hello', { inputCalls: 0 });
     expect(bad[0].passed).toBe(false);
     // Default for inputCalls (omitted) is 0 → fails.
     const badDefault = await validateRuntime('out', { acceptsUserInput: true }, undefined);
@@ -83,9 +81,7 @@ describe('validateRuntime', () => {
         '',
         { variableExists: ['x', 'y', 'z'] },
         undefined,
-        0,
-        {},
-        { x: 0, y: '' } // z absent → fails; x and y present (even though falsy) → pass
+        { globals: { x: 0, y: '' } } // z absent → fails; x and y present (even though falsy) → pass
       );
       expect(r).toHaveLength(3);
       const byId = Object.fromEntries(r.map((rr) => [rr.id, rr]));
@@ -102,9 +98,7 @@ describe('validateRuntime', () => {
         '',
         { variableExists: ['count', 'name', 'flag'] },
         undefined,
-        0,
-        {},
-        { count: 0, name: '', flag: false }
+        { globals: { count: 0, name: '', flag: false } }
       );
       expect(r.every((rr) => rr.passed)).toBe(true);
     });

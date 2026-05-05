@@ -9,7 +9,10 @@ import { useEffect, useState } from 'react';
  *
  * Pure-client SPA, so we touch `window` / `localStorage` directly. The hook
  * subscribes to the `storage` event so toggling `localStorage.debug` from
- * devtools or another tab flips the HUD without a reload.
+ * **another tab** flips the HUD live. The `storage` event does *not* fire
+ * for same-tab writes (DOM Storage spec) — so changing `localStorage.debug`
+ * from the active tab's devtools requires a reload to take effect, OR use
+ * the `?debug=1` URL on-ramp (no reload needed if you navigate to it).
  */
 export function useDebugFlag(): boolean {
   const [enabled, setEnabled] = useState<boolean>(() => readDebugFlag());

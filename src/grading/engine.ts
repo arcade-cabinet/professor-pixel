@@ -40,14 +40,12 @@ export async function gradeCode(
     // Step caps: take the *minimum* timeout across all rule-mode tests so a
     // single fast test doesn't get a generous cap meant for a slower one.
     const stepCaps = collectStepCaps(step.tests ?? []);
-    // Collect every functionCalled name across the step's tests so the worker
-    // tracer wraps them all in one pass (one runSnippet, not one per name).
-    const trackFunctions = collectTrackFunctions(step.tests ?? []);
-    // Same idea for variableExists — one snapshot covering every rule's name.
-    // The worker reads these from its post-execution Python globals (not the
-    // main-thread Pyodide passed in `context.pyodide`), which is the only
-    // Pyodide that actually executed the user's code.
-    const inspectGlobals = collectInspectGlobals(step.tests ?? []);
+    // One pass over the step's tests yields both name-sets the worker needs:
+    // functionCalled names (sys.settrace tracer) and variableExists names
+    // (post-execution globals snapshot). The worker reads globals from the
+    // worker-side Pyodide, not the main-thread instance in `context.pyodide` —
+    // worker-routed snippets execute there and only there.
+    const { trackFunctions, inspectGlobals } = collectWorkerHints(step.tests ?? []);
     try {
       const result = await runner.runSnippet({
         code,
@@ -116,9 +114,7 @@ export async function gradeCode(
         actualOutput,
         test.runtimeRules,
         input,
-        inputCalls,
-        functionCalls,
-        globals
+        { inputCalls, functionCalls, globals }
       );
       astAll.push(...astResults);
       runtimeAll.push(...runtimeResults);
@@ -165,24 +161,18 @@ function collectStepCaps(tests: TestSpec[]): { timeoutMs?: number; maxStdout?: n
   return { timeoutMs, maxStdout };
 }
 
-function collectTrackFunctions(tests: TestSpec[]): string[] {
-  const seen = new Set<string>();
+function collectWorkerHints(
+  tests: TestSpec[]
+): { trackFunctions: string[]; inspectGlobals: string[] } {
+  const fns = new Set<string>();
+  const vars = new Set<string>();
   for (const t of tests) {
-    for (const name of t.runtimeRules?.functionCalled ?? []) {
-      seen.add(name);
-    }
+    const rules = t.runtimeRules;
+    if (!rules) continue;
+    for (const name of rules.functionCalled ?? []) fns.add(name);
+    for (const name of rules.variableExists ?? []) vars.add(name);
   }
-  return [...seen];
-}
-
-function collectInspectGlobals(tests: TestSpec[]): string[] {
-  const seen = new Set<string>();
-  for (const t of tests) {
-    for (const name of t.runtimeRules?.variableExists ?? []) {
-      seen.add(name);
-    }
-  }
-  return [...seen];
+  return { trackFunctions: [...fns], inspectGlobals: [...vars] };
 }
 
 function buildFeedback(

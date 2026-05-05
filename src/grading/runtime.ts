@@ -5,27 +5,38 @@ import type { RuleResult, RuntimeRules } from './types';
  *   outputContains[], outputMatches, variableExists[], functionCalled[],
  *   acceptsUserInput, outputIncludesInput.
  *
- * `variableExists` reads from the `globals` snapshot the engine collected
- * via the worker (`runSnippet`'s `inspectGlobals` arg). The legacy `pyodide`
- * parameter still drives AST validation paths but is *not* consulted for
- * variableExists — it's the main-thread Pyodide and never executed the
- * worker-routed snippet, so its globals are the wrong source of truth.
- *
- * `functionCalled` reads from the worker's sys.settrace counter (engine
- * collects names from each step's tests and threads them through as
- * `trackFunctions`). The other rules are stdout-only.
+ * Three rules read from worker-collected metadata rather than re-deriving
+ * from stdout: `variableExists` reads `meta.globals` (worker's
+ * post-execution Python globals snapshot via `inspectGlobals`),
+ * `functionCalled` reads `meta.functionCalls` (sys.settrace counters via
+ * `trackFunctions`), and `acceptsUserInput` reads `meta.inputCalls`
+ * (monkey-patched `builtins.input` counter). The other rules are stdout-only.
  *
  * T5.3 caps (timeoutMs, maxStdout) live one level up in the engine —
  * runtime validation only sees output that's already been sized.
  */
+export interface RuntimeMetadata {
+  /** input() invocation count from the worker's monkey-patched builtin. */
+  inputCalls?: number;
+  /** Per-function call counts from the worker's sys.settrace tracer. */
+  functionCalls?: Record<string, number>;
+  /**
+   * Snapshot of post-execution Python globals for the names the engine asked
+   * about via `inspectGlobals`. Names that were never defined are omitted —
+   * `name in globals` distinguishes existence from falsy-ness.
+   */
+  globals?: Record<string, unknown>;
+}
+
 export async function validateRuntime(
   output: string,
   rules: RuntimeRules | undefined,
   input: string | undefined,
-  inputCalls: number = 0,
-  functionCalls: Record<string, number> = {},
-  globals: Record<string, unknown> = {}
+  meta: RuntimeMetadata = {}
 ): Promise<RuleResult[]> {
+  const inputCalls = meta.inputCalls ?? 0;
+  const functionCalls = meta.functionCalls ?? {};
+  const globals = meta.globals ?? {};
   if (!rules) return [];
   const results: RuleResult[] = [];
 
