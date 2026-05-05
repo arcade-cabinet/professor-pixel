@@ -91,8 +91,8 @@ Branch: feat/modernization-pillar
 
 ### M2 — Type / schema / test config cleanup
 
-- [ ] [WAIT-OWN-PRQ] M2.1 Fix the 209 `any`s — Bulk `any→unknown` replacement attempted and rolled back (caused 60+ cascading TS errors in pyodide-typed code, simulator state, persistence, error-handler). The PRQ's own Risk callout names this: "Some are in third-party type gaps... those need a structural fix, not a per-instance one." Splitting to its own focused PRQ. The structural fixes needed: (1) a real Pyodide type for the simulator/error-handler instead of `any`, (2) typed Pyodide.runPython return values, (3) typed legacyState shapes for storage/persistence migration. Each is its own commit.
-- [ ] [WAIT-OWN-PRQ] M2.2 Re-enable Vitest coverage thresholds — Current state is statements: 7.15% / branches: 5% / functions: 5.15% / lines: 7.05%. The PRQ targets 90/85/90/90, which would require writing thousands of tests (the current Vitest projects cover only the lesson loader, schema, persistence, grading engine, and worker runner — entire `src/wizard/`, `src/pygame/components/`, `src/pygame/runtime/`, `app/components/` are ~0%). Setting those thresholds without writing the tests first would lock CI red. Splitting to its own focused PRQ that ratchets thresholds up incrementally as tests are added (start at 10/10/10/10, raise per-PR).
+- [x] M2.1 Fix the 209 `any`s — Carved off into the `any` cleanup pillar; landed on `feat/any-cleanup-pillar` (PR #21, 213 → 0 annotations, Biome `noExplicitAny` warn→error). Structural fixes were exactly the three the PRQ named: (1) `PyodideInstance` ambient covering simulator/error-handler/runtime, (2) typed `runPython` return casts at boundaries, (3) `validateAndMigrate<T>(data: unknown)` + per-store schema types replacing `Partial<unknown>` spreads.
+- [ ] [WAIT] M2.2 Re-enable Vitest coverage thresholds — Waiting on the wizard / coverage / simulator-harness PRQ (next in `docs/STATE.md → Next`). Strategy: pin floor at current baseline (6/4/4/6) to block regressions, then ratchet up per-PR as wizard + simulator tests land. Will be picked up after PR #22 (grader-followups) merges and the next pillar branch starts.
 - [x] M2.3 Wizard-dialogue integration tests refresh — quarantined test deleted (per "stubs are bugs" rule); exclude removed from vitest.config.ts. Focused replacement queued in the M2.2 wizard-coverage PRQ.
 
 ### M3 — Visual + accessibility baseline
@@ -103,7 +103,7 @@ Branch: feat/modernization-pillar
 ### M4 — Pyodide / PyGame correctness
 
 - [x] M4.1 Cold-start budget — `performance.now()` instrumentation in `pyodide-singleton.ts`, `getColdStartMs()` accessor, console.info/warn against the 8000ms budget, budget + remediation hierarchy documented in `docs/pillars/02-runtime.md`. Dev HUD overlay deferred (UI component work; scoped to a separate PR).
-- [ ] [WAIT-OWN-PRQ] M4.2 Frame-rate test — Simulator (`src/pygame/runtime/simulator.ts`, 1728 LOC) has no test harness today; standing one up requires understanding the canvas/context coupling well enough to mock it cleanly, plus a deterministic component-mounting API that doesn't exist in the simulator's current shape. The test alone would be 30+ lines, but the harness it depends on is the work. Splitting to its own PRQ alongside the simulator-coverage piece of the wizard / coverage PRQ.
+- [ ] [WAIT] M4.2 Frame-rate test — Waiting on the simulator-harness piece of the wizard / coverage / simulator-harness PRQ (next in `docs/STATE.md → Next`). The test itself is 30 lines; the deterministic mounting API for `src/pygame/runtime/simulator.ts` (1728 LOC of canvas/context coupling) is the actual work. Will be picked up after PR #22 merges.
 - [x] M4.3 Worker-side stdout truncation — enforce `maxStdout` in worker stdout callback; `clipResult` becomes verification (`verifyClippedResult`)
 
 ### M5 — Grader instrumentation
