@@ -26,9 +26,20 @@ describe('profile storage', () => {
     expect(loadProfile()?.name).toBe('Sam');
   });
 
-  it('caps name length at 32 chars', () => {
-    saveProfile('a'.repeat(100));
-    expect(loadProfile()?.name).toHaveLength(32);
+  it('rejects names longer than the cap with InvalidProfileError (P4.19)', async () => {
+    // Old behaviour silently truncated to 32 chars; new behaviour rejects
+    // so the caller can surface a "names can be at most N characters"
+    // toast. Length cap is centralized in PROFILE_NAME_MAX_LENGTH.
+    const { PROFILE_NAME_MAX_LENGTH, InvalidProfileError } = await import('@lib/storage/profile');
+    expect(() => saveProfile('a'.repeat(PROFILE_NAME_MAX_LENGTH + 1))).toThrow(InvalidProfileError);
+    // No partial save — loadProfile returns null because nothing landed.
+    expect(loadProfile()).toBeNull();
+  });
+
+  it('accepts names exactly at the cap (P4.19)', async () => {
+    const { PROFILE_NAME_MAX_LENGTH } = await import('@lib/storage/profile');
+    saveProfile('a'.repeat(PROFILE_NAME_MAX_LENGTH));
+    expect(loadProfile()?.name).toHaveLength(PROFILE_NAME_MAX_LENGTH);
   });
 
   it('preserves createdAt across re-saves (does not reset)', async () => {

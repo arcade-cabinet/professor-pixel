@@ -407,7 +407,7 @@ Branch: feat/player-experience-pillar-4
 
 ### task-019 Trim, length-cap, non-empty check on profile name
 
-- [ ] task-019 profile.tsx rejects empty/whitespace and >24 char names with toast
+- [x] task-019 profile.tsx rejects empty/whitespace and >24 char names with toast
 
 ### task-020 Warn when approaching localStorage limit
 

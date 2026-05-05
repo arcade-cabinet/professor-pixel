@@ -44,14 +44,26 @@ export function loadProfile(): PlayerProfile | null {
   }
 }
 
+// P4.19 — Visible to callers so the length validation message can be
+// shaped by the catalog rather than hardcoded in two places. The cap
+// is conservative (kids' names rarely need more, and the avatar
+// chrome wraps badly past 24 chars at smaller widths).
+export const PROFILE_NAME_MAX_LENGTH = 24;
+
 export function saveProfile(name: string): PlayerProfile {
-  // Trim and cap before validating so leading/trailing whitespace doesn't
-  // pass an "is non-empty?" check by accident. A kid pasting Tolstoy gets
-  // truncated; a kid hitting Save with all whitespace gets rejected
-  // (caller must show a "name required" message rather than persist garbage).
-  const trimmed = name.trim().slice(0, 32);
+  // Trim before validating so leading/trailing whitespace doesn't pass an
+  // "is non-empty?" check by accident. A kid hitting Save with all
+  // whitespace gets rejected. Names longer than the cap are also
+  // rejected so the caller can surface a clear "names can be at most N
+  // characters" toast — silent truncation hides the constraint.
+  const trimmed = name.trim();
   if (trimmed.length === 0) {
     throw new InvalidProfileError('Profile name cannot be empty');
+  }
+  if (trimmed.length > PROFILE_NAME_MAX_LENGTH) {
+    throw new InvalidProfileError(
+      `Profile name must be at most ${PROFILE_NAME_MAX_LENGTH} characters`
+    );
   }
   const profile: PlayerProfile = {
     name: trimmed,

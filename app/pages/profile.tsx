@@ -17,7 +17,13 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@lib/hooks/use-toast';
-import { loadProfile, saveProfile, clearProfile, InvalidProfileError } from '@lib/storage/profile';
+import {
+  loadProfile,
+  saveProfile,
+  clearProfile,
+  InvalidProfileError,
+  PROFILE_NAME_MAX_LENGTH,
+} from '@lib/storage/profile';
 import { getClientStorage } from '@lib/storage/mode';
 import { loadLessons } from '@lib/lessons';
 import type { Lesson, UserProgress } from '@lib/types/schema';
@@ -65,11 +71,24 @@ export default function Profile() {
       });
     } catch (err) {
       if (err instanceof InvalidProfileError) {
-        toast({
-          title: strings.profile.nameSection.invalidTitle,
-          description: strings.profile.nameSection.invalidDescription,
-          variant: 'destructive',
-        });
+        // Two distinct destructive toasts — empty input vs too-long
+        // input — so the kid sees what specifically went wrong instead
+        // of one generic "Pick a name first" message that doesn't
+        // explain a 50-character paste being rejected.
+        const trimmedLength = nameDraft.trim().length;
+        if (trimmedLength === 0) {
+          toast({
+            title: strings.profile.nameSection.invalidTitle,
+            description: strings.profile.nameSection.invalidDescription,
+            variant: 'destructive',
+          });
+        } else {
+          toast({
+            title: strings.profile.nameSection.tooLongTitle,
+            description: strings.profile.nameSection.tooLongDescription(PROFILE_NAME_MAX_LENGTH),
+            variant: 'destructive',
+          });
+        }
         return;
       }
       throw err;
@@ -144,7 +163,7 @@ export default function Profile() {
             <Input
               value={nameDraft}
               onChange={(e) => setNameDraft(e.target.value)}
-              maxLength={32}
+              maxLength={PROFILE_NAME_MAX_LENGTH}
               aria-label={strings.profile.nameSection.ariaLabel}
               data-testid="profile-name-input"
               placeholder={strings.profile.nameSection.placeholder}

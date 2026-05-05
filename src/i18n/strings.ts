@@ -264,6 +264,10 @@ export const strings = {
       savedDescription: (name: string) => `Pixel will call you ${name}.`,
       invalidTitle: 'Pick a name first',
       invalidDescription: 'Pixel needs at least one letter.',
+      // P4.19 — separate message when the kid pastes an oversized name.
+      tooLongTitle: 'That name is a bit long',
+      tooLongDescription: (max: number) =>
+        `Pixel can only fit ${max} letters on the cabinet. Try a shorter one!`,
       since: (name: string, date: string) => `Hi ${name}! You started on ${date}.`,
       sinceFallbackDate: 'your first day',
     },
