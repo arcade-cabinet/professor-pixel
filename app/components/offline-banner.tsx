@@ -7,10 +7,11 @@
 // kids (and the adult helping them) understand WHY things are sluggish
 // or failing before they hit the actual error path.
 //
-// Banner is suppressed on mount if the browser reports online — we
-// don't want a permanent header bar when everything is fine.
+// useSyncExternalStore is the React 19 idiomatic way to subscribe to
+// browser state — it handles SSR correctly via the server snapshot
+// (assume online) and tear-off via the subscribe-returned cleanup.
 
-import { useEffect, useState } from 'react';
+import { useSyncExternalStore } from 'react';
 import { WifiOff } from 'lucide-react';
 import { cn } from '@lib/utils/cn';
 
@@ -18,23 +19,27 @@ interface OfflineBannerProps {
   className?: string;
 }
 
-export default function OfflineBanner({ className }: OfflineBannerProps) {
-  const [online, setOnline] = useState<boolean>(() => {
-    if (typeof navigator === 'undefined') return true;
-    return navigator.onLine;
-  });
+function subscribe(callback: () => void): () => void {
+  window.addEventListener('online', callback);
+  window.addEventListener('offline', callback);
+  return () => {
+    window.removeEventListener('online', callback);
+    window.removeEventListener('offline', callback);
+  };
+}
 
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const onOnline = () => setOnline(true);
-    const onOffline = () => setOnline(false);
-    window.addEventListener('online', onOnline);
-    window.addEventListener('offline', onOffline);
-    return () => {
-      window.removeEventListener('online', onOnline);
-      window.removeEventListener('offline', onOffline);
-    };
-  }, []);
+function getClientSnapshot(): boolean {
+  return navigator.onLine;
+}
+
+function getServerSnapshot(): boolean {
+  // SSR has no network signal; assume online so the banner doesn't
+  // flash on hydration for the common case.
+  return true;
+}
+
+export default function OfflineBanner({ className }: OfflineBannerProps) {
+  const online = useSyncExternalStore(subscribe, getClientSnapshot, getServerSnapshot);
 
   if (online) return null;
 

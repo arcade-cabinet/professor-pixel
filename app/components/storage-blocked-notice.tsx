@@ -6,8 +6,12 @@
 // Banner is dismissable for the session (sessionStorage flag, since
 // localStorage is the very thing that's broken). On a fresh tab open
 // the banner reappears once.
+//
+// Side effects (the storage probe + sessionStorage read) live in
+// useEffect rather than the render path so the component stays pure
+// during render and SSR hydration doesn't mismatch.
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { AlertTriangle, X } from 'lucide-react';
 import { isStorageBlocked } from '@lib/storage/private-mode';
 
@@ -31,8 +35,16 @@ function writeDismissed(): void {
 }
 
 export default function StorageBlockedNotice() {
-  const blocked = isStorageBlocked();
-  const [dismissed, setDismissed] = useState<boolean>(() => readDismissed());
+  // Both flags start false so the initial render is pure (matches SSR).
+  // The probe + dismiss-state read happen in useEffect, then setState
+  // flips us into the actual visible state on the client.
+  const [blocked, setBlocked] = useState(false);
+  const [dismissed, setDismissed] = useState(false);
+
+  useEffect(() => {
+    setBlocked(isStorageBlocked());
+    setDismissed(readDismissed());
+  }, []);
 
   if (!blocked || dismissed) return null;
 

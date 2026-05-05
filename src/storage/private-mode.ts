@@ -13,8 +13,13 @@
 // persistence (home, profile, lessons) can subscribe via
 // useStorageBlocked() and show a one-time notice.
 
-const PROBE_KEY = 'pp.__storage_probe__';
-const PROBE_VALUE = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+// Per-tab unique probe key — Gemini review feedback. A constant key would
+// race across multiple tabs probing simultaneously: tab A writes, tab B
+// overwrites, tab A reads tab B's value, mismatches, and falsely flags
+// storage as blocked. The randomized suffix is generated once per module
+// load so each tab probes a distinct slot.
+const PROBE_KEY = `pp.__storage_probe_${Math.random().toString(36).slice(2)}__`;
+const PROBE_VALUE = '1';
 
 let cachedResult: boolean | null = null;
 

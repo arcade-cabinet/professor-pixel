@@ -41,11 +41,11 @@ describe('StorageBlockedNotice (Q12)', () => {
 
   it('disappears after dismiss and persists the dismissal in sessionStorage', () => {
     vi.spyOn(Storage.prototype, 'setItem').mockImplementation((key) => {
-      // Allow sessionStorage writes but block localStorage. The probe runs
-      // against localStorage; sessionStorage is fine. We can't easily
-      // distinguish them here since both inherit Storage.prototype, so
-      // throw on the localStorage probe key only.
-      if (key === 'pp.__storage_probe__') {
+      // Allow sessionStorage writes but block localStorage. The probe key
+      // is randomized per tab (pp.__storage_probe_<rand>__), so match by
+      // prefix rather than literal equality. sessionStorage's dismiss key
+      // (pp.storageBlockedDismissed) falls through and succeeds.
+      if (typeof key === 'string' && key.startsWith('pp.__storage_probe_')) {
         throw new Error('QuotaExceededError');
       }
     });
