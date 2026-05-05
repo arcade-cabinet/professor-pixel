@@ -93,7 +93,7 @@
     "@capacitor/cli": "^8.3.1",
     "@capacitor/core": "^8.3.1",
     "@capacitor/ios": "^8.3.1",
-    "@playwright/test": "^1.55.0",
+    "@playwright/test": "^1.59.1",
     "@replit/vite-plugin-cartographer": "^0.3.0",
     "@replit/vite-plugin-dev-banner": "^0.1.1",
     "@replit/vite-plugin-runtime-error-modal": "^0.0.3",
@@ -131,7 +131,10 @@
       "minimatch@>=9.0.0 <9.0.7": "^9.0.7",
       "picomatch@<2.3.2": "^2.3.2",
       "brace-expansion@<1.1.12": "^1.1.12",
-      "brace-expansion@>=2 <2.0.2": "^2.0.2"
+      "brace-expansion@>=2 <2.0.2": "^2.0.2",
+      "lodash@<4.18.0": "^4.18.0",
+      "yaml@<2.8.3": "^2.8.3",
+      "glob@>=10.2.0 <10.5.0": "^10.5.0"
     }
   }
 }
