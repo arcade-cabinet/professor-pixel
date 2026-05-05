@@ -104,6 +104,25 @@ export default function PygameLivePreview({
     }
   }, [pyodide]);
 
+  // Render loop for canvas animation
+  const startRenderLoop = useCallback(
+    (_canvas: HTMLCanvasElement) => {
+      const render = () => {
+        // Flush pygame frame buffer to canvas
+        flushFrameBuffer();
+
+        // Continue animation if playing
+        if (state.isPlaying) {
+          animationFrameRef.current = requestAnimationFrame(render);
+        }
+      };
+
+      // Start the loop
+      animationFrameRef.current = requestAnimationFrame(render);
+    },
+    [state.isPlaying]
+  );
+
   // Generate and execute Python code when choices change
   const executePygameCode = useCallback(
     async (targetCanvas: HTMLCanvasElement, choicesToUse: GameChoice[]) => {
@@ -154,26 +173,7 @@ export default function PygameLivePreview({
         });
       }
     },
-    [pyodide, gameParams, toast]
-  );
-
-  // Render loop for canvas animation
-  const startRenderLoop = useCallback(
-    (canvas: HTMLCanvasElement) => {
-      const render = () => {
-        // Flush pygame frame buffer to canvas
-        flushFrameBuffer();
-
-        // Continue animation if playing
-        if (state.isPlaying) {
-          animationFrameRef.current = requestAnimationFrame(render);
-        }
-      };
-
-      // Start the loop
-      animationFrameRef.current = requestAnimationFrame(render);
-    },
-    [state.isPlaying]
+    [pyodide, gameParams, toast, startRenderLoop]
   );
 
   // Stop render loop
@@ -257,7 +257,7 @@ export default function PygameLivePreview({
     if (choices.length > 0 && canvasRef.current && pyodide) {
       executePygameCode(canvasRef.current, choices);
     }
-  }, [choices, pyodide]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [choices, pyodide, executePygameCode]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Cleanup on unmount
   useEffect(() => {
@@ -266,7 +266,7 @@ export default function PygameLivePreview({
       setCanvasContext(null);
       resetPygameState();
     };
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [stopRenderLoop]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div className={cn('space-y-4', className)}>

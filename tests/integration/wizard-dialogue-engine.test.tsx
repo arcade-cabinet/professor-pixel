@@ -34,7 +34,14 @@ const defaultFlow = makeFlow({
   },
   b: {
     text: 'Path B',
-    options: [{ text: 'Pick a platformer', next: 'transition', action: 'transitionToSpecializedFlow', setVariable: { gameType: 'platformer' } }],
+    options: [
+      {
+        text: 'Pick a platformer',
+        next: 'transition',
+        action: 'transitionToSpecializedFlow',
+        setVariable: { gameType: 'platformer' },
+      },
+    ],
   },
   transition: { text: 'After transition' },
   end: { text: 'Done' },

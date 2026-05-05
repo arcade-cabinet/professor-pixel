@@ -9,6 +9,11 @@ export function useHealthMonitor(autoStart = true, interval = 30000) {
   const [isMonitoring, setIsMonitoring] = useState(false);
   const [lastCheck, setLastCheck] = useState<Date | null>(null);
 
+  const startMonitoring = useCallback(() => {
+    healthMonitor.startMonitoring(interval);
+    setIsMonitoring(true);
+  }, [interval]);
+
   useEffect(() => {
     // Subscribe to health updates
     const unsubscribe = healthMonitor.subscribe((newHealth) => {
@@ -34,12 +39,7 @@ export function useHealthMonitor(autoStart = true, interval = 30000) {
         healthMonitor.stopMonitoring();
       }
     };
-  }, [autoStart, interval]);
-
-  const startMonitoring = useCallback(() => {
-    healthMonitor.startMonitoring(interval);
-    setIsMonitoring(true);
-  }, [interval]);
+  }, [autoStart, startMonitoring, isMonitoring]);
 
   const stopMonitoring = useCallback(() => {
     healthMonitor.stopMonitoring();

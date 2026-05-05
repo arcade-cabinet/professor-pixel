@@ -62,11 +62,12 @@ export function getAllComponents(): AnyPyGameComponent[] {
 
 // Export for testing in browser console
 if (typeof window !== 'undefined') {
-  (window as Window & { testPygameComponents?: () => AnyPyGameComponent[] }).testPygameComponents = () => {
-    console.log('🎮 PyGame Components Available:');
-    pygameComponents.forEach((comp) => {
-      console.log(`  - ${comp.name} (${comp.type}): ${comp.description}`);
-    });
-    return pygameComponents;
-  };
+  (window as Window & { testPygameComponents?: () => AnyPyGameComponent[] }).testPygameComponents =
+    () => {
+      console.log('🎮 PyGame Components Available:');
+      pygameComponents.forEach((comp) => {
+        console.log(`  - ${comp.name} (${comp.type}): ${comp.description}`);
+      });
+      return pygameComponents;
+    };
 }

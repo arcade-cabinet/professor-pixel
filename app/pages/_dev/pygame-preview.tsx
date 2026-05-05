@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -54,12 +54,7 @@ export default function PygamePreviewTest() {
     },
   ];
 
-  // Load Pyodide
-  useEffect(() => {
-    loadPyodide();
-  }, []);
-
-  const loadPyodide = async () => {
+  const loadPyodide = useCallback(async () => {
     if (pyodide) return;
 
     setPyodideLoading(true);
@@ -76,7 +71,12 @@ export default function PygamePreviewTest() {
     } finally {
       setPyodideLoading(false);
     }
-  };
+  }, [pyodide]);
+
+  // Load Pyodide
+  useEffect(() => {
+    loadPyodide();
+  }, [loadPyodide]);
 
   const setupPygameEnvironment = async (pyodideInstance: PyodideInstance) => {
     try {

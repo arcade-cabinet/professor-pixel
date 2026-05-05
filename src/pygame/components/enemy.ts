@@ -19,7 +19,7 @@ export const enemyComponent: PyGameComponent<EnemyProperties> = {
   description: 'Basic AI-controlled opponent',
   wizardDescription:
     'An enemy that moves on its own! It can patrol back and forth, chase the player, move in circles, or wander randomly. Great for adding challenges to your game!',
-  properties: {} as Record<string, any>,
+  properties: {},
   defaultProperties: {
     x: 400,
     y: 200,

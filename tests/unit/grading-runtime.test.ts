@@ -31,12 +31,9 @@ describe('validateRuntime', () => {
 
   it('checks functionCalled against real call counts (sys.settrace), not stdout heuristic', async () => {
     // Function that was called: passes regardless of whether output mentions the name.
-    const ok = await validateRuntime(
-      'unrelated output',
-      { functionCalled: ['greet'] },
-      undefined,
-      { functionCalls: { greet: 1 } }
-    );
+    const ok = await validateRuntime('unrelated output', { functionCalled: ['greet'] }, undefined, {
+      functionCalls: { greet: 1 },
+    });
     expect(ok[0].passed).toBe(true);
     expect(ok[0].message).toContain('1×');
 
@@ -58,7 +55,9 @@ describe('validateRuntime', () => {
     expect(ok[0].passed).toBe(true);
     // Code that never called input() — even though the test provided input — fails.
     // (This is the new contract: previously passing input was enough; now you must use it.)
-    const bad = await validateRuntime('out', { acceptsUserInput: true }, 'hello', { inputCalls: 0 });
+    const bad = await validateRuntime('out', { acceptsUserInput: true }, 'hello', {
+      inputCalls: 0,
+    });
     expect(bad[0].passed).toBe(false);
     // Default for inputCalls (omitted) is 0 → fails.
     const badDefault = await validateRuntime('out', { acceptsUserInput: true }, undefined);

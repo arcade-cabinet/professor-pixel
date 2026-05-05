@@ -118,8 +118,7 @@ async function bootstrap(opts: BootstrapOptions): Promise<PyodideInstance> {
 
 export function getPyodide(opts: BootstrapOptions = {}): Promise<PyodideInstance> {
   if (!bootstrapPromise) {
-    const start =
-      typeof performance !== 'undefined' ? performance.now() : Date.now();
+    const start = typeof performance !== 'undefined' ? performance.now() : Date.now();
     bootstrapPromise = bootstrap(opts)
       .then((instance) => {
         const end = typeof performance !== 'undefined' ? performance.now() : Date.now();

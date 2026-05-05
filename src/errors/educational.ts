@@ -505,7 +505,9 @@ export const getDebuggingTips = () => educationalErrorTransformer.getDebuggingTi
 
 // Make available globally in development
 if (import.meta.env.DEV) {
-  (window as Window & { __educationalErrors?: typeof educationalErrorTransformer }).__educationalErrors = educationalErrorTransformer;
+  (
+    window as Window & { __educationalErrors?: typeof educationalErrorTransformer }
+  ).__educationalErrors = educationalErrorTransformer;
 }
 
 export default educationalErrorTransformer;

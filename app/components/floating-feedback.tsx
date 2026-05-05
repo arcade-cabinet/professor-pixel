@@ -76,7 +76,7 @@ export default function FloatingFeedback({
         title: 'Solution copied!',
         description: 'The solution has been copied to your clipboard.',
       });
-    } catch (err) {
+    } catch (_err) {
       toast({
         title: 'Failed to copy',
         description: 'Please try selecting and copying the text manually.',

@@ -60,7 +60,13 @@ export class WorkerPythonRunner {
 
     try {
       const result = await Promise.race([
-        remote.runSnippet(opts.code, opts.input, maxStdout, opts.trackFunctions, opts.inspectGlobals),
+        remote.runSnippet(
+          opts.code,
+          opts.input,
+          maxStdout,
+          opts.trackFunctions,
+          opts.inspectGlobals
+        ),
         timeoutPromise,
       ]);
       if (timer) clearTimeout(timer);

@@ -1,10 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useDebugFlag } from '@lib/hooks/use-debug-flag';
-import {
-  getColdStartMs,
-  getPyodideState,
-  type PyodideState,
-} from '@lib/python/pyodide-singleton';
+import { getColdStartMs, getPyodideState, type PyodideState } from '@lib/python/pyodide-singleton';
 
 const COLLAPSED_KEY = 'debug-hud-collapsed';
 const POLL_MS = 500;

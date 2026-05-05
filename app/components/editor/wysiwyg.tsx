@@ -89,9 +89,7 @@ export default function PygameWysiwygEditor({
     (id: string, property: string, value: ComponentPropertyValue) => {
       setPlacedComponents((prev) =>
         prev.map((comp) =>
-          comp.id === id
-            ? { ...comp, properties: { ...comp.properties, [property]: value } }
-            : comp
+          comp.id === id ? { ...comp, properties: { ...comp.properties, [property]: value } } : comp
         )
       );
     },

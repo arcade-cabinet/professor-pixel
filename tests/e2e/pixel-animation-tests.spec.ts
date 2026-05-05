@@ -396,7 +396,7 @@ test.describe('Pixel Animation Tests', () => {
 
           // Check animation performance
           const animationFrames = await page.evaluate(
-            () => (window as Window & { animationFrames?: number[] }).animationFrames || [],
+            () => (window as Window & { animationFrames?: number[] }).animationFrames || []
           );
 
           if (animationFrames.length > 0) {

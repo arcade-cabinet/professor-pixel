@@ -765,7 +765,7 @@ except Exception as e:
  */
 export function createEnhancedErrorCaptureWithPyodide(
   pyodide: PyodideInstance,
-  context?: ErrorContext,
+  context?: ErrorContext
 ) {
   return {
     /**

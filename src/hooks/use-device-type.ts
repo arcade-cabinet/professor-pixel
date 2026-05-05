@@ -94,7 +94,7 @@ export function useDeviceType(): DeviceCapabilities {
       window.removeEventListener('resize', handleResize);
       window.removeEventListener('orientationchange', handleResize);
     };
-  }, []);
+  }, [getDeviceCapabilities]);
 
   return capabilities;
 }

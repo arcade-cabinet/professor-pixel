@@ -19,7 +19,7 @@ export const paddleComponent: PyGameComponent<PaddleProperties> = {
   description: 'Player-controlled paddle for pong games',
   wizardDescription:
     'A paddle that you can control to hit balls! Use this for games like Pong or to catch falling objects. You can move it with keyboard keys or the mouse.',
-  properties: {} as Record<string, any>,
+  properties: {},
   defaultProperties: {
     x: 50,
     y: 200,

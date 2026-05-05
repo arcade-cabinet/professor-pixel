@@ -47,7 +47,8 @@ export const getGameTypeIcon = (optionText: string): LucideIcon | null => {
 // case-insensitive and whitespace-trimmed; it matches the playtest analysis
 // finding that single-option "continue" pickers add cognitive load without
 // offering a real choice.
-const CONTINUE_PATTERN = /^\s*(continue|next|ok(?:ay)?|got it|let'?s go|sounds good|sure)\s*[!.?]*\s*$/i;
+const CONTINUE_PATTERN =
+  /^\s*(continue|next|ok(?:ay)?|got it|let'?s go|sounds good|sure)\s*[!.?]*\s*$/i;
 
 // Returns the navigation target of a side-effect-free single-option node, or
 // null. "Side-effect-free" means the option has no `action`, `setVariable`,

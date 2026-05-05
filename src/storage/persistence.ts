@@ -41,7 +41,7 @@ const DEBOUNCE_DELAY = 200; // milliseconds
 // their argument types intact through the wrapper.
 function debounce<TArgs extends unknown[]>(
   func: (...args: TArgs) => unknown,
-  delay: number,
+  delay: number
 ): (...args: TArgs) => void {
   let timeoutId: NodeJS.Timeout | null = null;
 
@@ -326,7 +326,7 @@ export function isStorageAvailable(): boolean {
     sessionStorage.setItem(test, test);
     sessionStorage.removeItem(test);
     return true;
-  } catch (e) {
+  } catch (_e) {
     return false;
   }
 }

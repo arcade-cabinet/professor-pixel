@@ -44,12 +44,12 @@ export default function PixelPresence({ onNavigate, currentPath = '/' }: PixelPr
   const [currentChoices, setCurrentChoices] = useState<Choice[]>([]);
   const [pixelImage, setPixelImage] = useState(pixelWelcoming);
   const [dialogue, setDialogue] = useState('Need help?');
-  const [showContent, setShowContent] = useState(false);
+  const [_showContent, setShowContent] = useState(false);
   const [mobileDialogueOpen, setMobileDialogueOpen] = useState(false);
   const isMobile = useIsMobile();
 
   // Initial choices for center stage
-  const initialChoices: Choice[] = [
+  const _initialChoices: Choice[] = [
     {
       id: 'make-game',
       label: 'Make a game!',

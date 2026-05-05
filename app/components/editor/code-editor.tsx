@@ -22,10 +22,7 @@ interface MonacoEditorInstance {
 
 interface MonacoNamespace {
   editor: {
-    create(
-      container: HTMLElement,
-      options: Record<string, unknown>,
-    ): MonacoEditorInstance;
+    create(container: HTMLElement, options: Record<string, unknown>): MonacoEditorInstance;
   };
   KeyMod: { CtrlCmd: number; Shift: number; Alt: number };
   KeyCode: { Enter: number; KeyR: number; [key: string]: number };
@@ -185,7 +182,7 @@ export default function CodeEditor({
         }
       }
     };
-  }, []); // Empty dependency array is intentional - we only want to load Monaco once
+  }, [onExecute, onChange, inputValues, code]); // Empty dependency array is intentional - we only want to load Monaco once
 
   useEffect(() => {
     try {

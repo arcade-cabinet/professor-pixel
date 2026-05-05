@@ -155,8 +155,7 @@ else:
 
     return {
       output: this.stdoutBuffer.join(''),
-      error:
-        runErr ?? (this.stderrBuffer.length ? this.stderrBuffer.join('') : null),
+      error: runErr ?? (this.stderrBuffer.length ? this.stderrBuffer.join('') : null),
       inputCalls: Number(pyodide.globals.get('__pp_input_calls') ?? 0),
       functionCalls: extractFunctionCalls(pyodide),
       globals: extractInspectedGlobals(pyodide, inspectGlobals ?? []),
@@ -207,8 +206,9 @@ function extractFunctionCalls(pyodide: PyodideInstance): Record<string, number> 
   const raw = pyodide.globals.get('__pp_func_calls');
   if (!raw) return {};
   // PyProxy of a Python dict — convert via toJs and ensure the values are numbers.
-  const toJs = (raw as { toJs?: (opts?: { dict_converter?: typeof Object.fromEntries }) => unknown })
-    .toJs;
+  const toJs = (
+    raw as { toJs?: (opts?: { dict_converter?: typeof Object.fromEntries }) => unknown }
+  ).toJs;
   if (typeof toJs !== 'function') return {};
   const obj = toJs.call(raw, { dict_converter: Object.fromEntries }) as Record<string, unknown>;
   const out: Record<string, number> = {};

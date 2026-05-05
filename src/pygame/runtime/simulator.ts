@@ -19,16 +19,7 @@ interface SimulationResult {
 // rather than forcing a discriminated union the renderer would have to
 // re-narrow at every call site anyway.
 export interface DrawCommand {
-  type:
-    | 'circle'
-    | 'rect'
-    | 'line'
-    | 'fill'
-    | 'blit'
-    | 'clear'
-    | 'text'
-    | 'polygon'
-    | 'ellipse';
+  type: 'circle' | 'rect' | 'line' | 'fill' | 'blit' | 'clear' | 'text' | 'polygon' | 'ellipse';
   args: unknown[];
 }
 
@@ -40,7 +31,16 @@ type PygameColor = [number, number, number] | [number, number, number, number] |
  * compatible fields. */
 type PygameRectArg =
   | [number, number, number, number]
-  | { x?: number; y?: number; left?: number; top?: number; width?: number; w?: number; height?: number; h?: number };
+  | {
+      x?: number;
+      y?: number;
+      left?: number;
+      top?: number;
+      width?: number;
+      w?: number;
+      height?: number;
+      h?: number;
+    };
 
 /** Minimal sprite contract the Group.update / Group.draw helpers consume.
  * Real pygame sprites have far more API; this is just what the simulator
@@ -56,7 +56,7 @@ let canvasContext: CanvasRenderingContext2D | null = null;
 let frameBuffer: DrawCommand[] = [];
 let isRenderingActive = false;
 let currentFPS = 60;
-let lastFrameTime = 0;
+let _lastFrameTime = 0;
 
 // Enhanced Surface class with real rendering capabilities
 class RenderingSurface {
@@ -80,7 +80,7 @@ class RenderingSurface {
         if (ctx) {
           this.imageData = ctx.createImageData(width, height);
         }
-      } catch (e) {
+      } catch (_e) {
         console.warn('OffscreenCanvas not available, using fallback');
       }
     }
@@ -300,7 +300,7 @@ export function resetPygameState() {
   frameBuffer = [];
   isRenderingActive = false;
   currentFPS = 60;
-  lastFrameTime = 0;
+  _lastFrameTime = 0;
 }
 
 /**
@@ -629,8 +629,13 @@ export function flushFrameBuffer() {
         }
 
         case 'ellipse': {
-          const [ellipseColor, ellipseX, ellipseY, ellipseWidth, ellipseHeight] =
-            command.args as [string, number, number, number, number];
+          const [ellipseColor, ellipseX, ellipseY, ellipseWidth, ellipseHeight] = command.args as [
+            string,
+            number,
+            number,
+            number,
+            number,
+          ];
           canvasContext.fillStyle = ellipseColor;
           canvasContext.beginPath();
           canvasContext.ellipse(

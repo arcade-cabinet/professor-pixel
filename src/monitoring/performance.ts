@@ -11,7 +11,7 @@ export interface PerformanceMetric {
   endTime?: number;
   duration?: number;
   status: 'running' | 'completed' | 'failed';
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   timestamp: Date;
 }
 
@@ -143,7 +143,7 @@ class PerformanceMonitor {
   startMetric(
     type: PerformanceMetric['type'],
     name: string,
-    metadata?: Record<string, any>
+    metadata?: Record<string, unknown>
   ): string {
     if (!this.isEnabled) return '';
 
@@ -166,7 +166,7 @@ class PerformanceMonitor {
   endMetric(
     id: string,
     status: 'completed' | 'failed',
-    additionalMetadata?: Record<string, any>
+    additionalMetadata?: Record<string, unknown>
   ): number {
     if (!this.isEnabled || !id) return 0;
 
@@ -208,7 +208,7 @@ class PerformanceMonitor {
     type: PerformanceMetric['type'],
     name: string,
     asyncFn: () => Promise<T>,
-    metadata?: Record<string, any>
+    metadata?: Record<string, unknown>
   ): Promise<T> {
     const metricId = this.startMetric(type, name, metadata);
 

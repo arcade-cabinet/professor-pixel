@@ -49,7 +49,7 @@ export class StorageAdapter {
   async updateUserProgress(
     lessonId: string,
     progressData: Partial<UserProgress>,
-    userId: string = 'anonymous-user',
+    userId: string = 'anonymous-user'
   ) {
     return this.storage.updateUserProgress(userId, lessonId, progressData);
   }

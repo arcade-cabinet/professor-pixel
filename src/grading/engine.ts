@@ -110,12 +110,11 @@ export async function gradeCode(
   for (const test of tests) {
     if (test.mode === 'rules' && (test.astRules || test.runtimeRules)) {
       const astResults = await validateAst(code, test.astRules, pyodide);
-      const runtimeResults = await validateRuntime(
-        actualOutput,
-        test.runtimeRules,
-        input,
-        { inputCalls, functionCalls, globals }
-      );
+      const runtimeResults = await validateRuntime(actualOutput, test.runtimeRules, input, {
+        inputCalls,
+        functionCalls,
+        globals,
+      });
       astAll.push(...astResults);
       runtimeAll.push(...runtimeResults);
     } else {
@@ -161,9 +160,10 @@ function collectStepCaps(tests: TestSpec[]): { timeoutMs?: number; maxStdout?: n
   return { timeoutMs, maxStdout };
 }
 
-function collectWorkerHints(
-  tests: TestSpec[]
-): { trackFunctions: string[]; inspectGlobals: string[] } {
+function collectWorkerHints(tests: TestSpec[]): {
+  trackFunctions: string[];
+  inspectGlobals: string[];
+} {
   const fns = new Set<string>();
   const vars = new Set<string>();
   for (const t of tests) {

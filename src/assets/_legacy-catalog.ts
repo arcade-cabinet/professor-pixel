@@ -41,7 +41,7 @@ export interface AssetSearchOptions {
 
 export class AssetCatalog {
   private assets: Map<string, AssetMetadata> = new Map();
-  private preloadedAssets: Map<string, any> = new Map();
+  private preloadedAssets: Map<string, unknown> = new Map();
   private assetsByType: Map<string, Set<string>> = new Map();
   private assetsByCategory: Map<string, Set<string>> = new Map();
   private loadingQueue: string[] = [];
@@ -338,7 +338,7 @@ export class AssetCatalog {
       this.assetCache.delete(assetId);
 
       return true;
-    } catch (error) {
+    } catch (_error) {
       // Rollback on failure
       asset.path = oldPath;
       return false;

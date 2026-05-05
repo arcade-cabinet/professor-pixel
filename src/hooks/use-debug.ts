@@ -10,6 +10,12 @@ export function useDebug() {
   const [isDebugPanelOpen, setIsDebugPanelOpen] = useState(false);
   const [errors, setErrors] = useState<GlobalError[]>([]);
 
+  const toggleDebugMode = useCallback(() => {
+    const newMode = !isDebugMode;
+    setIsDebugMode(newMode);
+    globalErrorHandler.setDebugMode(newMode);
+  }, [isDebugMode]);
+
   // Initialize debug mode state
   useEffect(() => {
     setIsDebugMode(globalErrorHandler.getDebugMode());
@@ -36,7 +42,7 @@ export function useDebug() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isDebugPanelOpen]);
+  }, [isDebugPanelOpen, toggleDebugMode]);
 
   // Subscribe to error updates
   useEffect(() => {
@@ -49,12 +55,6 @@ export function useDebug() {
 
     return unsubscribe;
   }, []);
-
-  const toggleDebugMode = useCallback(() => {
-    const newMode = !isDebugMode;
-    setIsDebugMode(newMode);
-    globalErrorHandler.setDebugMode(newMode);
-  }, [isDebugMode]);
 
   const openDebugPanel = useCallback(() => {
     setIsDebugPanelOpen(true);

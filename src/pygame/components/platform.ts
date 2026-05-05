@@ -19,7 +19,7 @@ export const platformComponent: PyGameComponent<PlatformProperties> = {
   description: 'A solid surface for platformer games',
   wizardDescription:
     'This is a solid ground or platform that characters can stand on! Perfect for jumping games where you need floors, walls, or floating platforms.',
-  properties: {} as Record<string, any>,
+  properties: {},
   defaultProperties: {
     x: 50,
     y: 300,

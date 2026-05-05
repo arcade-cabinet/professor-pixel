@@ -18,7 +18,16 @@ describe('shouldShowOptions / shouldShowContinue — single-continue collapse (F
   });
 
   it('matches case-insensitive continue patterns ("OK", "Got it", "Let\'s go")', () => {
-    for (const text of ['ok', 'OK', 'Got it', "Let's go", 'Sounds good', 'Sure', 'Next', 'continue!']) {
+    for (const text of [
+      'ok',
+      'OK',
+      'Got it',
+      "Let's go",
+      'Sounds good',
+      'Sure',
+      'Next',
+      'continue!',
+    ]) {
       const n = node({ options: [opt({ text, next: 'x' })] });
       expect(shouldShowContinue(n, 0)).toBe(true);
       expect(shouldShowOptions(n, 0)).toBe(false);

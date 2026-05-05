@@ -28,7 +28,7 @@ export const particleEffectComponent: PyGameComponent<ParticleEffectProperties> 
   description: 'Visual effects like explosions and sparkles',
   wizardDescription:
     'Cool visual effects! Add explosions when enemies are defeated, sparkles when collecting items, smoke trails, or confetti for celebrations. Makes your game look amazing!',
-  properties: {} as Record<string, any>,
+  properties: {},
   defaultProperties: {
     x: 200,
     y: 200,
@@ -159,7 +159,7 @@ export const backgroundComponent: PyGameComponent<BackgroundProperties> = {
   description: 'Scrolling or static backgrounds',
   wizardDescription:
     'The scenery behind your game! It can be a still picture or scroll to create the feeling of movement. Great for making your game world feel bigger!',
-  properties: {} as Record<string, any>,
+  properties: {},
   defaultProperties: {
     color: '#87CEEB',
     scrollSpeed: 0,

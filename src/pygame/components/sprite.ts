@@ -19,7 +19,7 @@ export const spriteComponent: PyGameComponent<SpriteProperties> = {
   description: 'A movable character or object with position and velocity',
   wizardDescription:
     'This is like a character in your game that can move around! It could be a player, an animal, or any object that needs to move. You can make it jump, run, or fly!',
-  properties: {} as Record<string, any>,
+  properties: {},
   defaultProperties: {
     x: 100,
     y: 100,

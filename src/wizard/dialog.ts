@@ -186,7 +186,7 @@ export const pixelPersonality = {
 export function processDialogStep(
   step: DialogStep,
   profile: UserProfile | null,
-  context: Record<string, any> = {}
+  context: Record<string, unknown> = {}
 ): string {
   if (!step.pixel) return '';
 
@@ -201,7 +201,7 @@ export function processDialogStep(
 
   // Replace context variables
   Object.keys(context).forEach((key) => {
-    message = message.replace(`{${key}}`, context[key]);
+    message = message.replace(`{${key}}`, String(context[key] ?? ''));
   });
 
   return message;

@@ -216,9 +216,9 @@ print("Game Update Bridge initialized in Python")
 
     try {
       const patchJson = JSON.stringify(patch);
-      const result = await (this.pyodide.globals.get('apply_game_patch') as (
-        patch: string,
-      ) => Promise<boolean>)(patchJson);
+      const result = await (
+        this.pyodide.globals.get('apply_game_patch') as (patch: string) => Promise<boolean>
+      )(patchJson);
       return result;
     } catch (error) {
       console.error('Failed to apply patch:', error);
@@ -267,7 +267,9 @@ print("Game Update Bridge initialized in Python")
     if (!this.isInitialized || !this.pyodide) return null;
 
     try {
-      const stateJson = await (this.pyodide.globals.get('get_game_state') as () => Promise<string>)();
+      const stateJson = await (
+        this.pyodide.globals.get('get_game_state') as () => Promise<string>
+      )();
       return JSON.parse(stateJson);
     } catch (error) {
       console.error('Failed to get game state:', error);

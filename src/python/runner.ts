@@ -1,8 +1,8 @@
 // Define PyodideInterface locally to avoid import issues
 export interface PyodideInterface {
-  runPython: (code: string) => any;
+  runPython: (code: string) => unknown;
   globals: {
-    get: (name: string) => any;
+    get: (name: string) => unknown;
   };
 }
 
@@ -197,9 +197,11 @@ export class PythonRunner {
       // Execute the code
       this.pyodide.runPython(code);
 
-      // Get output
-      const stdout = this.pyodide.runPython('sys.stdout.getvalue()');
-      const stderr = this.pyodide.runPython('sys.stderr.getvalue()');
+      // Get output. runPython returns `unknown` (Pyodide's typed PyProxy or
+      // scalar); io.StringIO.getvalue() yields a Python str converted to a
+      // JS string at the boundary, so the cast is safe.
+      const stdout = this.pyodide.runPython('sys.stdout.getvalue()') as string;
+      const stderr = this.pyodide.runPython('sys.stderr.getvalue()') as string;
 
       // Restore streams
       this.restoreStreams();

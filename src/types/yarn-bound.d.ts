@@ -2,7 +2,7 @@ declare module 'yarn-bound' {
   export interface DialogueOption {
     text: string;
     isAvailable?: boolean;
-    metadata?: any;
+    metadata?: unknown;
   }
 
   export interface TextResult {
@@ -15,7 +15,7 @@ declare module 'yarn-bound' {
 
   export interface CommandResult {
     command: string;
-    args: any[];
+    args: unknown[];
   }
 
   export type DialogueResult = TextResult | OptionsResult | CommandResult | null;
@@ -23,11 +23,11 @@ declare module 'yarn-bound' {
   export class Runner {
     constructor();
     load(content: string): void;
-    setVariableStorage(storage: any): void;
+    setVariableStorage(storage: unknown): void;
     registerFunction(name: string, fn: Function): void;
-    run(startNode?: string): Generator<any>;
-    variables: Map<string, any>;
-    registerCommand(name: string, callback: (...args: any[]) => void): void;
+    run(startNode?: string): Generator<unknown>;
+    variables: Map<string, unknown>;
+    registerCommand(name: string, callback: (...args: unknown[]) => void): void;
     startDialogue(nodeName: string): void;
     advance(): DialogueResult;
     choose(optionIndex: number): void;

@@ -10,7 +10,7 @@ export interface ComponentSelection {
   componentId: string;
   variant: string;
   assets: Record<string, string>;
-  parameters: Record<string, any>;
+  parameters: Record<string, unknown>;
 }
 
 export interface SceneConfig {
@@ -28,9 +28,9 @@ export interface GeneratorOptions {
 }
 
 // Template parameter replacer
-function replaceTemplateParams(
+function _replaceTemplateParams(
   code: string,
-  params: Record<string, any>,
+  params: Record<string, unknown>,
   assets: Record<string, string> = {}
 ): string {
   let result = code;

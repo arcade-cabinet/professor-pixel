@@ -31,14 +31,15 @@ for (const { name, path } of routes) {
     // before scanning. Without this, axe sometimes scans skeleton states.
     await page.waitForLoadState('networkidle');
 
-    const results = await new AxeBuilder({ page })
-      .withTags([...WCAG_TAGS])
-      .analyze();
+    const results = await new AxeBuilder({ page }).withTags([...WCAG_TAGS]).analyze();
 
     expect(
       results.violations,
       `axe found ${results.violations.length} violation(s) on ${path}:\n${results.violations
-        .map((v) => `  - [${v.id}] ${v.help} (${v.nodes.length} node${v.nodes.length === 1 ? '' : 's'})`)
+        .map(
+          (v) =>
+            `  - [${v.id}] ${v.help} (${v.nodes.length} node${v.nodes.length === 1 ? '' : 's'})`
+        )
         .join('\n')}`
     ).toEqual([]);
   });

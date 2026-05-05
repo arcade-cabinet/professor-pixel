@@ -6,8 +6,16 @@ import type { LessonStep } from '@lib/types/schema';
 
 const stubRunner = {
   runSnippet: async ({ code }: { code: string; input?: string }) => {
-    if (code.includes('boom')) return { output: '', error: 'NameError: boom', inputCalls: 0, functionCalls: {}, globals: {} };
-    if (code.includes('print')) return { output: 'hi\n', error: null, inputCalls: 0, functionCalls: {}, globals: {} };
+    if (code.includes('boom'))
+      return {
+        output: '',
+        error: 'NameError: boom',
+        inputCalls: 0,
+        functionCalls: {},
+        globals: {},
+      };
+    if (code.includes('print'))
+      return { output: 'hi\n', error: null, inputCalls: 0, functionCalls: {}, globals: {} };
     return { output: '', error: null, inputCalls: 0, functionCalls: {}, globals: {} };
   },
 };

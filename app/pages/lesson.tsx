@@ -88,10 +88,10 @@ export default function LessonEnhanced() {
   const [code, setCode] = useState('');
   const [output, setOutput] = useState('');
   const [error, setError] = useState('');
-  const [showIntroModal, setShowIntroModal] = useState(false);
+  const [_showIntroModal, setShowIntroModal] = useState(false);
   const [pixelDialogue, setPixelDialogue] = useState('');
   const [pixelImage, setPixelImage] = useState(pixelTeaching);
-  const [showHint, setShowHint] = useState(false);
+  const [_showHint, setShowHint] = useState(false);
   const [currentHintIndex, setCurrentHintIndex] = useState(0);
   const [gradingResult, setGradingResult] = useState<{
     passed: boolean;
@@ -179,7 +179,7 @@ export default function LessonEnhanced() {
       setShowHint(false);
       setCurrentHintIndex(0);
     }
-  }, [currentStepIndex, currentStep]);
+  }, [currentStep]);
 
   const executeCode = async (inputValues: string = '', runAutoGrading = false) => {
     if (!pythonRunner || !code.trim()) {

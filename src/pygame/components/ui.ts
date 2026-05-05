@@ -54,7 +54,7 @@ export const scoreTextComponent: PyGameComponent<ScoreTextProperties> = {
   description: 'Score displays and game messages',
   wizardDescription:
     'Text that shows on screen! Use this for displaying the score, "Game Over" messages, instructions, or any words you want the player to see.',
-  properties: {} as Record<string, any>,
+  properties: {},
   defaultProperties: {
     text: 'Score: 0',
     x: 10,
@@ -103,7 +103,7 @@ export const buttonComponent: PyGameComponent<ButtonProperties> = {
   description: 'Interactive UI elements',
   wizardDescription:
     "A clickable button! Players can click on it to start the game, pause, or trigger any action you want. You decide what happens when it's clicked!",
-  properties: {} as Record<string, any>,
+  properties: {},
   defaultProperties: {
     x: 350,
     y: 200,
@@ -176,7 +176,7 @@ export const timerComponent: PyGameComponent<TimerProperties> = {
   description: 'Countdown or stopwatch functionality',
   wizardDescription:
     'A timer that counts up or down! Use it for time limits, speedruns, or to trigger events after a certain time. You can make something happen when time runs out!',
-  properties: {} as Record<string, any>,
+  properties: {},
   defaultProperties: {
     duration: 60000,
     x: 350,
@@ -256,7 +256,7 @@ export const healthBarComponent: PyGameComponent<HealthBarProperties> = {
   description: 'Visual health indicator',
   wizardDescription:
     'A bar that shows how much health or energy is left! It goes down when taking damage and can go up when healing. Perfect for showing player or enemy health!',
-  properties: {} as Record<string, any>,
+  properties: {},
   defaultProperties: {
     x: 10,
     y: 40,

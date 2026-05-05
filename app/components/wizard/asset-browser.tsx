@@ -38,7 +38,7 @@ export default function AssetBrowserWizard({
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedAssets, setSelectedAssets] = useState<Set<string>>(new Set());
-  const [hoveredAsset, setHoveredAsset] = useState<GameAsset | null>(null);
+  const [_hoveredAsset, setHoveredAsset] = useState<GameAsset | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 20;
@@ -81,12 +81,12 @@ export default function AssetBrowserWizard({
   const paginatedAssets = useMemo(() => {
     const startIndex = (currentPage - 1) * itemsPerPage;
     return filteredAssets.slice(startIndex, startIndex + itemsPerPage);
-  }, [filteredAssets, currentPage, itemsPerPage]);
+  }, [filteredAssets, currentPage]);
 
   // Reset page when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery, selectedTab, selectedCategory, assetType]);
+  }, []);
 
   // Handle asset selection
   const handleAssetClick = useCallback(

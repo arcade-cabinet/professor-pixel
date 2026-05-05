@@ -191,9 +191,12 @@ export default function UniversalWizard({
       // The dialogue engine will detect the gameType and load the appropriate flow
       console.log('Transitioning to specialized flow for:', sessionActions.gameType);
     } else if (currentNode.action === 'showAssets' || currentNode.action === 'showAssetBrowser') {
-      // Open asset browser with specific type if provided
-      const assetType = currentNode.params?.type || 'all';
-      const gameType = currentNode.params?.gameType || dialogueState.currentNode?.params?.gameType;
+      // Open asset browser with specific type if provided. params is
+      // Record<string, unknown>; narrow at the consumer.
+      const assetType = (currentNode.params?.type as UIState['assetBrowserType']) || 'all';
+      const gameType =
+        (currentNode.params?.gameType as string | undefined) ||
+        (dialogueState.currentNode?.params?.gameType as string | undefined);
       setUiState((prev) => ({
         ...prev,
         assetBrowserOpen: true,
@@ -201,8 +204,9 @@ export default function UniversalWizard({
         selectedGameType: gameType,
       }));
     } else if (currentNode.action === 'minimizePixel') {
-      // Get the minimize message from node params or use default
-      const message = currentNode.params?.message || "I'll be right here if you need me!";
+      // Get the minimize message from node params or use default.
+      const message =
+        (currentNode.params?.message as string | undefined) || "I'll be right here if you need me!";
       setUiState((prev) => ({
         ...prev,
         isMinimizing: true,
@@ -259,8 +263,9 @@ export default function UniversalWizard({
       //     currentComponentCategory: category
       //   }));
     } else if (currentNode.action === 'compileScene') {
-      // Compile a specific scene with selected components
-      const scene = currentNode.params?.scene || 'title';
+      // Compile a specific scene with selected components.
+      // params is Record<string, unknown>; narrow at the consumer.
+      const scene = (currentNode.params?.scene as string | undefined) || 'title';
       setSessionActions((prev) => ({
         ...prev,
         compiledScenes: {
@@ -279,7 +284,7 @@ export default function UniversalWizard({
       }));
     } else if (currentNode.action === 'launchPyodidePreview') {
       // Launch Pyodide preview with compiled components
-      const scene = currentNode.params?.scene || 'full';
+      const scene = (currentNode.params?.scene as string | undefined) || 'full';
       setUiState((prev) => ({
         ...prev,
         embeddedComponent: 'pygame-runner',
@@ -287,7 +292,7 @@ export default function UniversalWizard({
         pyodideMode: true,
       }));
     }
-  }, [dialogueState.currentNode, setSessionActions]);
+  }, [dialogueState.currentNode, setSessionActions, dialogueState, sessionActions.gameType]);
 
   // Wrap handleOptionSelect to handle actions
   const handleOptionSelectWithAction = useCallback(
@@ -296,10 +301,12 @@ export default function UniversalWizard({
       // For selectComponentVariant, handle the action first before dialogue navigation
       // This ensures the selection is saved properly without triggering flow changes
       if (option.action === 'selectComponentVariant') {
-        // Store selected component variant
-        const componentId = option.actionParams?.componentId;
-        const variant = option.actionParams?.variant;
-        const bundle = option.actionParams?.bundle;
+        // Store selected component variant. actionParams is
+        // Record<string, unknown>; narrow at the consumer.
+        const componentId = option.actionParams?.componentId as string | undefined;
+        const variant = option.actionParams?.variant as string | undefined;
+        const bundle = option.actionParams?.bundle as string | undefined;
+        if (!componentId || !variant) return;
 
         console.log(
           `Selecting component variant - ID: ${componentId}, Variant: ${variant}, Bundle:`,
@@ -353,21 +360,24 @@ export default function UniversalWizard({
       } else if (option.action === 'openLessons') {
         setUiState((prev) => ({ ...prev, embeddedComponent: 'code-editor' }));
       } else if (option.action === 'showAssets' || option.action === 'showAssetBrowser') {
-        // Open asset browser with specific type if provided
-        const assetType = option.actionParams?.type || 'all';
-        const gameType = option.actionParams?.gameType || sessionActions.gameType;
+        // Open asset browser with specific type if provided. actionParams is
+        // Record<string, unknown>; narrow at the consumer.
+        const assetType = (option.actionParams?.type as UIState['assetBrowserType']) || 'all';
+        const gameType =
+          (option.actionParams?.gameType as string | undefined) || sessionActions.gameType;
         const curated = option.actionParams?.curated !== false;
         setUiState((prev) => ({
           ...prev,
           assetBrowserOpen: true,
           assetBrowserType: assetType,
-          selectedGameType: gameType,
+          selectedGameType: gameType ?? undefined,
           curatedMode: curated,
         }));
       } else if (option.action === 'minimizePixel') {
-        // Handle minimize from option
+        // Handle minimize from option. actionParams is Record<string, unknown>.
         const message =
-          option.actionParams?.message || 'Have fun creating! Click me if you need help!';
+          (option.actionParams?.message as string | undefined) ||
+          'Have fun creating! Click me if you need help!';
         setUiState((prev) => ({
           ...prev,
           isMinimizing: true,
@@ -383,7 +393,7 @@ export default function UniversalWizard({
         }));
       } else if (option.action === 'showTitlePreset' || option.action === 'cycleTitlePreset') {
         // Show title screen preview for selected game type
-        const gameType = sessionActions.gameType || 'platformer';
+        const _gameType = sessionActions.gameType || 'platformer';
         setUiState((prev) => ({
           ...prev,
           embeddedComponent: 'pygame-runner',
@@ -522,8 +532,9 @@ export default function UniversalWizard({
           },
         }));
       } else if (option.action === 'launchPyodidePreview') {
-        // Launch Pyodide preview with compiled scene
-        const scene = option.actionParams?.scene || 'full';
+        // Launch Pyodide preview with compiled scene. actionParams is
+        // Record<string, unknown>; narrow at the consumer.
+        const scene = (option.actionParams?.scene as string | undefined) || 'full';
         setUiState((prev) => ({
           ...prev,
           embeddedComponent: 'pygame-runner',
@@ -558,13 +569,15 @@ export default function UniversalWizard({
           console.log('Download triggered successfully');
 
           // Show a success message to the user
-          const toast = ((window as Window & { toast?: (msg: unknown) => void }).toast) || console.log;
+          const toast =
+            (window as Window & { toast?: (msg: unknown) => void }).toast || console.log;
           toast('Game exported successfully!');
         } catch (error) {
           console.error('Error during export:', error);
 
           // Show an error message to the user
-          const toast = ((window as Window & { toast?: (msg: unknown) => void }).toast) || console.log;
+          const toast =
+            (window as Window & { toast?: (msg: unknown) => void }).toast || console.log;
           toast('Failed to export game. Please try again.');
         }
       } else if (option.action === 'compileGameplayScene') {
@@ -635,13 +648,7 @@ export default function UniversalWizard({
       // Note: handleOptionSelect(option) is called at the beginning of this function
       // to ensure dialogue flow transitions work properly before UI actions
     },
-    [
-      handleOptionSelect,
-      dialogueState.currentNode,
-      setSessionActions,
-      sessionActions,
-      selectedAssets,
-    ]
+    [handleOptionSelect, setSessionActions, sessionActions, selectedAssets]
   );
 
   // Render dialogue content for desktop/tablet
@@ -743,13 +750,15 @@ export default function UniversalWizard({
             console.log('Download triggered successfully from PixelMenu');
 
             // Show success message if toast is available
-            const toast = ((window as Window & { toast?: (msg: unknown) => void }).toast) || console.log;
+            const toast =
+              (window as Window & { toast?: (msg: unknown) => void }).toast || console.log;
             toast('Game exported successfully!');
           } catch (error) {
             console.error('Error during export from PixelMenu:', error);
 
             // Show error message if toast is available
-            const toast = ((window as Window & { toast?: (msg: unknown) => void }).toast) || console.log;
+            const toast =
+              (window as Window & { toast?: (msg: unknown) => void }).toast || console.log;
             toast('Failed to export game. Please try again.');
           }
           break;

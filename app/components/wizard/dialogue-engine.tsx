@@ -341,6 +341,11 @@ export function useWizardDialogue({
     sessionActions.selectedGameType,
     sessionActions.gameType,
     sessionActions.transitionToSpecializedFlow,
+    loadedFlowPath,
+    wizardData,
+    isFlowLoading,
+    failedFlowPaths.has,
+    dialogueState.currentNodeId,
   ]);
 
   // Update current node when ID changes
@@ -376,23 +381,31 @@ export function useWizardDialogue({
         setSessionActions((prev) => updateSessionActionsForOption(prev, option.text));
       }
 
-      // Handle setVariable if present
+      // Handle setVariable if present. setVariable is Record<string, unknown>;
+      // narrow specific known keys (gameType is the only structured one) and
+      // spread the rest as-is — SessionActions is a permissive shape and the
+      // unknown values flow into compatibly-typed slots through the spread.
       if (option.setVariable) {
         const setVariable = option.setVariable;
+        const gameTypeFromVariable =
+          typeof setVariable.gameType === 'string' ? setVariable.gameType : undefined;
         setSessionActions((prev) => ({
           ...prev,
-          ...setVariable,
-          // Ensure selectedGameType is also set for flow loading
-          selectedGameType: setVariable.gameType || prev.selectedGameType,
+          ...(setVariable as Partial<SessionActions>),
+          selectedGameType: gameTypeFromVariable || prev.selectedGameType,
         }));
         console.log('Set variable:', setVariable);
       }
 
       // Handle transitionToSpecializedFlow action
       if (option.action === 'transitionToSpecializedFlow') {
+        const gameTypeFromVariable =
+          typeof option.setVariable?.gameType === 'string'
+            ? option.setVariable.gameType
+            : undefined;
         console.log(
           'Setting transitionToSpecializedFlow flag for gameType:',
-          option.setVariable?.gameType || sessionActions.gameType
+          gameTypeFromVariable || sessionActions.gameType
         );
         setSessionActions((prev) => ({
           ...prev,
@@ -421,7 +434,7 @@ export function useWizardDialogue({
       // Return the option for additional handling in the parent component
       return option;
     },
-    [navigateToNode]
+    [navigateToNode, sessionActions.gameType]
   );
 
   const advance = useCallback(() => {

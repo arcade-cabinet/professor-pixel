@@ -34,7 +34,11 @@ export default function PygameRunner({
   const [error, setError] = useState<string | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
-  // Initialize Pyodide
+  // Initialize Pyodide. setupCanvasBridge is intentionally NOT in deps:
+  // it's a stable closure that doesn't reference reactive state (only refs +
+  // a static Python string), and including it forces a forward reference in
+  // the file. Stable function — safe to omit.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: stable closure (refs + static code), see comment above
   const initPyodide = useCallback(async () => {
     setIsLoading(true);
     setError(null);
@@ -56,7 +60,7 @@ export default function PygameRunner({
     if (!pyodideRef.current || !canvasRef.current) return;
 
     const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d');
+    const _ctx = canvas.getContext('2d');
 
     // Inject canvas functions into Python environment
     pyodideRef.current.runPython(`
@@ -383,7 +387,7 @@ if 'global_key_state' in globals():
     return () => {
       stopGame();
     };
-  }, []);
+  }, [initPyodide, stopGame]);
 
   return (
     <Card className={`${className} ${isFullscreen ? 'fixed inset-0 z-50' : 'relative'}`}>

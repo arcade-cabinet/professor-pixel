@@ -20,7 +20,7 @@ export interface GameTemplate {
 export interface TemplateComponent {
   type: ComponentType;
   id: string;
-  properties: Record<string, any>;
+  properties: Record<string, unknown>;
 }
 
 export interface GameSettings {

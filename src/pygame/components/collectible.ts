@@ -18,7 +18,7 @@ export const collectibleComponent: PyGameComponent<CollectibleProperties> = {
   description: 'Items that can be picked up',
   wizardDescription:
     'Shiny items to collect! These could be coins for points, power-ups to make you stronger, keys to unlock doors, or health packs to heal. Touch them to pick them up!',
-  properties: {} as Record<string, any>,
+  properties: {},
   defaultProperties: {
     x: 300,
     y: 250,

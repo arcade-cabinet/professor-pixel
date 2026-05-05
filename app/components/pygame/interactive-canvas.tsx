@@ -60,15 +60,15 @@ export default function InteractiveGameCanvas({
 }: InteractiveGameCanvasProps) {
   const canvasRef = useRef<HTMLDivElement>(null);
   // Pyodide temporarily disabled
-  const pyodide = null;
-  const pyodideLoading = false;
+  const _pyodide = null;
+  const _pyodideLoading = false;
   const { toast } = useToast();
 
   const [isPlaying, setIsPlaying] = useState(false);
   const [showGrid, setShowGrid] = useState(true);
   const [gridSnap, setGridSnap] = useState(true);
   const [selectedEntity, setSelectedEntity] = useState<string | null>(null);
-  const [draggedPosition, setDraggedPosition] = useState<{ x: number; y: number } | null>(null);
+  const [_draggedPosition, _setDraggedPosition] = useState<{ x: number; y: number } | null>(null);
   const [showConfigModal, setShowConfigModal] = useState(false);
   const [pendingAsset, setPendingAsset] = useState<DraggableAsset | null>(null);
   const [entityConfig, setEntityConfig] = useState<Partial<Entity>>({});
@@ -218,7 +218,7 @@ export default function InteractiveGameCanvas({
 
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [selectedEntity]);
+  }, [selectedEntity, handleDeleteEntity]);
 
   return (
     <div className={cn('flex flex-col h-full', className)}>
