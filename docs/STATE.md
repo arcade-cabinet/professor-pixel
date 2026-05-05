@@ -5,6 +5,7 @@ status: current
 domain: context
 ---
 
+
 # State
 
 > What's done, what's actively in flight, what's queued. Updated whenever a meaningful slice ships or the next-up changes. If this doc and `git log` disagree, fix this doc.
@@ -13,7 +14,7 @@ domain: context
 
 | Branch | PR | Status |
 |--------|----|----|
-| `feat/modernization-pillar-closeout` | #30 | CHANGES_REQUESTED → fold-forward batches 1+2 pushed; CI green; awaiting re-review |
+| `feat/modernization-pillar-closeout` | #30 | CHANGES_REQUESTED → fold-forward batches 1+2+3+4 pushed; main merged in (PR #24 45-pkg bundle); pnpm overrides for 3 transitive vulns + @playwright/test bump; use-device-type isFoldable heuristic corrected; awaiting Vitest CI + CodeRabbit re-review |
 
 ## Done (recent milestones)
 
@@ -39,8 +40,7 @@ domain: context
 
 ## Next (queued, no commitment yet)
 
-- **PR #30 squash-merge**, then rebase + merge dep PRs #18 (@types/node) and #24 (45-pkg bundle).
-- **react-resizable-panels 2→4** (PR #14, currently CI:RED on the major bump). v3 renamed `Panel` → `PrimaryPanel` and shifted the `ImperativePanelHandle` shape; the rewrite touches `app/components/editor/` and `app/components/wizard/layout-manager.tsx`. Spike-and-revert if >2 hours of churn.
+- **PR #30 squash-merge.** All four fold-forward batches landed (1+2+3+4); main merged in via 5165e74; CI green on Biome + Type check + build, awaiting Vitest + CodeQL + CodeRabbit re-pass. Dependent dep PRs #18 (@types/node 25) and #24 (45-pkg bundle) are already merged into main and folded into this branch via merge commits, so the squash brings everything in one shot. Dependabot PR #14 (react-resizable-panels 2→4) is superseded — we landed the v4 bump on this branch with the v3-API-rename fix in `app/components/ui/resizable.tsx` instead.
 - **Play Store rollout** for the Capacitor Android shell. Generate the release keystore (one-time), add the four `ANDROID_KEYSTORE_*` repository secrets, run `cd-mobile.yml` with `inputs.release=true`, upload the resulting APK via Play Console.
 - **iOS TestFlight** build — manual Mac+Xcode flow per `docs/DEPLOYMENT.md → iOS workflow`. Requires Apple Developer account.
 - **Content tracks.** The remaining `**WEAK**` / `**FIX**` items in `docs/playtests/*.md` are flow-JSON content authoring (theme packs, A/B framing of asset pickers, missing scene additions). The dialogue engine supports them today; what's missing is content. Tracked as content-design work, not engineering.
