@@ -213,11 +213,14 @@ export default function Profile() {
             {strings.profile.nameSection.body}
           </p>
           <div className="flex flex-col gap-3 sm:flex-row">
+            <label htmlFor="profile-name-input" className="sr-only">
+              {strings.profile.nameSection.ariaLabel}
+            </label>
             <Input
+              id="profile-name-input"
               value={nameDraft}
               onChange={(e) => setNameDraft(e.target.value)}
               maxLength={PROFILE_NAME_MAX_LENGTH}
-              aria-label={strings.profile.nameSection.ariaLabel}
               data-testid="profile-name-input"
               placeholder={strings.profile.nameSection.placeholder}
               className="flex-1"

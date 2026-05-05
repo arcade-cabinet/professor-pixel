@@ -352,14 +352,17 @@ export default function Home() {
                         }}
                         className="flex flex-col gap-2"
                       >
+                        <label htmlFor={`my-game-rename-input-${project.id}`} className="sr-only">
+                          {strings.home.project.renameInputAriaLabel(project.name)}
+                        </label>
                         <input
+                          id={`my-game-rename-input-${project.id}`}
                           type="text"
                           value={renameDraft}
                           onChange={(e) => setRenameDraft(e.target.value)}
                           // eslint-disable-next-line jsx-a11y/no-autofocus
                           autoFocus
                           maxLength={64}
-                          aria-label={strings.home.project.renameInputAriaLabel(project.name)}
                           data-testid={`my-game-rename-input-${project.id}`}
                           className="w-full rounded-md border border-gray-300 px-2 py-1 text-sm font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-400 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100"
                         />

@@ -333,19 +333,25 @@ export default function AssetBrowserWizard({
 
             {/* Category filter */}
             {categories.length > 0 && (
-              <select
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                className="px-3 py-2 border rounded-md"
-                data-testid="select-category"
-              >
-                <option value="all">All Categories</option>
-                {categories.map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat.charAt(0).toUpperCase() + cat.slice(1)}
-                  </option>
-                ))}
-              </select>
+              <>
+                <label htmlFor="asset-category-filter" className="sr-only">
+                  {strings.assetBrowser.categoryFilterLabel}
+                </label>
+                <select
+                  id="asset-category-filter"
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  className="px-3 py-2 border rounded-md"
+                  data-testid="select-category"
+                >
+                  <option value="all">All Categories</option>
+                  {categories.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat.charAt(0).toUpperCase() + cat.slice(1)}
+                    </option>
+                  ))}
+                </select>
+              </>
             )}
           </div>
 

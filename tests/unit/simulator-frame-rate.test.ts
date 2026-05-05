@@ -77,7 +77,9 @@ describe('simulator frame-rate floor (M4.2)', () => {
 
     const samples: number[] = [];
     for (let frame = 0; frame < FRAMES; frame++) {
-      // Refill — flushFrameBuffer empties the array each call.
+      // Refill — flushFrameBuffer drains the buffer in-place each
+      // call, so we can keep the same `buffer` reference across
+      // frames without it going stale.
       buffer.length = 0;
       for (const cmd of SCENE_COMMANDS) {
         buffer.push({ ...cmd });
@@ -100,17 +102,25 @@ describe('simulator frame-rate floor (M4.2)', () => {
       `mean frame time ${mean.toFixed(3)}ms exceeded 60fps budget ${BUDGET_MS}ms (max sample: ${max.toFixed(3)}ms over ${FRAMES} frames)`
     ).toBeLessThan(BUDGET_MS);
 
-    // Sanity check: the test should be exercising a non-trivial
-    // amount of work. If a refactor accidentally short-circuits
-    // flushFrameBuffer (say, a `return` slipped into the top of the
-    // function), mean would drop to ~0 and we'd lose the regression
-    // signal entirely. Lower-bound at 1 microsecond ensures the
-    // measurement is real.
-    expect(mean).toBeGreaterThan(0);
+    // Strong sanity check: the fake canvas's call ledger must show
+    // that real dispatch work happened. Timing-based lower bounds are
+    // unreliable (performance.now resolution in jsdom can floor a
+    // genuinely fast frame to 0), but the ledger doesn't lie — every
+    // `rect` command produces at least a `set:fillStyle` and a
+    // `fillRect` call. With 8 sprites + 2 platforms + 32 particles +
+    // 1 clear + 1 fill across 120 frames we expect thousands of
+    // recorded calls. A short-circuit refactor (a `return` slipped
+    // into the top of flushFrameBuffer) would leave the ledger empty
+    // and this assertion fires loud.
+    const ledgerSize = fake.getLedger().length;
+    expect(
+      ledgerSize,
+      `expected the fake canvas ledger to record real dispatch work, got ${ledgerSize} calls — flushFrameBuffer may be short-circuiting`
+    ).toBeGreaterThan(FRAMES * 10);
 
     // Capture for debug visibility on CI logs.
     console.log(
-      `[M4.2] mean=${mean.toFixed(3)}ms max=${max.toFixed(3)}ms frames=${FRAMES} commands/frame=${SCENE_COMMANDS.length}`
+      `[M4.2] mean=${mean.toFixed(3)}ms max=${max.toFixed(3)}ms frames=${FRAMES} commands/frame=${SCENE_COMMANDS.length} ledger=${ledgerSize}`
     );
   });
 });

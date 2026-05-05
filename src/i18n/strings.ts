@@ -477,6 +477,17 @@ export const strings = {
     },
   },
 
+  /* ─── Asset browser (wizard/asset-browser.tsx) ─────────────────────── */
+  assetBrowser: {
+    // Visually-hidden label that pairs with the category filter
+    // <select>. The "All Categories" option already labels the
+    // control for sighted users, but a screen reader reading the
+    // <select> standalone would announce "All Categories — combo
+    // box" with no hint that this is a filter — the explicit label
+    // closes that gap without adding visual chrome.
+    categoryFilterLabel: 'Filter assets by category',
+  },
+
   /* ─── Code editor (code-editor.tsx) ────────────────────────────────── */
   codeEditor: {
     resetConfirm: {

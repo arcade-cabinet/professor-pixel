@@ -488,7 +488,7 @@ Started: 2026-05-05T11:51:00Z
 
 ### task-005 explicit form labels
 
-- [ ] task-005 home.tsx project-rename input + profile.tsx name input + asset-browser.tsx category select get explicit `<label htmlFor>` + matching `id`; existing aria-label kept where the visible label would be redundant
+- [x] task-005 home.tsx project-rename + profile.tsx name + asset-browser.tsx category select each get sr-only <label htmlFor> + matching id; tests/unit/form-labels.test.ts asserts wiring + new catalog key
 
 ### task-006 modernization-pillar status update
 

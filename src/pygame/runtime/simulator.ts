@@ -53,7 +53,14 @@ interface PygameSprite {
 
 // Global rendering state
 let canvasContext: CanvasRenderingContext2D | null = null;
-let frameBuffer: DrawCommand[] = [];
+// Drained in-place via `.length = 0` rather than reassigned to a fresh
+// `[]`. The reassignment pattern made `getFrameBuffer()`'s exported
+// reference go stale after the first flush, breaking the test seam:
+// callers that captured the array-by-reference would write to a dead
+// array while the live one (now bound to a fresh `[]`) ignored them.
+// Drain-in-place keeps the identity stable and incidentally avoids
+// per-frame allocation churn.
+const frameBuffer: DrawCommand[] = [];
 let isRenderingActive = false;
 let currentFPS = 60;
 let _lastFrameTime = 0;
@@ -297,7 +304,7 @@ export function setCanvasContext(ctx: CanvasRenderingContext2D | null) {
 
 // Reset pygame state
 export function resetPygameState() {
-  frameBuffer = [];
+  frameBuffer.length = 0;
   isRenderingActive = false;
   currentFPS = 60;
   _lastFrameTime = 0;
@@ -333,11 +340,11 @@ export function createPygameEnvironment() {
       },
       flip: () => {
         flushFrameBuffer();
-        frameBuffer = [];
+        frameBuffer.length = 0;
       },
       update: () => {
         flushFrameBuffer();
-        frameBuffer = [];
+        frameBuffer.length = 0;
       },
       set_caption: (title: string) => console.log(`🏷️ Window caption: ${title}`),
     },
@@ -683,7 +690,7 @@ export function flushFrameBuffer() {
     console.error('Pygame rendering error:', error);
   } finally {
     // Clear the frame buffer after rendering
-    frameBuffer = [];
+    frameBuffer.length = 0;
   }
 }
 
@@ -710,7 +717,7 @@ export const pygameShim = {
   quit() {
     isRenderingActive = false;
     canvasContext = null;
-    frameBuffer = [];
+    frameBuffer.length = 0;
   },
 
   // Time module with Clock
