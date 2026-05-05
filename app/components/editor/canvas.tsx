@@ -272,7 +272,14 @@ export default function PygameEditorCanvas({
         tabIndex={0}
         data-testid={armedComponentId ? `place-canvas-${armedComponentId}` : 'place-canvas'}
         className={cn(
-          'touch-none focus:outline-none focus:ring-2 focus:ring-purple-400',
+          // touch-pan-x/y (touch-action: pan-x pan-y) preserves browser
+          // pinch-zoom for low-vision kids who need to inspect small
+          // component placements, while still letting the pointermove
+          // drag stream flow uninterrupted. Killing pinch-zoom outright
+          // (touch-none) on a placement-mode surface would be an a11y
+          // regression — the live-preview canvas is different (a running
+          // game where pinch is unwanted) and stays touch-none there.
+          'touch-pan-x touch-pan-y focus:outline-none focus:ring-2 focus:ring-purple-400',
           armedComponentId ? 'cursor-copy' : 'cursor-crosshair'
         )}
         onPointerDown={handleCanvasPointerDown}

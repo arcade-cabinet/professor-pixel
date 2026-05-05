@@ -152,6 +152,14 @@ describe('PygameLivePreview — Pause / Resume (P6)', () => {
         expect.objectContaining({ x: 50, y: 30 })
       );
     });
+
+    // The pyodide-dispatch leg is a separate failure surface — a regression
+    // that early-returns before runPython would still fire onInteraction
+    // through the same try-block, so assert it independently to lock down
+    // the pygame click delivery path.
+    expect(mockPyodide.runPython).toHaveBeenCalledWith(
+      expect.stringContaining('handle_click(50, 30)')
+    );
   });
 
   it('does not pause when P is pressed inside an editable target', async () => {

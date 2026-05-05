@@ -78,6 +78,34 @@ export default function CodeEditor({
   const editorRef = useRef<HTMLDivElement>(null);
   const monacoEditorRef = useRef<MonacoEditorInstance | null>(null);
   const scriptLoadedRef = useRef<boolean>(false);
+  // Phone-keyboard reflow: when iOS / Android opens the soft keyboard,
+  // window.innerHeight stays constant but window.visualViewport.height
+  // shrinks by the keyboard's pixel height. Without compensation, the
+  // bottom of Monaco (where the kid is typing) hides *behind* the
+  // keyboard. Track the delta so we can push paddingBottom on the
+  // outer wrapper, lifting the editor into the visible area.
+  const [keyboardInset, setKeyboardInset] = useState(0);
+
+  useEffect(() => {
+    const vv = typeof window !== 'undefined' ? window.visualViewport : undefined;
+    if (!vv) return;
+    const update = () => {
+      // offsetTop accounts for split-keyboard / accessory-bar cases on iOS
+      // where the visible viewport is offset from the layout viewport top.
+      // Subtracting visible height + offset from the window height gives
+      // the keyboard inset in CSS pixels; clamp to zero so a transient
+      // negative value (from a viewport quirk) doesn't pull the layout up.
+      const inset = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
+      setKeyboardInset(inset);
+    };
+    update();
+    vv.addEventListener('resize', update);
+    vv.addEventListener('scroll', update);
+    return () => {
+      vv.removeEventListener('resize', update);
+      vv.removeEventListener('scroll', update);
+    };
+  }, []);
   const [inputValues, setInputValues] = useState('');
 
   useEffect(() => {
@@ -207,7 +235,11 @@ export default function CodeEditor({
   };
 
   return (
-    <div className="w-full md:w-1/2 flex flex-col">
+    <div
+      className="w-full md:w-1/2 flex flex-col"
+      style={keyboardInset > 0 ? { paddingBottom: keyboardInset } : undefined}
+      data-testid="code-editor-wrapper"
+    >
       <div className="code-editor-header">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 gap-3">
           <h3 className="text-xl sm:text-2xl font-bold">Code Editor</h3>

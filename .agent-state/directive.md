@@ -355,7 +355,7 @@ Branch: feat/player-experience-pillar-4
 
 ### task-006 Use window.visualViewport to keep code editor visible when soft keyboard opens
 
-- [ ] task-006 code-panel adjusts paddingBottom on visualViewport resize; new test stubs visualViewport
+- [x] task-006 code-panel adjusts paddingBottom on visualViewport resize; new test stubs visualViewport
 
 ### task-007 Show "Tap to place" hint on touch devices
 
