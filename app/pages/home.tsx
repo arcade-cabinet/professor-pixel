@@ -8,6 +8,7 @@ import {
   deleteWizardProject,
   renameWizardProject,
 } from '@lib/storage/projects';
+import { exportSavedProject } from '@lib/pygame/runtime/exporter';
 import { queryClient } from '@lib/net/query-client';
 import UniversalWizard from '@/components/wizard/universal';
 import { Button } from '@/components/ui/button';
@@ -78,6 +79,10 @@ export default function Home() {
   // mutating the project list — react-query owns the canonical list.
   const [renameId, setRenameId] = useState<string | null>(null);
   const [renameDraft, setRenameDraft] = useState('');
+  // P4.17 — disables the Export button on the row currently mid-export so
+  // a kid can't fire two ZIP builds in parallel (the second one would
+  // race for the share sheet on iOS). Null = no export in flight.
+  const [exportingId, setExportingId] = useState<string | null>(null);
   const { toast } = useToast();
 
   // P5 — My Games. ListWizardProjects reads from ClientStorage; if the wizard
@@ -353,6 +358,50 @@ export default function Home() {
                           ✏️
                         </Button>
                       )}
+                      <Button
+                        onClick={async () => {
+                          // P4.17 — Build a self-contained ZIP for sharing.
+                          // The exportSavedProject helper hydrates assets,
+                          // generates the python source, and either fires
+                          // navigator.share (mobile) or downloads (desktop).
+                          // Errors fall to a toast — never crash the row.
+                          setExportingId(project.id);
+                          try {
+                            const action = await exportSavedProject(project.id);
+                            if (action === 'shared') {
+                              toast({
+                                title: strings.home.project.exportSharedTitle,
+                              });
+                            } else if (action === 'downloaded') {
+                              const filename = `${project.name.replace(/[^a-z0-9]+/gi, '-').toLowerCase() || 'my-game'}.zip`;
+                              toast({
+                                title: strings.home.project.exportSuccessTitle,
+                                description: strings.home.project.exportSuccessBody(filename),
+                              });
+                            } else {
+                              toast({
+                                title: strings.home.project.exportCancelledTitle,
+                                description: strings.home.project.exportCancelledBody,
+                              });
+                            }
+                          } catch (err) {
+                            console.error('Failed to export project:', err);
+                            toast({
+                              title: strings.home.project.exportErrorTitle,
+                              description: strings.home.project.exportErrorBody,
+                              variant: 'destructive',
+                            });
+                          } finally {
+                            setExportingId(null);
+                          }
+                        }}
+                        disabled={exportingId === project.id}
+                        variant="outline"
+                        data-testid={`my-game-export-${project.id}`}
+                        aria-label={strings.home.project.exportAriaLabel(project.name)}
+                      >
+                        {exportingId === project.id ? strings.home.project.exporting : '📦'}
+                      </Button>
                       <Button
                         onClick={() => setConfirmDeleteId(project.id)}
                         variant="outline"

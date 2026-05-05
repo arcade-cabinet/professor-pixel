@@ -15,6 +15,8 @@
 import JSZip from 'jszip';
 import { compilePythonGame } from './compiler';
 import type { GameAsset } from '@lib/assets/types';
+import { assetManager } from '@lib/assets/manager';
+import { loadWizardProject } from '@lib/storage/projects';
 
 const PYODIDE_CDN_VERSION = '0.26.4';
 const PYODIDE_CDN_BASE = `https://cdn.jsdelivr.net/pyodide/v${PYODIDE_CDN_VERSION}/full/`;
@@ -158,6 +160,39 @@ export async function shareOrDownload(
   }
   triggerDownload(exported);
   return 'downloaded';
+}
+
+/**
+ * P4.17 — Export a saved /home project as a ZIP.
+ *
+ * Loads the project's wizard snapshot, hydrates the asset IDs against
+ * the asset catalog (the snapshot stores IDs only — catalog stays the
+ * source of truth for paths, etc.), then defers to `exportProjectAsZip`
+ * + `shareOrDownload`. Returned action is the same tri-state as the
+ * underlying call so the caller can toast "Saved!" / "Shared!" /
+ * "Cancelled".
+ *
+ * Throws if the project id doesn't resolve (kid clicked Export on a
+ * row that was deleted from another tab); the caller surfaces a toast.
+ */
+export async function exportSavedProject(
+  projectId: string
+): Promise<'shared' | 'downloaded' | 'cancelled'> {
+  const snapshot = await loadWizardProject(projectId);
+  if (!snapshot) {
+    throw new Error(`Project ${projectId} not found`);
+  }
+  const ids = snapshot.wizardState.selectedAssetIds ?? [];
+  const selectedAssets = ids
+    .map((id) => assetManager.getAssetById(id))
+    .filter((a): a is GameAsset => Boolean(a));
+  const sessionActions = snapshot.wizardState.sessionActions;
+  const exported = await exportProjectAsZip({
+    selectedComponents: sessionActions?.selectedComponents ?? {},
+    selectedAssets,
+    title: snapshot.name,
+  });
+  return shareOrDownload(exported);
 }
 
 function slugify(s: string): string {

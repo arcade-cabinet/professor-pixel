@@ -1,5 +1,15 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import JSZip from 'jszip';
+
+// Stub the asset-catalog singleton at module load — its real-module
+// constructor fires a fetch the moment it's imported, which in jsdom
+// surfaces as an unhandled rejection that taints unrelated tests.
+// All exporter tests in this file work with explicit asset arrays
+// passed in, so a no-op getAssetById is sufficient.
+vi.mock('@lib/assets/manager', () => ({
+  assetManager: { getAssetById: () => undefined },
+}));
+
 import { exportProjectAsZip, shareOrDownload } from '@lib/pygame/runtime/exporter';
 import type { GameAsset } from '@lib/assets/types';
 
@@ -276,5 +286,35 @@ describe('shareOrDownload', () => {
     // just lost the user-activation token after the await.
     expect(consoleWarnSpy).not.toHaveBeenCalled();
     consoleWarnSpy.mockRestore();
+  });
+});
+
+describe('exportSavedProject (P4.17)', () => {
+  it('throws when the project id does not resolve', async () => {
+    // The integration paths (full snapshot → ZIP) are covered in the
+    // exportProjectAsZip + shareOrDownload suites above. This test
+    // pins the missing-project guardrail specific to the new helper.
+    // Use vi.doMock + dynamic import so the storage mock applies only
+    // for this test and doesn't bleed into other suites that rely on
+    // the real persistence layer. Static imports of the same module
+    // earlier in the file are unaffected by doMock — but the dynamic
+    // re-import below re-binds against the mocked module graph.
+    vi.resetModules();
+    vi.doMock('@lib/storage/projects', () => ({
+      loadWizardProject: vi.fn(async () => null),
+    }));
+    // Stub the asset manager too — its singleton bootstrap fires a
+    // fetch on import in jsdom, surfacing as an unhandled rejection.
+    vi.doMock('@lib/assets/manager', () => ({
+      assetManager: { getAssetById: () => undefined },
+    }));
+    try {
+      const { exportSavedProject } = await import('@lib/pygame/runtime/exporter');
+      await expect(exportSavedProject('missing-id')).rejects.toThrow(/not found/i);
+    } finally {
+      vi.doUnmock('@lib/storage/projects');
+      vi.doUnmock('@lib/assets/manager');
+      vi.resetModules();
+    }
   });
 });

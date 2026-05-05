@@ -399,7 +399,7 @@ Branch: feat/player-experience-pillar-4
 
 ### task-017 "Export Game" button → downloadable ZIP with code + assets
 
-- [ ] task-017 src/export/zip.ts builds runnable bundle (main.py + assets + README); home.tsx Export button triggers download
+- [x] task-017 src/export/zip.ts builds runnable bundle (main.py + assets + README); home.tsx Export button triggers download
 
 ### task-018 "Remix" button on project rows → clones with -remix-N suffix
 

@@ -96,6 +96,17 @@ export const strings = {
       cancelRename: 'Cancel',
       renameErrorTitle: "Couldn't rename that game",
       renameErrorBody: 'Try a different name and save again.',
+      // P4.17 — Export-as-ZIP affordance on each project row.
+      exportLabel: 'Export',
+      exporting: 'Exporting…',
+      exportAriaLabel: (name: string) => `Export ${name} as a zip file`,
+      exportSuccessTitle: 'Game exported!',
+      exportSuccessBody: (filename: string) => `Saved as ${filename}.`,
+      exportSharedTitle: 'Game shared!',
+      exportCancelledTitle: 'Export cancelled',
+      exportCancelledBody: 'No file was saved.',
+      exportErrorTitle: "Couldn't export that game",
+      exportErrorBody: 'Try opening it first, then exporting from the wizard.',
     },
   },
 
