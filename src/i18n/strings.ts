@@ -278,6 +278,24 @@ export const strings = {
       since: (name: string, date: string) => `Hi ${name}! You started on ${date}.`,
       sinceFallbackDate: 'your first day',
     },
+    // P4.32 — optional self-expression. Pronouns + emoji avatar are
+    // strictly opt-in; defaults are "no choice" / no avatar emoji.
+    expressionSection: {
+      heading: 'Make it yours',
+      body: 'Optional — pick how Pixel should refer to you and an emoji that feels like you.',
+      pronounsLabel: 'Pronouns',
+      pronounsAriaLabel: 'Pick your pronouns',
+      pronounsNone: 'Not specified',
+      pronounsCustom: 'Custom',
+      pronounsCustomPlaceholder: 'Type your own',
+      pronounsCustomAriaLabel: 'Custom pronouns',
+      avatarLabel: 'Avatar emoji',
+      avatarAriaLabel: (emoji: string) => `Pick ${emoji} as your avatar emoji`,
+      avatarClear: 'Clear emoji',
+      saveButton: 'Save',
+      savedToast: 'Looking good!',
+      savedDescription: 'Your profile is updated.',
+    },
     completedSection: {
       heading: "Lessons you've finished",
       empty: {

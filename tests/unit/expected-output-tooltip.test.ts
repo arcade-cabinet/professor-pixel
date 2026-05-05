@@ -32,7 +32,7 @@ describe('expected-output tooltip (P4.31)', () => {
     // tooltip block, then assert the tooltip content references the
     // catalog explanation.
     const tooltipMatch = LIVE_PREVIEW_SOURCE.match(
-      /<Tooltip>[\s\S]*?badge-expected-output[\s\S]*?<\/Tooltip>/
+      /<Tooltip(?:\s[^>]*)?>[\s\S]*?badge-expected-output[\s\S]*?<\/Tooltip>/
     );
     expect(
       tooltipMatch,

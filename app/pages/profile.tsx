@@ -23,6 +23,7 @@ import {
   clearProfile,
   InvalidProfileError,
   PROFILE_NAME_MAX_LENGTH,
+  type PlayerProfile,
 } from '@lib/storage/profile';
 import { getClientStorage } from '@lib/storage/mode';
 import { loadLessons } from '@lib/lessons';
@@ -36,14 +37,66 @@ const ONBOARDING_KEY = 'pp.onboardingComplete';
 export default function Profile() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [profile, setProfile] = useState(() => loadProfile());
+  const [profile, setProfile] = useState<PlayerProfile | null>(() => loadProfile());
   const [nameDraft, setNameDraft] = useState(profile?.name ?? '');
   const [confirmingSwitch, setConfirmingSwitch] = useState(false);
+  // P4.32 — pronouns + emoji avatar drafts. Initial values from the
+  // existing profile; "" means "not set" (saveProfile clears the field
+  // when the trimmed value is empty AND no existing value would be
+  // carried over). The "custom" radio is implicit: any value not in
+  // PRONOUN_PRESETS is treated as a custom string and rendered in the
+  // text input.
+  const [pronounsDraft, setPronounsDraft] = useState<string>(profile?.pronouns ?? '');
+  const [emojiDraft, setEmojiDraft] = useState<string>(profile?.avatarEmoji ?? '');
 
   // Keep the form in sync if profile changes (e.g., after a switch-user wipe).
   useEffect(() => {
     setNameDraft(profile?.name ?? '');
+    setPronounsDraft(profile?.pronouns ?? '');
+    setEmojiDraft(profile?.avatarEmoji ?? '');
   }, [profile]);
+
+  // Pronoun presets — common kid-friendly options plus a "Custom" escape
+  // hatch. The catalog references this list via index, but the strings
+  // themselves are user-facing labels not localized text (they're the
+  // English-language pronouns being chosen). If we ever add Spanish,
+  // a different preset list will live alongside.
+  const PRONOUN_PRESETS = ['', 'she/her', 'he/him', 'they/them', 'CUSTOM'];
+  const isCustomPronouns = pronounsDraft.length > 0 && !PRONOUN_PRESETS.includes(pronounsDraft);
+  const pronounsRadioValue =
+    pronounsDraft === '' ? '' : isCustomPronouns ? 'CUSTOM' : pronounsDraft;
+
+  // Emoji palette — small, kid-friendly set. A kid wanting something
+  // off-list can paste into the system emoji picker via mobile
+  // keyboard, but the curated palette is the primary affordance.
+  const AVATAR_EMOJI = ['🦊', '🐼', '🐢', '🦄', '🐙', '🦖', '🐝', '🌟', '🚀', '🎮'];
+
+  const handleSaveExpression = () => {
+    try {
+      const next = saveProfile({
+        name: profile?.name ?? nameDraft,
+        // null clears, undefined leaves alone, string sets.
+        pronouns: pronounsDraft.trim().length === 0 ? null : pronounsDraft.trim(),
+        avatarEmoji: emojiDraft.length === 0 ? null : emojiDraft,
+      });
+      setProfile(next);
+      toast({
+        title: strings.profile.expressionSection.savedToast,
+        description: strings.profile.expressionSection.savedDescription,
+      });
+    } catch (err) {
+      if (err instanceof InvalidProfileError) {
+        // Same path as name save — surface the constraint to the kid.
+        toast({
+          title: strings.profile.nameSection.invalidTitle,
+          description: strings.profile.nameSection.invalidDescription,
+          variant: 'destructive',
+        });
+        return;
+      }
+      throw err;
+    }
+  };
 
   const { data: lessons } = useQuery<Lesson[]>({
     queryKey: ['lessons'],
@@ -188,6 +241,124 @@ export default function Profile() {
               )}
             </p>
           )}
+        </Card>
+
+        {/* P4.32 — optional pronouns + emoji avatar */}
+        <Card className="p-6 bg-white/90 dark:bg-gray-800/90">
+          <h2 className="mb-3 text-xl font-bold text-gray-900 dark:text-gray-100">
+            {strings.profile.expressionSection.heading}
+          </h2>
+          <p className="mb-4 text-sm text-gray-700 dark:text-gray-300">
+            {strings.profile.expressionSection.body}
+          </p>
+
+          <fieldset className="mb-4">
+            <legend className="mb-2 text-sm font-semibold text-gray-800 dark:text-gray-200">
+              {strings.profile.expressionSection.pronounsLabel}
+            </legend>
+            <div className="flex flex-wrap gap-3">
+              {PRONOUN_PRESETS.map((preset) => {
+                const label =
+                  preset === ''
+                    ? strings.profile.expressionSection.pronounsNone
+                    : preset === 'CUSTOM'
+                      ? strings.profile.expressionSection.pronounsCustom
+                      : preset;
+                const checked = pronounsRadioValue === preset;
+                return (
+                  <label
+                    key={preset || 'none'}
+                    className={`cursor-pointer rounded-md border px-3 py-1 text-sm focus-within:ring-2 focus-within:ring-purple-400 focus-within:ring-offset-1 ${
+                      checked
+                        ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/30'
+                        : 'border-gray-300 dark:border-gray-700'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="pronouns"
+                      value={preset}
+                      checked={checked}
+                      onChange={() => {
+                        if (preset === 'CUSTOM') {
+                          // Keep any existing custom string; if switching from
+                          // a preset, start blank so the input has focus to fill.
+                          if (!isCustomPronouns) setPronounsDraft('');
+                        } else {
+                          setPronounsDraft(preset);
+                        }
+                      }}
+                      className="sr-only"
+                      data-testid={`pronouns-radio-${preset || 'none'}`}
+                    />
+                    {label}
+                  </label>
+                );
+              })}
+            </div>
+            {pronounsRadioValue === 'CUSTOM' && (
+              <Input
+                value={pronounsDraft}
+                onChange={(e) => setPronounsDraft(e.target.value)}
+                placeholder={strings.profile.expressionSection.pronounsCustomPlaceholder}
+                aria-label={strings.profile.expressionSection.pronounsCustomAriaLabel}
+                data-testid="pronouns-custom-input"
+                className="mt-2"
+                maxLength={32}
+              />
+            )}
+          </fieldset>
+
+          <fieldset className="mb-4">
+            <legend className="mb-2 text-sm font-semibold text-gray-800 dark:text-gray-200">
+              {strings.profile.expressionSection.avatarLabel}
+            </legend>
+            <div className="flex flex-wrap gap-2">
+              {AVATAR_EMOJI.map((emoji) => {
+                const selected = emojiDraft === emoji;
+                return (
+                  <button
+                    key={emoji}
+                    type="button"
+                    onClick={() => setEmojiDraft(selected ? '' : emoji)}
+                    aria-label={strings.profile.expressionSection.avatarAriaLabel(emoji)}
+                    aria-pressed={selected}
+                    data-testid={`avatar-emoji-${emoji}`}
+                    className={`flex h-10 w-10 items-center justify-center rounded-md border text-2xl transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-1 ${
+                      selected
+                        ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/30'
+                        : 'border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800'
+                    }`}
+                  >
+                    {emoji}
+                  </button>
+                );
+              })}
+              {emojiDraft && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setEmojiDraft('')}
+                  data-testid="avatar-clear"
+                >
+                  {strings.profile.expressionSection.avatarClear}
+                </Button>
+              )}
+            </div>
+          </fieldset>
+
+          <Button
+            onClick={handleSaveExpression}
+            data-testid="profile-save-expression"
+            className="bg-gradient-to-r from-purple-500 to-pink-500"
+            disabled={
+              pronounsDraft === (profile?.pronouns ?? '') &&
+              emojiDraft === (profile?.avatarEmoji ?? '')
+            }
+          >
+            {strings.profile.expressionSection.saveButton}
+          </Button>
         </Card>
 
         <Card className="p-6 bg-white/90 dark:bg-gray-800/90">

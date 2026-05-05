@@ -83,4 +83,71 @@ describe('profile storage', () => {
     );
     expect(loadProfile()).toBeNull();
   });
+
+  // P4.32 — pronouns + emoji avatar
+  describe('expression fields (P4.32)', () => {
+    it('saves and loads optional pronouns', () => {
+      saveProfile({ name: 'Alex', pronouns: 'they/them' });
+      expect(loadProfile()?.pronouns).toBe('they/them');
+    });
+
+    it('saves and loads optional avatarEmoji', () => {
+      saveProfile({ name: 'Alex', avatarEmoji: '🦊' });
+      expect(loadProfile()?.avatarEmoji).toBe('🦊');
+    });
+
+    it('legacy profiles (no pronouns/avatarEmoji) load with undefined fields', () => {
+      // Simulate a v1-shape profile written before P4.32 shipped.
+      localStorage.setItem(
+        'pp.profile',
+        JSON.stringify({ name: 'Old', createdAt: '2026-01-01T00:00:00.000Z' })
+      );
+      const loaded = loadProfile();
+      expect(loaded?.name).toBe('Old');
+      expect(loaded?.pronouns).toBeUndefined();
+      expect(loaded?.avatarEmoji).toBeUndefined();
+    });
+
+    it('null pronouns explicitly clears the existing value', () => {
+      saveProfile({ name: 'Alex', pronouns: 'she/her' });
+      expect(loadProfile()?.pronouns).toBe('she/her');
+      saveProfile({ name: 'Alex', pronouns: null });
+      expect(loadProfile()?.pronouns).toBeUndefined();
+    });
+
+    it('omitted pronouns carry over from the existing profile', () => {
+      saveProfile({ name: 'Alex', pronouns: 'they/them' });
+      // Re-save with just a name change — pronouns should persist.
+      saveProfile({ name: 'Alex' });
+      expect(loadProfile()?.pronouns).toBe('they/them');
+    });
+
+    it('null avatarEmoji clears the existing value', () => {
+      saveProfile({ name: 'Alex', avatarEmoji: '🦄' });
+      expect(loadProfile()?.avatarEmoji).toBe('🦄');
+      saveProfile({ name: 'Alex', avatarEmoji: null });
+      expect(loadProfile()?.avatarEmoji).toBeUndefined();
+    });
+
+    it('bare-string saveProfile still works (legacy callers)', () => {
+      saveProfile('Bare');
+      expect(loadProfile()?.name).toBe('Bare');
+    });
+
+    it('rejects malformed pronouns/avatarEmoji from disk', () => {
+      // A corrupted disk entry where pronouns is a number — load drops it.
+      localStorage.setItem(
+        'pp.profile',
+        JSON.stringify({
+          name: 'Alex',
+          createdAt: '2026-01-01T00:00:00.000Z',
+          pronouns: 42, // wrong type
+          avatarEmoji: '', // empty string treated as unset
+        })
+      );
+      const loaded = loadProfile();
+      expect(loaded?.pronouns).toBeUndefined();
+      expect(loaded?.avatarEmoji).toBeUndefined();
+    });
+  });
 });

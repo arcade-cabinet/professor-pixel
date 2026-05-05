@@ -459,7 +459,7 @@ Branch: feat/player-experience-pillar-4
 
 ### task-032 Optional pronouns dropdown + emoji picker on /profile
 
-- [ ] task-032 schema extended with optional pronouns/avatarEmoji; profile.tsx controls; backwards-compat load test
+- [x] task-032 schema extended with optional pronouns/avatarEmoji; profile.tsx controls; backwards-compat load test
 
 ### task-033 Editor header shows an offline pill when navigator is offline
 
