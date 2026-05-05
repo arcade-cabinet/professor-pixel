@@ -10,19 +10,13 @@
  */
 
 import * as Comlink from 'comlink';
+import { baseUrl } from '@lib/utils/base-url';
 
 // Pyodide ships an ESM variant at `pyodide.mjs` exposing `loadPyodide`.
 // We dynamic-import it so the worker stays an ESM module (which Vite's
 // `?worker` produces by default; classic workers can't use ES imports for
 // the rest of our code).
-
-// Resolve `/pyodide/` against Vite's BASE_URL so the worker fetches its
-// payload from the correct origin path on GitHub Pages subpath deploys.
-// In Capacitor and dev BASE_URL is `/`, so this resolves to `/pyodide/`
-// just like before. Without this, on Pages the worker 404s on its first
-// `import('/pyodide/pyodide.mjs')` and Pyodide never boots.
-const RAW_BASE = (typeof import.meta !== 'undefined' && import.meta.env?.BASE_URL) || '/';
-const PYODIDE_BASE = `${RAW_BASE.endsWith('/') ? RAW_BASE : `${RAW_BASE}/`}pyodide/`;
+const PYODIDE_BASE = `${baseUrl}pyodide/`;
 
 export interface RunResult {
   output: string;

@@ -98,6 +98,26 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+        with:
+          # Need history so the reachability check below can resolve
+          # `origin/main` and run `merge-base --is-ancestor`. The default
+          # shallow checkout doesn't pull main.
+          fetch-depth: 0
+
+      # Defense in depth on top of the trusted-ref guard. The `if:` above
+      # restricts to refs/heads/main or refs/tags/*, but tag protection
+      # doesn't inherit branch protection — anyone with `contents: write`
+      # could tag a feature branch tip and trigger a signed release from
+      # un-reviewed code. This step refuses to proceed unless the chosen
+      # SHA is reachable from origin/main, so signing only ever runs
+      # against code that landed via main's review/merge process.
+      - name: Verify ref is reachable from main
+        run: |
+          git fetch origin main
+          if ! git merge-base --is-ancestor "$GITHUB_SHA" origin/main; then
+            echo "::error::Refusing to sign: $GITHUB_SHA not reachable from origin/main"
+            exit 1
+          fi
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -157,6 +177,18 @@ jobs:
       - name: Assemble release APK
         working-directory: android
         run: ./gradlew assembleRelease --no-daemon
+
+      # Wipe signing material as soon as Gradle returns, even on failure.
+      # Runners are ephemeral so the practical blast radius is bounded,
+      # but explicit cleanup makes the intent clear and survives any
+      # future change that uploads `android/**` for diagnostics.
+      - name: Wipe signing material
+        if: always()
+        run: |
+          shred -u android/app/keystore/release.keystore 2>/dev/null \
+            || rm -f android/app/keystore/release.keystore
+          shred -u android/app/signing.properties 2>/dev/null \
+            || rm -f android/app/signing.properties
 
       - name: Upload release APK artifact
         uses: actions/upload-artifact@v4

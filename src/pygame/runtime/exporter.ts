@@ -19,11 +19,7 @@ import { compilePythonGame } from './compiler';
 import type { GameAsset } from '@lib/assets/types';
 import { assetManager } from '@lib/assets/manager';
 import { loadWizardProject } from '@lib/storage/projects';
-
-function getBaseUrl(): string {
-  const raw = (typeof import.meta !== 'undefined' && import.meta.env?.BASE_URL) || '/';
-  return raw.endsWith('/') ? raw : `${raw}/`;
-}
+import { withBase } from '@lib/utils/base-url';
 
 // The export is source-only: game.py + assets/ + a small launcher HTML.
 // Pyodide is NOT bundled per-game — that would mean shipping 12MB of WASM
@@ -93,11 +89,9 @@ export async function exportProjectAsZip(options: ExportProjectOptions): Promise
     }
     try {
       // Catalog paths are root-relative ('/assets/vehicles/foo.png').
-      // Prepend Vite's BASE_URL so the fetch resolves against the
-      // GitHub Pages subpath instead of the github.io root. In dev
-      // (BASE_URL=/) this is a no-op.
-      const fetchUrl = src.startsWith('/') ? `${getBaseUrl()}${src.slice(1)}` : src;
-      const res = await fetchFn(fetchUrl);
+      // withBase prefixes Vite's BASE_URL so the fetch resolves against
+      // a Pages subpath instead of the github.io root.
+      const res = await fetchFn(withBase(src));
       if (!res.ok) {
         failed.push(`${src} (HTTP ${res.status})`);
         continue;

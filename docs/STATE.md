@@ -3,6 +3,7 @@ title: State
 updated: 2026-05-05
 status: current
 domain: context
+revision: post-deploy-chain-audit
 ---
 
 
@@ -14,7 +15,7 @@ domain: context
 
 | Branch | PR | Status |
 |--------|----|----|
-| `feat/modernization-pillar-closeout` | #30 | CHANGES_REQUESTED → 5 fold-forward batches pushed; main merged in (PR #24 45-pkg bundle); pygame-ce wheel vendored at install time + packageBaseUrl routed at /pyodide/ so loadPackage() never hits a CDN; launcher-e2e test passes against real WASM in CI; pnpm overrides + @playwright/test bump close 22→20 alerts; Android security hardening (trusted-ref guard on signed releases, late keystore decode, allowBackup off, real applicationId in test, gradle versionCode/Name as project properties); awaiting reviewer approval to dismiss stale CHANGES_REQUESTED |
+| `feat/modernization-pillar-closeout` | #30 | CHANGES_REQUESTED → 5 fold-forward batches landed; pygame-ce wheel vendored, packageBaseUrl routed at /pyodide/, launcher-e2e green; pnpm overrides + @playwright/test bump (22→20 alerts); Android security hardening (trusted-ref guard, late keystore decode, allowBackup=false, real applicationId in test, gradle version{Code,Name} as project properties); deploy-chain BASE_URL audit pass — wouter `<Router base>` so SPA matches routes on Pages subpath, error-boundary "go home" honoring BASE_URL, worker pyodide path resolved through import.meta.env.BASE_URL, asset catalog + exporter fetches base-aware, SW registration + interception base-aware, PWA manifest plugin re-emits with base prefix; dead-code purge — deleted monitoring/health (1,420 lines), errors/tracker (549 lines, dangling analytics), net/data + net/update-bridge (478 lines, zero consumers), storage/local (64 lines, dangling localStorage helper), and the `isStaticMode()` hostname-heuristic gate that would have routed Capacitor users to a non-existent backend; CI all green; awaiting CodeRabbit re-review (kicked off at 21:21Z) to dismiss stale CHANGES_REQUESTED |
 
 ## Done (recent milestones)
 

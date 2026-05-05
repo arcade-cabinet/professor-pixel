@@ -11,6 +11,7 @@ import {
   BackgroundAsset,
 } from './types';
 import { loadCatalog } from './catalog';
+import { withBase } from '@lib/utils/base-url';
 
 // Asset Manager Class
 export class AssetManager {
@@ -146,7 +147,7 @@ export class AssetManager {
     // Skip data URLs
     if (asset.path.startsWith('data:')) {
       const img = new Image();
-      img.src = asset.path;
+      img.src = withBase(asset.path);
       this.loadedImages.set(assetId, img);
       this.loadStatus.loaded++;
       return img;
@@ -164,7 +165,7 @@ export class AssetManager {
         this.loadStatus.failed.push(assetId);
         reject(new Error(`Failed to load image: ${asset.path}`));
       };
-      img.src = asset.path;
+      img.src = withBase(asset.path);
     });
   }
 
@@ -192,7 +193,7 @@ export class AssetManager {
         this.loadStatus.failed.push(assetId);
         reject(new Error(`Failed to load sound: ${asset.path}`));
       };
-      audio.src = asset.path;
+      audio.src = withBase(asset.path);
       audio.load();
     });
   }

@@ -18,15 +18,12 @@
  * the SW lifecycle handles re-registration.
  */
 
-// BASE_URL is `/` in dev and `/<repo>/` on GitHub Pages (set by the
-// cd.yml --base flag). The SW lives at the project root in either
-// case; loading it from a path that doesn't match BASE_URL would 404
-// on Pages. The scope must equal the SW path's directory so the SW
-// can intercept everything under it (including /pyodide/*).
-const RAW_BASE = (typeof import.meta !== 'undefined' && import.meta.env?.BASE_URL) || '/';
-const BASE_URL = RAW_BASE.endsWith('/') ? RAW_BASE : `${RAW_BASE}/`;
-const SW_URL = `${BASE_URL}pyodide-sw.js`;
-const SW_SCOPE = BASE_URL;
+import { baseUrl } from '@lib/utils/base-url';
+
+// SW lives at the project root and must be loaded under BASE_URL so
+// the scope covers /pyodide/* on GitHub Pages subpath deploys.
+const SW_URL = `${baseUrl}pyodide-sw.js`;
+const SW_SCOPE = baseUrl;
 
 let registrationPromise: Promise<ServiceWorkerRegistration | null> | null = null;
 

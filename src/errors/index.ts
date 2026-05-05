@@ -17,5 +17,4 @@ export {
   trackCustomError,
   debugUtils,
   type GlobalError,
-  type ErrorTracker,
 } from './global-handler';

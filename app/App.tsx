@@ -19,6 +19,7 @@ import { DevHud } from '@/components/dev-hud';
 import AssetLibraryTest from '@/pages/_dev/asset-library';
 import PygamePreviewTest from '@/pages/_dev/pygame-preview';
 import PersistenceTest from '@/pages/_dev/persistence';
+import { routerBase } from '@lib/utils/base-url';
 
 function Router() {
   // _dev/ pages (asset-test, pygame-preview-test, persistence-test) only mount
@@ -126,16 +127,6 @@ function Router() {
   );
 }
 
-// Strip the trailing slash from Vite's BASE_URL so wouter's Router
-// matches `path="/"` against the base. On GitHub Pages this is
-// `/professor-pixel`; in dev it's the empty string. Without this,
-// every route renders NotFound on a Pages subpath deploy.
-function getRouterBase(): string {
-  const raw = (typeof import.meta !== 'undefined' && import.meta.env?.BASE_URL) || '/';
-  const trimmed = raw.endsWith('/') ? raw.slice(0, -1) : raw;
-  return trimmed === '' ? '' : trimmed;
-}
-
 function AppShell() {
   const [location, setLocation] = useLocation();
 
@@ -159,7 +150,7 @@ function App() {
     <AppErrorBoundary>
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
-          <WouterRouter base={getRouterBase()}>
+          <WouterRouter base={routerBase}>
             <AppShell />
           </WouterRouter>
         </TooltipProvider>

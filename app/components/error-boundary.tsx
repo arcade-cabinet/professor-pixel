@@ -16,6 +16,7 @@ import {
   Lightbulb,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { baseUrl } from '@lib/utils/base-url';
 
 interface Props {
   children: ReactNode;
@@ -100,11 +101,7 @@ export class ErrorBoundary extends Component<Props, State> {
   };
 
   handleGoHome = () => {
-    // Honor Vite's --base so this returns to the app root on
-    // GitHub Pages subpath deploys instead of stranding the user
-    // at the org-level GitHub Pages site.
-    const base = (typeof import.meta !== 'undefined' && import.meta.env?.BASE_URL) || '/';
-    window.location.href = base;
+    window.location.href = baseUrl;
   };
 
   getEducationalMessage = (error: Error) => {
