@@ -51,8 +51,10 @@ describe('audio/tts — availability + enabled flag', () => {
     vi.unstubAllGlobals();
   });
 
-  it('isAudioEnabled returns false by default (privacy-respecting)', () => {
-    expect(isAudioEnabled()).toBe(false);
+  it('isAudioEnabled returns true by default (kid-product UX)', () => {
+    // Master toggle defaults ON so first-visit kids hear Pixel and SFX.
+    // Classroom/shared-space mute is one click in the chrome.
+    expect(isAudioEnabled()).toBe(true);
   });
 
   it('setAudioEnabled(true) persists, isAudioEnabled then returns true', () => {

@@ -7,6 +7,8 @@
 // AudioContext is created lazily on first play — Chrome requires a user
 // gesture before audio can play, so we don't construct it eagerly.
 
+import { isAudioEnabled } from './tts';
+
 let ctx: AudioContext | null = null;
 
 function getCtx(): AudioContext | null {
@@ -57,8 +59,6 @@ function tone(spec: ToneSpec, startOffset = 0): void {
 // Master audio toggle gates ALL audio surfaces (TTS + SFX) with one click.
 // Per-channel gates (isSfxEnabled) still work as a sub-preference once the
 // master is on.
-import { isAudioEnabled } from './tts';
-
 function audioOk(): boolean {
   return isAudioEnabled() && isSfxEnabled();
 }
