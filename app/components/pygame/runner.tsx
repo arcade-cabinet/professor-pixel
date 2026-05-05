@@ -471,15 +471,19 @@ MockPygame.key.get_pressed = lambda: global_key_state
               <Button
                 onClick={async () => {
                   setRecoveryFailed(false);
-                  recoveryAttemptsRef.current = 0;
                   pyodideRef.current = null;
                   setError(null);
-                  try {
-                    await initPyodide();
-                  } catch {
+                  // Keep shared accounting — incrementing rather than
+                  // resetting means a subsequent failure here can't be
+                  // misinterpreted by the primary catch below as a fresh
+                  // "first try". Both paths increment.
+                  recoveryAttemptsRef.current += 1;
+                  await initPyodide();
+                  setIsLoading(false);
+                  // Same pattern as the primary handler — initPyodide
+                  // never throws, so we check pyodideRef to detect failure.
+                  if (pyodideRef.current === null) {
                     setRecoveryFailed(true);
-                  } finally {
-                    setIsLoading(false);
                   }
                 }}
                 data-testid="runner-recovery-failed-retry"
@@ -515,23 +519,25 @@ MockPygame.key.get_pressed = lambda: global_key_state
                   // P9.1 — wizard state is in localStorage and survives the
                   // Python runtime drop, so the parent's selectedComponents
                   // props rerender us with the same project data after
-                  // recovery. We touch loadWizardState() defensively to
-                  // confirm the kid's project is still there; if the slot
-                  // is empty (private mode, storage cleared), there's
-                  // nothing to preserve and we fall through anyway.
-                  void loadWizardState();
-                  try {
-                    await initPyodide();
-                  } catch {
-                    // setError already fired inside initPyodide's catch.
-                    // After the first failed retry, switch to the recovery-
-                    // failed branch so the kid gets a distinct message
-                    // instead of the same "Try again" loop.
-                    if (recoveryAttemptsRef.current >= 1) {
-                      setRecoveryFailed(true);
-                    }
-                  } finally {
-                    setIsLoading(false);
+                  // recovery. If the slot is empty (private mode, storage
+                  // cleared) we still fall through — there's nothing to
+                  // preserve and the kid's wizard state is the parent's
+                  // problem, not ours.
+                  const savedState = loadWizardState();
+                  if (!savedState) {
+                    console.warn('[runner] wizard state slot is empty post-recovery');
+                  }
+                  // initPyodide swallows its own rejection (it sets `error`
+                  // state inside its catch), so awaiting it never throws.
+                  // We have to check the ref state directly to know if the
+                  // attempt failed: if pyodideRef wasn't populated, the
+                  // bootstrap blew up. Threshold of 2 absorbs transient
+                  // CDN hiccups (DNS timeout, brief 503) that one retry
+                  // would resolve.
+                  await initPyodide();
+                  setIsLoading(false);
+                  if (pyodideRef.current === null && recoveryAttemptsRef.current >= 2) {
+                    setRecoveryFailed(true);
                   }
                 }}
                 data-testid="runner-recover-button"

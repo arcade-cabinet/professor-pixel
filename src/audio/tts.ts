@@ -121,9 +121,8 @@ export function setAudioEnabled(enabled: boolean): void {
   if (typeof localStorage === 'undefined') return;
   try {
     if (enabled) {
-      // Removing the key returns the default (ON). Storing '1' is also fine
-      // and keeps the key present if a downstream tool inspects it; pick
-      // the explicit form for the same reason isSfxEnabled does.
+      // Explicit '1' (instead of key removal) mirrors isSfxEnabled and keeps
+      // the key present so downstream debuggability tools can inspect it.
       localStorage.setItem(AUDIO_KEY, '1');
     } else {
       localStorage.setItem(AUDIO_KEY, '0');

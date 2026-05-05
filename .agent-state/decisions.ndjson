@@ -75,3 +75,4 @@
 {"ts":"2026-05-05T07:51:37.663Z","sha":"16b05d6948bb","subject":"fix(player-experience): fold P5 + P6 reviewer findings forward","decision":null,"why":null,"resolves":["P5R.2 P5R.3 P5R.5 P5R.6 P6R.1 P6R.2 P6R.3"],"overrides":[]}
 {"ts":"2026-05-05T07:54:02.554Z","sha":"ec7052715b17","subject":"feat(player-experience): P7 — profile page + rename + switch-user","decision":null,"why":null,"resolves":["P7.1 P7.4"],"overrides":[]}
 {"ts":"2026-05-05T07:59:03.711Z","sha":"bc0ea42349b2","subject":"feat(player-experience): P8 — global audio toggle in chrome + P7 reviewer fixes","decision":null,"why":null,"resolves":["P8.1 P8.2 P8.3 P8.4 P7R.1 P7R.2 P7R.3"],"overrides":[]}
+{"ts":"2026-05-05T08:02:21.272Z","sha":"da87bfd2d48b","subject":"feat(player-experience): P9 — recovery preserves project + P8 reviewer fixes","decision":null,"why":null,"resolves":["P9.1 P9.2 P9.3 P8R.1 P8R.2"],"overrides":[]}
