@@ -995,8 +995,14 @@ json.dumps(verification)
     try {
       result = JSON.parse(verificationResult as string);
     } catch (parseError) {
+      // Avoid logging raw Pyodide stdout — same rationale as
+      // grading/ast.ts. The verifier template is internal, not user-
+      // authored, so leakage risk is lower; treat the same way for
+      // consistency.
+      const raw = String(verificationResult);
       console.warn('[pygame/verifyPygameShim] verifier emitted non-JSON; treating as not-ready.', {
-        rawText: String(verificationResult).slice(0, 500),
+        outputLength: raw.length,
+        prefix: raw.replace(/[^\x20-\x7e]/g, '').slice(0, 80),
         parseError,
       });
       return false;
@@ -1123,9 +1129,14 @@ json.dumps(status)
     try {
       return JSON.parse(statusResult as string);
     } catch (parseError) {
+      const raw = String(statusResult);
       console.warn(
         '[pygame/comprehensivePygameCheck] status template emitted non-JSON; returning default.',
-        { rawText: String(statusResult).slice(0, 500), parseError }
+        {
+          outputLength: raw.length,
+          prefix: raw.replace(/[^\x20-\x7e]/g, '').slice(0, 80),
+          parseError,
+        }
       );
       defaultStatus.errors.push('comprehensive check returned malformed JSON');
       return defaultStatus;

@@ -46,9 +46,19 @@ export async function validateAst(
   try {
     return JSON.parse(text) as RuleResult[];
   } catch (parseError) {
+    // Don't dump the raw Python output verbatim — a stray
+    // `print(user_code)` in the validator could echo learner-authored
+    // content into the console (and any log shipper). Surface enough
+    // for triage: the parse error message, output length, and a tiny
+    // sanitized prefix (control chars + non-ASCII stripped) capped at
+    // 80 chars.
     console.warn(
       '[grading/ast] AST validator returned non-JSON output; treating as no rules evaluated.',
-      { rawText: text.slice(0, 500), parseError }
+      {
+        outputLength: text.length,
+        prefix: text.replace(/[^\x20-\x7e]/g, '').slice(0, 80),
+        parseError,
+      }
     );
     return [];
   }
