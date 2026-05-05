@@ -464,3 +464,32 @@ Branch: feat/player-experience-pillar-4
 ### task-033 Editor header shows an offline pill when navigator is offline
 
 - [x] task-033 src/hooks/use-online-status.ts shared hook; banner consumes it; new OfflinePill mounted on lesson editor
+
+## Batch — omnibus-cleanup (batch-20260505-115100)
+
+Source: docs/plans/omnibus-cleanup.prq.md
+Started: 2026-05-05T11:51:00Z
+
+### task-001 audio-toggle i18n migration
+
+- [ ] task-001 audio-toggle.tsx labels move into strings.audioToggle catalog block; both aria-label (line 48) and visible "Sound on/off" (line 67); test asserts catalog has the keys
+
+### task-002 grading/ast.ts JSON.parse guard
+
+- [ ] task-002 src/grading/ast.ts:37 wraps JSON.parse in try/catch returning [] on malformed Python output; test asserts the fallback path
+
+### task-003 simulator.ts JSON.parse guards
+
+- [ ] task-003 src/pygame/runtime/simulator.ts:977 + :1092 each wrap JSON.parse in try/catch returning a typed safe-default; existing simulator tests still pass; new test asserts fallback shape
+
+### task-004 M4.2 frame-rate simulator test
+
+- [ ] task-004 tests/component/simulator-frame-rate.test.tsx mounts the harness with ≥6 sprites + 2 platforms + a particle effect, runs 2s, asserts mean frame time < 16.67ms; runs in <30s on CI
+
+### task-005 explicit form labels
+
+- [ ] task-005 home.tsx project-rename input + profile.tsx name input + asset-browser.tsx category select get explicit `<label htmlFor>` + matching `id`; existing aria-label kept where the visible label would be redundant
+
+### task-006 modernization-pillar status update
+
+- [ ] task-006 docs/plans/modernization-pillar.prq.md M4.2 box flips to [x] with merge-sha footnote; frontmatter status flips to RELEASED with closeout if pillar fully [x]
