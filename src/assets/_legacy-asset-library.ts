@@ -24,7 +24,7 @@ export const assetLibrary: GameAsset[] = [
     license: 'CC0',
     url: 'https://managore.itch.io/m5x7',
     description: 'Small, neutral pixel font - perfect for retro games',
-    tags: ['pixel', 'retro', 'small', 'readable']
+    tags: ['pixel', 'retro', 'small', 'readable'],
   },
   {
     id: 'font-monogram',
@@ -34,7 +34,7 @@ export const assetLibrary: GameAsset[] = [
     license: 'CC0',
     url: 'https://datagoblin.itch.io/monogram',
     description: 'Monospace pixel font - great for UI and HUD',
-    tags: ['pixel', 'monospace', 'ui', 'clean']
+    tags: ['pixel', 'monospace', 'ui', 'clean'],
   },
   {
     id: 'font-pixeloid',
@@ -44,7 +44,7 @@ export const assetLibrary: GameAsset[] = [
     license: 'OFL',
     url: 'https://ggbot.itch.io/pixeloid-font',
     description: '3 styles with 1000+ glyphs - versatile pixel font',
-    tags: ['pixel', 'versatile', 'multiple-styles']
+    tags: ['pixel', 'versatile', 'multiple-styles'],
   },
   {
     id: 'font-press-start',
@@ -54,9 +54,9 @@ export const assetLibrary: GameAsset[] = [
     license: 'OFL',
     url: 'https://fonts.google.com/specimen/Press+Start+2P',
     description: 'Classic arcade game font',
-    tags: ['arcade', 'retro', '8-bit', 'google-fonts']
+    tags: ['arcade', 'retro', '8-bit', 'google-fonts'],
   },
-  
+
   // SOUND EFFECTS
   {
     id: 'sound-jump',
@@ -66,7 +66,7 @@ export const assetLibrary: GameAsset[] = [
     license: 'CC0',
     url: 'placeholder',
     description: 'Various jump sounds for platformers',
-    tags: ['jump', 'platformer', 'action']
+    tags: ['jump', 'platformer', 'action'],
   },
   {
     id: 'sound-coin',
@@ -76,7 +76,7 @@ export const assetLibrary: GameAsset[] = [
     license: 'CC0',
     url: 'placeholder',
     description: 'Satisfying coin collection sound',
-    tags: ['pickup', 'coin', 'collect', 'reward']
+    tags: ['pickup', 'coin', 'collect', 'reward'],
   },
   {
     id: 'sound-explosion',
@@ -86,9 +86,9 @@ export const assetLibrary: GameAsset[] = [
     license: 'CC0',
     url: 'placeholder',
     description: '8-bit style explosion sounds',
-    tags: ['explosion', 'combat', 'impact', '8-bit']
+    tags: ['explosion', 'combat', 'impact', '8-bit'],
   },
-  
+
   // MUSIC
   {
     id: 'music-adventure',
@@ -98,7 +98,7 @@ export const assetLibrary: GameAsset[] = [
     license: 'CC0',
     url: 'https://not-jam.itch.io/not-jam-music-pack',
     description: 'Epic adventure background music',
-    tags: ['adventure', 'epic', 'background', 'loop']
+    tags: ['adventure', 'epic', 'background', 'loop'],
   },
   {
     id: 'music-dungeon',
@@ -108,9 +108,9 @@ export const assetLibrary: GameAsset[] = [
     license: 'CC0',
     url: 'https://alkakrab.itch.io/',
     description: 'Mysterious dungeon background music',
-    tags: ['dungeon', 'mysterious', 'ambient', 'loop']
+    tags: ['dungeon', 'mysterious', 'ambient', 'loop'],
   },
-  
+
   // SPRITES & TILESETS
   {
     id: 'tileset-dungeon',
@@ -120,7 +120,7 @@ export const assetLibrary: GameAsset[] = [
     license: 'CC0',
     url: 'https://0x72.itch.io/dungeontileset-ii',
     description: '16x16 cute fantasy dungeon tiles',
-    tags: ['dungeon', 'fantasy', '16x16', 'tiles']
+    tags: ['dungeon', 'fantasy', '16x16', 'tiles'],
   },
   {
     id: 'sprites-ninja',
@@ -130,7 +130,7 @@ export const assetLibrary: GameAsset[] = [
     license: 'CC0',
     url: 'https://pixel-boy.itch.io/ninja-adventure-asset-pack',
     description: '16x16 retro ninja characters and enemies',
-    tags: ['ninja', 'character', 'enemy', '16x16', 'animated']
+    tags: ['ninja', 'character', 'enemy', '16x16', 'animated'],
   },
   {
     id: 'sprites-platformer',
@@ -140,7 +140,7 @@ export const assetLibrary: GameAsset[] = [
     license: 'CC0',
     url: 'https://pixelfrog-assets.itch.io/kings-and-pigs',
     description: 'Animated king and pig characters for platformers',
-    tags: ['platformer', 'character', 'animated', 'cute']
+    tags: ['platformer', 'character', 'animated', 'cute'],
   },
   {
     id: 'tileset-sproutlands',
@@ -150,7 +150,7 @@ export const assetLibrary: GameAsset[] = [
     license: 'Free -commercial',
     url: 'https://cupnooble.itch.io/sprout-lands-asset-pack',
     description: '8x8 cute pastel farming tiles',
-    tags: ['farming', 'cute', 'pastel', '8x8', 'cozy']
+    tags: ['farming', 'cute', 'pastel', '8x8', 'cozy'],
   },
   {
     id: 'icons-rpg',
@@ -160,9 +160,9 @@ export const assetLibrary: GameAsset[] = [
     license: 'CC0',
     url: 'https://merchant-shade.itch.io/16x16-mixed-rpg-icons',
     description: 'Common RPG items and UI icons',
-    tags: ['icons', 'items', 'ui', 'rpg', '16x16']
+    tags: ['icons', 'items', 'ui', 'rpg', '16x16'],
   },
-  
+
   // 3D MODELS
   {
     id: '3d-characters',
@@ -172,7 +172,7 @@ export const assetLibrary: GameAsset[] = [
     license: 'CC0',
     url: 'https://kaylousberg.itch.io/',
     description: 'Low-poly 3D character models',
-    tags: ['3d', 'low-poly', 'character', 'gltf']
+    tags: ['3d', 'low-poly', 'character', 'gltf'],
   },
   {
     id: '3d-dungeon',
@@ -182,23 +182,23 @@ export const assetLibrary: GameAsset[] = [
     license: 'CC0',
     url: 'https://kaylousberg.itch.io/kaykit-dungeon',
     description: 'Modular dungeon pieces in 3D',
-    tags: ['3d', 'dungeon', 'modular', 'environment']
-  }
+    tags: ['3d', 'dungeon', 'modular', 'environment'],
+  },
 ];
 
 // Asset categories for easy filtering
 export const assetCategories = {
-  fonts: assetLibrary.filter(a => a.type === 'font'),
-  sounds: assetLibrary.filter(a => a.type === 'sound'),
-  music: assetLibrary.filter(a => a.type === 'music'),
-  sprites: assetLibrary.filter(a => a.type === 'sprite'),
-  tilesets: assetLibrary.filter(a => a.type === 'tileset'),
-  models3d: assetLibrary.filter(a => a.type === '3d-model')
+  fonts: assetLibrary.filter((a) => a.type === 'font'),
+  sounds: assetLibrary.filter((a) => a.type === 'sound'),
+  music: assetLibrary.filter((a) => a.type === 'music'),
+  sprites: assetLibrary.filter((a) => a.type === 'sprite'),
+  tilesets: assetLibrary.filter((a) => a.type === 'tileset'),
+  models3d: assetLibrary.filter((a) => a.type === '3d-model'),
 };
 
 // Helper to generate Python code for loading assets
 export function generateAssetLoaderCode(assetType: string): string {
-  switch(assetType) {
+  switch (assetType) {
     case 'font':
       return `# Load fonts
 import pygame

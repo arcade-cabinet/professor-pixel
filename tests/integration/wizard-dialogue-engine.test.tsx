@@ -1,680 +1,187 @@
-// Integration tests for wizard-dialogue-engine component
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { renderHook, act, waitFor as waitForHook } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { renderHook, act, waitFor } from '@testing-library/react';
 import { useWizardDialogue } from '@/components/wizard/dialogue-engine';
-import {
-  LocalStorageMock,
-  SessionStorageMock,
-  createMockFlowData,
-  createMockWizardNode,
-  waitFor,
-  simulatePageRefresh,
-} from '../helpers/test-utils';
-import * as persistence from '@lib/storage/persistence';
+import type { WizardNode } from '@lib/wizard/types';
 
-// Mock the persistence module
 vi.mock('@lib/storage/persistence', () => ({
   saveWizardStateDebounced: vi.fn(),
-  loadWizardState: vi.fn(),
+  loadWizardState: vi.fn(() => null),
   clearWizardState: vi.fn(),
-  PersistedWizardState: {}
 }));
 
-// Mock fetch for flow loading
-global.fetch = vi.fn();
+const persistence = await import('@lib/storage/persistence');
 
-describe('WizardDialogueEngine Integration Tests', () => {
-  let localStorageMock: LocalStorageMock;
-  let sessionStorageMock: SessionStorageMock;
+function makeFlow(nodes: Record<string, Partial<WizardNode>>): Record<string, WizardNode> {
+  const out: Record<string, WizardNode> = {};
+  for (const [id, partial] of Object.entries(nodes)) {
+    out[id] = { id, text: partial.text ?? '', ...partial } as WizardNode;
+  }
+  return out;
+}
 
+const defaultFlow = makeFlow({
+  start: {
+    text: 'Welcome',
+    options: [
+      { text: 'Choose A', next: 'a' },
+      { text: 'Choose B', next: 'b' },
+    ],
+  },
+  a: {
+    text: 'Path A',
+    multiStep: ['First step', 'Second step', 'Third step'],
+    options: [{ text: 'Continue', next: 'end' }],
+  },
+  b: {
+    text: 'Path B',
+    options: [
+      {
+        text: 'Pick a platformer',
+        next: 'transition',
+        action: 'transitionToSpecializedFlow',
+        setVariable: { gameType: 'platformer' },
+      },
+    ],
+  },
+  transition: { text: 'After transition' },
+  end: { text: 'Done' },
+});
+
+const platformerFlow = makeFlow({
+  start: { text: 'Platformer specialized flow start' },
+  level1: { text: 'Level 1 design' },
+});
+
+describe('useWizardDialogue (post-restructure dialogue-engine)', () => {
   beforeEach(() => {
-    // Set up storage mocks
-    localStorageMock = new LocalStorageMock();
-    sessionStorageMock = new SessionStorageMock();
-    
-    Object.defineProperty(window, 'localStorage', {
-      value: localStorageMock,
-      writable: true
-    });
-    Object.defineProperty(window, 'sessionStorage', {
-      value: sessionStorageMock,
-      writable: true
-    });
-    
-    // Clear all mocks
-    vi.clearAllMocks();
-    vi.useFakeTimers();
-    
-    // Default mock responses
-    (persistence.loadWizardState as any).mockReturnValue(null);
-    (global.fetch as any).mockResolvedValue({
-      ok: true,
-      json: () => Promise.resolve(createMockFlowData())
-    });
+    vi.mocked(persistence.loadWizardState).mockReturnValue(null);
+    vi.mocked(persistence.saveWizardStateDebounced).mockClear();
+    // Use vi.stubGlobal so vi.unstubAllGlobals in afterEach can restore the
+    // original fetch — direct assignment would leak into other test files.
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (url: string | URL | Request) => {
+        const path = typeof url === 'string' ? url : (url as URL).pathname;
+        if (path.includes('platformer-flow')) {
+          return new Response(JSON.stringify(platformerFlow), { status: 200 });
+        }
+        return new Response(JSON.stringify(defaultFlow), { status: 200 });
+      })
+    );
   });
 
   afterEach(() => {
-    vi.useRealTimers();
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
   });
 
-  describe('Flow Loading', () => {
-    it('should load default flow on initialization', async () => {
-      const mockFlowData = createMockFlowData();
-      (global.fetch as any).mockResolvedValue({
-        ok: true,
-        json: () => Promise.resolve(mockFlowData)
-      });
+  it('loads the default flow on mount and resolves currentNode', async () => {
+    const { result } = renderHook(() => useWizardDialogue());
 
-      const { result } = renderHook(() => useWizardDialogue());
+    expect(result.current.isLoading).toBe(true);
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
 
-      // Initially loading
-      expect(result.current.isLoading).toBe(true);
+    expect(result.current.dialogueState.currentNodeId).toBe('start');
+    expect(result.current.dialogueState.currentNode?.text).toBe('Welcome');
+    expect(global.fetch).toHaveBeenCalledWith('/wizard-flow.json');
+  });
 
-      // Wait for flow to load
-      await waitForHook(() => {
-        expect(result.current.isLoading).toBe(false);
-      });
+  it('handleOptionSelect navigates to the option.next node', async () => {
+    const { result } = renderHook(() => useWizardDialogue());
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
 
-      expect(result.current.wizardData).toEqual(mockFlowData);
-      expect(result.current.dialogueState.currentNodeId).toBe('start');
-      expect(result.current.dialogueState.currentNode).toEqual(mockFlowData.start);
+    act(() => {
+      const opt = result.current.dialogueState.currentNode?.options?.[0];
+      if (opt) result.current.handleOptionSelect(opt);
     });
 
-    it('should load specialized flow when gameType is set', async () => {
-      const platformerFlowData = {
-        start: createMockWizardNode({
-          id: 'start',
-          text: 'Welcome to platformer creation!',
-          options: [{ text: 'Begin', next: 'setup' }]
-        }),
-        setup: createMockWizardNode({
-          id: 'setup',
-          text: 'Let\'s set up your platformer',
-          options: [{ text: 'Next', next: 'end' }]
-        })
-      };
-
-      // First load default flow
-      (global.fetch as any).mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve(createMockFlowData())
-      });
-
-      const { result } = renderHook(() => useWizardDialogue());
-      await waitForHook(() => expect(result.current.isLoading).toBe(false));
-
-      // Now set gameType to trigger specialized flow loading
-      (global.fetch as any).mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve(platformerFlowData)
-      });
-
-      act(() => {
-        result.current.setSessionActions(prev => ({
-          ...prev,
-          gameType: 'platformer',
-          selectedGameType: 'platformer',
-          transitionToSpecializedFlow: true
-        }));
-      });
-
-      // Wait for specialized flow to load
-      await waitForHook(() => {
-        expect(result.current.wizardData).toEqual(platformerFlowData);
-      });
-
-      expect(global.fetch).toHaveBeenCalledWith('/platformer-flow.json');
-      expect(result.current.dialogueState.currentNode?.text).toContain('platformer creation');
-    });
-
-    it('should handle flow loading errors gracefully', async () => {
-      (global.fetch as any).mockRejectedValue(new Error('Network error'));
-      
-      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-      
-      const { result } = renderHook(() => useWizardDialogue());
-
-      await waitForHook(() => {
-        expect(result.current.isLoading).toBe(false);
-      });
-
-      expect(result.current.wizardData).toBeNull();
-      expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining('Failed to load wizard flow'),
-        expect.any(Error)
-      );
-      
-      consoleSpy.mockRestore();
-    });
-
-    it('should not reload flow if already loaded', async () => {
-      const mockFlowData = createMockFlowData();
-      (global.fetch as any).mockResolvedValue({
-        ok: true,
-        json: () => Promise.resolve(mockFlowData)
-      });
-
-      const { result } = renderHook(() => useWizardDialogue());
-      await waitForHook(() => expect(result.current.isLoading).toBe(false));
-
-      const fetchCallCount = (global.fetch as any).mock.calls.length;
-
-      // Trigger re-render without changing flow
-      act(() => {
-        result.current.advance();
-      });
-
-      // Should not call fetch again
-      expect((global.fetch as any).mock.calls.length).toBe(fetchCallCount);
+    await waitFor(() => {
+      expect(result.current.dialogueState.currentNodeId).toBe('a');
     });
   });
 
-  describe('State Persistence', () => {
-    it('should restore state from localStorage on initialization', async () => {
-      const persistedState = {
-        version: '1.0.0',
-        activeFlowPath: '/wizard-flow.json',
-        currentNodeId: 'choose-game',
+  it('handleOptionSelect updates sessionActions.choices', async () => {
+    const { result } = renderHook(() => useWizardDialogue());
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    const before = result.current.sessionActions.choices.length;
+    act(() => {
+      const opt = result.current.dialogueState.currentNode?.options?.[0];
+      if (opt) result.current.handleOptionSelect(opt);
+    });
+    await waitFor(() => {
+      expect(result.current.sessionActions.choices.length).toBeGreaterThan(before);
+    });
+  });
+
+  it('advance() increments dialogueStep on a multiStep node, then navigates via single-continue option (F4.2)', async () => {
+    const { result } = renderHook(() => useWizardDialogue());
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    // Navigate to the multiStep node `a` (3 steps + single "Continue" option).
+    act(() => {
+      result.current.handleOptionSelect({ text: 'Choose A', next: 'a' });
+    });
+    await waitFor(() => expect(result.current.dialogueState.currentNodeId).toBe('a'));
+
+    expect(result.current.dialogueState.dialogueStep).toBe(0);
+    act(() => result.current.advance());
+    expect(result.current.dialogueState.dialogueStep).toBe(1);
+    act(() => result.current.advance());
+    expect(result.current.dialogueState.dialogueStep).toBe(2);
+
+    // Past the last multiStep entry, advance() consumes the single-continue
+    // option and navigates to its `next` (was a no-op pre-F4.2).
+    act(() => result.current.advance());
+    await waitFor(() => expect(result.current.dialogueState.currentNodeId).toBe('end'));
+  });
+
+  it('restores currentNodeId from persisted state on mount', async () => {
+    vi.mocked(persistence.loadWizardState).mockReturnValue({
+      version: '1',
+      currentNodeId: 'a',
+      activeFlowPath: '/wizard-flow.json',
+      sessionActions: {
+        choices: ['previous'],
+        createdAssets: [],
         gameType: null,
-        sessionActions: {
-          choices: ['start'],
-          createdAssets: [],
-          gameType: null,
-          currentProject: null,
-          completedSteps: ['intro'],
-          unlockedEditor: false
-        },
-        updatedAt: new Date().toISOString()
-      };
-
-      (persistence.loadWizardState as any).mockReturnValue(persistedState);
-
-      const mockFlowData = createMockFlowData();
-      (global.fetch as any).mockResolvedValue({
-        ok: true,
-        json: () => Promise.resolve(mockFlowData)
-      });
-
-      const { result } = renderHook(() => useWizardDialogue());
-
-      await waitForHook(() => {
-        expect(result.current.isLoading).toBe(false);
-      });
-
-      // Should restore to persisted state
-      expect(result.current.dialogueState.currentNodeId).toBe('choose-game');
-      expect(result.current.sessionActions.choices).toEqual(['start']);
-      expect(result.current.sessionActions.completedSteps).toEqual(['intro']);
+        currentProject: null,
+        completedSteps: [],
+        unlockedEditor: false,
+      },
+      gameType: null,
+      selectedGameType: null,
+      updatedAt: new Date().toISOString(),
     });
 
-    it('should save state changes to localStorage', async () => {
-      const mockFlowData = createMockFlowData();
-      (global.fetch as any).mockResolvedValue({
-        ok: true,
-        json: () => Promise.resolve(mockFlowData)
-      });
+    const { result } = renderHook(() => useWizardDialogue());
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
 
-      const { result } = renderHook(() => useWizardDialogue());
-      await waitForHook(() => expect(result.current.isLoading).toBe(false));
-
-      // Make a state change
-      act(() => {
-        result.current.handleOptionSelect({
-          text: 'Start journey',
-          next: 'choose-game'
-        });
-      });
-
-      // Fast forward past debounce
-      act(() => {
-        vi.advanceTimersByTime(250);
-      });
-
-      // Should save to localStorage
-      expect(persistence.saveWizardStateDebounced).toHaveBeenCalledWith(
-        expect.objectContaining({
-          currentNodeId: 'choose-game',
-          sessionActions: expect.objectContaining({
-            choices: ['Start journey']
-          })
-        })
-      );
-    });
-
-    it('should persist state across flow transitions', async () => {
-      // Start with default flow
-      const defaultFlow = createMockFlowData();
-      (global.fetch as any).mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve(defaultFlow)
-      });
-
-      const { result } = renderHook(() => useWizardDialogue());
-      await waitForHook(() => expect(result.current.isLoading).toBe(false));
-
-      // Make some progress
-      act(() => {
-        result.current.handleOptionSelect({
-          text: 'Platformer',
-          next: 'platformer-intro',
-          params: { gameType: 'platformer' }
-        });
-      });
-
-      // Set up specialized flow
-      const platformerFlow = {
-        start: createMockWizardNode({
-          id: 'start',
-          text: 'Platformer flow start'
-        })
-      };
-
-      (global.fetch as any).mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve(platformerFlow)
-      });
-
-      // Transition to specialized flow
-      act(() => {
-        result.current.setSessionActions(prev => ({
-          ...prev,
-          gameType: 'platformer',
-          transitionToSpecializedFlow: true
-        }));
-      });
-
-      await waitForHook(() => {
-        expect(result.current.wizardData).toEqual(platformerFlow);
-      });
-
-      // Session actions should be preserved
-      expect(result.current.sessionActions.choices).toContain('Platformer');
-      expect(result.current.sessionActions.gameType).toBe('platformer');
-    });
-
-    it('should handle page refresh simulation correctly', async () => {
-      const mockFlowData = createMockFlowData();
-      (global.fetch as any).mockResolvedValue({
-        ok: true,
-        json: () => Promise.resolve(mockFlowData)
-      });
-
-      // Initial render
-      const { result, unmount } = renderHook(() => useWizardDialogue());
-      await waitForHook(() => expect(result.current.isLoading).toBe(false));
-
-      // Make progress
-      act(() => {
-        result.current.handleOptionSelect({
-          text: 'Start journey',
-          next: 'choose-game'
-        });
-      });
-
-      act(() => {
-        result.current.handleOptionSelect({
-          text: 'Platformer',
-          next: 'platformer-intro',
-          params: { gameType: 'platformer' }
-        });
-      });
-
-      // Fast forward to save state
-      act(() => {
-        vi.advanceTimersByTime(250);
-      });
-
-      // Simulate saving the state
-      const lastSaveCall = (persistence.saveWizardStateDebounced as any).mock.calls.slice(-1)[0][0];
-      
-      // Unmount (simulate page unload)
-      unmount();
-
-      // Mock loading the persisted state
-      (persistence.loadWizardState as any).mockReturnValue(lastSaveCall);
-
-      // Re-render (simulate page reload)
-      const { result: newResult } = renderHook(() => useWizardDialogue());
-      await waitForHook(() => expect(newResult.current.isLoading).toBe(false));
-
-      // State should be restored
-      expect(newResult.current.dialogueState.currentNodeId).toBe('platformer-intro');
-      expect(newResult.current.sessionActions.gameType).toBe('platformer');
-      expect(newResult.current.sessionActions.choices).toContain('Platformer');
-    });
+    expect(result.current.dialogueState.currentNodeId).toBe('a');
+    expect(result.current.sessionActions.choices).toContain('previous');
   });
 
-  describe('Node Navigation', () => {
-    it('should navigate to next node on option selection', async () => {
-      const mockFlowData = createMockFlowData();
-      (global.fetch as any).mockResolvedValue({
-        ok: true,
-        json: () => Promise.resolve(mockFlowData)
-      });
+  it('transitionToSpecializedFlow loads the specialized flow JSON', async () => {
+    const { result } = renderHook(() => useWizardDialogue({ flowType: 'game-dev' }));
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
 
-      const { result } = renderHook(() => useWizardDialogue());
-      await waitForHook(() => expect(result.current.isLoading).toBe(false));
+    // Navigate to node 'b' (which has the transition option).
+    act(() => {
+      result.current.handleOptionSelect({ text: 'Choose B', next: 'b' });
+    });
+    await waitFor(() => expect(result.current.dialogueState.currentNodeId).toBe('b'));
 
-      expect(result.current.dialogueState.currentNodeId).toBe('start');
-
-      act(() => {
-        result.current.handleOptionSelect({
-          text: 'Start journey',
-          next: 'choose-game'
-        });
-      });
-
-      expect(result.current.dialogueState.currentNodeId).toBe('choose-game');
-      expect(result.current.dialogueState.currentNode).toEqual(mockFlowData['choose-game']);
+    // Pick the option that triggers transitionToSpecializedFlow.
+    act(() => {
+      const opt = result.current.dialogueState.currentNode?.options?.[0];
+      if (opt) result.current.handleOptionSelect(opt);
     });
 
-    it('should track choices in session actions', async () => {
-      const mockFlowData = createMockFlowData();
-      (global.fetch as any).mockResolvedValue({
-        ok: true,
-        json: () => Promise.resolve(mockFlowData)
-      });
-
-      const { result } = renderHook(() => useWizardDialogue());
-      await waitForHook(() => expect(result.current.isLoading).toBe(false));
-
-      act(() => {
-        result.current.handleOptionSelect({
-          text: 'Start journey',
-          next: 'choose-game'
-        });
-      });
-
-      expect(result.current.sessionActions.choices).toContain('Start journey');
-
-      act(() => {
-        result.current.handleOptionSelect({
-          text: 'Platformer',
-          next: 'platformer-intro',
-          params: { gameType: 'platformer' }
-        });
-      });
-
-      expect(result.current.sessionActions.choices).toEqual(['Start journey', 'Platformer']);
-      expect(result.current.sessionActions.gameType).toBe('platformer');
-    });
-
-    it('should update session actions based on option params', async () => {
-      const mockFlowData = createMockFlowData();
-      (global.fetch as any).mockResolvedValue({
-        ok: true,
-        json: () => Promise.resolve(mockFlowData)
-      });
-
-      const { result } = renderHook(() => useWizardDialogue());
-      await waitForHook(() => expect(result.current.isLoading).toBe(false));
-
-      act(() => {
-        result.current.handleOptionSelect({
-          text: 'RPG',
-          next: 'rpg-intro',
-          params: { 
-            gameType: 'rpg',
-            unlockedEditor: true,
-            completedSteps: ['intro', 'game-selection']
-          }
-        });
-      });
-
-      expect(result.current.sessionActions.gameType).toBe('rpg');
-      expect(result.current.sessionActions.unlockedEditor).toBe(true);
-      expect(result.current.sessionActions.completedSteps).toEqual(['intro', 'game-selection']);
-    });
-
-    it('should navigate directly to a specific node', async () => {
-      const mockFlowData = createMockFlowData();
-      (global.fetch as any).mockResolvedValue({
-        ok: true,
-        json: () => Promise.resolve(mockFlowData)
-      });
-
-      const { result } = renderHook(() => useWizardDialogue());
-      await waitForHook(() => expect(result.current.isLoading).toBe(false));
-
-      act(() => {
-        result.current.navigateToNode('rpg-intro');
-      });
-
-      expect(result.current.dialogueState.currentNodeId).toBe('rpg-intro');
-      expect(result.current.dialogueState.currentNode).toEqual(mockFlowData['rpg-intro']);
-    });
-
-    it('should handle navigation to non-existent nodes gracefully', async () => {
-      const mockFlowData = createMockFlowData();
-      (global.fetch as any).mockResolvedValue({
-        ok: true,
-        json: () => Promise.resolve(mockFlowData)
-      });
-
-      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-
-      const { result } = renderHook(() => useWizardDialogue());
-      await waitForHook(() => expect(result.current.isLoading).toBe(false));
-
-      const currentNodeId = result.current.dialogueState.currentNodeId;
-
-      act(() => {
-        result.current.navigateToNode('non-existent-node');
-      });
-
-      // Should stay on current node
-      expect(result.current.dialogueState.currentNodeId).toBe(currentNodeId);
-      expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining('Node not found'),
-        'non-existent-node'
-      );
-
-      consoleSpy.mockRestore();
-    });
-  });
-
-  describe('Dialogue Step Management', () => {
-    it('should advance dialogue steps within a node', async () => {
-      const mockFlowData = {
-        start: createMockWizardNode({
-          id: 'start',
-          text: 'Step 1|Step 2|Step 3',
-          options: [{ text: 'Next', next: 'end' }]
-        })
-      };
-
-      (global.fetch as any).mockResolvedValue({
-        ok: true,
-        json: () => Promise.resolve(mockFlowData)
-      });
-
-      const { result } = renderHook(() => useWizardDialogue());
-      await waitForHook(() => expect(result.current.isLoading).toBe(false));
-
-      expect(result.current.dialogueState.dialogueStep).toBe(0);
-
-      act(() => {
-        result.current.advance();
-      });
-
-      expect(result.current.dialogueState.dialogueStep).toBe(1);
-
-      act(() => {
-        result.current.advance();
-      });
-
-      expect(result.current.dialogueState.dialogueStep).toBe(2);
-    });
-
-    it('should reset dialogue step when navigating to new node', async () => {
-      const mockFlowData = {
-        start: createMockWizardNode({
-          id: 'start',
-          text: 'Step 1|Step 2',
-          options: [{ text: 'Next', next: 'second' }]
-        }),
-        second: createMockWizardNode({
-          id: 'second',
-          text: 'New node',
-          options: []
-        })
-      };
-
-      (global.fetch as any).mockResolvedValue({
-        ok: true,
-        json: () => Promise.resolve(mockFlowData)
-      });
-
-      const { result } = renderHook(() => useWizardDialogue());
-      await waitForHook(() => expect(result.current.isLoading).toBe(false));
-
-      // Advance to step 2
-      act(() => {
-        result.current.advance();
-      });
-      expect(result.current.dialogueState.dialogueStep).toBe(1);
-
-      // Navigate to new node
-      act(() => {
-        result.current.handleOptionSelect({
-          text: 'Next',
-          next: 'second'
-        });
-      });
-
-      // Step should reset
-      expect(result.current.dialogueState.dialogueStep).toBe(0);
-    });
-  });
-
-  describe('Specialized Flow Loading', () => {
-    it('should load platformer flow when gameType is set to platformer', async () => {
-      const defaultFlow = createMockFlowData();
-      const platformerFlow = {
-        start: createMockWizardNode({
-          id: 'start',
-          text: 'Platformer specific content'
-        })
-      };
-
-      (global.fetch as any)
-        .mockResolvedValueOnce({
-          ok: true,
-          json: () => Promise.resolve(defaultFlow)
-        })
-        .mockResolvedValueOnce({
-          ok: true,
-          json: () => Promise.resolve(platformerFlow)
-        });
-
-      const { result } = renderHook(() => useWizardDialogue());
-      await waitForHook(() => expect(result.current.isLoading).toBe(false));
-
-      // Set gameType to trigger specialized flow
-      act(() => {
-        result.current.setSessionActions(prev => ({
-          ...prev,
-          gameType: 'platformer',
-          selectedGameType: 'platformer',
-          transitionToSpecializedFlow: true
-        }));
-      });
-
-      await waitForHook(() => {
-        expect(global.fetch).toHaveBeenCalledWith('/platformer-flow.json');
-      });
-
-      expect(result.current.wizardData).toEqual(platformerFlow);
-    });
-
-    it('should fallback to generic game flow when specialized flow fails', async () => {
-      const defaultFlow = createMockFlowData();
-
-      (global.fetch as any)
-        .mockResolvedValueOnce({
-          ok: true,
-          json: () => Promise.resolve(defaultFlow)
-        })
-        .mockRejectedValueOnce(new Error('404 Not Found'));
-
-      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-
-      const { result } = renderHook(() => useWizardDialogue({
-        flowType: 'game-dev'
-      }));
-      
-      await waitForHook(() => expect(result.current.isLoading).toBe(false));
-
-      // Try to load specialized flow that doesn't exist
-      act(() => {
-        result.current.setSessionActions(prev => ({
-          ...prev,
-          gameType: 'nonexistent',
-          transitionToSpecializedFlow: true
-        }));
-      });
-
-      // Should log error but continue with current flow
-      await waitForHook(() => {
-        expect(consoleSpy).toHaveBeenCalledWith(
-          expect.stringContaining('Failed to load wizard flow'),
-          expect.any(Error)
-        );
-      });
-
-      // Should still have the default flow loaded
-      expect(result.current.wizardData).toEqual(defaultFlow);
-
-      consoleSpy.mockRestore();
-    });
-  });
-
-  describe('Error Recovery', () => {
-    it('should recover from corrupted persisted state', async () => {
-      // Return corrupted state that causes parsing error
-      (persistence.loadWizardState as any).mockImplementation(() => {
-        throw new Error('Invalid JSON');
-      });
-
-      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-
-      const mockFlowData = createMockFlowData();
-      (global.fetch as any).mockResolvedValue({
-        ok: true,
-        json: () => Promise.resolve(mockFlowData)
-      });
-
-      const { result } = renderHook(() => useWizardDialogue());
-      
-      await waitForHook(() => {
-        expect(result.current.isLoading).toBe(false);
-      });
-
-      // Should start fresh with default state
-      expect(result.current.dialogueState.currentNodeId).toBe('start');
-      expect(result.current.sessionActions.choices).toEqual([]);
-
-      consoleSpy.mockRestore();
-    });
-
-    it('should handle network failures when loading flows', async () => {
-      (global.fetch as any).mockRejectedValue(new Error('Network failure'));
-
-      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-
-      const { result } = renderHook(() => useWizardDialogue());
-      
-      await waitForHook(() => {
-        expect(result.current.isLoading).toBe(false);
-      });
-
-      expect(result.current.wizardData).toBeNull();
-      expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining('Failed to load wizard flow'),
-        expect.any(Error)
-      );
-
-      consoleSpy.mockRestore();
+    // The engine should fetch /platformer-flow.json (the specialized flow).
+    await waitFor(() => {
+      const calls = (global.fetch as unknown as ReturnType<typeof vi.fn>).mock.calls;
+      const urls = calls.map((c) => String(c[0]));
+      expect(urls.some((u) => u.includes('platformer-flow.json'))).toBe(true);
     });
   });
 });

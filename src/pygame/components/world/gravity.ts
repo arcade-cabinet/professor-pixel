@@ -4,9 +4,9 @@ export const gravityComponent: PygameSystemSpec = {
   id: 'gravity',
   name: 'Gravity System',
   category: 'world',
-  
+
   assetSlots: {},
-  
+
   variants: {
     A: {
       name: 'Standard Gravity',
@@ -55,7 +55,7 @@ class GravitySystem:
                         entity.y = platform.rect.top - entity.height
                         entity.velocity_y = 0
                         entity.on_ground = True
-                        break`
+                        break`,
     },
     B: {
       name: 'Low Gravity',
@@ -125,13 +125,13 @@ class GravitySystem:
         # Draw gravity zones for debugging
         for zone in self.gravity_zones:
             color = (0, 100, 255) if zone['multiplier'] < 1 else (255, 100, 0)
-            pygame.draw.rect(screen, color, zone['rect'], 2)`
-    }
+            pygame.draw.rect(screen, color, zone['rect'], 2)`,
+    },
   },
-  
+
   parameters: {
     gravity_force: 800,
     terminal_velocity: 600,
-    air_resistance: 0.5
-  }
+    air_resistance: 0.5,
+  },
 };

@@ -8,10 +8,10 @@ interface WizardAvatarProps {
   className?: string;
 }
 
-export default function WizardAvatarDisplay({ 
+export default function WizardAvatarDisplay({
   size = 'desktop',
   showStatusIndicator = true,
-  className = '' 
+  className = '',
 }: WizardAvatarProps) {
   const avatarSizeClasses = (() => {
     switch (size) {
@@ -58,30 +58,30 @@ export default function WizardAvatarDisplay({
   return (
     <motion.div
       animate={{
-        scale: ANIMATIONS.AVATAR_BOUNCE.scale as any,
-        rotate: ANIMATIONS.AVATAR_BOUNCE.rotate as any
+        scale: [...ANIMATIONS.AVATAR_BOUNCE.scale],
+        rotate: [...ANIMATIONS.AVATAR_BOUNCE.rotate],
       }}
-      transition={{ 
+      transition={{
         duration: ANIMATIONS.AVATAR_BOUNCE.duration,
         repeat: Infinity,
-        repeatType: "reverse"
+        repeatType: 'reverse',
       }}
       className={`relative ${className}`}
     >
-      <img 
+      <img
         src={pixelImage}
         alt="Pixel"
         className={`${avatarSizeClasses} object-cover rounded-full shadow-xl`}
         style={{ imageRendering: 'crisp-edges' }}
       />
-      
+
       {showStatusIndicator && (
-        <motion.div 
+        <motion.div
           className={`absolute ${statusIndicatorPosition} ${statusIndicatorSize} ${STYLES.PIXEL_STATUS_INDICATOR} ${statusIndicatorBorder}`}
-          animate={{ scale: ANIMATIONS.AVATAR_PULSE.scale as any }}
-          transition={{ 
-            duration: ANIMATIONS.AVATAR_PULSE.duration, 
-            repeat: Infinity 
+          animate={{ scale: [...ANIMATIONS.AVATAR_PULSE.scale] }}
+          transition={{
+            duration: ANIMATIONS.AVATAR_PULSE.duration,
+            repeat: Infinity,
           }}
         />
       )}
@@ -90,22 +90,19 @@ export default function WizardAvatarDisplay({
 }
 
 // Avatar wrapper for centered display
-export function CenteredAvatar({ 
+export function CenteredAvatar({
   size = 'desktop',
   showStatusIndicator = true,
-  className = '' 
+  className = '',
 }: WizardAvatarProps) {
   return (
-    <motion.div 
+    <motion.div
       className={`flex justify-center ${className}`}
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: ANIMATIONS.FADE_IN.duration }}
     >
-      <WizardAvatarDisplay 
-        size={size} 
-        showStatusIndicator={showStatusIndicator} 
-      />
+      <WizardAvatarDisplay size={size} showStatusIndicator={showStatusIndicator} />
     </motion.div>
   );
 }
@@ -113,7 +110,7 @@ export function CenteredAvatar({
 // Avatar wrapper for portrait layout
 export function PortraitAvatar({ className = '' }: { className?: string }) {
   return (
-    <motion.div 
+    <motion.div
       className={`flex-shrink-0 flex items-center justify-center py-6 ${className}`}
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
@@ -127,7 +124,7 @@ export function PortraitAvatar({ className = '' }: { className?: string }) {
 // Avatar wrapper for landscape layout
 export function LandscapeAvatar({ className = '' }: { className?: string }) {
   return (
-    <motion.div 
+    <motion.div
       className={`flex items-center justify-center p-2 ${className}`}
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}

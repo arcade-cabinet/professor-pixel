@@ -21,15 +21,53 @@ const PYODIDE_BASE = '/pyodide/';
 export interface RunResult {
   output: string;
   error: string | null;
+  /** Number of times the user code called `input()`. Zero if the snippet never read stdin. */
+  inputCalls: number;
+  /** Per-function call counts for any names passed in `runSnippet`'s `trackFunctions` arg. */
+  functionCalls: Record<string, number>;
+  /**
+   * Snapshot of post-execution globals for any names passed in `runSnippet`'s
+   * `inspectGlobals` arg. Variables that were never defined are omitted from
+   * the record, so consumers can use `name in globals` for an existence check
+   * (Pyodide returns `undefined` for unknown names, but it also returns
+   * `undefined` for legitimately-undefined Python values; the worker's "omit
+   * absent" contract is what makes existence-vs-falsy distinguishable).
+   */
+  globals: Record<string, unknown>;
 }
+
+// Default mirrors worker-runner.ts; main thread's RunOptions.maxStdout overrides per-call.
+const DEFAULT_MAX_STDOUT = 64 * 1024;
 
 class WorkerRunner {
   private bootstrap: Promise<PyodideInstance> | null = null;
   private stdoutBuffer: string[] = [];
   private stderrBuffer: string[] = [];
+  private stdoutBytes = 0;
+  private stdoutCap = DEFAULT_MAX_STDOUT;
+  private stdoutTruncated = false;
 
   async ready(): Promise<void> {
     await this.getPyodide();
+  }
+
+  private appendStdout(s: string): void {
+    if (this.stdoutTruncated) return;
+    if (this.stdoutBytes + s.length <= this.stdoutCap) {
+      this.stdoutBuffer.push(s);
+      this.stdoutBytes += s.length;
+      return;
+    }
+    // Take just the slice that fits, then mark truncated and drop the rest.
+    // Keeping the partial keeps the start-of-output anchor for debugging while
+    // still capping bytes flowing across Comlink.
+    const remaining = this.stdoutCap - this.stdoutBytes;
+    if (remaining > 0) {
+      this.stdoutBuffer.push(s.slice(0, remaining));
+      this.stdoutBytes = this.stdoutCap;
+    }
+    this.stdoutTruncated = true;
+    this.stdoutBuffer.push(`\n[output truncated — exceeded ${this.stdoutCap} bytes]`);
   }
 
   private async getPyodide(): Promise<PyodideInstance> {
@@ -40,7 +78,7 @@ class WorkerRunner {
         };
         return mod.loadPyodide({
           indexURL: PYODIDE_BASE,
-          stdout: (s: string) => this.stdoutBuffer.push(s),
+          stdout: (s: string) => this.appendStdout(s),
           stderr: (s: string) => this.stderrBuffer.push(s),
         });
       })();
@@ -48,10 +86,19 @@ class WorkerRunner {
     return this.bootstrap;
   }
 
-  async runSnippet(code: string, input?: string): Promise<RunResult> {
+  async runSnippet(
+    code: string,
+    input?: string,
+    maxStdout?: number,
+    trackFunctions?: string[],
+    inspectGlobals?: string[]
+  ): Promise<RunResult> {
     const pyodide = await this.getPyodide();
     this.stdoutBuffer = [];
     this.stderrBuffer = [];
+    this.stdoutBytes = 0;
+    this.stdoutCap = maxStdout ?? DEFAULT_MAX_STDOUT;
+    this.stdoutTruncated = false;
 
     // Always (re)install builtins.input. If the caller passed `input`, lines
     // come from a StringIO buffer; otherwise input() raises EOFError immediately.
@@ -59,36 +106,116 @@ class WorkerRunner {
     // either silently returning '' past EOF or hanging waiting for stdin.
     pyodide.globals.set('__pp_input__', input ?? '');
     pyodide.globals.set('__pp_has_input__', input !== undefined);
+    pyodide.globals.set('__pp_track_names__', JSON.stringify(trackFunctions ?? []));
     pyodide.runPython(`
-import builtins, io
+import builtins, io, json, sys
+__pp_input_calls = 0
+__pp_func_calls = {name: 0 for name in json.loads(__pp_track_names__)}
 if __pp_has_input__:
     _pp_buf = io.StringIO(__pp_input__ + ('' if __pp_input__.endswith('\\n') else '\\n'))
     def __pp_input(prompt=''):
+        global __pp_input_calls
+        __pp_input_calls += 1
         line = _pp_buf.readline()
         if line == '':
             raise EOFError('EOF when reading a line')
         return line[:-1] if line.endswith('\\n') else line
 else:
     def __pp_input(prompt=''):
+        global __pp_input_calls
+        __pp_input_calls += 1
         raise EOFError('EOF when reading a line')
 builtins.input = __pp_input
+
+# Function-call tracking via sys.settrace. The trace function is called on
+# every Python frame entry; if the frame's code object's name matches a tracked
+# name, increment the counter. Cheap (a dict lookup per call) and observes the
+# student's actual calls without source rewriting.
+if __pp_func_calls:
+    def __pp_tracer(frame, event, arg):
+        if event == 'call':
+            name = frame.f_code.co_name
+            if name in __pp_func_calls:
+                __pp_func_calls[name] += 1
+        return None  # don't enable line-level trace
+    sys.settrace(__pp_tracer)
+else:
+    sys.settrace(None)
 `);
 
+    let runErr: string | null = null;
     try {
       await pyodide.runPythonAsync(code);
-      return {
-        output: this.stdoutBuffer.join(''),
-        error: this.stderrBuffer.length ? this.stderrBuffer.join('') : null,
-      };
     } catch (err) {
-      // Pyodide wraps Python tracebacks in a JS Error.
-      const message = err instanceof Error ? err.message : String(err);
-      return {
-        output: this.stdoutBuffer.join(''),
-        error: message,
-      };
+      runErr = err instanceof Error ? err.message : String(err);
+    }
+    // Always tear down the tracer so a subsequent snippet (or our own postlude)
+    // doesn't pay the per-call overhead.
+    pyodide.runPython('import sys; sys.settrace(None)');
+
+    return {
+      output: this.stdoutBuffer.join(''),
+      error: runErr ?? (this.stderrBuffer.length ? this.stderrBuffer.join('') : null),
+      inputCalls: Number(pyodide.globals.get('__pp_input_calls') ?? 0),
+      functionCalls: extractFunctionCalls(pyodide),
+      globals: extractInspectedGlobals(pyodide, inspectGlobals ?? []),
+    };
+  }
+}
+
+/**
+ * Pulls the named globals out of the worker's post-execution Pyodide. Names
+ * that are never defined (or hold a Python `None` whose Pyodide bridge returns
+ * `undefined`) are omitted, so the caller can use `name in result.globals`
+ * for existence. PyProxy values (dicts, lists, custom objects) are converted
+ * to plain JS via `toJs({ dict_converter: Object.fromEntries })` when available;
+ * primitives pass through. Errors during conversion are swallowed and the key
+ * is omitted — this is grading metadata, not load-bearing IO.
+ */
+function extractInspectedGlobals(
+  pyodide: PyodideInstance,
+  names: string[]
+): Record<string, unknown> {
+  // Object.create(null) — no prototype chain. The downstream check in
+  // validateRuntime is `name in globals`, which walks the prototype chain;
+  // a plain `{}` would falsely report `toString`, `hasOwnProperty`, etc. as
+  // "defined" even when the student's code never declared them.
+  const out: Record<string, unknown> = Object.create(null);
+  for (const name of names) {
+    try {
+      const value = pyodide.globals.get(name);
+      if (value === undefined) continue;
+      if (value !== null && typeof value === 'object') {
+        const toJs = (
+          value as { toJs?: (opts?: { dict_converter?: typeof Object.fromEntries }) => unknown }
+        ).toJs;
+        if (typeof toJs === 'function') {
+          out[name] = toJs.call(value, { dict_converter: Object.fromEntries });
+          continue;
+        }
+      }
+      out[name] = value;
+    } catch {
+      // Conversion failure on a single name shouldn't kill the whole snapshot.
     }
   }
+  return out;
+}
+
+function extractFunctionCalls(pyodide: PyodideInstance): Record<string, number> {
+  const raw = pyodide.globals.get('__pp_func_calls');
+  if (!raw) return {};
+  // PyProxy of a Python dict — convert via toJs and ensure the values are numbers.
+  const toJs = (
+    raw as { toJs?: (opts?: { dict_converter?: typeof Object.fromEntries }) => unknown }
+  ).toJs;
+  if (typeof toJs !== 'function') return {};
+  const obj = toJs.call(raw, { dict_converter: Object.fromEntries }) as Record<string, unknown>;
+  const out: Record<string, number> = {};
+  for (const [k, v] of Object.entries(obj)) {
+    out[k] = Number(v);
+  }
+  return out;
 }
 
 const runner = new WorkerRunner();

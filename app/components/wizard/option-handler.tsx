@@ -2,18 +2,14 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { ChevronRight } from 'lucide-react';
 import { WizardOption } from '@lib/wizard/types';
-import { 
+import {
   getGameTypeIcon,
   shouldUseOptionGrid,
   getButtonVariant,
   getButtonSize,
-  formatTestId
+  formatTestId,
 } from '@lib/wizard/utils';
-import { 
-  BUTTON_STYLES, 
-  ICON_SIZES,
-  ANIMATIONS 
-} from '@lib/wizard/constants';
+import { BUTTON_STYLES, ICON_SIZES, ANIMATIONS } from '@lib/wizard/constants';
 
 interface WizardOptionsProps {
   options: WizardOption[];
@@ -29,21 +25,21 @@ export default function WizardOptionHandler({
   onOptionSelect,
   isMobile = false,
   className = '',
-  variant = 'default'
+  variant = 'default',
 }: WizardOptionsProps) {
   if (!options || options.length === 0) return null;
 
   const shouldGrid = shouldUseOptionGrid(options.length, isMobile);
-  
+
   const containerStyles = (() => {
     if (variant === 'phone-portrait' || variant === 'phone-landscape') {
       return variant === 'phone-portrait' ? 'space-y-3' : 'space-y-2';
     }
-    
+
     if (isMobile) {
       return options.length > 4 ? 'flex flex-col gap-2' : 'flex flex-col gap-3';
     }
-    
+
     // For tablets and small desktops, be more conservative with horizontal layouts
     return shouldGrid
       ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3'
@@ -88,23 +84,23 @@ export function OptionButton({
   onSelect,
   isMobile,
   variant,
-  optionCount
+  optionCount,
 }: OptionButtonProps) {
   const Icon = getGameTypeIcon(option.text) || ChevronRight;
-  
+
   const buttonStyles = (() => {
     if (variant === 'phone-portrait') {
       return BUTTON_STYLES.PHONE_PORTRAIT;
     }
-    
+
     if (variant === 'phone-landscape') {
       return BUTTON_STYLES.PHONE_LANDSCAPE;
     }
-    
+
     if (isMobile) {
       return BUTTON_STYLES.MOBILE_OPTION;
     }
-    
+
     return optionCount > 4
       ? BUTTON_STYLES.DESKTOP_GRID
       : 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-3 px-4 md:px-6 min-w-0 flex-1 lg:flex-initial';
@@ -112,28 +108,28 @@ export function OptionButton({
 
   const buttonVariant = getButtonVariant(isMobile, optionCount);
   const buttonSize = variant === 'phone-portrait' ? 'lg' : getButtonSize(isMobile);
-  
+
   const animationProps = (() => {
     if (variant === 'phone-portrait') {
       return {
         initial: { opacity: 0, y: 20 },
         animate: { opacity: 1, y: 0 },
-        transition: { delay: index * ANIMATIONS.OPTION_STAGGER.delay }
+        transition: { delay: index * ANIMATIONS.OPTION_STAGGER.delay },
       };
     }
-    
+
     if (variant === 'phone-landscape') {
       return {
         initial: { opacity: 0, x: 20 },
         animate: { opacity: 1, x: 0 },
-        transition: { delay: index * ANIMATIONS.OPTION_STAGGER.delay }
+        transition: { delay: index * ANIMATIONS.OPTION_STAGGER.delay },
       };
     }
-    
+
     return {
       initial: { opacity: 0, y: 10 },
       animate: { opacity: 1, y: 0 },
-      transition: { delay: index * ANIMATIONS.OPTION_STAGGER.delay / 2 }
+      transition: { delay: (index * ANIMATIONS.OPTION_STAGGER.delay) / 2 },
     };
   })();
 
@@ -160,20 +156,14 @@ export function OptionButton({
 
 interface OptionContentProps {
   text: string;
-  Icon: React.ComponentType<any>;
+  Icon: React.ComponentType<{ className?: string; size?: number }>;
   isMobile: boolean;
   variant: 'default' | 'phone-portrait' | 'phone-landscape';
   optionCount: number;
 }
 
 // Option button content rendering
-function OptionContent({
-  text,
-  Icon,
-  isMobile,
-  variant,
-  optionCount
-}: OptionContentProps) {
+function OptionContent({ text, Icon, isMobile, variant, optionCount }: OptionContentProps) {
   if (variant === 'phone-portrait') {
     return (
       <>
@@ -182,7 +172,7 @@ function OptionContent({
       </>
     );
   }
-  
+
   if (variant === 'phone-landscape') {
     return (
       <>
@@ -191,7 +181,7 @@ function OptionContent({
       </>
     );
   }
-  
+
   if (isMobile) {
     return (
       <>
@@ -200,7 +190,7 @@ function OptionContent({
       </>
     );
   }
-  
+
   // Desktop grid layout
   if (optionCount > 4) {
     return (
@@ -210,7 +200,7 @@ function OptionContent({
       </>
     );
   }
-  
+
   // Desktop default layout
   return (
     <>
@@ -230,23 +220,21 @@ interface ContinueButtonProps {
 export function ContinueButton({
   onClick,
   isMobile = false,
-  variant = 'default'
+  variant = 'default',
 }: ContinueButtonProps) {
   const buttonStyles = (() => {
     if (variant === 'phone-portrait') {
       return 'w-full py-5 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold text-base';
     }
-    
+
     if (variant === 'phone-landscape') {
       return 'w-full py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold text-sm';
     }
-    
-    return isMobile
-      ? BUTTON_STYLES.CONTINUE_MOBILE
-      : BUTTON_STYLES.CONTINUE_DESKTOP;
+
+    return isMobile ? BUTTON_STYLES.CONTINUE_MOBILE : BUTTON_STYLES.CONTINUE_DESKTOP;
   })();
 
-  const buttonSize = variant === 'phone-portrait' ? 'lg' : (isMobile ? 'lg' : 'default');
+  const buttonSize = variant === 'phone-portrait' ? 'lg' : isMobile ? 'lg' : 'default';
   const iconSize = variant === 'phone-landscape' ? ICON_SIZES.SMALL : ICON_SIZES.MEDIUM;
 
   return (
@@ -254,7 +242,13 @@ export function ContinueButton({
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: ANIMATIONS.DIALOGUE_TRANSITION.delay }}
-      className={isMobile && variant === 'default' ? "w-full" : variant !== 'default' ? '' : "flex justify-center"}
+      className={
+        isMobile && variant === 'default'
+          ? 'w-full'
+          : variant !== 'default'
+            ? ''
+            : 'flex justify-center'
+      }
     >
       <Button
         onClick={onClick}

@@ -4,12 +4,12 @@ export const walkComponent: PygameSystemSpec = {
   id: 'walk',
   name: 'Walking Mechanics',
   category: 'movement',
-  
+
   assetSlots: {
     character: 'platformer/characters/player.png',
-    sound: 'audio/sfx/footsteps.ogg'
+    sound: 'audio/sfx/footsteps.ogg',
   },
-  
+
   variants: {
     A: {
       name: 'Smooth Walking',
@@ -61,7 +61,7 @@ class WalkSystem:
             
         # Stop if very slow
         if abs(self.player.velocity_x) < 0.1:
-            self.player.velocity_x = 0`
+            self.player.velocity_x = 0`,
     },
     B: {
       name: 'Instant Walking',
@@ -103,10 +103,10 @@ class WalkSystem:
                     self.player.play_sound('{{sound}}')
                 self.footstep_timer = 0
         else:
-            self.footstep_timer = 0`
-    }
+            self.footstep_timer = 0`,
+    },
   },
-  
+
   parameters: {
     max_speed: 5,
     walk_speed: 5,
@@ -114,6 +114,6 @@ class WalkSystem:
     acceleration: 20,
     friction: 10,
     air_friction: 2,
-    footstep_interval: 0.4
-  }
+    footstep_interval: 0.4,
+  },
 };

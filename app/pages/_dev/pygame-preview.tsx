@@ -1,17 +1,17 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  FlaskConical, 
-  Gamepad2, 
-  Code, 
-  Play, 
+import {
+  FlaskConical,
+  Gamepad2,
+  Code,
+  Play,
   AlertCircle,
   CheckCircle,
-  Sparkles
+  Sparkles,
 } from 'lucide-react';
 import WizardWithPreview from '@/components/wizard/with-preview';
 import PygameLivePreview, { GameChoice } from '@/components/pygame/live-preview';
@@ -21,7 +21,7 @@ import { getPyodide } from '@lib/python/pyodide-singleton';
 // Pyodide globals are declared in src/types/pyodide.d.ts.
 
 export default function PygamePreviewTest() {
-  const [pyodide, setPyodide] = useState<any>(null);
+  const [pyodide, setPyodide] = useState<PyodideInstance | null>(null);
   const [pyodideLoading, setPyodideLoading] = useState(false);
   const [pyodideError, setPyodideError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('wizard');
@@ -32,34 +32,29 @@ export default function PygamePreviewTest() {
       type: 'character',
       id: 'robot',
       name: 'Robot Hero',
-      properties: { speed: 5, jumpHeight: 12 }
+      properties: { speed: 5, jumpHeight: 12 },
     },
     {
       type: 'enemy',
       id: 'guard',
       name: 'Patrol Guard',
       behavior: 'patrol',
-      properties: { speed: 3 }
+      properties: { speed: 3 },
     },
     {
       type: 'collectible',
       id: 'coin',
       name: 'Gold Coin',
-      properties: { value: 10 }
+      properties: { value: 10 },
     },
     {
       type: 'background',
       id: 'sky',
-      name: 'Sky Kingdom'
-    }
+      name: 'Sky Kingdom',
+    },
   ];
 
-  // Load Pyodide
-  useEffect(() => {
-    loadPyodide();
-  }, []);
-
-  const loadPyodide = async () => {
+  const loadPyodide = useCallback(async () => {
     if (pyodide) return;
 
     setPyodideLoading(true);
@@ -70,16 +65,20 @@ export default function PygamePreviewTest() {
       await setupPygameEnvironment(pyodideInstance);
       setPyodide(pyodideInstance);
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : 'Failed to load Pyodide';
+      const errorMessage = error instanceof Error ? error.message : 'Failed to load Pyodide';
       setPyodideError(errorMessage);
       console.error('Pyodide loading error:', error);
     } finally {
       setPyodideLoading(false);
     }
-  };
+  }, [pyodide]);
 
-  const setupPygameEnvironment = async (pyodideInstance: any) => {
+  // Load Pyodide
+  useEffect(() => {
+    loadPyodide();
+  }, [loadPyodide]);
+
+  const setupPygameEnvironment = async (pyodideInstance: PyodideInstance) => {
     try {
       // Import pygame module from our simulation
       const pygameCode = `
@@ -168,7 +167,7 @@ for key in ['QUIT', 'KEYDOWN', 'KEYUP', 'K_LEFT', 'K_RIGHT', 'K_UP', 'K_DOWN', '
 
 print("Pygame environment setup complete")
 `;
-      
+
       await pyodideInstance.runPythonAsync(pygameCode);
       console.log('Pygame environment initialized in Pyodide');
     } catch (error) {
@@ -227,12 +226,7 @@ print("Pygame environment setup complete")
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
               {pyodideError}
-              <Button 
-                size="sm" 
-                variant="outline" 
-                onClick={loadPyodide}
-                className="ml-4"
-              >
+              <Button size="sm" variant="outline" onClick={loadPyodide} className="ml-4">
                 Retry
               </Button>
             </AlertDescription>
@@ -299,9 +293,9 @@ print("Pygame environment setup complete")
                       currentStep="test"
                       pyodide={pyodide}
                       pixelComments={[
-                        "This is a test preview!",
-                        "Try the controls below!",
-                        "Adjust the parameters!"
+                        'This is a test preview!',
+                        'Try the controls below!',
+                        'Adjust the parameters!',
                       ]}
                       onInteraction={(action, details) => {
                         console.log('Test interaction:', action, details);
@@ -311,7 +305,8 @@ print("Pygame environment setup complete")
                     <Alert>
                       <AlertCircle className="h-4 w-4" />
                       <AlertDescription>
-                        Pyodide is required for the preview. {pyodideLoading ? 'Loading...' : 'Please wait or refresh.'}
+                        Pyodide is required for the preview.{' '}
+                        {pyodideLoading ? 'Loading...' : 'Please wait or refresh.'}
                       </AlertDescription>
                     </Alert>
                   )}
@@ -366,7 +361,7 @@ print("Pygame environment setup complete")
                       'Live pixel comments',
                       'Error handling with fallbacks',
                       'Code generation from choices',
-                      'Before/after comparisons'
+                      'Before/after comparisons',
                     ].map((feature, index) => (
                       <div key={index} className="flex items-center gap-2">
                         <CheckCircle className="h-4 w-4 text-green-600" />

@@ -3,18 +3,25 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Slider } from '@/components/ui/slider';
-import { 
-  Play, Pause, RotateCcw, Zap, Volume2, 
-  Gamepad2, Sparkles, FlaskConical, Split
+import {
+  Play,
+  Pause,
+  RotateCcw,
+  Zap,
+  Volume2,
+  Gamepad2,
+  Sparkles,
+  FlaskConical,
+  Split,
 } from 'lucide-react';
 import { cn } from '@lib/utils/cn';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useToast } from '@lib/hooks/use-toast';
-import { 
-  setCanvasContext, 
-  flushFrameBuffer, 
+import {
+  setCanvasContext,
+  flushFrameBuffer,
   createPygameEnvironment,
-  resetPygameState
+  resetPygameState,
 } from '@lib/pygame/runtime/simulator';
 import { PythonRunner } from '@lib/python/runner';
 import { generatePygameCode } from '@lib/wizard/code-generator';
@@ -23,7 +30,7 @@ export interface GameChoice {
   type: 'character' | 'enemy' | 'collectible' | 'background' | 'rule' | 'mechanic';
   id: string;
   name: string;
-  properties?: Record<string, any>;
+  properties?: Record<string, unknown>;
   sprite?: string;
   behavior?: string;
   code?: string;
@@ -34,10 +41,10 @@ interface PygameLivePreviewProps {
   currentStep?: string;
   showComparison?: boolean;
   alternativeChoice?: GameChoice;
-  onInteraction?: (action: string, details?: any) => void;
+  onInteraction?: (action: string, details?: unknown) => void;
   className?: string;
   pixelComments?: string[];
-  pyodide?: any;
+  pyodide?: PyodideInstance;
 }
 
 interface PreviewState {
@@ -58,7 +65,7 @@ export default function PygameLivePreview({
   onInteraction,
   className,
   pixelComments = [],
-  pyodide
+  pyodide,
 }: PygameLivePreviewProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const comparisonCanvasRef = useRef<HTMLCanvasElement>(null);
@@ -73,13 +80,13 @@ export default function PygameLivePreview({
     fps: 60,
     interactions: [],
     score: 0,
-    lives: 3
+    lives: 3,
   });
 
   const [gameParams, setGameParams] = useState({
     speed: 5,
     jumpHeight: 10,
-    enemySpeed: 3
+    enemySpeed: 3,
   });
 
   // Initialize Python runner when Pyodide is ready
@@ -97,71 +104,77 @@ export default function PygameLivePreview({
     }
   }, [pyodide]);
 
-  // Generate and execute Python code when choices change
-  const executePygameCode = useCallback(async (targetCanvas: HTMLCanvasElement, choicesToUse: GameChoice[]) => {
-    if (!pyodide || !pythonRunnerRef.current || !targetCanvas) return;
-
-    setState(prev => ({ ...prev, isLoading: true, error: null }));
-
-    try {
-      // Get canvas context and set it for pygame bridge
-      const ctx = targetCanvas.getContext('2d');
-      if (!ctx) throw new Error('Could not get canvas context');
-      
-      setCanvasContext(ctx);
-
-      // Generate pygame code from choices
-      const code = generatePygameCode(choicesToUse, gameParams);
-      
-      // Execute the code
-      const result = await pythonRunnerRef.current.runSnippet({ code });
-      
-      if (result.error) {
-        throw new Error(result.error);
-      }
-
-      // Start render loop
-      startRenderLoop(targetCanvas);
-      
-      setState(prev => ({ 
-        ...prev, 
-        isLoading: false,
-        isPlaying: true 
-      }));
-
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to execute pygame code';
-      setState(prev => ({ 
-        ...prev, 
-        isLoading: false, 
-        error: errorMessage,
-        isPlaying: false
-      }));
-      
-      // Show friendly error message
-      toast({
-        title: "Oops! Something went wrong",
-        description: "Don't worry, let's try adjusting your choices!",
-        variant: "default"
-      });
-    }
-  }, [pyodide, gameParams, toast]);
-
   // Render loop for canvas animation
-  const startRenderLoop = useCallback((canvas: HTMLCanvasElement) => {
-    const render = () => {
-      // Flush pygame frame buffer to canvas
-      flushFrameBuffer();
-      
-      // Continue animation if playing
-      if (state.isPlaying) {
-        animationFrameRef.current = requestAnimationFrame(render);
+  const startRenderLoop = useCallback(
+    (_canvas: HTMLCanvasElement) => {
+      const render = () => {
+        // Flush pygame frame buffer to canvas
+        flushFrameBuffer();
+
+        // Continue animation if playing
+        if (state.isPlaying) {
+          animationFrameRef.current = requestAnimationFrame(render);
+        }
+      };
+
+      // Start the loop
+      animationFrameRef.current = requestAnimationFrame(render);
+    },
+    [state.isPlaying]
+  );
+
+  // Generate and execute Python code when choices change
+  const executePygameCode = useCallback(
+    async (targetCanvas: HTMLCanvasElement, choicesToUse: GameChoice[]) => {
+      if (!pyodide || !pythonRunnerRef.current || !targetCanvas) return;
+
+      setState((prev) => ({ ...prev, isLoading: true, error: null }));
+
+      try {
+        // Get canvas context and set it for pygame bridge
+        const ctx = targetCanvas.getContext('2d');
+        if (!ctx) throw new Error('Could not get canvas context');
+
+        setCanvasContext(ctx);
+
+        // Generate pygame code from choices
+        const code = generatePygameCode(choicesToUse, gameParams);
+
+        // Execute the code
+        const result = await pythonRunnerRef.current.runSnippet({ code });
+
+        if (result.error) {
+          throw new Error(result.error);
+        }
+
+        // Start render loop
+        startRenderLoop(targetCanvas);
+
+        setState((prev) => ({
+          ...prev,
+          isLoading: false,
+          isPlaying: true,
+        }));
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error ? error.message : 'Failed to execute pygame code';
+        setState((prev) => ({
+          ...prev,
+          isLoading: false,
+          error: errorMessage,
+          isPlaying: false,
+        }));
+
+        // Show friendly error message
+        toast({
+          title: 'Oops! Something went wrong',
+          description: "Don't worry, let's try adjusting your choices!",
+          variant: 'default',
+        });
       }
-    };
-    
-    // Start the loop
-    animationFrameRef.current = requestAnimationFrame(render);
-  }, [state.isPlaying]);
+    },
+    [pyodide, gameParams, toast, startRenderLoop]
+  );
 
   // Stop render loop
   const stopRenderLoop = useCallback(() => {
@@ -175,7 +188,7 @@ export default function PygameLivePreview({
   const togglePlayPause = useCallback(() => {
     if (state.isPlaying) {
       stopRenderLoop();
-      setState(prev => ({ ...prev, isPlaying: false }));
+      setState((prev) => ({ ...prev, isPlaying: false }));
     } else {
       if (canvasRef.current) {
         executePygameCode(canvasRef.current, choices);
@@ -187,14 +200,14 @@ export default function PygameLivePreview({
   const handleReset = useCallback(() => {
     stopRenderLoop();
     resetPygameState();
-    setState(prev => ({ 
-      ...prev, 
+    setState((prev) => ({
+      ...prev,
       isPlaying: false,
       score: 0,
       lives: 3,
-      interactions: []
+      interactions: [],
     }));
-    
+
     // Clear canvas
     if (canvasRef.current) {
       const ctx = canvasRef.current.getContext('2d');
@@ -205,43 +218,46 @@ export default function PygameLivePreview({
   }, [stopRenderLoop]);
 
   // Handle canvas interactions
-  const handleCanvasClick = useCallback((event: React.MouseEvent<HTMLCanvasElement>) => {
-    if (!state.isPlaying) return;
+  const handleCanvasClick = useCallback(
+    (event: React.MouseEvent<HTMLCanvasElement>) => {
+      if (!state.isPlaying) return;
 
-    const canvas = event.currentTarget;
-    const rect = canvas.getBoundingClientRect();
-    const x = event.clientX - rect.left;
-    const y = event.clientY - rect.top;
+      const canvas = event.currentTarget;
+      const rect = canvas.getBoundingClientRect();
+      const x = event.clientX - rect.left;
+      const y = event.clientY - rect.top;
 
-    // Send interaction to pygame
-    if (pyodide) {
-      try {
-        pyodide.runPython(`
+      // Send interaction to pygame
+      if (pyodide) {
+        try {
+          pyodide.runPython(`
           if 'handle_click' in globals():
               handle_click(${x}, ${y})
         `);
-        
-        // Track interaction
-        const interaction = `Click at (${Math.round(x)}, ${Math.round(y)})`;
-        setState(prev => ({
-          ...prev,
-          interactions: [...prev.interactions, interaction].slice(-5)
-        }));
 
-        // Notify parent
-        onInteraction?.('click', { x, y });
-      } catch (error) {
-        console.error('Failed to handle click:', error);
+          // Track interaction
+          const interaction = `Click at (${Math.round(x)}, ${Math.round(y)})`;
+          setState((prev) => ({
+            ...prev,
+            interactions: [...prev.interactions, interaction].slice(-5),
+          }));
+
+          // Notify parent
+          onInteraction?.('click', { x, y });
+        } catch (error) {
+          console.error('Failed to handle click:', error);
+        }
       }
-    }
-  }, [state.isPlaying, pyodide, onInteraction]);
+    },
+    [state.isPlaying, pyodide, onInteraction]
+  );
 
   // Auto-play when choices change
   useEffect(() => {
     if (choices.length > 0 && canvasRef.current && pyodide) {
       executePygameCode(canvasRef.current, choices);
     }
-  }, [choices, pyodide]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [choices, pyodide, executePygameCode]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Cleanup on unmount
   useEffect(() => {
@@ -250,10 +266,10 @@ export default function PygameLivePreview({
       setCanvasContext(null);
       resetPygameState();
     };
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [stopRenderLoop]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <div className={cn("space-y-4", className)}>
+    <div className={cn('space-y-4', className)}>
       {/* Main Preview Card */}
       <Card className="overflow-hidden">
         <CardHeader className="pb-3">
@@ -270,20 +286,20 @@ export default function PygameLivePreview({
                 </Badge>
               )}
             </div>
-            
+
             {/* FPS Counter */}
-            <Badge variant="secondary">
-              {state.fps} FPS
-            </Badge>
+            <Badge variant="secondary">{state.fps} FPS</Badge>
           </div>
         </CardHeader>
-        
+
         <CardContent className="space-y-4">
           {/* Canvas Container */}
-          <div className={cn(
-            "relative rounded-lg overflow-hidden bg-slate-900",
-            showComparison ? "grid grid-cols-2 gap-2" : ""
-          )}>
+          <div
+            className={cn(
+              'relative rounded-lg overflow-hidden bg-slate-900',
+              showComparison ? 'grid grid-cols-2 gap-2' : ''
+            )}
+          >
             {/* Main Canvas */}
             <div className="relative">
               <canvas
@@ -294,7 +310,7 @@ export default function PygameLivePreview({
                 onClick={handleCanvasClick}
                 data-testid="canvas-main-preview"
               />
-              
+
               {/* Loading Overlay */}
               {state.isLoading && (
                 <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
@@ -304,14 +320,12 @@ export default function PygameLivePreview({
                   </div>
                 </div>
               )}
-              
+
               {/* Error Overlay */}
               {state.error && (
                 <div className="absolute inset-0 bg-red-900/20 flex items-center justify-center p-4">
                   <div className="bg-white/90 dark:bg-gray-800/90 rounded-lg p-4 max-w-sm">
-                    <p className="text-sm text-red-600 dark:text-red-400">
-                      {state.error}
-                    </p>
+                    <p className="text-sm text-red-600 dark:text-red-400">{state.error}</p>
                   </div>
                 </div>
               )}
@@ -327,10 +341,7 @@ export default function PygameLivePreview({
                   className="w-full h-auto cursor-pointer"
                   data-testid="canvas-comparison-preview"
                 />
-                <Badge 
-                  className="absolute top-2 right-2" 
-                  variant="outline"
-                >
+                <Badge className="absolute top-2 right-2" variant="outline">
                   Alternative
                 </Badge>
               </div>
@@ -342,15 +353,19 @@ export default function PygameLivePreview({
             <div className="flex items-center gap-2">
               <Button
                 size="sm"
-                variant={state.isPlaying ? "default" : "outline"}
+                variant={state.isPlaying ? 'default' : 'outline'}
                 onClick={togglePlayPause}
                 disabled={!pyodide || state.isLoading}
                 data-testid="button-play-pause-preview"
               >
                 {state.isPlaying ? (
-                  <><Pause className="h-4 w-4 mr-1" /> Pause</>
+                  <>
+                    <Pause className="h-4 w-4 mr-1" /> Pause
+                  </>
                 ) : (
-                  <><Play className="h-4 w-4 mr-1" /> Play</>
+                  <>
+                    <Play className="h-4 w-4 mr-1" /> Play
+                  </>
                 )}
               </Button>
 
@@ -366,11 +381,7 @@ export default function PygameLivePreview({
               </Button>
 
               {showComparison && (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  data-testid="button-toggle-split"
-                >
+                <Button size="sm" variant="outline" data-testid="button-toggle-split">
                   <Split className="h-4 w-4 mr-1" />
                   Compare
                 </Button>
@@ -379,12 +390,8 @@ export default function PygameLivePreview({
 
             {/* Game Stats */}
             <div className="flex items-center gap-3 text-sm">
-              <Badge variant="outline">
-                Score: {state.score}
-              </Badge>
-              <Badge variant="outline">
-                Lives: {state.lives}
-              </Badge>
+              <Badge variant="outline">Score: {state.score}</Badge>
+              <Badge variant="outline">Lives: {state.lives}</Badge>
             </div>
           </div>
 
@@ -395,7 +402,7 @@ export default function PygameLivePreview({
                 <label className="text-xs font-medium">Speed</label>
                 <Slider
                   value={[gameParams.speed]}
-                  onValueChange={([value]) => setGameParams(prev => ({ ...prev, speed: value }))}
+                  onValueChange={([value]) => setGameParams((prev) => ({ ...prev, speed: value }))}
                   max={10}
                   min={1}
                   step={1}
@@ -403,12 +410,14 @@ export default function PygameLivePreview({
                   data-testid="slider-speed"
                 />
               </div>
-              
+
               <div className="space-y-1">
                 <label className="text-xs font-medium">Jump Height</label>
                 <Slider
                   value={[gameParams.jumpHeight]}
-                  onValueChange={([value]) => setGameParams(prev => ({ ...prev, jumpHeight: value }))}
+                  onValueChange={([value]) =>
+                    setGameParams((prev) => ({ ...prev, jumpHeight: value }))
+                  }
                   max={20}
                   min={5}
                   step={1}
@@ -416,12 +425,14 @@ export default function PygameLivePreview({
                   data-testid="slider-jump"
                 />
               </div>
-              
+
               <div className="space-y-1">
                 <label className="text-xs font-medium">Enemy Speed</label>
                 <Slider
                   value={[gameParams.enemySpeed]}
-                  onValueChange={([value]) => setGameParams(prev => ({ ...prev, enemySpeed: value }))}
+                  onValueChange={([value]) =>
+                    setGameParams((prev) => ({ ...prev, enemySpeed: value }))
+                  }
                   max={8}
                   min={1}
                   step={1}
@@ -445,9 +456,7 @@ export default function PygameLivePreview({
                 >
                   <div className="flex items-start gap-2">
                     <Sparkles className="h-4 w-4 text-purple-600 dark:text-purple-400 mt-0.5" />
-                    <p className="text-sm text-purple-700 dark:text-purple-300">
-                      {comment}
-                    </p>
+                    <p className="text-sm text-purple-700 dark:text-purple-300">{comment}</p>
                   </div>
                 </motion.div>
               ))}

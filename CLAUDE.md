@@ -13,16 +13,16 @@ Pixel's PyGame Palace — a conversational, mascot-driven React platform that te
 
 ## Repo-specific
 
-- **Dev:** `npm run dev` (Vite, port 5173). `predev` regenerates the asset catalog.
-- **Build:** `npm run build` (`tsc && vite build`). `prebuild` regenerates the asset catalog.
-- **Type check:** `npm run check` (`tsc --noEmit`).
+- **Dev:** `pnpm dev` (Vite, port 5173). `predev` regenerates the asset catalog.
+- **Build:** `pnpm build` (`tsc && vite build`). `prebuild` regenerates the asset catalog.
+- **Type check:** `pnpm check` (`tsc --noEmit`).
 - **Tests:**
-  - `npm run test:unit` — Vitest unit (jsdom)
-  - `npm run test:integration` — Vitest integration (jsdom, longer timeout)
-  - `npm run test:component` — Vitest component (real Chromium via @vitest/browser)
-  - `npm run test:e2e` — Playwright
+  - `pnpm test:unit` — Vitest unit (jsdom)
+  - `pnpm test:integration` — Vitest integration (jsdom, longer timeout)
+  - `pnpm test:component` — Vitest component (real Chromium via @vitest/browser)
+  - `pnpm test:e2e` — Playwright
   - `npm test` — all Vitest projects
-- **Asset catalog:** `npm run catalog` (writes `public/assets/catalog.json` from `public/assets/`).
+- **Asset catalog:** `pnpm catalog` (writes `public/assets/catalog.json` from `public/assets/`).
 
 ## Layout
 

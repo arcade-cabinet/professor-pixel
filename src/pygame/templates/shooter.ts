@@ -6,14 +6,15 @@ export const shooterTemplate: GameTemplate = {
   id: 'space-shooter',
   name: 'Space Shooter',
   description: 'Spaceship shooting game with enemies and score',
-  wizardDescription: 'Blast through space fighting enemy ships! Control your spaceship, shoot lasers, and survive as long as you can. Great for learning about shooting mechanics and enemy patterns!',
+  wizardDescription:
+    'Blast through space fighting enemy ships! Control your spaceship, shoot lasers, and survive as long as you can. Great for learning about shooting mechanics and enemy patterns!',
   difficulty: 'intermediate',
   settings: {
     screenWidth: 800,
     screenHeight: 600,
     backgroundColor: '#0B1929',
     fps: 60,
-    title: 'Space Shooter'
+    title: 'Space Shooter',
   },
   components: [
     {
@@ -26,8 +27,8 @@ export const shooterTemplate: GameTemplate = {
         height: 40,
         velocityX: 0,
         velocityY: 0,
-        color: '#00FF00'
-      }
+        color: '#00FF00',
+      },
     },
     {
       type: 'enemy',
@@ -40,8 +41,8 @@ export const shooterTemplate: GameTemplate = {
         width: 40,
         height: 30,
         color: '#FF0000',
-        health: 1
-      }
+        health: 1,
+      },
     },
     {
       type: 'scoreText',
@@ -51,8 +52,8 @@ export const shooterTemplate: GameTemplate = {
         x: 10,
         y: 10,
         fontSize: 24,
-        color: '#FFFFFF'
-      }
+        color: '#FFFFFF',
+      },
     },
     {
       type: 'healthBar',
@@ -65,15 +66,15 @@ export const shooterTemplate: GameTemplate = {
         width: 200,
         height: 20,
         color: '#00FF00',
-        backgroundColor: '#333333'
-      }
-    }
+        backgroundColor: '#333333',
+      },
+    },
   ],
   preview: (ctx: CanvasRenderingContext2D) => {
     // Space background
     ctx.fillStyle = '#0B1929';
     ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-    
+
     // Stars
     ctx.fillStyle = '#FFFFFF';
     for (let i = 0; i < 20; i++) {
@@ -84,7 +85,7 @@ export const shooterTemplate: GameTemplate = {
       ctx.arc(x, y, size, 0, Math.PI * 2);
       ctx.fill();
     }
-    
+
     // Player ship (green triangle)
     ctx.fillStyle = '#00FF00';
     ctx.beginPath();
@@ -93,10 +94,16 @@ export const shooterTemplate: GameTemplate = {
     ctx.lineTo(ctx.canvas.width / 2 + 20, 380);
     ctx.closePath();
     ctx.fill();
-    
+
     // Enemy ships (red triangles)
     ctx.fillStyle = '#FF0000';
-    const enemies = [[200, 100], [400, 100], [600, 100], [300, 150], [500, 150]];
+    const enemies = [
+      [200, 100],
+      [400, 100],
+      [600, 100],
+      [300, 150],
+      [500, 150],
+    ];
     enemies.forEach(([x, y]) => {
       ctx.beginPath();
       ctx.moveTo(x, y);
@@ -105,7 +112,7 @@ export const shooterTemplate: GameTemplate = {
       ctx.closePath();
       ctx.fill();
     });
-    
+
     // Lasers
     ctx.strokeStyle = '#00FF00';
     ctx.lineWidth = 2;
@@ -427,5 +434,5 @@ while running:
 
 # Quit
 pygame.quit()
-sys.exit()`
+sys.exit()`,
 };

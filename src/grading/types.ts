@@ -47,12 +47,30 @@ export interface CodeRunnerOptions {
   timeoutMs?: number;
   /** Per-test stdout cap; excess is truncated. */
   maxStdout?: number;
+  /** Function names to count via worker-side sys.settrace. */
+  trackFunctions?: string[];
+  /**
+   * Variable names to snapshot from post-execution Python globals. Drives
+   * `runtimeRules.variableExists` for worker-routed lessons — main-thread
+   * Pyodide doesn't share globals with the worker.
+   */
+  inspectGlobals?: string[];
 }
 
 export interface CodeRunner {
   runSnippet: (args: { code: string } & CodeRunnerOptions) => Promise<{
     output: string;
     error: string | null;
+    /** Number of times the snippet called `input()`. Worker-only — non-worker runners may report 0. */
+    inputCalls: number;
+    /** Per-function call counts for any names passed in `CodeRunnerOptions.trackFunctions`. */
+    functionCalls: Record<string, number>;
+    /**
+     * Snapshot of post-execution globals for any names passed in
+     * `CodeRunnerOptions.inspectGlobals`. Variables that were never defined
+     * are omitted, so consumers can use `name in globals` for existence.
+     */
+    globals: Record<string, unknown>;
   }>;
 }
 

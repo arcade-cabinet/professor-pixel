@@ -17,6 +17,25 @@ export class PyodideLoadError extends Error {
 
 let bootstrapPromise: Promise<PyodideInstance> | null = null;
 
+/**
+ * Cold-start budget (see docs/pillars/02-runtime.md):
+ *   - <3000ms on a mid-tier laptop
+ *   - <8000ms on a Chromebook
+ *
+ * Anything beyond `COLD_START_BUDGET_MS` warns to console; this is a leading
+ * indicator (consult perf timeline before tuning). The budget is set against
+ * the 95th-percentile observed in a fast-network dev session — if it consistently
+ * trips on real users, the answer is precaching `python_stdlib.zip` or pre-warming
+ * a worker on idle, not raising the budget.
+ */
+const COLD_START_BUDGET_MS = 8000;
+let coldStartMs: number | null = null;
+
+/** Returns the last observed cold-start duration, or null if Pyodide hasn't booted. */
+export function getColdStartMs(): number | null {
+  return coldStartMs;
+}
+
 interface BootstrapOptions {
   indexURL?: string;
   stdout?: (s: string) => void;
@@ -34,9 +53,7 @@ async function loadPyodideScript(scriptSrc: string): Promise<void> {
   if (typeof window !== 'undefined' && window.loadPyodide) return;
 
   await new Promise<void>((resolve, reject) => {
-    const existing = document.querySelector<HTMLScriptElement>(
-      `script[src="${scriptSrc}"]`,
-    );
+    const existing = document.querySelector<HTMLScriptElement>(`script[src="${scriptSrc}"]`);
     if (existing) {
       if (window.loadPyodide) {
         resolve();
@@ -46,7 +63,7 @@ async function loadPyodideScript(scriptSrc: string): Promise<void> {
       existing.addEventListener(
         'error',
         () => reject(new PyodideLoadError(`Failed to load ${scriptSrc}`)),
-        { once: true },
+        { once: true }
       );
       return;
     }
@@ -55,8 +72,7 @@ async function loadPyodideScript(scriptSrc: string): Promise<void> {
     script.src = scriptSrc;
     script.async = true;
     script.onload = () => resolve();
-    script.onerror = () =>
-      reject(new PyodideLoadError(`Failed to load ${scriptSrc}`));
+    script.onerror = () => reject(new PyodideLoadError(`Failed to load ${scriptSrc}`));
     document.head.appendChild(script);
   });
 }
@@ -80,16 +96,11 @@ async function bootstrap(opts: BootstrapOptions): Promise<PyodideInstance> {
   try {
     await loadPyodideScript(scriptSrc);
   } catch (cause) {
-    throw new PyodideLoadError(
-      'Pyodide loader script failed to attach to the page',
-      { cause },
-    );
+    throw new PyodideLoadError('Pyodide loader script failed to attach to the page', { cause });
   }
 
   if (!window.loadPyodide) {
-    throw new PyodideLoadError(
-      'Pyodide script loaded but window.loadPyodide is undefined',
-    );
+    throw new PyodideLoadError('Pyodide script loaded but window.loadPyodide is undefined');
   }
 
   try {
@@ -107,16 +118,48 @@ async function bootstrap(opts: BootstrapOptions): Promise<PyodideInstance> {
 
 export function getPyodide(opts: BootstrapOptions = {}): Promise<PyodideInstance> {
   if (!bootstrapPromise) {
-    bootstrapPromise = bootstrap(opts).catch((err) => {
-      bootstrapPromise = null;
-      throw err;
-    });
+    const start = typeof performance !== 'undefined' ? performance.now() : Date.now();
+    bootstrapPromise = bootstrap(opts)
+      .then((instance) => {
+        const end = typeof performance !== 'undefined' ? performance.now() : Date.now();
+        coldStartMs = end - start;
+        if (coldStartMs > COLD_START_BUDGET_MS) {
+          console.warn(
+            `Pyodide cold-start ${Math.round(coldStartMs)}ms exceeds budget ${COLD_START_BUDGET_MS}ms`
+          );
+        } else {
+          console.info(`Pyodide cold-start ${Math.round(coldStartMs)}ms`);
+        }
+        return instance;
+      })
+      .catch((err) => {
+        bootstrapPromise = null;
+        throw err;
+      });
   }
   return bootstrapPromise;
 }
 
 export function isPyodideReady(): boolean {
   return typeof window !== 'undefined' && Boolean(window.pyodide);
+}
+
+/**
+ * Pyodide state for diagnostics/HUD readouts. `loading` means a bootstrap
+ * promise is in flight; `ready` means it resolved and `window.pyodide` is set.
+ * `error` is sticky between catch and the next `getPyodide()` retry —
+ * bootstrapPromise is cleared in the .catch handler, but coldStartMs stays
+ * null since it's only set on success.
+ */
+export type PyodideState = 'uninitialized' | 'loading' | 'ready' | 'error';
+
+export function getPyodideState(): PyodideState {
+  if (isPyodideReady()) return 'ready';
+  if (bootstrapPromise) return 'loading';
+  // The HUD doesn't get a way to distinguish "never started" from "failed and
+  // cleared" — both look the same after the catch handler nulls the promise.
+  // That's fine: the HUD's job is to show current state, not history.
+  return 'uninitialized';
 }
 
 /** Test-only: drop the cached promise so the next call re-bootstraps. */

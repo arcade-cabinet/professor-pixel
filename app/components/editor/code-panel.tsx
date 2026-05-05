@@ -15,7 +15,7 @@ interface PygameEditorCodePanelProps {
 
 export default function PygameEditorCodePanel({
   components,
-  className
+  className,
 }: PygameEditorCodePanelProps) {
   const { toast } = useToast();
 
@@ -53,7 +53,7 @@ export default function PygameEditorCodePanel({
       '    ',
       '    def draw(self, surface):',
       '        pygame.draw.rect(surface, self.color, self.rect)',
-      ''
+      '',
     ];
 
     // Generate code for each component
@@ -66,7 +66,7 @@ export default function PygameEditorCodePanel({
         const componentCode = componentDef.generateCode({
           ...comp.properties,
           x: comp.x,
-          y: comp.y
+          y: comp.y,
         });
         lines.push(`# ${componentDef.name}`);
         lines.push(`${varName} = ${componentCode}`);
@@ -87,7 +87,7 @@ export default function PygameEditorCodePanel({
     lines.push('    screen.fill(WHITE)');
     lines.push('    ');
     lines.push('    # Draw all objects');
-    componentVars.forEach(varName => {
+    componentVars.forEach((varName) => {
       lines.push(`    ${varName}.draw(screen)`);
     });
     lines.push('    ');
@@ -105,8 +105,8 @@ export default function PygameEditorCodePanel({
   const handleCopy = () => {
     navigator.clipboard.writeText(generatedCode);
     toast({
-      title: "Code copied!",
-      description: "The Python code has been copied to your clipboard.",
+      title: 'Code copied!',
+      description: 'The Python code has been copied to your clipboard.',
     });
   };
 
@@ -120,18 +120,15 @@ export default function PygameEditorCodePanel({
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-    
+
     toast({
-      title: "Code downloaded!",
-      description: "Your Python file has been downloaded.",
+      title: 'Code downloaded!',
+      description: 'Your Python file has been downloaded.',
     });
   };
 
   return (
-    <Card className={cn(
-      "flex flex-col bg-gray-900 text-gray-100",
-      className
-    )}>
+    <Card className={cn('flex flex-col bg-gray-900 text-gray-100', className)}>
       <div className="flex items-center justify-between p-4 border-b border-gray-700">
         <div className="flex items-center gap-2">
           <FileCode className="w-5 h-5 text-purple-400" />
@@ -158,7 +155,7 @@ export default function PygameEditorCodePanel({
           </Button>
         </div>
       </div>
-      
+
       <ScrollArea className="flex-1 p-4">
         <pre className="text-sm font-mono">
           <code className="language-python">{generatedCode}</code>

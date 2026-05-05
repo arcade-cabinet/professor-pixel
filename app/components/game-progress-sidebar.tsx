@@ -2,16 +2,16 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Card } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { 
-  CheckCircle2, 
-  Circle, 
-  Sparkles, 
+import {
+  CheckCircle2,
+  Circle,
+  Sparkles,
   Trophy,
   Gamepad2,
   Code,
   Palette,
   Music,
-  Settings
+  Settings,
 } from 'lucide-react';
 import { SessionActions } from '@lib/wizard/types';
 import { useEffect, useState } from 'react';
@@ -39,10 +39,10 @@ interface ComponentSelection {
   timestamp?: Date;
 }
 
-export default function GameProgressSidebar({ 
-  sessionActions, 
+export default function GameProgressSidebar({
+  sessionActions,
   gameName,
-  className = '' 
+  className = '',
 }: GameProgressSidebarProps) {
   const [recentlyAdded, setRecentlyAdded] = useState<string | null>(null);
   const [buildMessage, setBuildMessage] = useState<string | null>(null);
@@ -53,13 +53,13 @@ export default function GameProgressSidebar({
   // Calculate progress based on completed stages
   useEffect(() => {
     let progress = 0;
-    const stages = 4; // Title, Gameplay, Ending, Final Assembly
-    
+    const _stages = 4; // Title, Gameplay, Ending, Final Assembly
+
     if (sessionActions.titlePresetApplied) progress += 25;
     if (sessionActions.gameplayConfigured) progress += 25;
     if (sessionActions.endingConfigured) progress += 25;
     if (sessionActions.gameAssembled) progress += 25;
-    
+
     // Also consider selected components
     const componentCount = Object.keys(sessionActions.selectedComponents || {}).length;
     if (componentCount > 0 && progress < 100) {
@@ -67,25 +67,25 @@ export default function GameProgressSidebar({
       const componentBonus = Math.min(componentCount * 2, 10);
       progress = Math.min(progress + componentBonus, 95); // Cap at 95% if not fully assembled
     }
-    
+
     setProgressPercentage(progress);
   }, [sessionActions]);
 
   // Track component additions and show animations
   useEffect(() => {
     const currentComponents = sessionActions.selectedComponents || {};
-    const newComponents: ComponentSelection[] = [];
-    
+    const _newComponents: ComponentSelection[] = [];
+
     // Check for new components
     Object.entries(currentComponents).forEach(([componentId, variant]) => {
       if (!previousComponents[componentId] || previousComponents[componentId] !== variant) {
         // New component added or changed
         const category = componentId.split('_')[0]; // Extract category from ID
         const formattedCategory = category.charAt(0).toUpperCase() + category.slice(1);
-        
+
         setRecentlyAdded(componentId);
         setBuildMessage(`Building your ${formattedCategory}...`);
-        
+
         // Clear the message after 2 seconds
         setTimeout(() => {
           setBuildMessage(null);
@@ -93,24 +93,24 @@ export default function GameProgressSidebar({
         }, 2000);
       }
     });
-    
+
     // Update component list
     const componentArray = Object.entries(currentComponents).map(([id, variant]) => {
       const parts = id.split('_');
       const category = parts[0];
       const name = parts.slice(1).join(' ');
-      
+
       return {
         category: category.charAt(0).toUpperCase() + category.slice(1),
         name: name.charAt(0).toUpperCase() + name.slice(1).replace(/_/g, ' '),
         variant: variant,
-        timestamp: new Date()
+        timestamp: new Date(),
       };
     });
-    
+
     setComponentList(componentArray);
     setPreviousComponents(currentComponents);
-  }, [sessionActions.selectedComponents]);
+  }, [sessionActions.selectedComponents, previousComponents]);
 
   // Define stages with their completion status
   const stages: StageInfo[] = [
@@ -119,43 +119,51 @@ export default function GameProgressSidebar({
       label: 'Title Screen',
       icon: <Palette className="w-4 h-4" />,
       isComplete: !!sessionActions.titlePresetApplied,
-      description: sessionActions.titlePresetApplied ? 'Title screen configured' : 'Design your game\'s first impression',
-      components: sessionActions.titlePresetApplied ? { title: 'configured' } : {}
+      description: sessionActions.titlePresetApplied
+        ? 'Title screen configured'
+        : "Design your game's first impression",
+      components: sessionActions.titlePresetApplied ? { title: 'configured' } : {},
     },
     {
       id: 'gameplay',
       label: 'Gameplay',
       icon: <Gamepad2 className="w-4 h-4" />,
       isComplete: !!sessionActions.gameplayConfigured,
-      description: sessionActions.gameplayConfigured ? 'Core mechanics set' : 'Define your game mechanics',
-      components: sessionActions.gameplayConfigured ? { gameplay: 'configured' } : {}
+      description: sessionActions.gameplayConfigured
+        ? 'Core mechanics set'
+        : 'Define your game mechanics',
+      components: sessionActions.gameplayConfigured ? { gameplay: 'configured' } : {},
     },
     {
       id: 'ending',
       label: 'Ending',
       icon: <Trophy className="w-4 h-4" />,
       isComplete: !!sessionActions.endingConfigured,
-      description: sessionActions.endingConfigured ? 'Victory conditions ready' : 'Create your victory screen',
-      components: sessionActions.endingConfigured ? { ending: 'configured' } : {}
+      description: sessionActions.endingConfigured
+        ? 'Victory conditions ready'
+        : 'Create your victory screen',
+      components: sessionActions.endingConfigured ? { ending: 'configured' } : {},
     },
     {
       id: 'assembly',
       label: 'Final Build',
       icon: <Code className="w-4 h-4" />,
       isComplete: !!sessionActions.gameAssembled,
-      description: sessionActions.gameAssembled ? 'Game fully assembled!' : 'Compile everything together',
-      components: sessionActions.gameAssembled ? { full: 'assembled' } : {}
-    }
+      description: sessionActions.gameAssembled
+        ? 'Game fully assembled!'
+        : 'Compile everything together',
+      components: sessionActions.gameAssembled ? { full: 'assembled' } : {},
+    },
   ];
 
   // Get motivational message based on progress
   const getProgressMessage = () => {
     if (progressPercentage === 0) return "Let's start building!";
-    if (progressPercentage < 25) return "Great start!";
-    if (progressPercentage < 50) return "Making good progress!";
-    if (progressPercentage < 75) return "Almost there!";
-    if (progressPercentage < 100) return "Just a bit more!";
-    return "Your game is ready! 🎮";
+    if (progressPercentage < 25) return 'Great start!';
+    if (progressPercentage < 50) return 'Making good progress!';
+    if (progressPercentage < 75) return 'Almost there!';
+    if (progressPercentage < 100) return 'Just a bit more!';
+    return 'Your game is ready! 🎮';
   };
 
   const gameTypeIcons: Record<string, React.ReactNode> = {
@@ -164,17 +172,17 @@ export default function GameProgressSidebar({
     racing: '🏎️',
     puzzle: '🧩',
     dungeon: '🏰',
-    space: '🚀'
+    space: '🚀',
   };
 
   const gameIcon = sessionActions.gameType ? gameTypeIcons[sessionActions.gameType] || '🎮' : '🎮';
 
   return (
-    <motion.div 
+    <motion.div
       className={`w-80 h-full bg-gradient-to-b from-purple-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 p-4 overflow-y-auto ${className}`}
       initial={{ x: 300, opacity: 0 }}
       animate={{ x: 0, opacity: 1 }}
-      transition={{ duration: 0.5, ease: "easeOut" }}
+      transition={{ duration: 0.5, ease: 'easeOut' }}
     >
       <Card className="p-4 bg-white/90 dark:bg-gray-800/90 backdrop-blur">
         {/* Game Title Header */}
@@ -220,7 +228,7 @@ export default function GameProgressSidebar({
               <div className="flex items-center gap-2">
                 <motion.div
                   animate={{ rotate: 360 }}
-                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                  transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
                 >
                   <Settings className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                 </motion.div>
@@ -253,7 +261,7 @@ export default function GameProgressSidebar({
                       <motion.div
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
-                        transition={{ type: "spring", bounce: 0.5 }}
+                        transition={{ type: 'spring', bounce: 0.5 }}
                       >
                         <CheckCircle2 className="w-5 h-5 text-green-500" />
                       </motion.div>
@@ -266,11 +274,13 @@ export default function GameProgressSidebar({
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
                       {stage.icon}
-                      <span className={`text-sm font-medium ${
-                        stage.isComplete 
-                          ? 'text-gray-800 dark:text-gray-100' 
-                          : 'text-gray-400 dark:text-gray-500'
-                      }`}>
+                      <span
+                        className={`text-sm font-medium ${
+                          stage.isComplete
+                            ? 'text-gray-800 dark:text-gray-100'
+                            : 'text-gray-400 dark:text-gray-500'
+                        }`}
+                      >
                         {stage.label}
                       </span>
                       {stage.isComplete && (
@@ -279,20 +289,20 @@ export default function GameProgressSidebar({
                         </Badge>
                       )}
                     </div>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      {stage.description}
-                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{stage.description}</p>
                   </div>
                 </div>
 
                 {/* Connection line to next stage */}
                 {index < stages.length - 1 && (
                   <div className="ml-2.5 mt-1 mb-1">
-                    <div className={`w-0.5 h-4 ${
-                      stage.isComplete 
-                        ? 'bg-green-300 dark:bg-green-700' 
-                        : 'bg-gray-200 dark:bg-gray-700'
-                    }`} />
+                    <div
+                      className={`w-0.5 h-4 ${
+                        stage.isComplete
+                          ? 'bg-green-300 dark:bg-green-700'
+                          : 'bg-gray-200 dark:bg-gray-700'
+                      }`}
+                    />
                   </div>
                 )}
               </motion.div>

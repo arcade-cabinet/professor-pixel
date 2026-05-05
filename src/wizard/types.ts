@@ -23,7 +23,7 @@ export interface WizardNode {
   options?: WizardOption[];
   action?: string; // Can be 'openWYSIWYGEditor', 'openEditor', 'openLessons', 'showAssets', 'minimizePixel'
   additionalAction?: string;
-  params?: Record<string, any>;
+  params?: Record<string, unknown>;
   tags?: string[];
   conditional?: {
     condition: string;
@@ -47,7 +47,7 @@ export interface GameChoice {
   type: 'character' | 'enemy' | 'collectible' | 'background' | 'rule' | 'mechanic';
   id: string;
   name: string;
-  properties?: Record<string, any>;
+  properties?: Record<string, unknown>;
   sprite?: string;
   behavior?: string;
   code?: string;
@@ -57,11 +57,11 @@ export interface GameChoice {
 export interface WizardOption {
   text: string;
   next: string;
-  setVariable?: Record<string, any>;
+  setVariable?: Record<string, unknown>;
   updatePreview?: GameChoice;
   previewComment?: string;
   action?: string; // Option can also have an action
-  actionParams?: Record<string, any>;
+  actionParams?: Record<string, unknown>;
 }
 
 // Session Actions for tracking user progress
@@ -87,24 +87,34 @@ export interface SessionActions {
   selectedGameType?: string; // The specific game type (platformer, rpg, racing, dungeon, etc.)
   transitionToSpecializedFlow?: boolean; // Flag to track when we need to transition to specialized flow
   gameName?: string; // The name of the game being created
-  selectedBundles?: Record<string, any>; // Bundle selections for components
+  selectedBundles?: Record<string, unknown>; // Bundle selections for components
 }
 
 // Session action for PixelMenu
 export interface SessionAction {
   id: string;
-  type: 'game_created' | 'lesson_completed' | 'asset_selected' | 'code_generated' | 'settings_changed';
+  type:
+    | 'game_created'
+    | 'lesson_completed'
+    | 'asset_selected'
+    | 'code_generated'
+    | 'settings_changed';
   title: string;
   description?: string;
   timestamp: Date;
-  icon: ComponentType<any>;
+  icon: ComponentType<{ className?: string; size?: number }>;
 }
 
 // Layout modes
 export type LayoutMode = 'desktop' | 'phone-portrait' | 'phone-landscape';
 
 // Embedded component types
-export type EmbeddedComponentType = 'none' | 'code-editor' | 'professional-editor' | 'block-builder' | 'pygame-runner';
+export type EmbeddedComponentType =
+  | 'none'
+  | 'code-editor'
+  | 'professional-editor'
+  | 'block-builder'
+  | 'pygame-runner';
 
 // Pixel state
 export type PixelState = 'center-stage' | 'minimized';

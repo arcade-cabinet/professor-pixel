@@ -12,13 +12,14 @@ interface EnemyProperties {
   health?: number;
 }
 
-export const enemyComponent: PyGameComponent = {
+export const enemyComponent: PyGameComponent<EnemyProperties> = {
   type: 'enemy',
   id: 'enemy',
   name: 'Enemy',
   description: 'Basic AI-controlled opponent',
-  wizardDescription: 'An enemy that moves on its own! It can patrol back and forth, chase the player, move in circles, or wander randomly. Great for adding challenges to your game!',
-  properties: {} as Record<string, any>,
+  wizardDescription:
+    'An enemy that moves on its own! It can patrol back and forth, chase the player, move in circles, or wander randomly. Great for adding challenges to your game!',
+  properties: {},
   defaultProperties: {
     x: 400,
     y: 200,
@@ -27,7 +28,7 @@ export const enemyComponent: PyGameComponent = {
     width: 40,
     height: 40,
     color: '#DC2626',
-    health: 3
+    health: 3,
   },
   preview: (ctx: CanvasRenderingContext2D, props: EnemyProperties) => {
     ctx.fillStyle = props.color;
@@ -43,7 +44,7 @@ export const enemyComponent: PyGameComponent = {
     ctx.strokeStyle = 'white';
     ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.arc(props.x + props.width/2, props.y + props.height, 10, Math.PI * 1.2, Math.PI * 1.8);
+    ctx.arc(props.x + props.width / 2, props.y + props.height, 10, Math.PI * 1.2, Math.PI * 1.8);
     ctx.stroke();
   },
   generateCode: (props: EnemyProperties) => `
@@ -90,5 +91,5 @@ class Enemy:
         self.rect.y = self.y
     
     def draw(self, screen):
-        pygame.draw.rect(screen, self.color, self.rect)`
+        pygame.draw.rect(screen, self.color, self.rect)`,
 };

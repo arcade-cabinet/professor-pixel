@@ -74,17 +74,17 @@ function toBackground(e: CatalogEntry): BackgroundAsset {
 export async function loadCatalog(): Promise<AssetCatalog> {
   if (cached) return cached;
   cached = fetch(CATALOG_URL)
-    .then(r => {
+    .then((r) => {
       if (!r.ok) throw new Error(`Asset catalog fetch failed: ${r.status}`);
       return r.json() as Promise<RawCatalog>;
     })
-    .then(raw => ({
+    .then((raw) => ({
       sprites: raw.sprites.map(toSprite),
       sounds: raw.sounds.map(toSound),
       backgrounds: raw.backgrounds.map(toBackground),
       generatedAt: raw.generatedAt,
     }))
-    .catch(err => {
+    .catch((err) => {
       cached = null;
       throw err;
     });

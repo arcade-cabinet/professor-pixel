@@ -28,6 +28,9 @@ yarn-debug.log*
 coverage/
 .nyc_output/
 tests/component/__screenshots__/
+.vitest-attachments/
+test-results/
+playwright-report/
 
 # Claude Code working dir (cache + scheduled-task locks; see ~/.claude/CLAUDE.md)
 .claude/

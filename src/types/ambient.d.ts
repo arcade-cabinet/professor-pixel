@@ -3,19 +3,35 @@
 declare global {
   interface Window {
     /**
-     * Debug utilities for development
+     * Debug utilities for development. Loosely typed because dev tools panels
+     * + console hooks all extend this bag at runtime; the global-handler
+     * module installs its own typed view via a narrow Window cast.
      */
-    __debugUtils?: {
-      getState: () => any;
-      setState: (state: any) => void;
-      clearCache: () => void;
-      [key: string]: any;
-    };
+    __debugUtils?: Record<string, unknown>;
 
     /**
      * Input getter for testing and debugging
      */
     __getInput?: () => string | null;
+
+    /**
+     * Global error sink installed by `src/errors/global-handler.ts`. Other
+     * modules (console-logger, error boundaries) consult it conditionally.
+     * The actual signature is `(error: GlobalError) => void`; we leave it
+     * loose here so the global-handler module can install its concrete
+     * `globalErrorHandler.track.bind(this)` without a structural conflict.
+     */
+    __trackError?: (error: {
+      type: string;
+      error: string;
+      timestamp: string;
+      level?: string;
+      context?: string;
+      errorId: string;
+      handled?: boolean;
+      stack?: string;
+      componentStack?: string;
+    }) => void;
   }
 
   /**

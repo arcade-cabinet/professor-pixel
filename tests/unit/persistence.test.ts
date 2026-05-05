@@ -1,5 +1,6 @@
 // Unit tests for persistence library
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import type { UIState } from '@lib/wizard/types';
 import {
   saveWizardState,
   saveWizardStateDebounced,
@@ -18,7 +19,7 @@ import {
   isStorageAvailable,
   PersistedWizardState,
   PersistedSessionState,
-  UserPreferences
+  UserPreferences,
 } from '@lib/storage/persistence';
 import {
   LocalStorageMock,
@@ -39,26 +40,26 @@ describe('Persistence Library', () => {
     localStorageMock = new LocalStorageMock();
     sessionStorageMock = new SessionStorageMock();
     cookieMock = new CookieMock();
-    
+
     // Replace global storage objects
     Object.defineProperty(window, 'localStorage', {
       value: localStorageMock,
-      writable: true
+      writable: true,
     });
     Object.defineProperty(window, 'sessionStorage', {
       value: sessionStorageMock,
-      writable: true
+      writable: true,
     });
     Object.defineProperty(document, 'cookie', {
       get: () => cookieMock.document.cookie.get(),
       set: (value) => cookieMock.document.cookie.set(value),
-      configurable: true
+      configurable: true,
     });
-    
+
     // Mock console.error to suppress expected errors
     originalConsoleError = console.error;
     console.error = vi.fn();
-    
+
     // Clear all timers
     vi.clearAllTimers();
     vi.useFakeTimers();
@@ -83,8 +84,8 @@ describe('Persistence Library', () => {
           selectedGameType: 'platformer',
           currentProject: 'My Game',
           completedSteps: ['intro', 'setup'],
-          unlockedEditor: true
-        }
+          unlockedEditor: true,
+        },
       };
 
       saveWizardState(state);
@@ -110,20 +111,20 @@ describe('Persistence Library', () => {
           gameType: 'platformer',
           currentProject: null,
           completedSteps: [],
-          unlockedEditor: false
-        }
+          unlockedEditor: false,
+        },
       };
 
       saveWizardState(initialState);
-      
+
       // Save partial update
       saveWizardState({
         currentNodeId: 'next-node',
         sessionActions: {
           ...initialState.sessionActions!,
           choices: ['initial', 'next'],
-          unlockedEditor: true
-        }
+          unlockedEditor: true,
+        },
       });
 
       const loaded = loadWizardState();
@@ -135,18 +136,18 @@ describe('Persistence Library', () => {
 
     it('should handle corrupted data gracefully', () => {
       const corrupted = createCorruptedData();
-      
+
       // Test invalid JSON
       localStorageMock.setItem('wizard.state.v1', corrupted.invalid);
       let loaded = loadWizardState();
       expect(loaded).toBeNull();
       expect(localStorageMock.removeItem).toHaveBeenCalledWith('wizard.state.v1');
-      
+
       // Test malformed JSON
       localStorageMock.setItem('wizard.state.v1', corrupted.malformed);
       loaded = loadWizardState();
       expect(loaded).toBeNull();
-      
+
       // Test wrong data type
       localStorageMock.setItem('wizard.state.v1', corrupted.wrongType);
       loaded = loadWizardState();
@@ -156,7 +157,7 @@ describe('Persistence Library', () => {
     it('should clear wizard state correctly', () => {
       saveWizardState({ currentNodeId: 'test' });
       expect(loadWizardState()).toBeTruthy();
-      
+
       clearWizardState();
       expect(loadWizardState()).toBeNull();
       expect(localStorageMock.removeItem).toHaveBeenCalledWith('wizard.state.v1');
@@ -170,7 +171,7 @@ describe('Persistence Library', () => {
 
       const state = { currentNodeId: 'test' };
       saveWizardState(state);
-      
+
       expect(console.error).toHaveBeenCalledWith(
         expect.stringContaining('Storage operation failed'),
         expect.any(Error)
@@ -181,19 +182,19 @@ describe('Persistence Library', () => {
   describe('saveWizardStateDebounced', () => {
     it('should debounce multiple rapid saves', async () => {
       const spy = vi.spyOn(localStorage, 'setItem');
-      
+
       // Make multiple rapid calls
       saveWizardStateDebounced({ currentNodeId: 'node1' });
       saveWizardStateDebounced({ currentNodeId: 'node2' });
       saveWizardStateDebounced({ currentNodeId: 'node3' });
       saveWizardStateDebounced({ currentNodeId: 'node4' });
-      
+
       // Should not have saved yet
       expect(spy).not.toHaveBeenCalled();
-      
+
       // Fast forward past debounce delay (200ms)
       vi.advanceTimersByTime(250);
-      
+
       // Should only save once with the last value
       expect(spy).toHaveBeenCalledTimes(1);
       const savedData = JSON.parse(spy.mock.calls[0][1]);
@@ -202,15 +203,15 @@ describe('Persistence Library', () => {
 
     it('should save after debounce delay', async () => {
       const spy = vi.spyOn(localStorage, 'setItem');
-      
+
       saveWizardStateDebounced({ currentNodeId: 'delayed-node' });
-      
+
       // Not saved immediately
       expect(spy).not.toHaveBeenCalled();
-      
+
       // Advance time
       vi.advanceTimersByTime(200);
-      
+
       // Should be saved now
       expect(spy).toHaveBeenCalled();
       const savedData = JSON.parse(spy.mock.calls[0][1]);
@@ -230,8 +231,8 @@ describe('Persistence Library', () => {
           assetBrowserType: 'sprite',
           selectedGameType: 'platformer',
           isMinimizing: false,
-          previewMode: 'gameplay'
-        }
+          previewMode: 'gameplay',
+        },
       };
 
       saveSessionState(state);
@@ -245,9 +246,9 @@ describe('Persistence Library', () => {
     });
 
     it('should clear session state correctly', () => {
-      saveSessionState({ uiState: { pixelMenuOpen: true } as any });
+      saveSessionState({ uiState: { pixelMenuOpen: true } as UIState });
       expect(loadSessionState()).toBeTruthy();
-      
+
       clearSessionState();
       expect(loadSessionState()).toBeNull();
       expect(sessionStorageMock.removeItem).toHaveBeenCalledWith('wizard.session.v1');
@@ -265,7 +266,7 @@ describe('Persistence Library', () => {
     it('should set and get cookies correctly', () => {
       setCookie('test', 'value123');
       expect(getCookie('test')).toBe('value123');
-      
+
       setCookie('theme', 'dark');
       expect(getCookie('theme')).toBe('dark');
     });
@@ -279,7 +280,7 @@ describe('Persistence Library', () => {
     it('should delete cookies correctly', () => {
       setCookie('temp', 'data');
       expect(getCookie('temp')).toBe('data');
-      
+
       deleteCookie('temp');
       expect(getCookie('temp')).toBeNull();
     });
@@ -287,9 +288,13 @@ describe('Persistence Library', () => {
     it('should handle cookie errors gracefully', () => {
       // Override document.cookie to throw error
       Object.defineProperty(document, 'cookie', {
-        get: () => { throw new Error('Cookie access denied'); },
-        set: () => { throw new Error('Cookie access denied'); },
-        configurable: true
+        get: () => {
+          throw new Error('Cookie access denied');
+        },
+        set: () => {
+          throw new Error('Cookie access denied');
+        },
+        configurable: true,
       });
 
       setCookie('test', 'value');
@@ -309,7 +314,7 @@ describe('Persistence Library', () => {
         theme: 'dark',
         dismissedTips: ['tip1', 'tip2'],
         soundEnabled: false,
-        autoSaveEnabled: true
+        autoSaveEnabled: true,
       };
 
       saveUserPreferences(prefs);
@@ -324,7 +329,7 @@ describe('Persistence Library', () => {
     it('should handle partial preference updates', () => {
       saveUserPreferences({ theme: 'light' });
       saveUserPreferences({ soundEnabled: true });
-      
+
       const loaded = loadUserPreferences();
       expect(loaded.theme).toBe('light');
       expect(loaded.soundEnabled).toBe(true);
@@ -333,7 +338,7 @@ describe('Persistence Library', () => {
     it('should provide defaults for missing preferences', () => {
       // Clear all cookies
       cookieMock.clear();
-      
+
       const loaded = loadUserPreferences();
       expect(loaded.theme).toBe('system');
       expect(loaded.dismissedTips).toEqual([]);
@@ -349,11 +354,11 @@ describe('Persistence Library', () => {
         version: '0.9.0',
         currentNodeId: 'old-node',
         gameType: 'platformer',
-        updatedAt: '2024-01-01'
+        updatedAt: '2024-01-01',
       };
-      
+
       localStorageMock.setItem('wizard.state.v1', JSON.stringify(oldData));
-      
+
       const loaded = loadWizardState();
       expect(loaded?.version).toBe('1.0.0');
       expect(loaded?.currentNodeId).toBe('old-node');
@@ -364,22 +369,22 @@ describe('Persistence Library', () => {
       // Set up old version data
       const oldWizardState = {
         version: '0.8.0',
-        currentNodeId: 'test'
+        currentNodeId: 'test',
       };
       const oldSessionState = {
         version: '0.8.0',
-        uiState: { pixelMenuOpen: false }
+        uiState: { pixelMenuOpen: false },
       };
-      
+
       localStorageMock.setItem('wizard.state.v1', JSON.stringify(oldWizardState));
       sessionStorageMock.setItem('wizard.session.v1', JSON.stringify(oldSessionState));
-      
+
       migrateStorageIfNeeded();
-      
+
       // Check that data was migrated
       const wizardState = JSON.parse(localStorageMock.getItem('wizard.state.v1') || '{}');
       const sessionState = JSON.parse(sessionStorageMock.getItem('wizard.session.v1') || '{}');
-      
+
       expect(wizardState.version).toBe('1.0.0');
       expect(sessionState.version).toBe('1.0.0');
     });
@@ -389,19 +394,19 @@ describe('Persistence Library', () => {
     it('should clear all wizard-related data', () => {
       // Set up data in all storage types
       saveWizardState({ currentNodeId: 'test' });
-      saveSessionState({ uiState: { pixelMenuOpen: true } as any });
+      saveSessionState({ uiState: { pixelMenuOpen: true } as UIState });
       setCookie('theme', 'dark');
       setCookie('sound_enabled', 'true');
       setCookie('other_cookie', 'value'); // Non-wizard cookie
-      
+
       clearAllData();
-      
+
       // Check everything is cleared
       expect(loadWizardState()).toBeNull();
       expect(loadSessionState()).toBeNull();
       expect(getCookie('theme')).toBeNull();
       expect(getCookie('sound_enabled')).toBeNull();
-      
+
       // Non-wizard cookies should remain (if we had any)
       // In this test environment, all wizard cookies are cleared
     });
@@ -416,11 +421,17 @@ describe('Persistence Library', () => {
       // Make localStorage throw error
       Object.defineProperty(window, 'localStorage', {
         value: {
-          setItem: () => { throw new Error('Storage disabled'); },
-          getItem: () => { throw new Error('Storage disabled'); },
-          removeItem: () => { throw new Error('Storage disabled'); }
+          setItem: () => {
+            throw new Error('Storage disabled');
+          },
+          getItem: () => {
+            throw new Error('Storage disabled');
+          },
+          removeItem: () => {
+            throw new Error('Storage disabled');
+          },
         },
-        writable: true
+        writable: true,
       });
 
       expect(isStorageAvailable()).toBe(false);
@@ -432,17 +443,17 @@ describe('Persistence Library', () => {
       // Save valid state first
       saveWizardState({ currentNodeId: 'valid-node' });
       expect(loadWizardState()?.currentNodeId).toBe('valid-node');
-      
+
       // Corrupt the data
       localStorageMock.setItem('wizard.state.v1', 'corrupted-data-{[}]');
-      
+
       // Try to load - should clear and return null
       const loaded = loadWizardState();
       expect(loaded).toBeNull();
-      
+
       // Storage should be cleared
       expect(localStorageMock.getItem('wizard.state.v1')).toBeNull();
-      
+
       // Should be able to save new state
       saveWizardState({ currentNodeId: 'new-node' });
       expect(loadWizardState()?.currentNodeId).toBe('new-node');
@@ -450,18 +461,18 @@ describe('Persistence Library', () => {
 
     it('should recover from corrupted session state', () => {
       // Save valid state
-      saveSessionState({ uiState: { pixelMenuOpen: true } as any });
+      saveSessionState({ uiState: { pixelMenuOpen: true } as UIState });
       expect(loadSessionState()!.uiState!.pixelMenuOpen).toBe(true);
-      
+
       // Corrupt the data
       sessionStorageMock.setItem('wizard.session.v1', '{invalid-json}');
-      
+
       // Try to load - should clear and return null
       const loaded = loadSessionState();
       expect(loaded).toBeNull();
-      
+
       // Should be able to save new state
-      saveSessionState({ uiState: { pixelMenuOpen: false } as any });
+      saveSessionState({ uiState: { pixelMenuOpen: false } as UIState });
       expect(loadSessionState()!.uiState!.pixelMenuOpen).toBe(false);
     });
   });
@@ -475,11 +486,11 @@ describe('Persistence Library', () => {
 
     it('should update version when migrating old data', () => {
       const oldData = {
-        currentNodeId: 'test'
+        currentNodeId: 'test',
         // No version field
       };
       localStorageMock.setItem('wizard.state.v1', JSON.stringify(oldData));
-      
+
       const loaded = loadWizardState();
       expect(loaded?.version).toBe('1.0.0');
       expect(loaded?.currentNodeId).toBe('test');
@@ -492,11 +503,11 @@ describe('Persistence Library', () => {
         gameType: 'rpg',
         sessionActions: {
           choices: ['a', 'b', 'c'],
-          unlockedEditor: true
-        }
+          unlockedEditor: true,
+        },
       };
       localStorageMock.setItem('wizard.state.v1', JSON.stringify(oldData));
-      
+
       const loaded = loadWizardState();
       expect(loaded?.version).toBe('1.0.0');
       expect(loaded?.currentNodeId).toBe('preserved-node');

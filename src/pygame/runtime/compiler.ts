@@ -8,7 +8,6 @@ export function compilePythonGame(
   selectedComponents: Record<string, string>, // componentId -> variant
   selectedAssets: GameAsset[]
 ): string {
-  
   const imports = `
 import pygame
 import sys
@@ -29,7 +28,7 @@ GRAVITY = 0.5
   const titleScreen = generateTitleScreen(selectedAssets);
   const gameplayCode = generateGameplay(selectedComponents, selectedAssets);
   const endingScreen = generateEndingScreen(selectedComponents, selectedAssets);
-  
+
   const mainLoop = `
 class Game:
     def __init__(self):
@@ -77,8 +76,8 @@ function generateAssetLoader(assets: GameAsset[]): string {
   let loader = `
         # Load assets
         self.assets = {}`;
-  
-  assets.forEach(asset => {
+
+  assets.forEach((asset) => {
     if (asset.type === 'sprite') {
       loader += `
         try:
@@ -114,25 +113,26 @@ function generateAssetLoader(assets: GameAsset[]): string {
             self.assets['${asset.id}_music_path'] = None`;
     }
   });
-  
+
   return loader;
 }
 
 function generateTitleScreen(assets: GameAsset[]): string {
-  const bgAsset = assets.find(a => a.type === 'background');
-  const musicAsset = assets.find(a => a.type === 'music');
-  
+  const bgAsset = assets.find((a) => a.type === 'background');
+  const musicAsset = assets.find((a) => a.type === 'music');
+
   return `
     def show_title_screen(self):
         keys = pygame.key.get_pressed()
         
         # Clear screen
-        ${bgAsset ? 
-          `if '${bgAsset.id}' in self.assets:
+        ${
+          bgAsset
+            ? `if '${bgAsset.id}' in self.assets:
             self.screen.blit(self.assets['${bgAsset.id}'], (0, 0))
         else:
-            self.screen.fill((50, 50, 150))` :
-          `self.screen.fill((50, 50, 150))`
+            self.screen.fill((50, 50, 150))`
+            : `self.screen.fill((50, 50, 150))`
         }
         
         # Draw title
@@ -150,11 +150,13 @@ function generateTitleScreen(assets: GameAsset[]): string {
         # Start game on space
         if keys[pygame.K_SPACE]:
             self.state = "gameplay"
-            ${musicAsset ? 
-              `# Load and play background music
+            ${
+              musicAsset
+                ? `# Load and play background music
             if '${musicAsset.id}_music_path' in self.assets and self.assets['${musicAsset.id}_music_path']:
                 pygame.mixer.music.load(self.assets['${musicAsset.id}_music_path'])
-                pygame.mixer.music.play(-1)` : ''
+                pygame.mixer.music.play(-1)`
+                : ''
             }
 `;
 }
@@ -178,7 +180,7 @@ function generateGameplay(components: Record<string, string>, assets: GameAsset[
 
   // Add selected component behaviors
   Object.entries(components).forEach(([componentId, variant]) => {
-    const component = pygameComponents.find(c => c.id === componentId);
+    const component = pygameComponents.find((c) => c.id === componentId);
     if (component) {
       // Add simplified version of component behavior
       if (componentId === 'jump' && variant === 'A') {
@@ -208,7 +210,7 @@ function generateGameplay(components: Record<string, string>, assets: GameAsset[
             self.player_vy = 0
 `;
       }
-      
+
       if (componentId === 'shooting') {
         gameplayCode += `
         # Shooting mechanics
@@ -219,7 +221,7 @@ function generateGameplay(components: Record<string, string>, assets: GameAsset[
       }
     }
   });
-  
+
   // Add movement and rendering
   gameplayCode += `
         # Basic movement
@@ -243,13 +245,13 @@ function generateGameplay(components: Record<string, string>, assets: GameAsset[
         if self.score > 300:  # Win after 5 seconds
             self.state = "ending"
 `;
-  
+
   return gameplayCode;
 }
 
 function generateEndingScreen(components: Record<string, string>, assets: GameAsset[]): string {
   const scoreVariant = components['score'] || 'A';
-  
+
   return `
     def show_ending_screen(self):
         keys = pygame.key.get_pressed()
@@ -265,14 +267,15 @@ function generateEndingScreen(components: Record<string, string>, assets: GameAs
         
         # Score display
         font = pygame.font.Font(None, 48)
-        ${scoreVariant === 'A' ? 
-          `# Animated score counter
+        ${
+          scoreVariant === 'A'
+            ? `# Animated score counter
         if not hasattr(self, 'display_score'):
             self.display_score = 0
         if self.display_score < self.score:
             self.display_score += 5
-        score_text = font.render(f"Score: {self.display_score}", True, (255, 255, 255))` :
-          `# Instant score display
+        score_text = font.render(f"Score: {self.display_score}", True, (255, 255, 255))`
+            : `# Instant score display
         score_text = font.render(f"Score: {self.score}", True, (255, 255, 255))`
         }
         score_rect = score_text.get_rect(center=(SCREEN_WIDTH//2, SCREEN_HEIGHT//2))

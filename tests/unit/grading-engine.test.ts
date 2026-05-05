@@ -6,9 +6,17 @@ import type { LessonStep } from '@lib/types/schema';
 
 const stubRunner = {
   runSnippet: async ({ code }: { code: string; input?: string }) => {
-    if (code.includes('boom')) return { output: '', error: 'NameError: boom' };
-    if (code.includes('print')) return { output: 'hi\n', error: null };
-    return { output: '', error: null };
+    if (code.includes('boom'))
+      return {
+        output: '',
+        error: 'NameError: boom',
+        inputCalls: 0,
+        functionCalls: {},
+        globals: {},
+      };
+    if (code.includes('print'))
+      return { output: 'hi\n', error: null, inputCalls: 0, functionCalls: {}, globals: {} };
+    return { output: '', error: null, inputCalls: 0, functionCalls: {}, globals: {} };
   },
 };
 
@@ -99,7 +107,14 @@ describe('gradeCode', () => {
     };
     const stepWithCap: LessonStep = {
       ...exactStep,
-      tests: [{ expectedOutput: '', mode: 'rules', timeoutMs: 2000, runtimeRules: { outputContains: ['x'] } }],
+      tests: [
+        {
+          expectedOutput: '',
+          mode: 'rules',
+          timeoutMs: 2000,
+          runtimeRules: { outputContains: ['x'] },
+        },
+      ],
     };
     const result = await gradeCode({
       code: 'while True: pass',
@@ -118,7 +133,7 @@ describe('gradeCode', () => {
     const recordingRunner = {
       runSnippet: async (args: { code: string; timeoutMs?: number }) => {
         calls.push({ timeoutMs: args.timeoutMs });
-        return { output: 'hi\n', error: null };
+        return { output: 'hi\n', error: null, inputCalls: 0, functionCalls: {}, globals: {} };
       },
     };
     const stepCaps: LessonStep = {

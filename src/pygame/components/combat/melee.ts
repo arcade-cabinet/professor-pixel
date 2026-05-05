@@ -4,13 +4,13 @@ export const meleeComponent: PygameSystemSpec = {
   id: 'melee',
   name: 'Melee Combat',
   category: 'combat',
-  
+
   assetSlots: {
     character: 'platformer/characters/player.png',
     effect: 'effects/slash.png',
-    sound: 'audio/sfx/sword.ogg'
+    sound: 'audio/sfx/sword.ogg',
   },
-  
+
   variants: {
     A: {
       name: 'Sword Combat',
@@ -122,7 +122,7 @@ class MeleeSystem:
             if self.combo_count > 1:
                 font = pygame.font.Font(None, 24)
                 combo_text = font.render(f"x{self.combo_count}", True, (255, 255, 0))
-                screen.blit(combo_text, (self.player.x, self.player.y - 20))`
+                screen.blit(combo_text, (self.player.x, self.player.y - 20))`,
     },
     B: {
       name: 'Brawler',
@@ -259,10 +259,10 @@ class MeleeSystem:
             # Flash when ready
             if self.uppercut_charged:
                 pygame.draw.rect(screen, (255, 255, 0),
-                               (self.player.x - 2, bar_y - 2, 44, 8), 2)`
-    }
+                               (self.player.x - 2, bar_y - 2, 44, 8), 2)`,
+    },
   },
-  
+
   parameters: {
     attack_range: 50,
     damage: 15,
@@ -271,6 +271,6 @@ class MeleeSystem:
     combo_window: 0.8,
     knockback: 200,
     stun_duration: 0.5,
-    charge_required: 0.8
-  }
+    charge_required: 0.8,
+  },
 };

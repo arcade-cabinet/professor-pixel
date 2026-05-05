@@ -37,18 +37,19 @@ const PREFERENCES_COOKIE_PREFIX = 'wizard_';
 const COOKIE_EXPIRY_DAYS = 365;
 const DEBOUNCE_DELAY = 200; // milliseconds
 
-// Debounce utility
-function debounce<T extends (...args: any[]) => any>(
-  func: T,
+// Debounce utility — generic over the function signature so callers keep
+// their argument types intact through the wrapper.
+function debounce<TArgs extends unknown[]>(
+  func: (...args: TArgs) => unknown,
   delay: number
-): (...args: Parameters<T>) => void {
+): (...args: TArgs) => void {
   let timeoutId: NodeJS.Timeout | null = null;
-  
-  return function (...args: Parameters<T>) {
+
+  return function (...args: TArgs) {
     if (timeoutId) {
       clearTimeout(timeoutId);
     }
-    
+
     timeoutId = setTimeout(() => {
       func(...args);
       timeoutId = null;
@@ -59,29 +60,35 @@ function debounce<T extends (...args: any[]) => any>(
 // Error handler for storage operations
 function handleStorageError(error: Error, operation: string): void {
   console.error(`Storage operation failed (${operation}):`, error);
-  
+
   // Send error to monitoring if available
-  if (typeof window !== 'undefined' && (window as any).trackError) {
-    (window as any).trackError(error, { operation, type: 'storage' });
+  const winWithTrack = window as Window & {
+    trackError?: (err: Error, context: Record<string, unknown>) => void;
+  };
+  if (typeof window !== 'undefined' && winWithTrack.trackError) {
+    winWithTrack.trackError(error, { operation, type: 'storage' });
   }
 }
 
-// Validate and migrate stored data
-function validateAndMigrate<T>(data: any, currentVersion: string): T | null {
+// Validate and migrate stored data. We accept `unknown` from JSON.parse and
+// narrow defensively before treating the bag as the caller's expected shape.
+function validateAndMigrate<T>(data: unknown, currentVersion: string): T | null {
   if (!data || typeof data !== 'object') {
     return null;
   }
-  
+
+  const bag = data as Record<string, unknown> & { version?: string };
+
   // Check version and perform migrations if needed
-  const storedVersion = data.version || '0.0.0';
-  
+  const storedVersion = bag.version || '0.0.0';
+
   if (storedVersion !== currentVersion) {
     console.log(`Migrating data from version ${storedVersion} to ${currentVersion}`);
     // Add migration logic here as needed in the future
-    data.version = currentVersion;
+    bag.version = currentVersion;
   }
-  
-  return data as T;
+
+  return bag as T;
 }
 
 // LocalStorage functions for wizard state
@@ -92,9 +99,9 @@ export function saveWizardState(state: Partial<PersistedWizardState>): void {
       ...currentState,
       ...state,
       version: STORAGE_VERSION,
-      updatedAt: new Date().toISOString()
+      updatedAt: new Date().toISOString(),
     };
-    
+
     localStorage.setItem(WIZARD_STATE_KEY, JSON.stringify(newState));
   } catch (error) {
     handleStorageError(error as Error, 'saveWizardState');
@@ -108,7 +115,7 @@ export function loadWizardState(): PersistedWizardState | null {
   try {
     const stored = localStorage.getItem(WIZARD_STATE_KEY);
     if (!stored) return null;
-    
+
     const parsed = JSON.parse(stored);
     return validateAndMigrate<PersistedWizardState>(parsed, STORAGE_VERSION);
   } catch (error) {
@@ -135,9 +142,9 @@ export function saveSessionState(state: Partial<PersistedSessionState>): void {
       ...currentState,
       ...state,
       version: STORAGE_VERSION,
-      updatedAt: new Date().toISOString()
+      updatedAt: new Date().toISOString(),
     };
-    
+
     sessionStorage.setItem(SESSION_STATE_KEY, JSON.stringify(newState));
   } catch (error) {
     handleStorageError(error as Error, 'saveSessionState');
@@ -148,7 +155,7 @@ export function loadSessionState(): PersistedSessionState | null {
   try {
     const stored = sessionStorage.getItem(SESSION_STATE_KEY);
     if (!stored) return null;
-    
+
     const parsed = JSON.parse(stored);
     return validateAndMigrate<PersistedSessionState>(parsed, STORAGE_VERSION);
   } catch (error) {
@@ -171,9 +178,9 @@ export function clearSessionState(): void {
 export function setCookie(name: string, value: string, days: number = COOKIE_EXPIRY_DAYS): void {
   try {
     const date = new Date();
-    date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+    date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
     const expires = `expires=${date.toUTCString()}`;
-    
+
     // Use SameSite=Lax for GitHub Pages compatibility
     document.cookie = `${PREFERENCES_COOKIE_PREFIX}${name}=${value};${expires};path=/;SameSite=Lax`;
   } catch (error) {
@@ -185,14 +192,14 @@ export function getCookie(name: string): string | null {
   try {
     const fullName = `${PREFERENCES_COOKIE_PREFIX}${name}`;
     const cookies = document.cookie.split(';');
-    
+
     for (const cookie of cookies) {
       const trimmed = cookie.trim();
       if (trimmed.startsWith(`${fullName}=`)) {
         return trimmed.substring(fullName.length + 1);
       }
     }
-    
+
     return null;
   } catch (error) {
     handleStorageError(error as Error, 'getCookie');
@@ -214,15 +221,15 @@ export function saveUserPreferences(prefs: UserPreferences): void {
     if (prefs.theme !== undefined) {
       setCookie('theme', prefs.theme);
     }
-    
+
     if (prefs.dismissedTips !== undefined) {
       setCookie('tips_dismissed', JSON.stringify(prefs.dismissedTips));
     }
-    
+
     if (prefs.soundEnabled !== undefined) {
       setCookie('sound_enabled', prefs.soundEnabled.toString());
     }
-    
+
     if (prefs.autoSaveEnabled !== undefined) {
       setCookie('auto_save_enabled', prefs.autoSaveEnabled.toString());
     }
@@ -237,7 +244,7 @@ export function loadUserPreferences(): UserPreferences {
     const dismissedTipsStr = getCookie('tips_dismissed');
     const soundEnabled = getCookie('sound_enabled');
     const autoSaveEnabled = getCookie('auto_save_enabled');
-    
+
     return {
       theme: (theme as 'light' | 'dark' | 'system') || 'system',
       dismissedTips: dismissedTipsStr ? JSON.parse(dismissedTipsStr) : [],
@@ -250,7 +257,7 @@ export function loadUserPreferences(): UserPreferences {
       theme: 'system',
       dismissedTips: [],
       soundEnabled: true,
-      autoSaveEnabled: true
+      autoSaveEnabled: true,
     };
   }
 }
@@ -259,7 +266,7 @@ export function loadUserPreferences(): UserPreferences {
 export function clearAllData(): void {
   clearWizardState();
   clearSessionState();
-  
+
   // Clear all wizard-related cookies
   const cookies = document.cookie.split(';');
   for (const cookie of cookies) {
@@ -319,7 +326,7 @@ export function isStorageAvailable(): boolean {
     sessionStorage.setItem(test, test);
     sessionStorage.removeItem(test);
     return true;
-  } catch (e) {
+  } catch (_e) {
     return false;
   }
 }

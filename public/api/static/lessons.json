@@ -473,5 +473,283 @@
     "prerequisites": ["lesson-5"],
     "difficulty": "Beginner",
     "estimatedTime": 18
+  },
+  {
+    "id": "lesson-7",
+    "title": "Lists hold many things",
+    "description": "Store and process collections with Python lists",
+    "order": 7,
+    "intro": "A list keeps multiple values in order. We'll build one, walk it with a loop, and use len() to count.",
+    "learningObjectives": [
+      "Create a list with []",
+      "Loop with `for ... in ...`",
+      "Read len(list)"
+    ],
+    "goalDescription": "Make a list of three colors, print each one, then print the count.",
+    "previewCode": "colors = ['red', 'green', 'blue']\nfor c in colors:\n    print(c)\nprint(len(colors))",
+    "content": {
+      "introduction": "Lists are written with square brackets. Items are separated by commas. You can loop through them with `for`, ask `len()` for the size, and index with `colors[0]`.",
+      "steps": [
+        {
+          "id": "lesson-7-step-1",
+          "title": "Make a list",
+          "description": "Create a list called `colors` with three strings: 'red', 'green', 'blue'. Then print the list.",
+          "initialCode": "# Make a list of three colors and print it\n",
+          "solution": "colors = ['red', 'green', 'blue']\nprint(colors)",
+          "hints": [
+            "Use [ and ] to start and end the list",
+            "Strings need quotes around them",
+            "print(colors) shows the whole list"
+          ],
+          "tests": [
+            {
+              "expectedOutput": "",
+              "mode": "rules",
+              "astRules": {
+                "requiredConstructs": [
+                  { "type": "variable_assignment", "name": "colors", "minCount": 1 }
+                ]
+              },
+              "runtimeRules": {
+                "outputContains": ["red", "green", "blue"]
+              },
+              "timeoutMs": 3000
+            }
+          ]
+        },
+        {
+          "id": "lesson-7-step-2",
+          "title": "Loop through the list",
+          "description": "Loop through `colors` with a `for` loop and print each color on its own line.",
+          "initialCode": "colors = ['red', 'green', 'blue']\n# Print each color\n",
+          "solution": "colors = ['red', 'green', 'blue']\nfor c in colors:\n    print(c)",
+          "hints": [
+            "for c in colors: walks each item",
+            "print(c) inside the loop prints one per line",
+            "Indent the body of the loop with 4 spaces"
+          ],
+          "tests": [
+            {
+              "expectedOutput": "red\ngreen\nblue",
+              "mode": "rules",
+              "astRules": {
+                "requiredConstructs": [
+                  { "type": "loop", "minCount": 1 },
+                  { "type": "function_call", "name": "print", "minCount": 1 }
+                ]
+              },
+              "runtimeRules": {
+                "outputContains": ["red", "green", "blue"]
+              },
+              "timeoutMs": 3000
+            }
+          ]
+        },
+        {
+          "id": "lesson-7-step-3",
+          "title": "Count with len()",
+          "description": "After the loop, print `len(colors)` so the user sees how many items were in the list.",
+          "initialCode": "colors = ['red', 'green', 'blue']\nfor c in colors:\n    print(c)\n# Print the count\n",
+          "solution": "colors = ['red', 'green', 'blue']\nfor c in colors:\n    print(c)\nprint(len(colors))",
+          "hints": [
+            "len(colors) returns the size",
+            "Wrap it in print() to show it",
+            "It comes after the loop"
+          ],
+          "tests": [
+            {
+              "expectedOutput": "red\ngreen\nblue\n3",
+              "mode": "rules",
+              "astRules": {
+                "requiredConstructs": [
+                  { "type": "loop", "minCount": 1 },
+                  { "type": "function_call", "name": "len", "minCount": 1 }
+                ]
+              },
+              "runtimeRules": {
+                "outputContains": ["3"]
+              },
+              "timeoutMs": 3000
+            }
+          ]
+        }
+      ]
+    },
+    "prerequisites": ["lesson-5"],
+    "difficulty": "Beginner",
+    "estimatedTime": 15
+  },
+  {
+    "id": "lesson-8",
+    "title": "Save and read files",
+    "description": "Use Python's open() to write and read text files",
+    "order": 8,
+    "intro": "Files let your program remember things between runs. We'll write a line, read it back, and print what we got.",
+    "learningObjectives": [
+      "Write a file with open(..., 'w')",
+      "Read a file with open(..., 'r')",
+      "Use the .write() and .read() methods"
+    ],
+    "goalDescription": "Write 'hello, file' into note.txt, then read it back and print what's there.",
+    "previewCode": "with open('note.txt', 'w') as f:\n    f.write('hello, file')\nwith open('note.txt', 'r') as f:\n    print(f.read())",
+    "content": {
+      "introduction": "Pyodide gives you a virtual filesystem in the browser. open(name, 'w') writes; open(name, 'r') reads. Use a `with` block so the file is closed automatically when you're done.",
+      "steps": [
+        {
+          "id": "lesson-8-step-1",
+          "title": "Write to a file",
+          "description": "Open `note.txt` for writing and write the text `hello, file` into it.",
+          "initialCode": "# Write 'hello, file' into note.txt\n",
+          "solution": "with open('note.txt', 'w') as f:\n    f.write('hello, file')",
+          "hints": [
+            "open(name, 'w') opens for writing",
+            "with open(...) as f: gives you a file object named f",
+            "f.write('text') writes text"
+          ],
+          "tests": [
+            {
+              "expectedOutput": "",
+              "mode": "rules",
+              "astRules": {
+                "requiredConstructs": [
+                  { "type": "function_call", "name": "open", "minCount": 1 },
+                  { "type": "calls_method", "on": "f", "method": "write", "minCount": 1 }
+                ]
+              },
+              "timeoutMs": 3000
+            }
+          ]
+        },
+        {
+          "id": "lesson-8-step-2",
+          "title": "Read it back",
+          "description": "After writing, open `note.txt` for reading and print what you read.",
+          "initialCode": "with open('note.txt', 'w') as f:\n    f.write('hello, file')\n# Read it back and print it\n",
+          "solution": "with open('note.txt', 'w') as f:\n    f.write('hello, file')\nwith open('note.txt', 'r') as f:\n    print(f.read())",
+          "hints": [
+            "Use 'r' mode for reading",
+            "f.read() returns the whole file as a string",
+            "Wrap it in print() to show it"
+          ],
+          "tests": [
+            {
+              "expectedOutput": "hello, file",
+              "mode": "rules",
+              "astRules": {
+                "requiredConstructs": [
+                  { "type": "function_call", "name": "open", "minCount": 2 },
+                  { "type": "calls_method", "on": "f", "method": "read", "minCount": 1 }
+                ]
+              },
+              "runtimeRules": {
+                "outputContains": ["hello, file"]
+              },
+              "timeoutMs": 3000
+            }
+          ]
+        }
+      ]
+    },
+    "prerequisites": ["lesson-5"],
+    "difficulty": "Beginner",
+    "estimatedTime": 15
+  },
+  {
+    "id": "lesson-9",
+    "title": "Classes group data and behavior",
+    "description": "Create your first class with __init__ and a method",
+    "order": 9,
+    "intro": "Classes let you bundle data (attributes) and behavior (methods) into one thing. We'll define a Player class with a name and a greet() method.",
+    "learningObjectives": [
+      "Define a class with `class`",
+      "Use `__init__` to set attributes",
+      "Define and call methods"
+    ],
+    "goalDescription": "Define a Player class with a name attribute and a greet() method, then create one and call greet().",
+    "previewCode": "class Player:\n    def __init__(self, name):\n        self.name = name\n    def greet(self):\n        print(f'Hi, I am {self.name}')\np = Player('Pixel')\np.greet()",
+    "content": {
+      "introduction": "A class is a recipe for objects. `__init__` runs when you create one (Player('Pixel')) and stores attributes on `self`. Methods are functions that take `self` as their first argument.",
+      "steps": [
+        {
+          "id": "lesson-9-step-1",
+          "title": "Define the class",
+          "description": "Define a class called `Player` with an `__init__(self, name)` that stores `self.name = name`.",
+          "initialCode": "# Define class Player with __init__ that stores self.name\n",
+          "solution": "class Player:\n    def __init__(self, name):\n        self.name = name",
+          "hints": [
+            "class Player: starts the definition",
+            "def __init__(self, name): is the constructor",
+            "Inside __init__, write self.name = name"
+          ],
+          "tests": [
+            {
+              "expectedOutput": "",
+              "mode": "rules",
+              "astRules": {
+                "requiredConstructs": [
+                  { "type": "defines_class", "name": "Player", "minMethods": 1 }
+                ]
+              },
+              "timeoutMs": 3000
+            }
+          ]
+        },
+        {
+          "id": "lesson-9-step-2",
+          "title": "Add a method",
+          "description": "Add a `greet(self)` method that prints `Hi, I am {self.name}`.",
+          "initialCode": "class Player:\n    def __init__(self, name):\n        self.name = name\n    # Add greet(self) that prints 'Hi, I am ...'\n",
+          "solution": "class Player:\n    def __init__(self, name):\n        self.name = name\n    def greet(self):\n        print(f'Hi, I am {self.name}')",
+          "hints": [
+            "def greet(self): defines the method",
+            "Use print(f'...') to format the string",
+            "Indent the method inside the class with 4 spaces"
+          ],
+          "tests": [
+            {
+              "expectedOutput": "",
+              "mode": "rules",
+              "astRules": {
+                "requiredConstructs": [
+                  { "type": "defines_class", "name": "Player", "minMethods": 2 }
+                ]
+              },
+              "timeoutMs": 3000
+            }
+          ]
+        },
+        {
+          "id": "lesson-9-step-3",
+          "title": "Use the class",
+          "description": "Create a Player named 'Pixel' and call its `greet()` method.",
+          "initialCode": "class Player:\n    def __init__(self, name):\n        self.name = name\n    def greet(self):\n        print(f'Hi, I am {self.name}')\n# Create a Player named 'Pixel' and call greet()\n",
+          "solution": "class Player:\n    def __init__(self, name):\n        self.name = name\n    def greet(self):\n        print(f'Hi, I am {self.name}')\np = Player('Pixel')\np.greet()",
+          "hints": [
+            "Player('Pixel') creates an instance",
+            "Save it in a variable: p = Player('Pixel')",
+            "Then p.greet() calls the method"
+          ],
+          "tests": [
+            {
+              "expectedOutput": "Hi, I am Pixel",
+              "mode": "rules",
+              "astRules": {
+                "requiredConstructs": [
+                  { "type": "defines_class", "name": "Player", "minMethods": 2 },
+                  { "type": "calls_method", "on": "p", "method": "greet", "minCount": 1 }
+                ]
+              },
+              "runtimeRules": {
+                "outputContains": ["Hi, I am Pixel"]
+              },
+              "timeoutMs": 3000
+            }
+          ]
+        }
+      ]
+    },
+    "prerequisites": ["lesson-5"],
+    "difficulty": "Beginner",
+    "estimatedTime": 20
   }
 ]

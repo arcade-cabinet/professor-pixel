@@ -1,18 +1,18 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSwipeable } from 'react-swipeable';
-import { 
-  X, 
-  Gamepad2, 
-  BookOpen, 
-  Download, 
-  TrendingUp, 
+import {
+  X,
+  Gamepad2,
+  BookOpen,
+  Download,
+  TrendingUp,
   Home,
   Clock,
   Trophy,
   Code2,
   Settings,
-  ChevronLeft
+  ChevronLeft,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -25,11 +25,16 @@ import pixelThinking from '@assets/pixel/Pixel_thinking_pondering_expression_0ff
 
 interface SessionAction {
   id: string;
-  type: 'game_created' | 'lesson_completed' | 'asset_selected' | 'code_generated' | 'settings_changed';
+  type:
+    | 'game_created'
+    | 'lesson_completed'
+    | 'asset_selected'
+    | 'code_generated'
+    | 'settings_changed';
   title: string;
   description?: string;
   timestamp: Date;
-  icon: React.ComponentType<any>;
+  icon: React.ComponentType<{ className?: string; size?: number }>;
 }
 
 interface PixelMenuProps {
@@ -51,38 +56,41 @@ export default function PixelMenu({
   onExportGame,
   onViewProgress,
   onReturnCurrent,
-  sessionActions = []
+  sessionActions = [],
 }: PixelMenuProps) {
   const [pixelImage, setPixelImage] = useState(pixelExcited);
   const [selectedTab, setSelectedTab] = useState<'actions' | 'history'>('actions');
 
   // Mock session history if not provided
-  const defaultActions: SessionAction[] = sessionActions.length > 0 ? sessionActions : [
-    {
-      id: '1',
-      type: 'game_created',
-      title: 'Created RPG Adventure',
-      description: 'Started building a fantasy RPG game',
-      timestamp: new Date(Date.now() - 1000 * 60 * 30), // 30 mins ago
-      icon: Gamepad2
-    },
-    {
-      id: '2',
-      type: 'lesson_completed',
-      title: 'Completed Python Basics',
-      description: 'Learned variables and functions',
-      timestamp: new Date(Date.now() - 1000 * 60 * 45), // 45 mins ago
-      icon: BookOpen
-    },
-    {
-      id: '3',
-      type: 'asset_selected',
-      title: 'Selected Character Sprites',
-      description: 'Added knight and wizard sprites',
-      timestamp: new Date(Date.now() - 1000 * 60 * 15), // 15 mins ago
-      icon: Trophy
-    }
-  ];
+  const defaultActions: SessionAction[] =
+    sessionActions.length > 0
+      ? sessionActions
+      : [
+          {
+            id: '1',
+            type: 'game_created',
+            title: 'Created RPG Adventure',
+            description: 'Started building a fantasy RPG game',
+            timestamp: new Date(Date.now() - 1000 * 60 * 30), // 30 mins ago
+            icon: Gamepad2,
+          },
+          {
+            id: '2',
+            type: 'lesson_completed',
+            title: 'Completed Python Basics',
+            description: 'Learned variables and functions',
+            timestamp: new Date(Date.now() - 1000 * 60 * 45), // 45 mins ago
+            icon: BookOpen,
+          },
+          {
+            id: '3',
+            type: 'asset_selected',
+            title: 'Selected Character Sprites',
+            description: 'Added knight and wizard sprites',
+            timestamp: new Date(Date.now() - 1000 * 60 * 15), // 15 mins ago
+            icon: Trophy,
+          },
+        ];
 
   const actions = sessionActions.length > 0 ? sessionActions : defaultActions;
 
@@ -95,7 +103,7 @@ export default function PixelMenu({
       onClose();
     },
     trackMouse: false,
-    delta: 50
+    delta: 50,
   });
 
   // Animate Pixel on mount
@@ -142,7 +150,7 @@ export default function PixelMenu({
               {/* Header with Pixel */}
               <div className="flex-none p-6 pb-4">
                 <div className="flex items-center justify-between mb-4">
-                  <motion.h2 
+                  <motion.h2
                     initial={{ x: -20, opacity: 0 }}
                     animate={{ x: 0, opacity: 1 }}
                     className="text-2xl font-bold text-gray-800 dark:text-gray-100"
@@ -159,9 +167,9 @@ export default function PixelMenu({
                     <X className="h-5 w-5" />
                   </Button>
                 </div>
-                
+
                 {/* Pixel Avatar */}
-                <motion.div 
+                <motion.div
                   className="flex items-center space-x-4"
                   initial={{ scale: 0.8, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
@@ -172,14 +180,14 @@ export default function PixelMenu({
                     alt="Pixel"
                     className="w-20 h-20 rounded-full shadow-lg"
                     style={{ imageRendering: 'crisp-edges' }}
-                    animate={{ 
+                    animate={{
                       rotate: [0, 5, -5, 0],
-                      scale: [1, 1.05, 1]
+                      scale: [1, 1.05, 1],
                     }}
-                    transition={{ 
+                    transition={{
                       duration: 2,
                       repeat: Infinity,
-                      repeatType: "reverse"
+                      repeatType: 'reverse',
                     }}
                   />
                   <div>
@@ -215,7 +223,7 @@ export default function PixelMenu({
               <div className="flex-1 overflow-hidden px-6 pb-6">
                 {selectedTab === 'actions' ? (
                   /* Quick Actions */
-                  <motion.div 
+                  <motion.div
                     className="grid grid-cols-2 gap-3 h-full"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
@@ -269,7 +277,7 @@ export default function PixelMenu({
                 ) : (
                   /* Session History */
                   <ScrollArea className="h-full">
-                    <motion.div 
+                    <motion.div
                       className="space-y-3"
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
@@ -310,7 +318,7 @@ export default function PixelMenu({
                           </motion.div>
                         );
                       })}
-                      
+
                       {actions.length === 0 && (
                         <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                           <Clock className="h-12 w-12 mx-auto mb-3 opacity-50" />
@@ -324,7 +332,7 @@ export default function PixelMenu({
               </div>
 
               {/* Swipe Hint */}
-              <motion.div 
+              <motion.div
                 className="flex-none p-4 text-center"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}

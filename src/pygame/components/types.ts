@@ -5,18 +5,70 @@
 // Component Type Definitions
 // ============================================================================
 
-export type ComponentType = 'sprite' | 'platform' | 'ball' | 'paddle' | 'enemy' | 'collectible' | 'background' | 'scoreText' | 'button' | 'particleEffect' | 'timer' | 'healthBar';
+export type ComponentType =
+  | 'sprite'
+  | 'platform'
+  | 'ball'
+  | 'paddle'
+  | 'enemy'
+  | 'collectible'
+  | 'background'
+  | 'scoreText'
+  | 'button'
+  | 'particleEffect'
+  | 'timer'
+  | 'healthBar';
 
-export interface PyGameComponent {
+/**
+ * Runtime type the property inspector + code generator round-trip. Components
+ * read/write strings, numbers, booleans, and option labels. Color is a hex
+ * string; positions are numbers.
+ */
+export type ComponentPropertyValue = string | number | boolean;
+
+/** Bag the wizard threads through the inspector — every property is one of
+ * the runtime types we know how to surface. */
+export type ComponentPropertyBag = Record<string, ComponentPropertyValue>;
+
+/**
+ * The component registry stores definitions parameterized over their props
+ * shape. Constraining to `object` rather than `ComponentPropertyBag` lets
+ * the per-component property interfaces (`BallProperties`, etc.) participate
+ * without each one having to declare an `[key: string]: ComponentPropertyValue`
+ * index signature; the wizard inspector treats unknown property values as
+ * `ComponentPropertyValue` at runtime.
+ */
+export interface PyGameComponent<P extends object = ComponentPropertyBag> {
   type: ComponentType;
   id: string;
   name: string;
   description: string;
   wizardDescription: string; // Friendly explanation for students
-  properties: Record<string, any>;
-  preview: (ctx: CanvasRenderingContext2D, props: any) => void;
-  generateCode: (props: any) => string;
-  defaultProperties: Record<string, any>;
+  properties: ComponentPropertyBag;
+  preview: (ctx: CanvasRenderingContext2D, props: P) => void;
+  generateCode: (props: P) => string;
+  defaultProperties: P;
+}
+
+/**
+ * Erased view of `PyGameComponent` used by registry / inspector code that
+ * holds heterogeneous components in one array. Function-argument
+ * contravariance prevents `PyGameComponent<X>` from assigning to
+ * `PyGameComponent<ComponentPropertyBag>`, so `AnyPyGameComponent` widens
+ * `preview` and `generateCode` to take `unknown` — the registry only ever
+ * forwards a component's own defaultProperties back through these callbacks,
+ * so the call sites cast through `unknown` at the boundary.
+ */
+export interface AnyPyGameComponent {
+  type: ComponentType;
+  id: string;
+  name: string;
+  description: string;
+  wizardDescription: string;
+  properties: ComponentPropertyBag;
+  preview: (ctx: CanvasRenderingContext2D, props: unknown) => void;
+  generateCode: (props: unknown) => string;
+  defaultProperties: ComponentPropertyBag;
 }
 
 // ============================================================================
@@ -158,16 +210,18 @@ export interface HealthBarProperties {
 
 export function hexToRgb(hex: string): [number, number, number] {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-  return result 
-    ? [
-        parseInt(result[1], 16),
-        parseInt(result[2], 16),
-        parseInt(result[3], 16)
-      ]
+  return result
+    ? [parseInt(result[1], 16), parseInt(result[2], 16), parseInt(result[3], 16)]
     : [0, 0, 0];
 }
 
-export function drawStar(ctx: CanvasRenderingContext2D, cx: number, cy: number, radius: number, points: number) {
+export function drawStar(
+  ctx: CanvasRenderingContext2D,
+  cx: number,
+  cy: number,
+  radius: number,
+  points: number
+) {
   const step = Math.PI / points;
   ctx.beginPath();
   for (let i = 0; i < 2 * points; i++) {
@@ -186,8 +240,8 @@ export function drawHeart(ctx: CanvasRenderingContext2D, x: number, y: number, s
   ctx.beginPath();
   ctx.moveTo(x, y + size / 4);
   ctx.bezierCurveTo(x, y, x - size / 2, y, x - size / 2, y + size / 4);
-  ctx.bezierCurveTo(x - size / 2, y + size / 2, x, y + size * 3 / 4, x, y + size);
-  ctx.bezierCurveTo(x, y + size * 3 / 4, x + size / 2, y + size / 2, x + size / 2, y + size / 4);
+  ctx.bezierCurveTo(x - size / 2, y + size / 2, x, y + (size * 3) / 4, x, y + size);
+  ctx.bezierCurveTo(x, y + (size * 3) / 4, x + size / 2, y + size / 2, x + size / 2, y + size / 4);
   ctx.bezierCurveTo(x + size / 2, y, x, y, x, y + size / 4);
   ctx.fill();
 }

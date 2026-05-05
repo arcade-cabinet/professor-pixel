@@ -65,7 +65,7 @@ Configured in `vite.config.ts` and `tsconfig.json`:
 src + app + public
         │
         ▼
-   tsc (--noEmit, npm run check)   ← type errors gate everything else
+   tsc (--noEmit, pnpm check)   ← type errors gate everything else
         │
         ▼
    vite build                      ← bundles app/ + src/, copies public/
@@ -76,7 +76,7 @@ src + app + public
 
 | Hook | Command | Purpose |
 |------|---------|---------|
-| `postinstall` | `node scripts/copy-pyodide.mjs` | Vendor Pyodide into `public/pyodide/` after `npm install` |
+| `postinstall` | `node scripts/copy-pyodide.mjs` | Vendor Pyodide into `public/pyodide/` after `pnpm install` |
 | `predev` | catalog + copy-pyodide | Catalog regenerated; Pyodide vendored before dev server starts |
 | `prebuild` | catalog + copy-pyodide | Same, before production build |
 
@@ -88,6 +88,35 @@ src + app + public
 - File >300 lines or component does >1 thing → split it.
 - Every interactive element gets a `data-testid` so e2e tests don't depend on copy or DOM structure.
 - Accessibility primitives (modals, menus, tooltips) come from `app/components/ui/` (shadcn over Radix). Don't roll your own.
+
+## Coverage
+
+`vitest.config.ts` pins a `coverage.thresholds` floor (statements 6, branches 4, functions 4, lines 6 as of 2026-05). The numbers are deliberately just above the current measured baseline — a **regression guard, not a goal**.
+
+Ratchet doctrine:
+
+- When a PR adds tests that move the needle, raise the matching threshold to the new floor in the same PR.
+- Never lower a threshold without unanimous review. Flapping floors are how coverage rules become decorative.
+- Coverage gain happens per-domain — wizard flows, pygame simulator, app components — not as a global push. Subsequent PRQs target specific 0%-covered modules.
+
+The aggregate today reflects the unit project only. Integration and component tests add real coverage but aren't merged into the threshold yet.
+
+## Debug surfaces
+
+`app/components/dev-hud.tsx` — fixed bottom-right floating panel showing Pyodide cold-start ms, current Pyodide state (`uninitialized` / `loading` / `ready` / `error`), and the rendering host. Mounted at the App root, gated by `useDebugFlag()` (`?debug=1` query param OR `localStorage.debug='1'`). Collapse state persists in `localStorage.debug-hud-collapsed`. The HUD polls the singleton state every 500ms — keep it small and fast; don't grow it into a devtools panel.
+
+## TypeScript discipline
+
+Biome's `noExplicitAny` is `error`-level. The codebase carries zero `any` annotations; new code must hold that line. Patterns to use instead:
+
+- **Pyodide instances** → `PyodideInstance` from `src/types/pyodide.d.ts`. Cast `pyodide.globals.get(name)` results to the expected function/value type at the call site.
+- **Unknown inbound data** (catch blocks, library callback payloads like `details?: unknown` on preview interactions) → type as `unknown`, narrow at the consumer via `instanceof Error` or the `ErrorShape` + `asErrorShape(e)` probe (see `src/net/retry.ts`).
+- **Component property bags** → `PyGameComponent<P extends object>` generic with per-component property interfaces; the registry erases to `AnyPyGameComponent` (with `unknown` args) at the boundary because TS function-arg variance is invariant in strict mode. The `as unknown as AnyPyGameComponent[]` cast is intentional and lives at exactly one site (`src/pygame/components/registry.ts`).
+- **Renderer dispatch** → `DrawCommand.args` is `unknown[]`. Each renderer case tuple-casts at destructure: `const [color, x, y, r] = command.args as [string, number, number, number]`.
+- **Storage/migration** → `validateAndMigrate<T>(data: unknown)` at the IO boundary; downstream consumers see typed shapes.
+- **Window globals** → narrow casts only: `(window as Window & { __foo?: typeof foo }).__foo = foo`. Never `(window as any)`.
+
+If you genuinely need `as any` (MSW handler boundary types, third-party-lib gaps), use `as unknown as T` with a `// no-explicit-any: <≥10-word reason>` comment.
 
 ## See also
 

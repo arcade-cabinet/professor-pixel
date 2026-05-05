@@ -11,7 +11,7 @@ import PygameLivePreview, { GameChoice } from '@/components/pygame/live-preview'
 import type { WizardOption, GameChoice as GameChoiceType } from '@lib/wizard/types';
 
 interface WizardWithPreviewProps {
-  pyodide?: any;
+  pyodide?: PyodideInstance;
   className?: string;
 }
 
@@ -23,67 +23,70 @@ export default function WizardWithPreview({ pyodide, className }: WizardWithPrev
     isLoading,
     handleOptionSelect,
     advance,
-    setSessionActions
+    setSessionActions,
   } = useWizardDialogue({
     flowType: 'game-dev',
-    initialNodeId: 'start'
+    initialNodeId: 'start',
   });
 
   const [livePreviewChoices, setLivePreviewChoices] = useState<GameChoice[]>([]);
-  const [showComparison, setShowComparison] = useState(false);
-  const [alternativeChoice, setAlternativeChoice] = useState<GameChoice | undefined>();
+  const [showComparison, _setShowComparison] = useState(false);
+  const [alternativeChoice, _setAlternativeChoice] = useState<GameChoice | undefined>();
   const [pixelComments, setPixelComments] = useState<string[]>([]);
 
   const helpers = getDialogueHelpers(dialogueState, sessionActions);
   const { currentNode } = dialogueState;
 
   // Handle option selection with live preview updates
-  const handleOptionWithPreview = useCallback((option: WizardOption) => {
-    // Update preview if this option affects it
-    if (option.updatePreview) {
-      const newChoice = option.updatePreview;
-      
-      // Add to live preview choices
-      setLivePreviewChoices(prev => {
-        // Replace existing choice of same type or add new one
-        const filtered = prev.filter(c => c.type !== newChoice.type);
-        return [...filtered, newChoice];
-      });
+  const handleOptionWithPreview = useCallback(
+    (option: WizardOption) => {
+      // Update preview if this option affects it
+      if (option.updatePreview) {
+        const newChoice = option.updatePreview;
 
-      // Add Pixel's comment
-      if (option.previewComment) {
-        setPixelComments([option.previewComment]);
-        // Clear comment after 5 seconds
-        setTimeout(() => setPixelComments([]), 5000);
-      }
-
-      // Update session actions
-      setSessionActions(prev => ({
-        ...prev,
-        livePreviewChoices: [...(prev.livePreviewChoices || []), newChoice],
-        previewHistory: [
-          ...(prev.previewHistory || []),
-          {
-            nodeId: dialogueState.currentNodeId,
-            choice: newChoice,
-            timestamp: new Date()
-          }
-        ]
-      }));
-
-      // Show celebratory toast for major choices
-      if (newChoice.type === 'character') {
-        toast({
-          title: "Awesome choice!",
-          description: `Your ${newChoice.name} is ready to play!`,
-          className: "bg-gradient-to-r from-purple-500 to-pink-500 text-white"
+        // Add to live preview choices
+        setLivePreviewChoices((prev) => {
+          // Replace existing choice of same type or add new one
+          const filtered = prev.filter((c) => c.type !== newChoice.type);
+          return [...filtered, newChoice];
         });
-      }
-    }
 
-    // Handle normal option selection
-    handleOptionSelect(option);
-  }, [dialogueState.currentNodeId, handleOptionSelect, setSessionActions, toast]);
+        // Add Pixel's comment
+        if (option.previewComment) {
+          setPixelComments([option.previewComment]);
+          // Clear comment after 5 seconds
+          setTimeout(() => setPixelComments([]), 5000);
+        }
+
+        // Update session actions
+        setSessionActions((prev) => ({
+          ...prev,
+          livePreviewChoices: [...(prev.livePreviewChoices || []), newChoice],
+          previewHistory: [
+            ...(prev.previewHistory || []),
+            {
+              nodeId: dialogueState.currentNodeId,
+              choice: newChoice,
+              timestamp: new Date(),
+            },
+          ],
+        }));
+
+        // Show celebratory toast for major choices
+        if (newChoice.type === 'character') {
+          toast({
+            title: 'Awesome choice!',
+            description: `Your ${newChoice.name} is ready to play!`,
+            className: 'bg-gradient-to-r from-purple-500 to-pink-500 text-white',
+          });
+        }
+      }
+
+      // Handle normal option selection
+      handleOptionSelect(option);
+    },
+    [dialogueState.currentNodeId, handleOptionSelect, setSessionActions, toast]
+  );
 
   // Generate pixel comments based on current preview
   useEffect(() => {
@@ -93,32 +96,27 @@ export default function WizardWithPreview({ pyodide, className }: WizardWithPrev
   }, [currentNode]);
 
   // Handle live preview interactions
-  const handlePreviewInteraction = useCallback((action: string, details?: any) => {
+  const handlePreviewInteraction = useCallback((action: string, details?: unknown) => {
     console.log('Preview interaction:', action, details);
-    
+
     // Generate dynamic comments based on interactions
     const interactionComments: Record<string, string[]> = {
-      'click': [
-        "Nice click! Try clicking on different objects!",
-        "You found an interactive spot!",
-        "Keep exploring - there's more to discover!"
+      click: [
+        'Nice click! Try clicking on different objects!',
+        'You found an interactive spot!',
+        "Keep exploring - there's more to discover!",
       ],
-      'jump': [
-        "Wheee! That's a great jump!",
-        "Look at them go!",
-        "Perfect timing on that jump!"
+      jump: ["Wheee! That's a great jump!", 'Look at them go!', 'Perfect timing on that jump!'],
+      collect: [
+        'Score! You collected an item!',
+        'Great job! Keep collecting!',
+        "You're getting the hang of this!",
       ],
-      'collect': [
-        "Score! You collected an item!",
-        "Great job! Keep collecting!",
-        "You're getting the hang of this!"
-      ]
     };
 
     if (interactionComments[action]) {
-      const randomComment = interactionComments[action][
-        Math.floor(Math.random() * interactionComments[action].length)
-      ];
+      const randomComment =
+        interactionComments[action][Math.floor(Math.random() * interactionComments[action].length)];
       setPixelComments([randomComment]);
       setTimeout(() => setPixelComments([]), 3000);
     }
@@ -128,7 +126,12 @@ export default function WizardWithPreview({ pyodide, className }: WizardWithPrev
   const shouldShowPreview = currentNode?.showLivePreview?.enabled || livePreviewChoices.length > 0;
 
   return (
-    <div className={cn("min-h-screen bg-gradient-to-br from-purple-50 to-pink-50 dark:from-gray-900 dark:to-gray-800", className)}>
+    <div
+      className={cn(
+        'min-h-screen bg-gradient-to-br from-purple-50 to-pink-50 dark:from-gray-900 dark:to-gray-800',
+        className
+      )}
+    >
       <div className="container mx-auto p-4 max-w-7xl">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Wizard Dialogue Section */}
@@ -151,7 +154,7 @@ export default function WizardWithPreview({ pyodide, className }: WizardWithPrev
                         className="text-base"
                       />
                     )}
-                    
+
                     {/* Continue Button */}
                     {helpers.shouldShowContinue() && (
                       <Button
@@ -214,8 +217,8 @@ export default function WizardWithPreview({ pyodide, className }: WizardWithPrev
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {sessionActions.livePreviewChoices.map((choice, index) => (
-                      <Badge 
-                        key={index} 
+                      <Badge
+                        key={index}
                         variant="secondary"
                         className="bg-white/80 dark:bg-gray-800/80"
                       >

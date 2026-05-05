@@ -12,8 +12,8 @@ import {
 export class ClientStorage {
   private static readonly STORAGE_KEYS = {
     USERS: 'pygame_academy_users',
-    PROGRESS: 'pygame_academy_progress', 
-    PROJECTS: 'pygame_academy_projects'
+    PROGRESS: 'pygame_academy_progress',
+    PROJECTS: 'pygame_academy_projects',
   };
 
   constructor() {
@@ -23,7 +23,7 @@ export class ClientStorage {
 
   private initializeLocalStorage() {
     if (typeof window === 'undefined') return;
-    
+
     // Initialize empty collections if they don't exist
     if (!localStorage.getItem(ClientStorage.STORAGE_KEYS.USERS)) {
       localStorage.setItem(ClientStorage.STORAGE_KEYS.USERS, JSON.stringify({}));
@@ -39,7 +39,7 @@ export class ClientStorage {
   private getFromLocalStorage<T>(key: string): T {
     if (typeof window === 'undefined') return {} as T;
     const data = localStorage.getItem(key);
-    return data ? JSON.parse(data) : {};
+    return data ? (JSON.parse(data) as T) : ({} as T);
   }
 
   private saveToLocalStorage<T>(key: string, data: T): void {
@@ -53,9 +53,9 @@ export class ClientStorage {
       return crypto.randomUUID();
     }
     // Fallback for older browsers
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-      const r = Math.random() * 16 | 0;
-      const v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+      const r = (Math.random() * 16) | 0;
+      const v = c === 'x' ? r : (r & 0x3) | 0x8;
       return v.toString(16);
     });
   }
@@ -68,7 +68,7 @@ export class ClientStorage {
 
   async getUserByUsername(username: string): Promise<User | undefined> {
     const users = this.getFromLocalStorage<Record<string, User>>(ClientStorage.STORAGE_KEYS.USERS);
-    return Object.values(users).find(user => user.username === username);
+    return Object.values(users).find((user) => user.username === username);
   }
 
   async createAnonymousUser(username: string): Promise<User> {
@@ -115,31 +115,46 @@ export class ClientStorage {
 
   async getLesson(id: string): Promise<Lesson | undefined> {
     const lessons = await this.getLessons();
-    return lessons.find(lesson => lesson.id === id);
+    return lessons.find((lesson) => lesson.id === id);
   }
 
   // Progress methods - use LocalStorage
   async getUserProgress(userId: string): Promise<UserProgress[]> {
-    const progress = this.getFromLocalStorage<Record<string, UserProgress>>(ClientStorage.STORAGE_KEYS.PROGRESS);
-    return Object.values(progress).filter(p => p.userId === userId);
+    const progress = this.getFromLocalStorage<Record<string, UserProgress>>(
+      ClientStorage.STORAGE_KEYS.PROGRESS
+    );
+    return Object.values(progress).filter((p) => p.userId === userId);
   }
 
-  async getUserProgressForLesson(userId: string, lessonId: string): Promise<UserProgress | undefined> {
-    const progress = this.getFromLocalStorage<Record<string, UserProgress>>(ClientStorage.STORAGE_KEYS.PROGRESS);
-    return Object.values(progress).find(p => p.userId === userId && p.lessonId === lessonId);
+  async getUserProgressForLesson(
+    userId: string,
+    lessonId: string
+  ): Promise<UserProgress | undefined> {
+    const progress = this.getFromLocalStorage<Record<string, UserProgress>>(
+      ClientStorage.STORAGE_KEYS.PROGRESS
+    );
+    return Object.values(progress).find((p) => p.userId === userId && p.lessonId === lessonId);
   }
 
-  async updateUserProgress(userId: string, lessonId: string, progressData: Partial<UserProgress>): Promise<UserProgress> {
-    const progressMap = this.getFromLocalStorage<Record<string, UserProgress>>(ClientStorage.STORAGE_KEYS.PROGRESS);
-    
+  async updateUserProgress(
+    userId: string,
+    lessonId: string,
+    progressData: Partial<UserProgress>
+  ): Promise<UserProgress> {
+    const progressMap = this.getFromLocalStorage<Record<string, UserProgress>>(
+      ClientStorage.STORAGE_KEYS.PROGRESS
+    );
+
     // Find existing progress or create new
-    const existingProgress = Object.values(progressMap).find(p => p.userId === userId && p.lessonId === lessonId);
-    
+    const existingProgress = Object.values(progressMap).find(
+      (p) => p.userId === userId && p.lessonId === lessonId
+    );
+
     let progress: UserProgress;
     if (existingProgress) {
       progress = {
         ...existingProgress,
-        ...progressData
+        ...progressData,
       };
     } else {
       progress = {
@@ -151,25 +166,31 @@ export class ClientStorage {
         ...progressData,
       };
     }
-    
+
     progressMap[progress.id] = progress;
     this.saveToLocalStorage(ClientStorage.STORAGE_KEYS.PROGRESS, progressMap);
     return progress;
   }
 
-  // Project methods - use LocalStorage  
+  // Project methods - use LocalStorage
   async listProjects(userId: string): Promise<Project[]> {
-    const projects = this.getFromLocalStorage<Record<string, Project>>(ClientStorage.STORAGE_KEYS.PROJECTS);
-    return Object.values(projects).filter(p => p.userId === userId);
+    const projects = this.getFromLocalStorage<Record<string, Project>>(
+      ClientStorage.STORAGE_KEYS.PROJECTS
+    );
+    return Object.values(projects).filter((p) => p.userId === userId);
   }
 
   async getProject(id: string): Promise<Project | undefined> {
-    const projects = this.getFromLocalStorage<Record<string, Project>>(ClientStorage.STORAGE_KEYS.PROJECTS);
+    const projects = this.getFromLocalStorage<Record<string, Project>>(
+      ClientStorage.STORAGE_KEYS.PROJECTS
+    );
     return projects[id];
   }
 
   async createProject(project: InsertProject): Promise<Project> {
-    const projects = this.getFromLocalStorage<Record<string, Project>>(ClientStorage.STORAGE_KEYS.PROJECTS);
+    const projects = this.getFromLocalStorage<Record<string, Project>>(
+      ClientStorage.STORAGE_KEYS.PROJECTS
+    );
     const newProject: Project = {
       id: this.generateId(),
       createdAt: new Date(),
@@ -182,15 +203,17 @@ export class ClientStorage {
   }
 
   async updateProject(id: string, updates: Partial<Project>): Promise<Project> {
-    const projects = this.getFromLocalStorage<Record<string, Project>>(ClientStorage.STORAGE_KEYS.PROJECTS);
+    const projects = this.getFromLocalStorage<Record<string, Project>>(
+      ClientStorage.STORAGE_KEYS.PROJECTS
+    );
     const project = projects[id];
     if (!project) {
       throw new Error('Project not found');
     }
-    
+
     const updatedProject = {
       ...project,
-      ...updates
+      ...updates,
     };
     projects[id] = updatedProject;
     this.saveToLocalStorage(ClientStorage.STORAGE_KEYS.PROJECTS, projects);
@@ -198,21 +221,25 @@ export class ClientStorage {
   }
 
   async deleteProject(id: string): Promise<void> {
-    const projects = this.getFromLocalStorage<Record<string, Project>>(ClientStorage.STORAGE_KEYS.PROJECTS);
+    const projects = this.getFromLocalStorage<Record<string, Project>>(
+      ClientStorage.STORAGE_KEYS.PROJECTS
+    );
     delete projects[id];
     this.saveToLocalStorage(ClientStorage.STORAGE_KEYS.PROJECTS, projects);
   }
 
   // Gallery methods
   async listPublishedProjects(): Promise<Project[]> {
-    const projects = this.getFromLocalStorage<Record<string, Project>>(ClientStorage.STORAGE_KEYS.PROJECTS);
-    return Object.values(projects).filter(p => p.published);
+    const projects = this.getFromLocalStorage<Record<string, Project>>(
+      ClientStorage.STORAGE_KEYS.PROJECTS
+    );
+    return Object.values(projects).filter((p) => p.published);
   }
 
   async publishProject(id: string): Promise<Project> {
-    return this.updateProject(id, { 
-      published: true, 
-      publishedAt: new Date() 
+    return this.updateProject(id, {
+      published: true,
+      publishedAt: new Date(),
     });
   }
 
@@ -227,54 +254,64 @@ export class ClientStorage {
   private getFallbackLessons(): Lesson[] {
     return [
       {
-        id: "lesson-1",
-        title: "Python Basics",
-        description: "Variables, data types, print, and input",
+        id: 'lesson-1',
+        title: 'Python Basics',
+        description: 'Variables, data types, print, and input',
         order: 1,
-        intro: "🐍 Welcome to Python programming! In this lesson, you'll learn the fundamental building blocks: variables, data types, and how to interact with users.",
+        intro:
+          "🐍 Welcome to Python programming! In this lesson, you'll learn the fundamental building blocks: variables, data types, and how to interact with users.",
         learningObjectives: [
-          "Create and use variables to store different types of data",
-          "Work with strings, numbers, and booleans",
-          "Use print() to display messages and information",
-          "Get user input with input() function",
-          "Convert between different data types"
+          'Create and use variables to store different types of data',
+          'Work with strings, numbers, and booleans',
+          'Use print() to display messages and information',
+          'Get user input with input() function',
+          'Convert between different data types',
         ],
-        goalDescription: "Master the basics of Python by creating an interactive program that collects and displays user information!",
-        previewCode: "name = input('Enter your name: ')\nage = int(input('Enter your age: '))\nprint(f'Hello {name}, you are {age} years old!')",
+        goalDescription:
+          'Master the basics of Python by creating an interactive program that collects and displays user information!',
+        previewCode:
+          "name = input('Enter your name: ')\nage = int(input('Enter your age: '))\nprint(f'Hello {name}, you are {age} years old!')",
         content: {
-          introduction: "Python is a powerful and beginner-friendly programming language. Let's start with the fundamentals that every Python programmer needs to know!",
+          introduction:
+            "Python is a powerful and beginner-friendly programming language. Let's start with the fundamentals that every Python programmer needs to know!",
           steps: [
             {
-              id: "step-1",
-              title: "Your First Python Message",
-              description: "Let's start by displaying messages on screen. The print() function is used to show text output.",
-              initialCode: "# Use the print() function to display at least 2 messages\n# You can write any greeting or welcome messages you like!\n",
+              id: 'step-1',
+              title: 'Your First Python Message',
+              description:
+                "Let's start by displaying messages on screen. The print() function is used to show text output.",
+              initialCode:
+                '# Use the print() function to display at least 2 messages\n# You can write any greeting or welcome messages you like!\n',
               solution: "print('Hello, World!')\nprint('Welcome to Python programming!')",
-              hints: ["Use print() function to display text", "Put text inside quotes", "Try using at least 2 print statements"],
+              hints: [
+                'Use print() function to display text',
+                'Put text inside quotes',
+                'Try using at least 2 print statements',
+              ],
               tests: [
                 {
-                  mode: "rules",
-                  expectedOutput: "Any greeting messages",
-                  description: "Should use print() function to display messages",
+                  mode: 'rules',
+                  expectedOutput: 'Any greeting messages',
+                  description: 'Should use print() function to display messages',
                   astRules: {
-                    requiredFunctions: ["print"],
+                    requiredFunctions: ['print'],
                     requiredConstructs: [
-                      { type: "function_call", name: "print", minCount: 2 },
-                      { type: "string_literal", minCount: 2 }
-                    ]
+                      { type: 'function_call', name: 'print', minCount: 2 },
+                      { type: 'string_literal', minCount: 2 },
+                    ],
                   },
                   runtimeRules: {
-                    outputContains: []
-                  }
-                }
-              ]
-            }
-          ]
+                    outputContains: [],
+                  },
+                },
+              ],
+            },
+          ],
         },
         prerequisites: [],
-        difficulty: "Beginner",
-        estimatedTime: 25
-      }
+        difficulty: 'Beginner',
+        estimatedTime: 25,
+      },
     ];
   }
 }

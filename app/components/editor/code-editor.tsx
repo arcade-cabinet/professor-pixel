@@ -1,15 +1,42 @@
-import { useRef, useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent } from "@/components/ui/card";
-import { Play, RotateCcw, Keyboard, CheckCircle2, Target } from "lucide-react";
-import { cn } from "@lib/utils/cn";
+import { useRef, useEffect, useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent } from '@/components/ui/card';
+import { Play, RotateCcw, Keyboard, CheckCircle2, Target } from 'lucide-react';
+import { cn } from '@lib/utils/cn';
 
-// Monaco Editor types
+// Monaco Editor types — a minimal surface of the editor instance API we
+// actually consume. Full Monaco types would require @types/monaco-editor as a
+// runtime peer; we only need create() + getValue() + onDidChangeModelContent()
+// + dispose().
+interface MonacoEditorInstance {
+  getValue(): string;
+  setValue(value: string): void;
+  onDidChangeModelContent(handler: () => void): { dispose: () => void };
+  dispose(): void;
+  focus(): void;
+  getAction(id: string): { run: () => void } | null;
+  addCommand(keybinding: number, handler: () => void): void;
+}
+
+interface MonacoNamespace {
+  editor: {
+    create(container: HTMLElement, options: Record<string, unknown>): MonacoEditorInstance;
+  };
+  KeyMod: { CtrlCmd: number; Shift: number; Alt: number };
+  KeyCode: { Enter: number; KeyR: number; [key: string]: number };
+}
+
+interface AmdRequire {
+  (deps: string[], cb: () => void): void;
+  config(opts: { paths: Record<string, string> }): void;
+}
+
 declare global {
   interface Window {
-    monaco: any;
+    monaco: MonacoNamespace;
+    require: AmdRequire;
   }
 }
 
@@ -38,67 +65,69 @@ interface CodeEditorProps {
   };
 }
 
-export default function CodeEditor({ 
-  code, 
-  onChange, 
-  onExecute, 
-  output, 
-  error, 
-  isExecuting, 
-  gradingResult, 
-  currentStep 
+export default function CodeEditor({
+  code,
+  onChange,
+  onExecute,
+  output,
+  error,
+  isExecuting,
+  gradingResult,
+  currentStep,
 }: CodeEditorProps) {
   const editorRef = useRef<HTMLDivElement>(null);
-  const monacoEditorRef = useRef<any>(null);
+  const monacoEditorRef = useRef<MonacoEditorInstance | null>(null);
   const scriptLoadedRef = useRef<boolean>(false);
-  const [inputValues, setInputValues] = useState("");
+  const [inputValues, setInputValues] = useState('');
 
   useEffect(() => {
     // Prevent multiple script loads
     if (scriptLoadedRef.current || window.monaco) {
       return;
     }
-    
+
     // Load Monaco Editor
-    const script = document.createElement("script");
-    script.src = "https://cdn.jsdelivr.net/npm/monaco-editor@0.44.0/min/vs/loader.js";
+    const script = document.createElement('script');
+    script.src = 'https://cdn.jsdelivr.net/npm/monaco-editor@0.44.0/min/vs/loader.js';
     script.onload = () => {
       scriptLoadedRef.current = true;
       try {
-        (window as any).require.config({ paths: { vs: "https://cdn.jsdelivr.net/npm/monaco-editor@0.44.0/min/vs" } });
-        (window as any).require(["vs/editor/editor.main"], () => {
+        window.require.config({
+          paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.44.0/min/vs' },
+        });
+        window.require(['vs/editor/editor.main'], () => {
           if (!editorRef.current || monacoEditorRef.current) {
             return;
           }
           try {
             monacoEditorRef.current = window.monaco.editor.create(editorRef.current, {
-              value: code || "",
-              language: "python",
-              theme: "vs-dark",
+              value: code || '',
+              language: 'python',
+              theme: 'vs-dark',
               fontSize: 18,
               lineHeight: 26,
-              fontFamily: "JetBrains Mono, Consolas, monospace",
-              fontWeight: "400",
+              fontFamily: 'JetBrains Mono, Consolas, monospace',
+              fontWeight: '400',
               letterSpacing: 0.5,
               minimap: { enabled: false },
               scrollBeyondLastLine: false,
               automaticLayout: true,
-              lineNumbers: "on",
+              lineNumbers: 'on',
               glyphMargin: false,
               folding: false,
               lineDecorationsWidth: 0,
               lineNumbersMinChars: 3,
-              renderLineHighlight: "line",
+              renderLineHighlight: 'line',
               selectOnLineNumbers: true,
-              cursorBlinking: "solid",
+              cursorBlinking: 'solid',
               contextmenu: false,
-              wordWrap: "off",
+              wordWrap: 'off',
               quickSuggestions: false,
               parameterHints: { enabled: false },
               suggestOnTriggerCharacters: false,
-              acceptSuggestionOnEnter: "off",
-              tabCompletion: "off",
-              snippetSuggestions: "none",
+              acceptSuggestionOnEnter: 'off',
+              tabCompletion: 'off',
+              snippetSuggestions: 'none',
               padding: { top: 16, bottom: 16 },
             });
           } catch (err) {
@@ -109,7 +138,7 @@ export default function CodeEditor({
           // Listen to changes with error handling
           monacoEditorRef.current.onDidChangeModelContent(() => {
             try {
-              const value = monacoEditorRef.current?.getValue() || "";
+              const value = monacoEditorRef.current?.getValue() || '';
               if (typeof onChange === 'function') {
                 onChange(value);
               }
@@ -136,11 +165,11 @@ export default function CodeEditor({
         console.error('Error loading Monaco:', err);
       }
     };
-    
+
     script.onerror = () => {
       console.error('Failed to load Monaco Editor script');
     };
-    
+
     document.head.appendChild(script);
 
     return () => {
@@ -153,12 +182,12 @@ export default function CodeEditor({
         }
       }
     };
-  }, []); // Empty dependency array is intentional - we only want to load Monaco once
+  }, [onExecute, onChange, inputValues, code]); // Empty dependency array is intentional - we only want to load Monaco once
 
   useEffect(() => {
     try {
       if (monacoEditorRef.current && monacoEditorRef.current.getValue() !== code) {
-        monacoEditorRef.current.setValue(code || "");
+        monacoEditorRef.current.setValue(code || '');
       }
     } catch (err) {
       console.error('Error updating Monaco editor value:', err);
@@ -170,7 +199,7 @@ export default function CodeEditor({
       // This would reset to the initial code for the current step
       // For now, we'll just clear the editor
       if (typeof onChange === 'function') {
-        onChange("");
+        onChange('');
       }
     } catch (err) {
       console.error('Error resetting code:', err);
@@ -191,7 +220,7 @@ export default function CodeEditor({
               data-testid="button-run-code"
             >
               <Play className="h-5 w-5" />
-              <span className="font-semibold">{isExecuting ? "Running..." : "Run Code"}</span>
+              <span className="font-semibold">{isExecuting ? 'Running...' : 'Run Code'}</span>
             </Button>
             <Button
               onClick={() => onExecute(inputValues, true)}
@@ -200,7 +229,9 @@ export default function CodeEditor({
               data-testid="button-run-check"
             >
               <CheckCircle2 className="h-5 w-5" />
-              <span className="text-base font-semibold">{isExecuting ? "Checking..." : "Run & Check"}</span>
+              <span className="text-base font-semibold">
+                {isExecuting ? 'Checking...' : 'Run & Check'}
+              </span>
             </Button>
             <Button
               onClick={resetCode}
@@ -212,7 +243,7 @@ export default function CodeEditor({
             </Button>
           </div>
         </div>
-        
+
         {/* Enhanced Step Instructions */}
         {currentStep && (
           <div className="mb-6 p-6 bg-gradient-to-br from-primary/10 to-primary/5 rounded-xl border-2 border-primary/30 shadow-lg">
@@ -220,7 +251,7 @@ export default function CodeEditor({
             <p className="text-foreground/80 text-lg leading-relaxed">{currentStep.description}</p>
           </div>
         )}
-        
+
         {/* Enhanced Expected Output */}
         {currentStep && currentStep.tests && currentStep.tests.length > 0 && (
           <div className="mb-6 p-6 bg-gradient-to-br from-success/15 to-success/5 rounded-xl border-2 border-success/40 shadow-lg">
@@ -233,18 +264,24 @@ export default function CodeEditor({
             </pre>
             {currentStep.tests[0].input && (
               <p className="text-success/80 text-base mt-3 font-medium">
-                📝 Input provided: <span className="font-mono bg-success/10 px-2 py-1 rounded">{currentStep.tests[0].input}</span>
+                📝 Input provided:{' '}
+                <span className="font-mono bg-success/10 px-2 py-1 rounded">
+                  {currentStep.tests[0].input}
+                </span>
               </p>
             )}
           </div>
         )}
-        
+
         {/* Enhanced Input Values Control */}
         <div className="bg-gradient-to-r from-secondary/10 to-secondary/5 p-4 rounded-xl border border-secondary/30">
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2">
               <Keyboard className="h-5 w-5 text-secondary" />
-              <Label htmlFor="input-values" className="text-lg font-semibold text-secondary whitespace-nowrap">
+              <Label
+                htmlFor="input-values"
+                className="text-lg font-semibold text-secondary whitespace-nowrap"
+              >
                 Input Values:
               </Label>
             </div>
@@ -259,14 +296,10 @@ export default function CodeEditor({
           </div>
         </div>
       </div>
-      
+
       <div className="flex-1 flex flex-col">
-        <div
-          ref={editorRef}
-          className="flex-1 min-h-0"
-          data-testid="code-editor"
-        />
-        
+        <div ref={editorRef} className="flex-1 min-h-0" data-testid="code-editor" />
+
         {/* Enhanced Console/Output Area */}
         <div className="bg-card border-t-2 border-border">
           <div className="console-header">
@@ -276,13 +309,13 @@ export default function CodeEditor({
           </div>
           <div className="console-output h-52 overflow-auto">
             {gradingResult ? (
-              <div className={cn(
-                "p-4",
-                gradingResult.passed ? "console-success" : "console-error"
-              )} data-testid="grading-result">
+              <div
+                className={cn('p-4', gradingResult.passed ? 'console-success' : 'console-error')}
+                data-testid="grading-result"
+              >
                 <div className="text-lg font-semibold mb-2 flex items-center gap-2">
-                  <span className="text-2xl">{gradingResult.passed ? "✅" : "❌"}</span>
-                  <span>{gradingResult.passed ? "Test Passed!" : "Test Failed"}</span>
+                  <span className="text-2xl">{gradingResult.passed ? '✅' : '❌'}</span>
+                  <span>{gradingResult.passed ? 'Test Passed!' : 'Test Failed'}</span>
                 </div>
                 <div className="whitespace-pre-wrap text-base leading-relaxed mb-3">
                   {gradingResult.feedback}
@@ -297,12 +330,14 @@ export default function CodeEditor({
                     </div>
                     <div>
                       <div className="text-sm font-medium text-muted-foreground">Your Output:</div>
-                      <div className={cn(
-                        "p-2 rounded font-mono text-sm",
-                        gradingResult.passed 
-                          ? "text-green-300 bg-green-900/30" 
-                          : "text-red-300 bg-red-900/30"
-                      )}>
+                      <div
+                        className={cn(
+                          'p-2 rounded font-mono text-sm',
+                          gradingResult.passed
+                            ? 'text-green-300 bg-green-900/30'
+                            : 'text-red-300 bg-red-900/30'
+                        )}
+                      >
                         {gradingResult.actualOutput}
                       </div>
                     </div>
@@ -321,7 +356,9 @@ export default function CodeEditor({
                 <div className="text-lg font-semibold mb-2 flex items-center gap-2">
                   <span className="text-2xl">✓</span> Success:
                 </div>
-                <div className="text-gray-300 whitespace-pre-wrap text-base leading-relaxed">{output}</div>
+                <div className="text-gray-300 whitespace-pre-wrap text-base leading-relaxed">
+                  {output}
+                </div>
               </div>
             ) : (
               <div className="text-gray-500 text-base" data-testid="console-ready">

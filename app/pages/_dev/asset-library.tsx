@@ -12,7 +12,9 @@ import { Sparkles, Search, Grid3x3 } from 'lucide-react';
 export default function AssetLibraryTest() {
   const [showBrowser, setShowBrowser] = useState(false);
   const [selectedAssets, setSelectedAssets] = useState<GameAsset[]>([]);
-  const [assetType, setAssetType] = useState<'sprite' | 'sound' | 'music' | 'background' | undefined>(undefined);
+  const [assetType, setAssetType] = useState<
+    'sprite' | 'sound' | 'music' | 'background' | undefined
+  >(undefined);
 
   const handleAssetSelect = (asset: GameAsset) => {
     setSelectedAssets([...selectedAssets, asset]);
@@ -42,43 +44,58 @@ export default function AssetLibraryTest() {
 
       {/* Controls */}
       <div className="mb-6 flex flex-wrap gap-2">
-        <Button 
-          onClick={() => { setAssetType(undefined); setShowBrowser(true); }}
+        <Button
+          onClick={() => {
+            setAssetType(undefined);
+            setShowBrowser(true);
+          }}
           variant="default"
           data-testid="button-show-all"
         >
           <Grid3x3 className="w-4 h-4 mr-2" />
           Show All Assets
         </Button>
-        <Button 
-          onClick={() => { setAssetType('sprite'); setShowBrowser(true); }}
+        <Button
+          onClick={() => {
+            setAssetType('sprite');
+            setShowBrowser(true);
+          }}
           variant="outline"
           data-testid="button-show-sprites"
         >
           Show Sprites
         </Button>
-        <Button 
-          onClick={() => { setAssetType('background'); setShowBrowser(true); }}
+        <Button
+          onClick={() => {
+            setAssetType('background');
+            setShowBrowser(true);
+          }}
           variant="outline"
           data-testid="button-show-backgrounds"
         >
           Show Backgrounds
         </Button>
-        <Button 
-          onClick={() => { setAssetType('sound'); setShowBrowser(true); }}
+        <Button
+          onClick={() => {
+            setAssetType('sound');
+            setShowBrowser(true);
+          }}
           variant="outline"
           data-testid="button-show-sounds"
         >
           Show Sounds
         </Button>
-        <Button 
-          onClick={() => { setAssetType('music'); setShowBrowser(true); }}
+        <Button
+          onClick={() => {
+            setAssetType('music');
+            setShowBrowser(true);
+          }}
           variant="outline"
           data-testid="button-show-music"
         >
           Show Music
         </Button>
-        <Button 
+        <Button
           onClick={clearSelection}
           variant="destructive"
           disabled={selectedAssets.length === 0}
@@ -97,19 +114,18 @@ export default function AssetLibraryTest() {
           </Card>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
-            {selectedAssets.map(asset => (
+            {selectedAssets.map((asset) => (
               <Card key={asset.id} className="p-2">
                 <div className="aspect-square bg-gray-100 dark:bg-gray-800 rounded flex items-center justify-center overflow-hidden mb-2">
                   {(asset.type === 'sprite' || asset.type === 'background') && asset.thumbnail ? (
-                    <img 
-                      src={asset.thumbnail} 
+                    <img
+                      src={asset.thumbnail}
                       alt={asset.name}
                       className="w-full h-full object-contain"
                     />
                   ) : (
                     <div className="text-2xl">
-                      {asset.type === 'sound' ? '🔊' : 
-                       asset.type === 'music' ? '🎵' : '📦'}
+                      {asset.type === 'sound' ? '🔊' : asset.type === 'music' ? '🎵' : '📦'}
                     </div>
                   )}
                 </div>

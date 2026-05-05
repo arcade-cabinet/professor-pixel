@@ -61,7 +61,7 @@ export class CookieMock {
         set: (value: string) => {
           // Parse a Set-Cookie-style string. The first segment is name=value;
           // subsequent segments are attributes (expires, path, SameSite, …).
-          const segments = value.split(';').map(s => s.trim());
+          const segments = value.split(';').map((s) => s.trim());
           const first = segments[0];
           if (!first) return;
           const eq = first.indexOf('=');
@@ -69,9 +69,7 @@ export class CookieMock {
           const key = first.slice(0, eq);
           const val = first.slice(eq + 1);
 
-          const expiresAttr = segments
-            .slice(1)
-            .find(s => s.toLowerCase().startsWith('expires='));
+          const expiresAttr = segments.slice(1).find((s) => s.toLowerCase().startsWith('expires='));
           if (expiresAttr) {
             const expiryDate = new Date(expiresAttr.slice('expires='.length));
             if (Number.isFinite(expiryDate.getTime()) && expiryDate < new Date()) {
@@ -120,7 +118,7 @@ export const createMockDialogueState = (overrides?: Partial<DialogueState>): Dia
   dialogueStep: 0,
   carouselIndex: 0,
   showAllChoices: false,
-  ...overrides
+  ...overrides,
 });
 
 export const createMockSessionActions = (overrides?: Partial<SessionActions>): SessionActions => ({
@@ -130,16 +128,14 @@ export const createMockSessionActions = (overrides?: Partial<SessionActions>): S
   currentProject: null,
   completedSteps: [],
   unlockedEditor: false,
-  ...overrides
+  ...overrides,
 });
 
 export const createMockFlowData = (): Record<string, WizardNode> => ({
   start: createMockWizardNode({
     id: 'start',
     text: 'Welcome to the wizard!',
-    options: [
-      { text: 'Start journey', next: 'choose-game' }
-    ]
+    options: [{ text: 'Start journey', next: 'choose-game' }],
   }),
   'choose-game': createMockWizardNode({
     id: 'choose-game',
@@ -154,64 +150,70 @@ export const createMockFlowData = (): Record<string, WizardNode> => ({
     id: 'platformer-intro',
     text: 'Welcome to platformer creation!',
     action: 'transitionToSpecializedFlow',
-    options: [
-      { text: 'Continue', next: 'platformer-setup' }
-    ]
+    options: [{ text: 'Continue', next: 'platformer-setup' }],
   }),
   'rpg-intro': createMockWizardNode({
     id: 'rpg-intro',
     text: 'Welcome to RPG creation!',
     action: 'transitionToSpecializedFlow',
-    options: [
-      { text: 'Continue', next: 'rpg-setup' }
-    ]
+    options: [{ text: 'Continue', next: 'rpg-setup' }],
   }),
   'racing-intro': createMockWizardNode({
     id: 'racing-intro',
     text: 'Welcome to racing game creation!',
     action: 'transitionToSpecializedFlow',
-    options: [
-      { text: 'Continue', next: 'racing-setup' }
-    ]
-  })
+    options: [{ text: 'Continue', next: 'racing-setup' }],
+  }),
 });
 
 // Custom matchers for persistence testing
 export const persistenceMatchers = {
-  toHavePersistedState(received: any, expected: any) {
+  toHavePersistedState(received: unknown, expected: unknown) {
     const pass = JSON.stringify(received) === JSON.stringify(expected);
     return {
       pass,
       message: () =>
         pass
           ? `Expected state not to be persisted as ${JSON.stringify(expected)}`
-          : `Expected state to be persisted as ${JSON.stringify(expected)}, but got ${JSON.stringify(received)}`
+          : `Expected state to be persisted as ${JSON.stringify(expected)}, but got ${JSON.stringify(received)}`,
     };
   },
-  
-  toHaveValidVersion(received: any, expectedVersion: string) {
-    const pass = received?.version === expectedVersion;
+
+  toHaveValidVersion(received: unknown, expectedVersion: string) {
+    const pass =
+      typeof received === 'object' &&
+      received !== null &&
+      (received as { version?: unknown }).version === expectedVersion;
     return {
       pass,
-      message: () =>
-        pass
+      message: () => {
+        const actual =
+          typeof received === 'object' && received !== null
+            ? (received as { version?: unknown }).version
+            : undefined;
+        return pass
           ? `Expected version not to be ${expectedVersion}`
-          : `Expected version to be ${expectedVersion}, but got ${received?.version}`
+          : `Expected version to be ${expectedVersion}, but got ${actual}`;
+      },
     };
-  }
+  },
 };
 
 // Helper to wait for async operations
-export const waitFor = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+export const waitFor = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 // Helper to trigger storage events
-export const triggerStorageEvent = (key: string, newValue: string | null, oldValue: string | null = null) => {
+export const triggerStorageEvent = (
+  key: string,
+  newValue: string | null,
+  oldValue: string | null = null
+) => {
   const event = new StorageEvent('storage', {
     key,
     newValue,
     oldValue,
     storageArea: localStorage,
-    url: window.location.href
+    url: window.location.href,
   });
   window.dispatchEvent(event);
 };
@@ -221,19 +223,19 @@ export const simulatePageRefresh = () => {
   // Save current localStorage and sessionStorage
   const localStorageData = { ...localStorage };
   const sessionStorageData = { ...sessionStorage };
-  
+
   // Simulate unload
   window.dispatchEvent(new Event('beforeunload'));
-  
+
   // Clear memory state but keep storage
   // This simulates what happens during a real page refresh
-  
+
   // Simulate load with storage intact
   window.dispatchEvent(new Event('load'));
-  
+
   return {
     localStorageData,
-    sessionStorageData
+    sessionStorageData,
   };
 };
 
@@ -244,46 +246,46 @@ export const createCorruptedData = () => {
     malformed: '{"partial": ',
     wrongType: '123',
     missingVersion: JSON.stringify({ data: 'test' }),
-    wrongVersion: JSON.stringify({ version: '0.0.1', data: 'old' })
+    wrongVersion: JSON.stringify({ version: '0.0.1', data: 'old' }),
   };
 };
 
 // Render helper with providers
-export const renderWithProviders = (
-  ui: ReactElement,
-  options?: RenderOptions
-) => {
+export const renderWithProviders = (ui: ReactElement, options?: RenderOptions) => {
   // Add any necessary providers here (Router, Theme, etc.)
   return render(ui, options);
 };
 
 // Mock fetch responses for flow loading
 export const mockFlowResponse = (data: Record<string, WizardNode>, delay: number = 0) => {
-  return vi.fn(() => 
-    new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({
-          ok: true,
-          json: () => Promise.resolve(data)
-        });
-      }, delay);
-    })
+  return vi.fn(
+    () =>
+      new Promise((resolve) => {
+        setTimeout(() => {
+          resolve({
+            ok: true,
+            json: () => Promise.resolve(data),
+          });
+        }, delay);
+      })
   );
 };
 
 // Helper to validate flow structure
-export const validateFlowStructure = (flow: Record<string, WizardNode>): {
+export const validateFlowStructure = (
+  flow: Record<string, WizardNode>
+): {
   valid: boolean;
   errors: string[];
 } => {
   const errors: string[] = [];
   const nodeIds = new Set(Object.keys(flow));
-  
+
   for (const [nodeId, node] of Object.entries(flow)) {
     // Check node has required fields
     if (!node.id) errors.push(`Node ${nodeId} missing id`);
     if (!node.text) errors.push(`Node ${nodeId} missing text`);
-    
+
     // Check options point to valid nodes
     if (node.options) {
       for (const option of node.options) {
@@ -292,7 +294,7 @@ export const validateFlowStructure = (flow: Record<string, WizardNode>): {
         }
       }
     }
-    
+
     // Check for continue-only nodes (should have meaningful choices)
     if (node.options?.length === 1 && node.options[0].text === 'Continue') {
       if (!node.action) {
@@ -300,10 +302,10 @@ export const validateFlowStructure = (flow: Record<string, WizardNode>): {
       }
     }
   }
-  
+
   return {
     valid: errors.length === 0,
-    errors
+    errors,
   };
 };
 
@@ -323,5 +325,5 @@ export const testUtils = {
   createCorruptedData,
   renderWithProviders,
   mockFlowResponse,
-  validateFlowStructure
+  validateFlowStructure,
 };

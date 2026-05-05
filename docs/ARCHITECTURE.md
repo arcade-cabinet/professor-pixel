@@ -75,7 +75,7 @@ docs/               this directory
 ## Build pipeline
 
 ```text
-src + app + public ── tsc (npm run check) ── type errors gate everything else
+src + app + public ── tsc (pnpm check) ── type errors gate everything else
                    └─ vite build ─────────► dist/   (static SPA + bundled assets)
 ```
 
@@ -118,7 +118,7 @@ GitHub Pages deploy: `.github/workflows/cd.yml` runs `vite build` with a compute
 | Surface | What runs | How |
 |---------|-----------|-----|
 | GitHub Pages | Static SPA (`dist/`) | `.github/workflows/cd.yml` on `push: main` |
-| Local preview | Static SPA (`dist/`) | `npm run preview` |
+| Local preview | Static SPA (`dist/`) | `pnpm preview` |
 
 See [`DEPLOYMENT.md`](DEPLOYMENT.md) for environment specifics.
 

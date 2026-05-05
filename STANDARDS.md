@@ -12,18 +12,18 @@ Non-negotiables for code, design, and accessibility. If a rule here conflicts wi
 ## TypeScript
 
 - **`strict: true`** is mandatory. The repo's `tsconfig.json` already enables it; never weaken it per file.
-- **No `any`.** `@typescript-eslint/no-explicit-any` is `"warn"` today; treat it as `"error"`. New code adding `any` will be rejected. Use `unknown` + a type guard, or fix the type.
+- **No `any`.** Biome's `noExplicitAny` is `"warn"` today (legacy parity); treat it as `"error"`. New code adding `any` will be rejected. Use `unknown` + a type guard, or fix the type. The lint config flip to `error` lands with M2.1 of the modernization pillar.
 - **No `as` casts** except (a) narrowing `unknown` after a runtime check, (b) the `as const` assertion. Anything else needs a comment explaining why TS can't infer it.
 - **`noEmit: true`** — type-checking is the build for `tsc`. The actual JS output comes from Vite.
 - **Module boundaries.** Use the `@/` (`./app/*`), `@lib/` (`./src/*`), and `@assets/` (`./app/assets/*`) aliases — never relative paths that reach across a domain boundary.
 - **Schema-first.** Cross-domain data is defined as a Zod schema in `src/types/schema.ts` (or the relevant domain folder); the TypeScript type is `z.infer<typeof Schema>`. Don't hand-write a type and a validator that can drift. See [`docs/pillars/03-lesson-engine.md`](docs/pillars/03-lesson-engine.md) for the canonical lesson schema and [`docs/pillars/04-grading.md`](docs/pillars/04-grading.md) for grading rule schemas.
 
-## ESLint / Prettier
+## Biome (lint + format)
 
-- **`npx eslint .` must be clean** before merge. No `// eslint-disable-next-line` without a one-line justification on the same comment. (The CI lint job is currently advisory — `continue-on-error: true` — while the codebase is brought to a clean state. New code is held to the standard at review time and the CI gate flips to blocking once the existing backlog is addressed; tracked in [`docs/STATE.md`](docs/STATE.md).)
-- **Prettier is the formatter.** Settings: `printWidth: 100`, single quotes, 2-space indent, semicolons, `trailingComma: 'es5'`, LF line endings. Don't argue with Prettier — fix the config or accept it.
-- **No unused variables.** Allowed: prefix with `_` (e.g., `_unused`). The rule respects this.
-- **Naming convention.** camelCase for variables and functions, PascalCase for types and components, SCREAMING_SNAKE_CASE only for true compile-time constants.
+- **`pnpm lint` must be clean** before merge. No `// biome-ignore` without a one-line justification on the same comment. The CI lint job is blocking as of M1.5.
+- **Biome is the formatter.** Settings: `lineWidth: 100`, single quotes, 2-space indent, semicolons, `trailingCommas: 'es5'`, LF line endings. Don't argue with the formatter — fix `biome.json` or accept it.
+- **No unused variables.** Currently `warn`; flips to `error` with M2.1.
+- **Naming convention.** camelCase for variables and functions, PascalCase for types and components, SCREAMING_SNAKE_CASE only for true compile-time constants. (Biome's `useNamingConvention` is off — enforced at review.)
 - **No `console.*`** in shipped code except `console.error` for genuinely unexpected paths. Use `@lib/monitoring/console-logger` when an audit trail is needed.
 
 ## React

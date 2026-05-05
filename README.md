@@ -14,12 +14,12 @@ Python runs in the browser via **Pyodide**; PyGame draw calls are intercepted by
 ## Quick start
 
 ```bash
-npm install            # install dependencies
-npm run dev            # start Vite dev server (port 5173). predev regenerates assets/catalog.json
-npm run check          # type-check (tsc, no emit)
-npm run build          # production build. prebuild regenerates assets/catalog.json
-npm run preview        # preview the built SPA
-npm run catalog        # rebuild public/assets/catalog.json from public/assets/
+pnpm install            # install dependencies
+pnpm dev            # start Vite dev server (port 5173). predev regenerates assets/catalog.json
+pnpm check          # type-check (tsc, no emit)
+pnpm build          # production build. prebuild regenerates assets/catalog.json
+pnpm preview        # preview the built SPA
+pnpm catalog        # rebuild public/assets/catalog.json from public/assets/
 ```
 
 Default dev server port: **5173**.
@@ -29,11 +29,11 @@ Default dev server port: **5173**.
 Vitest is split into projects for the runtime each test needs; Playwright is e2e.
 
 ```bash
-npm run test:unit          # unit tests        — jsdom
-npm run test:integration   # integration tests — jsdom, longer timeout
-npm run test:component     # component tests   — real Chromium via @vitest/browser
-npm test                   # all Vitest projects
-npm run test:e2e           # Playwright e2e
+pnpm test:unit          # unit tests        — jsdom
+pnpm test:integration   # integration tests — jsdom, longer timeout
+pnpm test:component     # component tests   — real Chromium via @vitest/browser
+pnpm test                  # all Vitest projects
+pnpm test:e2e           # Playwright e2e
 ```
 
 See [`docs/TESTING.md`](docs/TESTING.md) for the full testing strategy.
@@ -98,7 +98,7 @@ Aliases: `@/*` → `./app/*` (TSX), `@lib/*` → `./src/*` (TS logic), `@assets/
 1. Read [`STANDARDS.md`](STANDARDS.md) and [`AGENTS.md`](AGENTS.md) before opening a PR.
 2. Branch from `main`, use [Conventional Commits](https://www.conventionalcommits.org/) (`feat:`, `fix:`, `docs:`, `chore:`, …).
 3. Write or update tests alongside behavior changes — `Docs → Tests → Code`.
-4. Run `npm run check` and the relevant test suites locally before pushing.
+4. Run `pnpm check` and the relevant test suites locally before pushing.
 5. PRs are squash-merged; release notes are generated automatically by release-please.
 
 ## License

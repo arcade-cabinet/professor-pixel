@@ -12,13 +12,14 @@ interface SpriteProperties {
   color?: string;
 }
 
-export const spriteComponent: PyGameComponent = {
+export const spriteComponent: PyGameComponent<SpriteProperties> = {
   type: 'sprite',
   id: 'sprite',
   name: 'Sprite',
   description: 'A movable character or object with position and velocity',
-  wizardDescription: 'This is like a character in your game that can move around! It could be a player, an animal, or any object that needs to move. You can make it jump, run, or fly!',
-  properties: {} as Record<string, any>,
+  wizardDescription:
+    'This is like a character in your game that can move around! It could be a player, an animal, or any object that needs to move. You can make it jump, run, or fly!',
+  properties: {},
   defaultProperties: {
     x: 100,
     y: 100,
@@ -26,7 +27,7 @@ export const spriteComponent: PyGameComponent = {
     velocityY: 0,
     width: 40,
     height: 40,
-    color: '#4F46E5'
+    color: '#4F46E5',
   },
   preview: (ctx: CanvasRenderingContext2D, props: SpriteProperties) => {
     ctx.fillStyle = props.color || '#4F46E5';
@@ -56,5 +57,5 @@ class Sprite:
         self.rect.y = self.y
     
     def draw(self, screen):
-        pygame.draw.rect(screen, self.color, self.rect)`
+        pygame.draw.rect(screen, self.color, self.rect)`,
 };

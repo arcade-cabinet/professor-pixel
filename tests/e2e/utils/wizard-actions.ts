@@ -9,39 +9,69 @@ export interface WizardState {
 }
 
 export class WizardNavigator {
-  constructor(private page: Page, private errorDetector?: ErrorDetector) {}
+  constructor(
+    private page: Page,
+    private errorDetector?: ErrorDetector
+  ) {}
 
   async getWizardState(): Promise<WizardState> {
     try {
       // Get current dialogue text
-      const dialogueElement = this.page.locator('[data-testid="dialogue-text"], .dialogue-text').first();
-      const currentDialogue = (await dialogueElement.textContent().catch(() => undefined)) ?? undefined;
+      const dialogueElement = this.page
+        .locator('[data-testid="dialogue-text"], .dialogue-text')
+        .first();
+      const currentDialogue =
+        (await dialogueElement.textContent().catch(() => undefined)) ?? undefined;
 
       // Get available options
       const optionElements = this.page.locator('[data-testid^="option-"], .wizard-option');
       const optionCount = await optionElements.count();
       const availableOptions: string[] = [];
-      
+
       for (let i = 0; i < optionCount; i++) {
-        const optionText = await optionElements.nth(i).textContent().catch(() => '');
+        const optionText = await optionElements
+          .nth(i)
+          .textContent()
+          .catch(() => '');
         if (optionText) availableOptions.push(optionText);
       }
 
       // Detect pixel state
-      const isMinimized = await this.page.locator('[data-testid="pixel-minimized"]').isVisible().catch(() => false);
-      const isTransitioning = await this.page.locator('.pixel-transitioning, [data-testid*="transitioning"]').isVisible().catch(() => false);
-      
+      const isMinimized = await this.page
+        .locator('[data-testid="pixel-minimized"]')
+        .isVisible()
+        .catch(() => false);
+      const isTransitioning = await this.page
+        .locator('.pixel-transitioning, [data-testid*="transitioning"]')
+        .isVisible()
+        .catch(() => false);
+
       let pixelState: 'center-stage' | 'minimized' | 'transitioning' = 'center-stage';
       if (isMinimized) pixelState = 'minimized';
       else if (isTransitioning) pixelState = 'transitioning';
 
       // Detect embedded components
       let embeddedComponent: string | undefined;
-      if (await this.page.locator('[data-testid*="wysiwyg"], .wysiwyg-editor').isVisible().catch(() => false)) {
+      if (
+        await this.page
+          .locator('[data-testid*="wysiwyg"], .wysiwyg-editor')
+          .isVisible()
+          .catch(() => false)
+      ) {
         embeddedComponent = 'wysiwyg-editor';
-      } else if (await this.page.locator('[data-testid*="asset-browser"]').isVisible().catch(() => false)) {
+      } else if (
+        await this.page
+          .locator('[data-testid*="asset-browser"]')
+          .isVisible()
+          .catch(() => false)
+      ) {
         embeddedComponent = 'asset-browser';
-      } else if (await this.page.locator('[data-testid*="code-editor"]').isVisible().catch(() => false)) {
+      } else if (
+        await this.page
+          .locator('[data-testid*="code-editor"]')
+          .isVisible()
+          .catch(() => false)
+      ) {
         embeddedComponent = 'code-editor';
       }
 
@@ -49,7 +79,7 @@ export class WizardNavigator {
         currentDialogue,
         availableOptions,
         pixelState,
-        embeddedComponent
+        embeddedComponent,
       };
     } catch (error) {
       console.warn('Error getting wizard state:', error);
@@ -59,13 +89,19 @@ export class WizardNavigator {
 
   async waitForWizardLoad(timeout = 10000): Promise<void> {
     // Wait for Pixel avatar to appear
-    await expect(this.page.locator('[data-testid="pixel-avatar"], img[alt*="Pixel"]')).toBeVisible({ timeout });
-    
+    await expect(this.page.locator('[data-testid="pixel-avatar"], img[alt*="Pixel"]')).toBeVisible({
+      timeout,
+    });
+
     // Wait for initial dialogue
-    await expect(this.page.locator('[data-testid="dialogue-text"], .dialogue-text')).toBeVisible({ timeout });
-    
+    await expect(this.page.locator('[data-testid="dialogue-text"], .dialogue-text')).toBeVisible({
+      timeout,
+    });
+
     // Wait for at least one option to be available
-    await expect(this.page.locator('[data-testid^="option-"], .wizard-option').first()).toBeVisible({ timeout });
+    await expect(this.page.locator('[data-testid^="option-"], .wizard-option').first()).toBeVisible(
+      { timeout }
+    );
 
     // Give animations time to complete
     await this.page.waitForTimeout(1000);
@@ -85,7 +121,7 @@ export class WizardNavigator {
     if (waitForTransition) {
       // Wait for dialogue to change or component to load
       await this.page.waitForTimeout(500);
-      
+
       // Check if we're transitioning to an embedded component
       const state = await this.getWizardState();
       if (state.embeddedComponent) {
@@ -95,34 +131,40 @@ export class WizardNavigator {
   }
 
   async selectOptionByText(optionText: string, exactMatch = false): Promise<void> {
-    const selector = exactMatch 
+    const selector = exactMatch
       ? `[data-testid^="option-"]:has-text("${optionText}")`
       : `[data-testid^="option-"]:has-text("${optionText.substring(0, 20)}")`;
-    
+
     const optionElement = this.page.locator(selector).first();
-    
+
     await expect(optionElement).toBeVisible();
     await optionElement.click();
-    
+
     await this.page.waitForTimeout(500);
   }
 
   async waitForEmbeddedComponent(componentType: string, timeout = 15000): Promise<void> {
     switch (componentType) {
       case 'wysiwyg-editor':
-        await expect(this.page.locator('[data-testid*="wysiwyg"], .wysiwyg-editor')).toBeVisible({ timeout });
+        await expect(this.page.locator('[data-testid*="wysiwyg"], .wysiwyg-editor')).toBeVisible({
+          timeout,
+        });
         await expect(this.page.locator('[data-testid*="canvas"], canvas')).toBeVisible({ timeout });
         break;
-      
+
       case 'asset-browser':
         await expect(this.page.locator('[data-testid*="asset-browser"]')).toBeVisible({ timeout });
-        await expect(this.page.locator('[data-testid*="asset-grid"], [data-testid*="asset-list"]')).toBeVisible({ timeout });
+        await expect(
+          this.page.locator('[data-testid*="asset-grid"], [data-testid*="asset-list"]')
+        ).toBeVisible({ timeout });
         break;
-      
+
       case 'code-editor':
-        await expect(this.page.locator('[data-testid*="code-editor"], .code-editor')).toBeVisible({ timeout });
+        await expect(this.page.locator('[data-testid*="code-editor"], .code-editor')).toBeVisible({
+          timeout,
+        });
         break;
-      
+
       default:
         console.warn(`Unknown embedded component type: ${componentType}`);
     }
@@ -131,7 +173,12 @@ export class WizardNavigator {
     await this.page.waitForTimeout(1000);
   }
 
-  async navigateWizardFlow(steps: Array<{ action: 'select-option'; optionIndex?: number; optionText?: string } | { action: 'wait'; duration: number }>): Promise<void> {
+  async navigateWizardFlow(
+    steps: Array<
+      | { action: 'select-option'; optionIndex?: number; optionText?: string }
+      | { action: 'wait'; duration: number }
+    >
+  ): Promise<void> {
     for (const step of steps) {
       if (step.action === 'select-option') {
         if (step.optionIndex !== undefined) {
@@ -155,10 +202,10 @@ export class WizardNavigator {
 
   async restorePixelFromMinimized(): Promise<void> {
     const minimizedPixel = this.page.locator('[data-testid="pixel-minimized"]');
-    
+
     if (await minimizedPixel.isVisible()) {
       await minimizedPixel.click();
-      
+
       // Wait for restoration animation
       await expect(this.page.locator('[data-testid="pixel-avatar"]')).toBeVisible();
       await this.page.waitForTimeout(1000);
@@ -167,7 +214,7 @@ export class WizardNavigator {
 
   async openPixelMenu(): Promise<void> {
     const menuButton = this.page.locator('[data-testid="open-pixel-menu-button"]');
-    
+
     if (await menuButton.isVisible()) {
       await menuButton.click();
       await expect(this.page.locator('[data-testid="pixel-menu"]')).toBeVisible();
@@ -189,7 +236,7 @@ export class WizardNavigator {
     await this.page.mouse.down();
     await this.page.mouse.move(viewport.width * 0.3, viewport.height / 2);
     await this.page.mouse.up();
-    
+
     // Wait for menu to potentially appear
     await this.page.waitForTimeout(500);
   }
@@ -201,7 +248,7 @@ export class WizardNavigator {
       '.close-button',
       '[aria-label="Close"]',
       'button:has-text("Close")',
-      'button:has-text("×")'
+      'button:has-text("×")',
     ];
 
     for (const selector of closeSelectors) {

@@ -176,7 +176,16 @@
             "cursors/arrow_w.png"
           ],
           "usage": "Directional arrows for resize operations, movement indicators",
-          "directions": ["east", "northeast", "north", "northwest", "southeast", "south", "southwest", "west"]
+          "directions": [
+            "east",
+            "northeast",
+            "north",
+            "northwest",
+            "southeast",
+            "south",
+            "southwest",
+            "west"
+          ]
         },
         {
           "name": "Hand Cursors",

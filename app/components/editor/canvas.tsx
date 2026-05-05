@@ -29,12 +29,12 @@ export default function PygameEditorCanvas({
   onSelect,
   onMove,
   onDelete,
-  className
+  className,
 }: PygameEditorCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [draggedComponent, setDraggedComponent] = useState<string | null>(null);
-  const animationFrameRef = useRef<number>();
+  const animationFrameRef = useRef<number | undefined>(undefined);
 
   const [{ isOver }, drop] = useDrop(() => ({
     accept: 'pygame-component',
@@ -49,8 +49,8 @@ export default function PygameEditorCanvas({
       }
     },
     collect: (monitor) => ({
-      isOver: !!monitor.isOver()
-    })
+      isOver: !!monitor.isOver(),
+    }),
   }));
 
   // Set up canvas rendering
@@ -92,19 +92,19 @@ export default function PygameEditorCanvas({
       }
 
       // Draw placed components
-      components.forEach(comp => {
+      components.forEach((comp) => {
         const componentDef = getComponentById(comp.componentId);
         if (componentDef && componentDef.preview) {
           ctx.save();
           ctx.translate(comp.x, comp.y);
-          
+
           // Highlight selected component
           if (comp.id === selectedId) {
             ctx.strokeStyle = 'rgba(219, 39, 119, 0.5)';
             ctx.lineWidth = 2;
             ctx.strokeRect(-2, -2, 64, 64);
           }
-          
+
           // Call component's preview function
           componentDef.preview(ctx, comp.properties);
           ctx.restore();
@@ -150,7 +150,7 @@ export default function PygameEditorCanvas({
 
     if (clickedComponent) {
       onSelect(clickedComponent.id);
-      
+
       // Set up drag handling
       if (!draggedComponent) {
         setDraggedComponent(clickedComponent.id);
@@ -175,11 +175,11 @@ export default function PygameEditorCanvas({
   drop(containerRef);
 
   return (
-    <Card 
+    <Card
       ref={containerRef}
       className={cn(
-        "relative overflow-hidden bg-white/90 backdrop-blur-sm",
-        isOver && "ring-2 ring-purple-500 ring-offset-2",
+        'relative overflow-hidden bg-white/90 backdrop-blur-sm',
+        isOver && 'ring-2 ring-purple-500 ring-offset-2',
         className
       )}
     >
@@ -189,7 +189,7 @@ export default function PygameEditorCanvas({
         onClick={handleCanvasClick}
         style={{ width: '100%', height: '100%', maxWidth: '800px', maxHeight: '600px' }}
       />
-      
+
       {selectedId && (
         <div className="absolute top-2 right-2 flex gap-2">
           <Button
@@ -203,12 +203,10 @@ export default function PygameEditorCanvas({
           </Button>
         </div>
       )}
-      
+
       {components.length === 0 && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <p className="text-gray-400 text-lg">
-            Drag components here to start building!
-          </p>
+          <p className="text-gray-400 text-lg">Drag components here to start building!</p>
         </div>
       )}
     </Card>

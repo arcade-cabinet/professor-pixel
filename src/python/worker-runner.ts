@@ -15,6 +15,20 @@ export interface RunOptions {
   timeoutMs?: number;
   /** Cap on captured stdout to prevent the worker shipping megabytes back. */
   maxStdout?: number;
+  /**
+   * Function names to instrument with sys.settrace. The worker returns
+   * `RunResult.functionCalls[name]` for each — zero if defined but not called.
+   */
+  trackFunctions?: string[];
+  /**
+   * Variable names to inspect after the snippet runs. The worker reads each
+   * from its post-execution Python globals and returns `RunResult.globals[name]`
+   * (omitted if the variable was never defined). This is the load-bearing seam
+   * for `runtimeRules.variableExists` on worker-routed lessons — main-thread
+   * Pyodide never sees the worker's globals, so the legacy
+   * `pyodide.globals.get(name)` lookup was silently false.
+   */
+  inspectGlobals?: string[];
 }
 
 const DEFAULT_TIMEOUT_MS = 5000;
@@ -46,11 +60,17 @@ export class WorkerPythonRunner {
 
     try {
       const result = await Promise.race([
-        remote.runSnippet(opts.code, opts.input),
+        remote.runSnippet(
+          opts.code,
+          opts.input,
+          maxStdout,
+          opts.trackFunctions,
+          opts.inspectGlobals
+        ),
         timeoutPromise,
       ]);
       if (timer) clearTimeout(timer);
-      return clipResult(result, maxStdout);
+      return verifyClippedResult(result, maxStdout);
     } catch (err) {
       if (timer) clearTimeout(timer);
       if (err instanceof PythonTimeoutError) {
@@ -101,13 +121,32 @@ export class WorkerPythonRunner {
   }
 }
 
-function clipResult(result: RunResult, maxStdout: number): RunResult {
-  if (result.output.length <= maxStdout) return result;
+/**
+ * Verifies the worker honored the maxStdout cap. The worker truncates while
+ * Python is still running (during the stdout callback), so reaching here with
+ * a payload bigger than the cap means the worker either skipped truncation or
+ * a single write call landed an extra-large chunk during the boundary check.
+ *
+ * This is a defense-in-depth re-clip — by the time bytes reach Comlink, the
+ * truncation marker already says we hit the cap, so payload is ≤ cap + marker.
+ */
+function verifyClippedResult(result: RunResult, maxStdout: number): RunResult {
+  // The worker appends a fixed-size truncation marker beyond the cap; allow
+  // a generous slack for it (~256 bytes) before we treat it as a cap miss.
+  const slack = 256;
+  if (result.output.length <= maxStdout + slack) return result;
+  // Worker-side cap missed — re-clip and emit an error to surface the bug.
+  console.error(
+    `worker stdout cap missed: output is ${result.output.length} bytes, cap was ${maxStdout}`
+  );
   return {
     output:
       result.output.slice(0, maxStdout) +
-      `\n[output truncated — exceeded ${maxStdout} bytes]`,
+      `\n[output truncated — main-thread fallback at ${maxStdout} bytes]`,
     error: result.error,
+    inputCalls: result.inputCalls,
+    functionCalls: result.functionCalls,
+    globals: result.globals,
   };
 }
 

@@ -4,12 +4,12 @@ export const jumpComponent: PygameSystemSpec = {
   id: 'jump',
   name: 'Jump Mechanics',
   category: 'movement',
-  
+
   assetSlots: {
     character: 'platformer/characters/player.png',
-    sound: 'audio/sfx/jump.ogg'
+    sound: 'audio/sfx/jump.ogg',
   },
-  
+
   variants: {
     A: {
       name: 'Floaty Jump',
@@ -55,7 +55,7 @@ class JumpSystem:
         # Apply gravity
         if not self.player.on_ground:
             self.player.velocity_y += self.gravity * dt
-            self.player.velocity_y = min(self.player.velocity_y, {{max_fall_speed}})`
+            self.player.velocity_y = min(self.player.velocity_y, {{max_fall_speed}})`,
     },
     B: {
       name: 'Realistic Jump',
@@ -93,16 +93,16 @@ class JumpSystem:
         # Apply constant gravity (no air control)
         if not self.player.on_ground:
             self.player.velocity_y += self.gravity * dt
-            self.player.velocity_y = min(self.player.velocity_y, {{max_fall_speed}})`
-    }
+            self.player.velocity_y = min(self.player.velocity_y, {{max_fall_speed}})`,
+    },
   },
-  
+
   parameters: {
     jump_power: 15,
     gravity: 30,
     max_jumps: 2,
     max_hold_time: 0.3,
     coyote_time: 0.1,
-    max_fall_speed: 20
-  }
+    max_fall_speed: 20,
+  },
 };

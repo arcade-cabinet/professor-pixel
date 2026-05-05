@@ -18,7 +18,7 @@ import type { AstRules, RuleResult } from '@lib/grading/types';
 export async function validateAst(
   code: string,
   rules: AstRules | undefined,
-  pyodide: PyodideInstance | null,
+  pyodide: PyodideInstance | null
 ): Promise<RuleResult[]> {
   if (!pyodide || !rules) return [];
   if (

@@ -2,23 +2,32 @@ import type { GameConfig, Entity, ComponentChoice } from '@lib/types/schema';
 
 // Patch operations for incremental updates
 export interface GamePatch {
-  type: 'entity_add' | 'entity_remove' | 'entity_move' | 'entity_update' | 
-        'component_change' | 'scene_update' | 'settings_update';
-  data: any;
+  type:
+    | 'entity_add'
+    | 'entity_remove'
+    | 'entity_move'
+    | 'entity_update'
+    | 'component_change'
+    | 'scene_update'
+    | 'settings_update';
+  /** Patch payload — shape depends on `type`; the Python receiver narrows via
+   * the discriminator. We keep `unknown` here because each patch kind packs
+   * its own shape (entity_add: full Entity; entity_move: {id, x, y}; etc.). */
+  data: unknown;
   timestamp: number;
   version: number;
 }
 
 // Game update bridge for real-time sync
 export class GameUpdateBridge {
-  private pyodide: any;
+  private pyodide: PyodideInstance;
   private currentVersion: number = 0;
   private pendingPatches: GamePatch[] = [];
   private isInitialized: boolean = false;
   private updateInterval: NodeJS.Timer | null = null;
   private lastConfig: GameConfig | null = null;
 
-  constructor(pyodide: any) {
+  constructor(pyodide: PyodideInstance) {
     this.pyodide = pyodide;
   }
 
@@ -122,10 +131,10 @@ print("Game Update Bridge initialized in Python")
       // Store the config
       this.lastConfig = gameConfig;
       this.isInitialized = true;
-      
+
       // Apply initial config
       await this.syncFullConfig(gameConfig);
-      
+
       console.log('Game Update Bridge initialized successfully');
       return true;
     } catch (error) {
@@ -140,10 +149,10 @@ print("Game Update Bridge initialized in Python")
 
     try {
       // Reset Python state
-      await this.pyodide.globals.get('reset_game_state')();
-      
+      await (this.pyodide.globals.get('reset_game_state') as () => Promise<void>)();
+
       // Add all entities from main scene
-      const mainScene = config.scenes.find(s => s.isMainScene) || config.scenes[0];
+      const mainScene = config.scenes.find((s) => s.isMainScene) || config.scenes[0];
       if (mainScene) {
         // Update scene
         const scenePatch: GamePatch = {
@@ -154,47 +163,47 @@ print("Game Update Bridge initialized in Python")
             width: mainScene.width,
             height: mainScene.height,
             backgroundColor: mainScene.backgroundColor,
-            gridSize: mainScene.gridSize
+            gridSize: mainScene.gridSize,
           },
           timestamp: Date.now(),
-          version: ++this.currentVersion
+          version: ++this.currentVersion,
         };
         await this.applyPatch(scenePatch);
-        
+
         // Add all entities
         for (const entity of mainScene.entities) {
           const patch: GamePatch = {
             type: 'entity_add',
             data: entity,
             timestamp: Date.now(),
-            version: ++this.currentVersion
+            version: ++this.currentVersion,
           };
           await this.applyPatch(patch);
         }
       }
-      
+
       // Apply component choices
       for (const choice of config.componentChoices) {
         const patch: GamePatch = {
           type: 'component_change',
           data: choice,
           timestamp: Date.now(),
-          version: ++this.currentVersion
+          version: ++this.currentVersion,
         };
         await this.applyPatch(patch);
       }
-      
+
       // Apply settings
       if (config.settings) {
         const patch: GamePatch = {
           type: 'settings_update',
           data: config.settings,
           timestamp: Date.now(),
-          version: ++this.currentVersion
+          version: ++this.currentVersion,
         };
         await this.applyPatch(patch);
       }
-      
+
       this.lastConfig = config;
     } catch (error) {
       console.error('Failed to sync full config:', error);
@@ -207,7 +216,9 @@ print("Game Update Bridge initialized in Python")
 
     try {
       const patchJson = JSON.stringify(patch);
-      const result = await this.pyodide.globals.get('apply_game_patch')(patchJson);
+      const result = await (
+        this.pyodide.globals.get('apply_game_patch') as (patch: string) => Promise<boolean>
+      )(patchJson);
       return result;
     } catch (error) {
       console.error('Failed to apply patch:', error);
@@ -252,11 +263,13 @@ print("Game Update Bridge initialized in Python")
   }
 
   // Get current game state from Python
-  async getGameState(): Promise<any> {
+  async getGameState(): Promise<unknown> {
     if (!this.isInitialized || !this.pyodide) return null;
 
     try {
-      const stateJson = await this.pyodide.globals.get('get_game_state')();
+      const stateJson = await (
+        this.pyodide.globals.get('get_game_state') as () => Promise<string>
+      )();
       return JSON.parse(stateJson);
     } catch (error) {
       console.error('Failed to get game state:', error);
@@ -281,13 +294,13 @@ print("Game Update Bridge initialized in Python")
     const patches: GamePatch[] = [];
 
     // Check for scene changes
-    const newScene = newConfig.scenes.find(s => s.isMainScene) || newConfig.scenes[0];
-    const oldScene = old.scenes.find(s => s.isMainScene) || old.scenes[0];
+    const newScene = newConfig.scenes.find((s) => s.isMainScene) || newConfig.scenes[0];
+    const oldScene = old.scenes.find((s) => s.isMainScene) || old.scenes[0];
 
     if (newScene && oldScene) {
       // Check for entity changes
-      const newEntityMap = new Map(newScene.entities.map(e => [e.id, e]));
-      const oldEntityMap = new Map(oldScene.entities.map(e => [e.id, e]));
+      const newEntityMap = new Map(newScene.entities.map((e) => [e.id, e]));
+      const oldEntityMap = new Map(oldScene.entities.map((e) => [e.id, e]));
 
       // Find added entities
       for (const [id, entity] of Array.from(newEntityMap)) {
@@ -296,37 +309,41 @@ print("Game Update Bridge initialized in Python")
             type: 'entity_add',
             data: entity,
             timestamp: Date.now(),
-            version: ++this.currentVersion
+            version: ++this.currentVersion,
           });
         } else {
           const oldEntity = oldEntityMap.get(id)!;
           // Check for position changes
-          if (entity.position.x !== oldEntity.position.x || 
-              entity.position.y !== oldEntity.position.y) {
+          if (
+            entity.position.x !== oldEntity.position.x ||
+            entity.position.y !== oldEntity.position.y
+          ) {
             patches.push({
               type: 'entity_move',
               data: {
                 id: entity.id,
-                position: entity.position
+                position: entity.position,
               },
               timestamp: Date.now(),
-              version: ++this.currentVersion
+              version: ++this.currentVersion,
             });
           }
           // Check for other property changes
-          if (JSON.stringify(entity.properties) !== JSON.stringify(oldEntity.properties) ||
-              JSON.stringify(entity.size) !== JSON.stringify(oldEntity.size)) {
+          if (
+            JSON.stringify(entity.properties) !== JSON.stringify(oldEntity.properties) ||
+            JSON.stringify(entity.size) !== JSON.stringify(oldEntity.size)
+          ) {
             patches.push({
               type: 'entity_update',
               data: {
                 id: entity.id,
                 updates: {
                   properties: entity.properties,
-                  size: entity.size
-                }
+                  size: entity.size,
+                },
               },
               timestamp: Date.now(),
-              version: ++this.currentVersion
+              version: ++this.currentVersion,
             });
           }
         }
@@ -339,15 +356,15 @@ print("Game Update Bridge initialized in Python")
             type: 'entity_remove',
             data: { id },
             timestamp: Date.now(),
-            version: ++this.currentVersion
+            version: ++this.currentVersion,
           });
         }
       }
     }
 
     // Check for component choice changes
-    const newChoiceMap = new Map(newConfig.componentChoices.map(c => [c.component, c.choice]));
-    const oldChoiceMap = new Map(old.componentChoices.map(c => [c.component, c.choice]));
+    const newChoiceMap = new Map(newConfig.componentChoices.map((c) => [c.component, c.choice]));
+    const oldChoiceMap = new Map(old.componentChoices.map((c) => [c.component, c.choice]));
 
     for (const [componentId, choice] of Array.from(newChoiceMap)) {
       if (oldChoiceMap.get(componentId) !== choice) {
@@ -355,7 +372,7 @@ print("Game Update Bridge initialized in Python")
           type: 'component_change',
           data: { componentId, choice },
           timestamp: Date.now(),
-          version: ++this.currentVersion
+          version: ++this.currentVersion,
         });
       }
     }
@@ -380,7 +397,7 @@ print("Game Update Bridge initialized in Python")
 // Singleton instance
 let bridgeInstance: GameUpdateBridge | null = null;
 
-export function getGameUpdateBridge(pyodide?: any): GameUpdateBridge {
+export function getGameUpdateBridge(pyodide?: PyodideInstance): GameUpdateBridge {
   if (!bridgeInstance && pyodide) {
     bridgeInstance = new GameUpdateBridge(pyodide);
   }

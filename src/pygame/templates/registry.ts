@@ -20,7 +20,7 @@ export const gameTemplates: GameTemplate[] = [
   pongTemplate,
   shooterTemplate,
   breakoutTemplate,
-  collectingTemplate
+  collectingTemplate,
 ];
 
 // ============================================================================
@@ -28,11 +28,13 @@ export const gameTemplates: GameTemplate[] = [
 // ============================================================================
 
 export function getTemplateById(id: string): GameTemplate | undefined {
-  return gameTemplates.find(t => t.id === id);
+  return gameTemplates.find((t) => t.id === id);
 }
 
-export function getTemplatesByDifficulty(difficulty: 'beginner' | 'intermediate' | 'advanced'): GameTemplate[] {
-  return gameTemplates.filter(t => t.difficulty === difficulty);
+export function getTemplatesByDifficulty(
+  difficulty: 'beginner' | 'intermediate' | 'advanced'
+): GameTemplate[] {
+  return gameTemplates.filter((t) => t.difficulty === difficulty);
 }
 
 export function getAllTemplates(): GameTemplate[] {
@@ -41,9 +43,9 @@ export function getAllTemplates(): GameTemplate[] {
 
 // Export for testing in browser console
 if (typeof window !== 'undefined') {
-  (window as any).testPygameTemplates = () => {
+  (window as Window & { testPygameTemplates?: () => GameTemplate[] }).testPygameTemplates = () => {
     console.log('🎮 PyGame Templates Available:');
-    gameTemplates.forEach(template => {
+    gameTemplates.forEach((template) => {
       console.log(`  - ${template.name} (${template.id}): ${template.description}`);
       console.log(`    Difficulty: ${template.difficulty}`);
     });

@@ -1,3 +1,5 @@
+import type { JSX } from 'react';
+import type { SwipeableHandlers } from 'react-swipeable';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -8,24 +10,9 @@ import GameProgressSidebar from '@/components/game-progress-sidebar';
 import { PortraitAvatar, LandscapeAvatar, CenteredAvatar } from './avatar-display';
 import { DialogueBox, DialogueText } from './dialogue-engine';
 import WizardOptionHandler, { ContinueButton } from './option-handler';
-import { 
-  WizardNode, 
-  WizardOption, 
-  DeviceState,
-  UIState,
-  SessionActions
-} from '@lib/wizard/types';
-import { 
-  STYLES, 
-  EDGE_SWIPE_CONFIG,
-  ANIMATIONS,
-  ICON_SIZES
-} from '@lib/wizard/constants';
-import { 
-  getCurrentText,
-  shouldShowOptions, 
-  shouldShowContinue
-} from '@lib/wizard/utils';
+import { WizardNode, WizardOption, DeviceState, UIState, SessionActions } from '@lib/wizard/types';
+import { STYLES, EDGE_SWIPE_CONFIG, ANIMATIONS, ICON_SIZES } from '@lib/wizard/constants';
+import { getCurrentText, shouldShowOptions, shouldShowContinue } from '@lib/wizard/utils';
 
 interface LayoutProps {
   currentNode: WizardNode | null;
@@ -34,7 +21,7 @@ interface LayoutProps {
   onAdvance: () => void;
   onOptionSelect: (option: WizardOption) => void;
   onOpenMenu: () => void;
-  edgeSwipeHandlers?: any;
+  edgeSwipeHandlers?: SwipeableHandlers;
 }
 
 // Phone Portrait Layout
@@ -44,10 +31,10 @@ export function PhonePortraitLayout({
   sessionActions,
   onAdvance,
   onOptionSelect,
-  edgeSwipeHandlers
+  edgeSwipeHandlers,
 }: LayoutProps) {
   if (!currentNode) return null;
-  
+
   const displayText = getCurrentText(currentNode, dialogueStep, sessionActions);
   const showOptions = shouldShowOptions(currentNode, dialogueStep);
   const showContinue = shouldShowContinue(currentNode, dialogueStep);
@@ -55,14 +42,10 @@ export function PhonePortraitLayout({
   return (
     <div {...edgeSwipeHandlers} className={`h-screen flex flex-col ${STYLES.GRADIENT_BG}`}>
       <PortraitAvatar />
-      
-      <DialogueBox 
-        text={displayText} 
-        className="flex-shrink-0 px-4 pb-4"
-        variant="mobile"
-      />
 
-      <motion.div 
+      <DialogueBox text={displayText} className="flex-shrink-0 px-4 pb-4" variant="mobile" />
+
+      <motion.div
         className="flex-1 min-h-0 overflow-y-auto px-4 pb-safe-or-6"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -76,13 +59,8 @@ export function PhonePortraitLayout({
               variant="phone-portrait"
             />
           )}
-          
-          {showContinue && (
-            <ContinueButton
-              onClick={onAdvance}
-              variant="phone-portrait"
-            />
-          )}
+
+          {showContinue && <ContinueButton onClick={onAdvance} variant="phone-portrait" />}
         </div>
       </motion.div>
     </div>
@@ -96,32 +74,32 @@ export function PhoneLandscapeLayout({
   sessionActions,
   onAdvance,
   onOptionSelect,
-  edgeSwipeHandlers
+  edgeSwipeHandlers,
 }: LayoutProps) {
   if (!currentNode) return null;
-  
+
   const displayText = getCurrentText(currentNode, dialogueStep, sessionActions);
   const showOptions = shouldShowOptions(currentNode, dialogueStep);
   const showContinue = shouldShowContinue(currentNode, dialogueStep);
 
   return (
-    <div {...edgeSwipeHandlers} className={`h-screen grid grid-cols-[20%,80%] ${STYLES.GRADIENT_BG}`}>
+    <div
+      {...edgeSwipeHandlers}
+      className={`h-screen grid grid-cols-[20%,80%] ${STYLES.GRADIENT_BG}`}
+    >
       <LandscapeAvatar />
-      
+
       <div className="flex flex-col p-3 overflow-hidden">
-        <motion.div 
+        <motion.div
           className="flex-shrink-0 mb-3"
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: ANIMATIONS.FADE_IN.delay }}
         >
-          <DialogueBox 
-            text={displayText}
-            variant="default"
-          />
+          <DialogueBox text={displayText} variant="default" />
         </motion.div>
 
-        <motion.div 
+        <motion.div
           className="flex-1 min-h-0 overflow-y-auto"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -135,12 +113,7 @@ export function PhoneLandscapeLayout({
             />
           )}
 
-          {showContinue && (
-            <ContinueButton
-              onClick={onAdvance}
-              variant="phone-landscape"
-            />
-          )}
+          {showContinue && <ContinueButton onClick={onAdvance} variant="phone-landscape" />}
         </motion.div>
       </div>
     </div>
@@ -165,15 +138,15 @@ export function DesktopLayout({
   renderDialogue,
   sessionActions,
   showProgressSidebar,
-  gameName
+  gameName,
 }: DesktopLayoutProps) {
   const showSidebar = showProgressSidebar && sessionActions?.gameType;
-  
+
   return (
     <div className={`min-h-screen ${STYLES.GRADIENT_BG} relative`}>
       <div className={`${showSidebar ? 'pr-80' : ''} transition-all duration-300`}>
         <DesktopHeader />
-        
+
         <PixelMenu
           isOpen={uiState.pixelMenuOpen}
           onClose={() => onPixelMenuAction('returnCurrent')}
@@ -196,7 +169,9 @@ export function DesktopLayout({
               className="fixed inset-0 flex items-center justify-center z-30 pointer-events-none px-4 pt-20 lg:pt-4"
               style={{ paddingRight: showSidebar ? '20rem' : undefined }}
             >
-              <Card className={`relative max-w-2xl w-full p-6 sm:p-8 ${STYLES.CARD_BG} shadow-2xl border-2 border-purple-500/20 pointer-events-auto`}>
+              <Card
+                className={`relative max-w-2xl w-full p-6 sm:p-8 ${STYLES.CARD_BG} shadow-2xl border-2 border-purple-500/20 pointer-events-auto`}
+              >
                 <CenteredAvatar className="mb-6" />
                 {renderDialogue()}
               </Card>
@@ -204,14 +179,11 @@ export function DesktopLayout({
           )}
         </AnimatePresence>
       </div>
-      
+
       {/* Game Progress Sidebar */}
       {showSidebar && sessionActions && (
         <div className="fixed top-0 right-0 h-full z-20">
-          <GameProgressSidebar 
-            sessionActions={sessionActions}
-            gameName={gameName}
-          />
+          <GameProgressSidebar sessionActions={sessionActions} gameName={gameName} />
         </div>
       )}
     </div>
@@ -229,7 +201,7 @@ export function DesktopHeader() {
           <motion.div
             className="flex items-center space-x-2 sm:space-x-3"
             whileHover={{ scale: 1.05 }}
-            transition={{ type: "spring", stiffness: 300 }}
+            transition={{ type: 'spring', stiffness: 300 }}
           >
             <div className="relative">
               <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl blur-lg opacity-75 animate-pulse"></div>
@@ -241,7 +213,9 @@ export function DesktopHeader() {
               <h1 className="text-base sm:text-2xl font-black bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
                 Pixel's PyGame Palace
               </h1>
-              <p className="hidden sm:block text-xs text-muted-foreground">Your Game Building Adventure</p>
+              <p className="hidden sm:block text-xs text-muted-foreground">
+                Your Game Building Adventure
+              </p>
             </div>
           </motion.div>
 
@@ -251,7 +225,7 @@ export function DesktopHeader() {
               transition={{
                 duration: ANIMATIONS.SPARKLE_ROTATE.duration,
                 repeat: Infinity,
-                ease: "linear"
+                ease: 'linear',
               }}
             >
               <Sparkles className={`${ICON_SIZES.MEDIUM} text-purple-600`} />
@@ -287,6 +261,6 @@ export function useLayoutEdgeSwipe(onOpenMenu: () => void) {
       onOpenMenu();
     },
     edgeThreshold: EDGE_SWIPE_CONFIG.threshold,
-    enabled: EDGE_SWIPE_CONFIG.enabled
+    enabled: EDGE_SWIPE_CONFIG.enabled,
   });
 }

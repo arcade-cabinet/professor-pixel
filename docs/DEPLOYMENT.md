@@ -14,7 +14,7 @@ domain: ops
 | Target | What runs | Trigger | Defined in |
 |--------|-----------|---------|------------|
 | **GitHub Pages** | Static SPA (`dist/`) | `push: main` or manual dispatch | `.github/workflows/cd.yml` |
-| **Local preview** | Static SPA (`dist/`) | `npm run preview` | `package.json` |
+| **Local preview** | Static SPA (`dist/`) | `pnpm preview` | `package.json` |
 | **Any static host** | Static SPA (`dist/`) | Upload `dist/` to S3 / Cloudflare Pages / Netlify / etc. | — |
 
 The app is a pure browser SPA. There is no server component. Pyodide loads from CDN at runtime; persistence is `localStorage`/`sessionStorage`/cookies; static content (lessons JSON, asset catalog JSON) is served from `public/`.
@@ -24,9 +24,9 @@ The app is a pure browser SPA. There is no server component. Pyodide loads from 
 The canonical public deploy. The workflow:
 
 1. Checks out `main`.
-2. Sets up Node (`lts/*`) and runs `npm ci`.
+2. Sets up Node (`lts/*`) and runs `pnpm install --frozen-lockfile`.
 3. Computes the Pages base path from the repo name (`/$REPO/` or `/` for `*.github.io` repos).
-4. Runs `npm run catalog` to regenerate `public/assets/catalog.json`.
+4. Runs `pnpm catalog` to regenerate `public/assets/catalog.json`.
 5. Runs `npx vite build --base="$BASE"`.
 6. Copies `dist/index.html` → `dist/404.html` so client-side routing survives Pages' 404 fallback.
 7. Uploads `dist/` and deploys via `actions/deploy-pages@v4`.
@@ -48,8 +48,8 @@ Replit was the original development surface; the project still ships with `@repl
 To run on Replit:
 
 ```bash
-npm install
-npm run dev      # development with HMR + Replit overlays
+pnpm install
+pnpm dev      # development with HMR + Replit overlays
 ```
 
 `.replit` is the Replit run/config descriptor.
@@ -59,10 +59,10 @@ npm run dev      # development with HMR + Replit overlays
 Verify the production bundle locally before pushing:
 
 ```bash
-npm ci
-npm run check              # type-check
-npm run build              # tsc + vite build (prebuild regenerates the asset catalog)
-npm run preview            # serves dist/ on http://localhost:4173
+pnpm install --frozen-lockfile
+pnpm check              # type-check
+pnpm build              # tsc + vite build (prebuild regenerates the asset catalog)
+pnpm preview            # serves dist/ on http://localhost:4173
 ```
 
 ## Environments and secrets
@@ -83,7 +83,7 @@ The standard-repo doctrine is **ci → release → cd**:
 
 | Stage | Workflow | Status |
 |-------|----------|--------|
-| **CI** (lint, type-check, test, build) | `.github/workflows/ci.yml` | Active — runs `npm run check`, `npm run build`, Vitest unit (blocking) and integration/component (advisory). |
+| **CI** (lint, type-check, test, build) | `.github/workflows/ci.yml` | Active — runs `pnpm check`, `pnpm build`, Vitest unit (blocking) and integration/component (advisory). |
 | **Release** (tag, build versioned artefact, generate notes) | `.github/workflows/release.yml` | Active — release-please raises the release PR; merging it cuts a tag and uploads a versioned artefact with a build-provenance attestation. |
 | **CD** (deploy on `push: main`) | `.github/workflows/cd.yml` | Active for GitHub Pages. |
 
@@ -111,8 +111,8 @@ For runtime health, the in-browser monitoring (`@lib/monitoring/health`, `@lib/e
 |---------|-------|-----|
 | Pages site shows old content after deploy | Browser cache / CDN | Hard reload; Pages' CDN settles within ~60s |
 | SPA 404 on direct URL after deploy | Missing `404.html` fallback | Re-check that step in `cd.yml`; don't remove it |
-| `npm run dev` hangs at startup | Vite port conflict on 5173 | Free port 5173, or set Vite's `server.port` |
-| Asset references 404 in browser | `public/assets/catalog.json` stale or missing | `npm run catalog` (also runs as `predev`/`prebuild`) |
+| `pnpm dev` hangs at startup | Vite port conflict on 5173 | Free port 5173, or set Vite's `server.port` |
+| Asset references 404 in browser | `public/assets/catalog.json` stale or missing | `pnpm catalog` (also runs as `predev`/`prebuild`) |
 | `@assets/pixel/...` import fails | New portrait added to `app/assets/pixel/` not picked up | Restart the dev server — Vite picks up new files at start |
 | Pyodide fails to load | CDN reachability or version mismatch | Confirm `loadPyodide` indexURL in `app/components/pygame/runner.tsx` |
 

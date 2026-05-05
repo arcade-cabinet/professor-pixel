@@ -5,18 +5,38 @@ import type { RuleResult, RuntimeRules } from './types';
  *   outputContains[], outputMatches, variableExists[], functionCalled[],
  *   acceptsUserInput, outputIncludesInput.
  *
- * variableExists / functionCalled require a Pyodide instance (the variables
- * live in the just-executed Python globals); the others are stdout-only.
+ * Three rules read from worker-collected metadata rather than re-deriving
+ * from stdout: `variableExists` reads `meta.globals` (worker's
+ * post-execution Python globals snapshot via `inspectGlobals`),
+ * `functionCalled` reads `meta.functionCalls` (sys.settrace counters via
+ * `trackFunctions`), and `acceptsUserInput` reads `meta.inputCalls`
+ * (monkey-patched `builtins.input` counter). The other rules are stdout-only.
  *
  * T5.3 caps (timeoutMs, maxStdout) live one level up in the engine —
  * runtime validation only sees output that's already been sized.
  */
+export interface RuntimeMetadata {
+  /** input() invocation count from the worker's monkey-patched builtin. */
+  inputCalls?: number;
+  /** Per-function call counts from the worker's sys.settrace tracer. */
+  functionCalls?: Record<string, number>;
+  /**
+   * Snapshot of post-execution Python globals for the names the engine asked
+   * about via `inspectGlobals`. Names that were never defined are omitted —
+   * `name in globals` distinguishes existence from falsy-ness.
+   */
+  globals?: Record<string, unknown>;
+}
+
 export async function validateRuntime(
   output: string,
   rules: RuntimeRules | undefined,
   input: string | undefined,
-  pyodide: PyodideInstance | null,
+  meta: RuntimeMetadata = {}
 ): Promise<RuleResult[]> {
+  const inputCalls = meta.inputCalls ?? 0;
+  const functionCalls = meta.functionCalls ?? {};
+  const globals = meta.globals ?? {};
   if (!rules) return [];
   const results: RuleResult[] = [];
 
@@ -25,9 +45,7 @@ export async function validateRuntime(
     results.push({
       id: `runtime.outputContains:${needle}`,
       passed: ok,
-      message: ok
-        ? `Output contains "${needle}"`
-        : `Output should contain "${needle}"`,
+      message: ok ? `Output contains "${needle}"` : `Output should contain "${needle}"`,
     });
   }
 
@@ -51,39 +69,42 @@ export async function validateRuntime(
   }
 
   for (const name of rules.variableExists ?? []) {
-    // Use `!== undefined` so falsy Python values (0, '', False, None) still count
-    // as defined. Boolean() would erroneously fail a student who set count = 0.
-    const exists = pyodide ? pyodide.globals.get(name) !== undefined : false;
+    // Use `name in globals` so falsy Python values (0, '', False, None) still
+    // count as defined — the worker's snapshot omits *absent* names from the
+    // record, so the `in` check is precisely existence-vs-absence.
+    // Boolean(value) would erroneously fail a student who set `count = 0`.
+    const exists = name in globals;
     results.push({
       id: `runtime.variableExists:${name}`,
       passed: exists,
-      message: exists
-        ? `Variable ${name} exists`
-        : `Variable ${name} should be defined`,
+      message: exists ? `Variable ${name} exists` : `Variable ${name} should be defined`,
     });
   }
 
-  // functionCalled is a runtime check that requires instrumentation. Without
-  // a tracer, we approximate by looking for the function name in stdout (the
-  // common authoring pattern is to print results from the called function).
-  // The AST rule calls_method gives the structural check.
+  // functionCalled now uses real call counts from the worker's sys.settrace
+  // tracer (engine collects every name from the step's tests and passes them
+  // as `trackFunctions` to runSnippet). A function that's defined but never
+  // called returns 0 here and fails the rule.
   for (const name of rules.functionCalled ?? []) {
-    const ok = output.includes(name) || (pyodide ? pyodide.globals.get(name) !== undefined : false);
+    const count = functionCalls[name] ?? 0;
+    const ok = count > 0;
     results.push({
       id: `runtime.functionCalled:${name}`,
       passed: ok,
-      message: ok
-        ? `${name}() appears called`
-        : `Make sure ${name}() runs`,
+      message: ok ? `${name}() called ${count}× ` : `Make sure ${name}() runs`,
     });
   }
 
   if (rules.acceptsUserInput) {
-    const ok = typeof input === 'string' && input.length > 0;
+    // Real instrumentation: the worker monkey-patches builtins.input and counts
+    // each call; engine threads `inputCalls` here. A test that provides input
+    // but whose code never calls `input()` now fails this rule (previously it
+    // passed because the legacy heuristic only checked "did the test pass input?").
+    const ok = inputCalls > 0;
     results.push({
       id: 'runtime.acceptsUserInput',
       passed: ok,
-      message: ok ? 'Code accepts user input' : 'Code should accept input()',
+      message: ok ? 'Code accepts user input' : 'Code should call input() to read user input',
     });
   }
 

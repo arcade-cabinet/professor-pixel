@@ -5,28 +5,23 @@ status: current
 domain: context
 ---
 
-
-
 # State
 
 > What's done, what's actively in flight, what's queued. Updated whenever a meaningful slice ships or the next-up changes. If this doc and `git log` disagree, fix this doc.
 
 ## Active
 
-### Stabilization pillar (this branch: `feat/stabilization-pillar`)
-
-Repair the gaps the foundations PR left open: missing page banner, parallel pygame-component type layers, and grader e2e coverage.
-
-- [x] S1 — Restore page banner. Top-level `<header>` renders on all viewports; `responsive-wizard.test.tsx` (broken pre-Capacitor) replaced with a focused `page-banner.test.tsx`.
-- [x] S2 — Component CI now blocking (dropped `continue-on-error`).
-- [x] S3 — Pygame-component type seam named: `PygameSystemSpec` (gameplay) vs `PyGameComponent` (rendering primitive). Header comment in `system-types.ts` documents the seam.
-- [x] S4 — Grader e2e: `tests/component/grader-e2e.test.tsx` runs every lesson's solution through the worker and asserts `score === 1.0`. Surfaced and fixed: AST-only steps (pygame lessons) used to score 0 because pyodide can't `import pygame`; engine now skips the execution-error short-circuit when no test depends on runtime state.
-- [x] SD.1 — STATE.md refresh (this entry).
+_No work in flight._
 
 ## Done (recent milestones)
 
 | Milestone | When | Notes |
 |-----------|------|-------|
+| Finishing pillar (coverage ratchet + wizard tests + simulator harness + F4.2 single-continue collapse + playtest doc sweep) | 2026-05 | Branch: `feat/finishing-pillar`. F1: Vitest coverage thresholds re-enabled at 6/4/4/6 against baseline 6.07/4.55/4.24/6.08 (ratchet doctrine: pin floor just above current, raise per-PR). F2: `tests/integration/wizard-dialogue-engine.test.tsx` (6 tests) covers default-flow load, handleOptionSelect navigation, sessionActions.choices, advance() through multiStep, persisted-state restore, transitionToSpecializedFlow → platformer-flow.json. F3: `tests/helpers/simulator-harness.ts` (Proxy-based fake CanvasRenderingContext2D + controlledTime via `vi.spyOn(performance, 'now')`); `tests/unit/pygame-simulator.test.ts` (5 tests, including M4.2 frame-rate band). F4: F4.2 single-continue option collapse (`CONTINUE_PATTERN` regex in `src/wizard/utils.ts` + `advance()` consumes single-continue option) — F4.1 `transitionToSpecializedFlow` and F4.3 auto-advance after asset selection were already correct in the post-restructure code, pinned by tests. F5: docs/playtests/{analysis,platformer,dungeon,puzzle,racing,rpg,space}.md annotated — engine-level CRITICAL items closed against 21dba7b; remaining `**WEAK**`/`**FIX**` items reframed as content-design, not engineering. |
+| Grader follow-ups pillar (worker-side variableExists + dev HUD) | 2026-05 | Branch: `feat/grader-followups-pillar`, PR #22. G1: `runtimeRules.variableExists` now reads from a worker-collected `globals` snapshot (`inspectGlobals` plumbed through `RunOptions → CodeRunnerOptions → runSnippet`), fixing the silent-false bug where main-thread Pyodide never saw worker-routed snippets' globals. G2: `app/components/dev-hud.tsx` floating panel reading cold-start ms + Pyodide state, gated by `useDebugFlag()` (`?debug=1` or `localStorage.debug='1'`). |
+| `any` cleanup pillar (TypeScript discipline) | 2026-05 | Branch: `feat/any-cleanup-pillar`, PR #21. 213 `any` annotations → 0; Biome `noExplicitAny` flipped from `warn` → `error`. Authored `PyodideInstance` ambient; defensive `ErrorShape` probe pattern for catch blocks; `PyGameComponent<P extends object>` generic + `AnyPyGameComponent` erased view at registry boundary; `PygameColor` / `PygameRectArg` / `PygameSprite` runtime types in simulator with tuple-cast destructures per renderer case; debounce branded as `<TArgs extends unknown[]>`. |
+| Modernization pillar (toolchain bumps + correctness gaps) | 2026-05 | Branch: `feat/modernization-pillar`. M1.1–M1.5 toolchain (pnpm 10, TS 6, Vite 8 + Vitest 4, React 19, Biome 2.4); M2.3 quarantined wizard test removed; M3.1 visual regression baseline; M3.2 axe-core a11y suite; M4.1 cold-start budget instrumentation; M4.3 worker-side stdout truncation; M5.1 sys.settrace functionCalled instrumentation; M5.2 input() call counter; M6.1 lessons 7-9 (lists, files, classes). |
+| Stabilization pillar (banner, type seam, grader e2e) | 2026-05 | Squashed into `8f478f8` on main; PR #20 |
 | Foundations pillar (Pyodide worker, Zod lessons, AST grading, 6 lessons) | 2026-05 | Squashed into `f4f418d` on main; PR #19 |
 | Capacitor-style layout + browser-only deploy | 2026-05 | Squashed into `ec275bd` on main; R1–R11 phases |
 | Documentation overhaul to standard-repo profile | 2026-05 | See [`CHANGELOG.md`](../CHANGELOG.md) |
@@ -39,39 +34,9 @@ Repair the gaps the foundations PR left open: missing page banner, parallel pyga
 
 ## Next (queued, no commitment yet)
 
-Sized roughly so any one item is a single PR.
+_Empty. The finishing pillar absorbed every remaining engineering carve-off (coverage ratchet, wizard tests, simulator harness, F4.2 single-continue collapse, playtest CLOSED markers). Subsequent work is unowned and unscoped — pick the next user-driven request._
 
-### Toolchain bumps (next PR after this one lands)
-
-- **`pnpm` 10.33** — replace npm.
-- **TypeScript 6.0.3** — major version bump.
-- **Biome 2.4.14** — replace ESLint + Prettier.
-- **Vite 8 + Vitest 4 + @vitest/browser 4** — single coordinated bump.
-- **React 19** — concurrent mode and new error boundaries.
-
-### Type / schema cleanup
-
-- **Treat `@typescript-eslint/no-explicit-any` as `error`** (currently `warn`). 209 instances at last count — its own PRQ. Likely subsumed by the Biome migration.
-- **Re-enable Vitest coverage thresholds** (90/85/90/90 lines/branches/functions/statements).
-
-### Visual / accessibility
-
-- **Visual regression baseline** (Playwright screenshots, per-project).
-- **`@axe-core/playwright` accessibility checks** in the e2e suite.
-- **Wizard-dialogue integration tests** are still failing (pre-existing) — needs a refresh against the persistence shape changes. Currently quarantined via `vitest.config.ts` `exclude`.
-
-### Pyodide / PyGame
-
-- **Cold-start budget.** First-load Pyodide is the biggest perf cost; track + budget it.
-- **Frame-rate test** for the simulator under realistic component counts.
-- **`functionCalled` / `acceptsUserInput` instrumentation.** Today these are approximated by stdout-substring + globals-existence checks (documented in `docs/pillars/04-grading.md`). Real call/input tracking needs worker-side instrumentation — a tracer that wraps target functions and a stdin-read counter exposed back across Comlink.
-- **Worker-side stdout truncation.** `maxStdout` is currently applied after Comlink transfer, so megabytes can still cross the boundary. Move truncation into the worker's stdout buffer.
-- **`mode: "rules"` lessons that depend on packages pyodide doesn't ship** (lesson-6 imports pygame). Engine now skips the execution-error short-circuit for AST-only steps; longer-term, `pyodide.loadPackage(...)` integration would let runtime checks work too.
-
-### Content
-
-- **More lessons.** The six shipped in T4.4 are the foundations track; data structures, files, classes still to come.
-- **Per-game-type playtest follow-ups.** Each `docs/playtests/` file lists open tuning items; convert the most-blocking into wizard PRs.
+The remaining `**WEAK**` / `**FIX**` items in `docs/playtests/*.md` are flow-JSON content authoring (theme packs, A/B framing of asset pickers, missing scene additions). The dialogue engine supports them today; what's missing is content. Tracked as content-design work, not engineering.
 
 ## Blocked / waiting
 

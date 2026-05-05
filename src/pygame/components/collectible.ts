@@ -11,13 +11,14 @@ interface CollectibleProperties {
   respawns?: boolean;
 }
 
-export const collectibleComponent: PyGameComponent = {
+export const collectibleComponent: PyGameComponent<CollectibleProperties> = {
   type: 'collectible',
   id: 'collectible',
   name: 'Collectible',
   description: 'Items that can be picked up',
-  wizardDescription: 'Shiny items to collect! These could be coins for points, power-ups to make you stronger, keys to unlock doors, or health packs to heal. Touch them to pick them up!',
-  properties: {} as Record<string, any>,
+  wizardDescription:
+    'Shiny items to collect! These could be coins for points, power-ups to make you stronger, keys to unlock doors, or health packs to heal. Touch them to pick them up!',
+  properties: {},
   defaultProperties: {
     x: 300,
     y: 250,
@@ -25,16 +26,16 @@ export const collectibleComponent: PyGameComponent = {
     value: 10,
     size: 20,
     color: '#FBBF24',
-    respawns: false
+    respawns: false,
   },
   preview: (ctx: CanvasRenderingContext2D, props: CollectibleProperties) => {
     const type = props.type || 'coin';
     ctx.fillStyle = props.color;
-    
+
     if (type === 'coin') {
       // Draw coin circle
       ctx.beginPath();
-      ctx.arc(props.x + props.size/2, props.y + props.size/2, props.size/2, 0, Math.PI * 2);
+      ctx.arc(props.x + props.size / 2, props.y + props.size / 2, props.size / 2, 0, Math.PI * 2);
       ctx.fill();
       // Add $ symbol
       ctx.fillStyle = 'rgba(0,0,0,0.3)';
@@ -42,16 +43,22 @@ export const collectibleComponent: PyGameComponent = {
       ctx.fillText('$', props.x + props.size * 0.3, props.y + props.size * 0.7);
     } else if (type === 'powerup') {
       // Draw star shape
-      drawStar(ctx, props.x + props.size/2, props.y + props.size/2, props.size/2, 5);
+      drawStar(ctx, props.x + props.size / 2, props.y + props.size / 2, props.size / 2, 5);
     } else if (type === 'key') {
       // Draw key shape
       ctx.fillRect(props.x, props.y + props.size * 0.3, props.size * 0.7, props.size * 0.4);
       ctx.beginPath();
-      ctx.arc(props.x + props.size * 0.8, props.y + props.size/2, props.size * 0.2, 0, Math.PI * 2);
+      ctx.arc(
+        props.x + props.size * 0.8,
+        props.y + props.size / 2,
+        props.size * 0.2,
+        0,
+        Math.PI * 2
+      );
       ctx.fill();
     } else if (type === 'health') {
       // Draw heart shape
-      drawHeart(ctx, props.x + props.size/2, props.y + props.size/2, props.size * 0.4);
+      drawHeart(ctx, props.x + props.size / 2, props.y + props.size / 2, props.size * 0.4);
     }
   },
   generateCode: (props: CollectibleProperties) => `
@@ -83,5 +90,5 @@ class Collectible:
                 pygame.draw.circle(screen, self.color, 
                     (self.x + self.size//2, self.y + self.size//2), self.size//2)
             else:
-                pygame.draw.rect(screen, self.color, self.rect)`
+                pygame.draw.rect(screen, self.color, self.rect)`,
 };

@@ -1,5 +1,6 @@
 import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
+import { playwright } from '@vitest/browser-playwright';
 import path from 'node:path';
 
 // Single Vitest config with `projects` (Vitest 3 native) declaring three test
@@ -17,11 +18,7 @@ const alias = {
   '@assets': path.resolve(repoRoot, 'app/assets'),
 };
 
-const sharedExclude = [
-  '**/node_modules/**',
-  '**/dist/**',
-  '**/tests/e2e/**',
-];
+const sharedExclude = ['**/node_modules/**', '**/dist/**', '**/tests/e2e/**'];
 
 export default defineConfig({
   plugins: [react()],
@@ -48,10 +45,7 @@ export default defineConfig({
           environment: 'jsdom',
           globals: true,
           include: ['tests/integration/**/*.test.{ts,tsx}'],
-          // wizard-dialogue-engine integration tests are quarantined: they
-          // assert a persistence shape that drifted when the wizard module was
-          // restructured. Tracked in docs/STATE.md → Next → Visual / accessibility.
-          exclude: [...sharedExclude, '**/wizard-dialogue-engine.test.tsx'],
+          exclude: sharedExclude,
           setupFiles: ['./tests/setup/common.ts'],
           testTimeout: 15000,
         },
@@ -67,7 +61,7 @@ export default defineConfig({
           setupFiles: ['./tests/setup/common.ts'],
           browser: {
             enabled: true,
-            provider: 'playwright',
+            provider: playwright(),
             headless: true,
             instances: [{ browser: 'chromium' }],
           },
@@ -79,11 +73,29 @@ export default defineConfig({
       reporter: ['text', 'html', 'lcov'],
       reportsDirectory: './coverage',
       include: ['app/**/*.{ts,tsx}', 'src/**/*.{ts,tsx}'],
-      exclude: [
-        '**/index.ts',
-        '**/*.d.ts',
-        'app/**/*.stories.tsx',
-      ],
+      exclude: ['**/index.ts', '**/*.d.ts', 'app/**/*.stories.tsx'],
+      // Coverage floor — a regression guard, NOT a goal.
+      //
+      // Ratchet doctrine: when a PR adds tests that move the needle, raise
+      // the matching threshold to the new floor in the same PR. Never lower
+      // a threshold without unanimous review; flapping floors are how
+      // coverage rules become decorative.
+      //
+      // Scope: `pnpm test:coverage` (= `vitest run --coverage`) runs ALL
+      // Vitest projects — unit + integration + component (browser). The
+      // numbers below are the aggregate across all three.
+      //
+      // Today's snapshot: statements 12.05%, branches 9.36%, functions
+      // 8.85%, lines 11.65%. The thresholds below sit just below those
+      // numbers so any regression fails CI; the work to actually push the
+      // percentages up is per-domain (wizard, pygame simulator, app
+      // components) and lives in subsequent PRQs.
+      thresholds: {
+        statements: 12,
+        branches: 9,
+        functions: 8,
+        lines: 11,
+      },
     },
   },
 });

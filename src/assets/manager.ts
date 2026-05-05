@@ -45,7 +45,7 @@ export class AssetManager {
   // read API on a fresh instance, or use the awaiting accessors below.
   async ready(): Promise<void> {
     if (!this.hydration) {
-      this.hydration = loadCatalog().then(catalog => {
+      this.hydration = loadCatalog().then((catalog) => {
         for (const sprite of catalog.sprites) this.assets.set(sprite.id, sprite);
         for (const sound of catalog.sounds) this.assets.set(sound.id, sound);
         for (const bg of catalog.backgrounds) this.assets.set(bg.id, bg);
@@ -71,12 +71,12 @@ export class AssetManager {
 
     // Filter by type
     if (filter.type) {
-      results = results.filter(asset => asset.type === filter.type);
+      results = results.filter((asset) => asset.type === filter.type);
     }
 
     // Filter by category
     if (filter.category) {
-      results = results.filter(asset => {
+      results = results.filter((asset) => {
         if ('category' in asset) {
           return asset.category === filter.category;
         }
@@ -86,18 +86,17 @@ export class AssetManager {
 
     // Filter by tags
     if (filter.tags && filter.tags.length > 0) {
-      results = results.filter(asset => 
-        filter.tags!.some(tag => asset.tags.includes(tag))
-      );
+      results = results.filter((asset) => filter.tags!.some((tag) => asset.tags.includes(tag)));
     }
 
     // Search by name or description
     if (filter.search) {
       const searchLower = filter.search.toLowerCase();
-      results = results.filter(asset =>
-        asset.name.toLowerCase().includes(searchLower) ||
-        asset.description.toLowerCase().includes(searchLower) ||
-        asset.tags.some(tag => tag.toLowerCase().includes(searchLower))
+      results = results.filter(
+        (asset) =>
+          asset.name.toLowerCase().includes(searchLower) ||
+          asset.description.toLowerCase().includes(searchLower) ||
+          asset.tags.some((tag) => tag.toLowerCase().includes(searchLower))
       );
     }
 
@@ -193,7 +192,7 @@ export class AssetManager {
   // Preload multiple assets
   async preloadAssets(assetIds: string[]): Promise<void> {
     this.loadStatus.isLoading = true;
-    
+
     const promises = assetIds.map(async (id) => {
       const asset = this.assets.get(id);
       if (!asset) return;
@@ -275,7 +274,7 @@ export class AssetManager {
       items: [],
       background: undefined,
       sounds: [],
-      music: undefined
+      music: undefined,
     };
   }
 
@@ -287,7 +286,7 @@ export class AssetManager {
       items: [],
       background: undefined,
       sounds: [],
-      music: undefined
+      music: undefined,
     };
 
     switch (gameType) {
@@ -295,11 +294,11 @@ export class AssetManager {
         suggestions.player = this.assets.get('robot-blue') as SpriteAsset;
         suggestions.enemies = [
           this.assets.get('ghost-floating') as SpriteAsset,
-          this.assets.get('spikey-hazard') as SpriteAsset
+          this.assets.get('spikey-hazard') as SpriteAsset,
         ];
         suggestions.items = [
           this.assets.get('gem-blue') as SpriteAsset,
-          this.assets.get('key-green') as SpriteAsset
+          this.assets.get('key-green') as SpriteAsset,
         ];
         suggestions.background = this.assets.get('bg-forest') as BackgroundAsset;
         suggestions.music = this.assets.get('music-adventure') as SoundAsset;
@@ -307,12 +306,8 @@ export class AssetManager {
 
       case 'space':
         suggestions.player = this.assets.get('robot-grey') as SpriteAsset;
-        suggestions.enemies = [
-          this.assets.get('alien-flying') as SpriteAsset
-        ];
-        suggestions.items = [
-          this.assets.get('crystal-blue') as SpriteAsset
-        ];
+        suggestions.enemies = [this.assets.get('alien-flying') as SpriteAsset];
+        suggestions.items = [this.assets.get('crystal-blue') as SpriteAsset];
         suggestions.background = this.assets.get('bg-space-stars') as BackgroundAsset;
         suggestions.music = this.assets.get('music-boss') as SoundAsset;
         break;
@@ -321,11 +316,11 @@ export class AssetManager {
         suggestions.player = this.assets.get('robot-red') as SpriteAsset;
         suggestions.enemies = [
           this.assets.get('ghost-floating') as SpriteAsset,
-          this.assets.get('walker-enemy') as SpriteAsset
+          this.assets.get('walker-enemy') as SpriteAsset,
         ];
         suggestions.items = [
           this.assets.get('key-red') as SpriteAsset,
-          this.assets.get('gem-red') as SpriteAsset
+          this.assets.get('gem-red') as SpriteAsset,
         ];
         suggestions.background = this.assets.get('bg-dungeon-stone') as BackgroundAsset;
         break;

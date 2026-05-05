@@ -95,8 +95,8 @@ Integration tests in `tests/integration/lesson-progress.test.ts` cover the round
 ## Authoring workflow
 
 1. Edit `public/api/static/lessons.json` directly. (No CMS yet.)
-2. Run `npm run test:unit` — `tests/unit/schema.test.ts` parses the file and reports any field-path errors. `tests/unit/lessons-content.test.ts` enforces structural invariants (≥3 hints per step, every prereq resolves, every step has at least one test, etc.).
-3. Run `npm run dev` and walk the lesson in the browser to confirm the AST + runtime rules fire as intended.
+2. Run `pnpm test:unit` — `tests/unit/schema.test.ts` parses the file and reports any field-path errors. `tests/unit/lessons-content.test.ts` enforces structural invariants (≥3 hints per step, every prereq resolves, every step has at least one test, etc.).
+3. Run `pnpm dev` and walk the lesson in the browser to confirm the AST + runtime rules fire as intended.
 
 ## See also
 

@@ -10,15 +10,15 @@
   "separate-pull-requests": false,
   "pull-request-title-pattern": "chore: release ${version}",
   "changelog-sections": [
-    { "type": "feat",     "section": "Features" },
-    { "type": "fix",      "section": "Bug Fixes" },
-    { "type": "perf",     "section": "Performance" },
+    { "type": "feat", "section": "Features" },
+    { "type": "fix", "section": "Bug Fixes" },
+    { "type": "perf", "section": "Performance" },
     { "type": "refactor", "section": "Refactors" },
-    { "type": "docs",     "section": "Documentation" },
-    { "type": "test",     "section": "Tests",          "hidden": true },
-    { "type": "build",    "section": "Build System",   "hidden": true },
-    { "type": "ci",       "section": "Continuous Integration", "hidden": true },
-    { "type": "chore",    "section": "Miscellaneous",  "hidden": true }
+    { "type": "docs", "section": "Documentation" },
+    { "type": "test", "section": "Tests", "hidden": true },
+    { "type": "build", "section": "Build System", "hidden": true },
+    { "type": "ci", "section": "Continuous Integration", "hidden": true },
+    { "type": "chore", "section": "Miscellaneous", "hidden": true }
   ],
   "packages": {
     ".": {

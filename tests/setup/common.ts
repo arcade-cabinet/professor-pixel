@@ -12,8 +12,12 @@ afterEach(() => {
   vi.clearAllMocks();
   // Tests may install ad-hoc storage shims that don't implement clear()
   // (e.g. the "storage disabled" simulation). Be defensive.
-  try { (localStorage as Storage & { clear?: () => void }).clear?.(); } catch {}
-  try { (sessionStorage as Storage & { clear?: () => void }).clear?.(); } catch {}
+  try {
+    (localStorage as Storage & { clear?: () => void }).clear?.();
+  } catch {}
+  try {
+    (sessionStorage as Storage & { clear?: () => void }).clear?.();
+  } catch {}
   // Clear all cookies
   try {
     document.cookie.split(';').forEach((c) => {
@@ -69,14 +73,14 @@ beforeEach(() => {
     if (
       typeof message === 'string' &&
       (message.includes('ReactDOM.render') ||
-       message.includes('unmounted component') ||
-       message.includes('not wrapped in act'))
+        message.includes('unmounted component') ||
+        message.includes('not wrapped in act'))
     ) {
       return;
     }
     originalError(message, ...args);
   });
-  
+
   console.warn = vi.fn((message, ...args) => {
     // Suppress specific warnings if needed
     originalWarn(message, ...args);

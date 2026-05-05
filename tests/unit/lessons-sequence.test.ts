@@ -43,10 +43,7 @@ describe('sequenceLessons', () => {
   });
 
   it('locks lessons whose prereq is incomplete', () => {
-    const out = sequenceLessons(
-      [lesson('a', 1), lesson('b', 2, ['a'])],
-      [progress('a', false)],
-    );
+    const out = sequenceLessons([lesson('a', 1), lesson('b', 2, ['a'])], [progress('a', false)]);
     expect(out.unlocked.map((l) => l.id)).toEqual(['a']);
     expect(out.locked).toHaveLength(1);
     expect(out.locked[0].lesson.id).toBe('b');
@@ -54,20 +51,13 @@ describe('sequenceLessons', () => {
   });
 
   it('unlocks once prereq is completed', () => {
-    const out = sequenceLessons(
-      [lesson('a', 1), lesson('b', 2, ['a'])],
-      [progress('a', true)],
-    );
+    const out = sequenceLessons([lesson('a', 1), lesson('b', 2, ['a'])], [progress('a', true)]);
     expect(out.unlocked.map((l) => l.id)).toEqual(['a', 'b']);
     expect(out.locked).toEqual([]);
   });
 
   it('handles a chain of prereqs', () => {
-    const lessons = [
-      lesson('a', 1),
-      lesson('b', 2, ['a']),
-      lesson('c', 3, ['b']),
-    ];
+    const lessons = [lesson('a', 1), lesson('b', 2, ['a']), lesson('c', 3, ['b'])];
     const out = sequenceLessons(lessons, [progress('a', true)]);
     expect(out.unlocked.map((l) => l.id)).toEqual(['a', 'b']);
     expect(out.locked.map((l) => l.lesson.id)).toEqual(['c']);
@@ -82,7 +72,7 @@ describe('sequenceLessons', () => {
   it('treats unknown prereq id as a missing prereq with no lesson reference', () => {
     const out = sequenceLessons(
       [lesson('a', 1, ['ghost'])], // 'ghost' does not exist in catalog
-      [],
+      []
     );
     // The locked entry has no resolved missing lesson (filtered to known catalog),
     // but the lesson is still locked because completedIds doesn't include 'ghost'.

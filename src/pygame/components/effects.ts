@@ -21,13 +21,14 @@ interface BackgroundProperties {
   tileMode?: boolean;
 }
 
-export const particleEffectComponent: PyGameComponent = {
+export const particleEffectComponent: PyGameComponent<ParticleEffectProperties> = {
   type: 'particleEffect',
   id: 'particleEffect',
   name: 'Particle Effect',
   description: 'Visual effects like explosions and sparkles',
-  wizardDescription: 'Cool visual effects! Add explosions when enemies are defeated, sparkles when collecting items, smoke trails, or confetti for celebrations. Makes your game look amazing!',
-  properties: {} as Record<string, any>,
+  wizardDescription:
+    'Cool visual effects! Add explosions when enemies are defeated, sparkles when collecting items, smoke trails, or confetti for celebrations. Makes your game look amazing!',
+  properties: {},
   defaultProperties: {
     x: 200,
     y: 200,
@@ -35,12 +36,12 @@ export const particleEffectComponent: PyGameComponent = {
     duration: 1000,
     particleCount: 20,
     color: '#FFA500',
-    spread: 50
+    spread: 50,
   },
   preview: (ctx: CanvasRenderingContext2D, props: ParticleEffectProperties) => {
     const type = props.type || 'explosion';
     ctx.fillStyle = props.color;
-    
+
     if (type === 'explosion') {
       // Draw explosion burst
       for (let i = 0; i < 8; i++) {
@@ -79,11 +80,7 @@ export const particleEffectComponent: PyGameComponent = {
       const colors = ['#FF0000', '#00FF00', '#0000FF', '#FFFF00', '#FF00FF'];
       for (let i = 0; i < 5; i++) {
         ctx.fillStyle = colors[i];
-        ctx.fillRect(
-          props.x + (i - 2) * 15,
-          props.y + Math.sin(i) * 10,
-          8, 4
-        );
+        ctx.fillRect(props.x + (i - 2) * 15, props.y + Math.sin(i) * 10, 8, 4);
       }
       ctx.fillStyle = props.color;
     }
@@ -152,27 +149,28 @@ class ParticleEffect:
                 color = (*self.color[:3], alpha) if len(self.color) == 3 else self.color
                 pygame.draw.circle(screen, color[:3], 
                     (int(particle['x']), int(particle['y'])), 
-                    particle['size'])`
+                    particle['size'])`,
 };
 
-export const backgroundComponent: PyGameComponent = {
+export const backgroundComponent: PyGameComponent<BackgroundProperties> = {
   type: 'background',
   id: 'background',
   name: 'Background',
   description: 'Scrolling or static backgrounds',
-  wizardDescription: 'The scenery behind your game! It can be a still picture or scroll to create the feeling of movement. Great for making your game world feel bigger!',
-  properties: {} as Record<string, any>,
+  wizardDescription:
+    'The scenery behind your game! It can be a still picture or scroll to create the feeling of movement. Great for making your game world feel bigger!',
+  properties: {},
   defaultProperties: {
     color: '#87CEEB',
     scrollSpeed: 0,
     parallax: false,
-    tileMode: false
+    tileMode: false,
   },
   preview: (ctx: CanvasRenderingContext2D, props: BackgroundProperties) => {
     // Fill with color
     ctx.fillStyle = props.color || '#87CEEB';
     ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-    
+
     // Draw some clouds if sky blue
     if (props.color === '#87CEEB') {
       ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
@@ -181,13 +179,13 @@ export const backgroundComponent: PyGameComponent = {
       ctx.arc(130, 50, 35, 0, Math.PI * 2);
       ctx.arc(160, 50, 30, 0, Math.PI * 2);
       ctx.fill();
-      
+
       ctx.beginPath();
       ctx.arc(300, 80, 25, 0, Math.PI * 2);
       ctx.arc(325, 80, 30, 0, Math.PI * 2);
       ctx.fill();
     }
-    
+
     // Draw scroll arrows if scrolling
     if (props.scrollSpeed !== 0) {
       ctx.strokeStyle = 'rgba(0, 0, 0, 0.3)';
@@ -219,11 +217,15 @@ class Background:
     
     def draw(self, screen):
         screen.fill(self.color)
-        ${props.imagePath ? `
+        ${
+          props.imagePath
+            ? `
         if hasattr(self, 'image'):
             if self.tile_mode:
                 for x in range(0, self.screen_width * 2, self.image.get_width()):
                     screen.blit(self.image, (x - self.scroll_x, 0))
             else:
-                screen.blit(self.image, (-self.scroll_x, 0))` : ''}`
+                screen.blit(self.image, (-self.scroll_x, 0))`
+            : ''
+        }`,
 };

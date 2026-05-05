@@ -47,13 +47,14 @@ interface HealthBarProperties {
   showText?: boolean;
 }
 
-export const scoreTextComponent: PyGameComponent = {
+export const scoreTextComponent: PyGameComponent<ScoreTextProperties> = {
   type: 'scoreText',
   id: 'scoreText',
   name: 'Score Text',
   description: 'Score displays and game messages',
-  wizardDescription: 'Text that shows on screen! Use this for displaying the score, "Game Over" messages, instructions, or any words you want the player to see.',
-  properties: {} as Record<string, any>,
+  wizardDescription:
+    'Text that shows on screen! Use this for displaying the score, "Game Over" messages, instructions, or any words you want the player to see.',
+  properties: {},
   defaultProperties: {
     text: 'Score: 0',
     x: 10,
@@ -62,7 +63,7 @@ export const scoreTextComponent: PyGameComponent = {
     color: '#FFFFFF',
     fontFamily: 'Arial',
     alignment: 'left',
-    isScore: true
+    isScore: true,
   },
   preview: (ctx: CanvasRenderingContext2D, props: ScoreTextProperties) => {
     ctx.fillStyle = props.color;
@@ -92,16 +93,17 @@ class ScoreText:
     
     def draw(self, screen):
         text_surface = self.font.render(self.text, True, self.color)
-        screen.blit(text_surface, (self.x, self.y))`
+        screen.blit(text_surface, (self.x, self.y))`,
 };
 
-export const buttonComponent: PyGameComponent = {
+export const buttonComponent: PyGameComponent<ButtonProperties> = {
   type: 'button',
   id: 'button',
   name: 'Button',
   description: 'Interactive UI elements',
-  wizardDescription: 'A clickable button! Players can click on it to start the game, pause, or trigger any action you want. You decide what happens when it\'s clicked!',
-  properties: {} as Record<string, any>,
+  wizardDescription:
+    "A clickable button! Players can click on it to start the game, pause, or trigger any action you want. You decide what happens when it's clicked!",
+  properties: {},
   defaultProperties: {
     x: 350,
     y: 200,
@@ -111,23 +113,23 @@ export const buttonComponent: PyGameComponent = {
     onClick: 'start_game',
     color: '#3B82F6',
     textColor: '#FFFFFF',
-    fontSize: 18
+    fontSize: 18,
   },
   preview: (ctx: CanvasRenderingContext2D, props: ButtonProperties) => {
     // Draw button background
     ctx.fillStyle = props.color;
     ctx.fillRect(props.x, props.y, props.width, props.height);
-    
+
     // Draw button border
     ctx.strokeStyle = 'rgba(0,0,0,0.2)';
     ctx.strokeRect(props.x, props.y, props.width, props.height);
-    
+
     // Draw button text
     ctx.fillStyle = props.textColor;
     ctx.font = `${props.fontSize || 18}px Arial`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(props.text, props.x + props.width/2, props.y + props.height/2);
+    ctx.fillText(props.text, props.x + props.width / 2, props.y + props.height / 2);
   },
   generateCode: (props: ButtonProperties) => `
 class Button:
@@ -164,16 +166,17 @@ class Button:
         # Draw text
         text_surface = self.font.render(self.text, True, self.text_color)
         text_rect = text_surface.get_rect(center=self.rect.center)
-        screen.blit(text_surface, text_rect)`
+        screen.blit(text_surface, text_rect)`,
 };
 
-export const timerComponent: PyGameComponent = {
+export const timerComponent: PyGameComponent<TimerProperties> = {
   type: 'timer',
   id: 'timer',
   name: 'Timer',
   description: 'Countdown or stopwatch functionality',
-  wizardDescription: 'A timer that counts up or down! Use it for time limits, speedruns, or to trigger events after a certain time. You can make something happen when time runs out!',
-  properties: {} as Record<string, any>,
+  wizardDescription:
+    'A timer that counts up or down! Use it for time limits, speedruns, or to trigger events after a certain time. You can make something happen when time runs out!',
+  properties: {},
   defaultProperties: {
     duration: 60000,
     x: 350,
@@ -182,7 +185,7 @@ export const timerComponent: PyGameComponent = {
     countDown: true,
     fontSize: 20,
     color: '#FFFFFF',
-    showMilliseconds: false
+    showMilliseconds: false,
   },
   preview: (ctx: CanvasRenderingContext2D, props: TimerProperties) => {
     const timeText = props.countDown ? '60:00' : '00:00';
@@ -243,16 +246,17 @@ class Timer:
     def draw(self, screen):
         time_text = self.get_time_string()
         text_surface = self.font.render(time_text, True, self.color)
-        screen.blit(text_surface, (self.x, self.y))`
+        screen.blit(text_surface, (self.x, self.y))`,
 };
 
-export const healthBarComponent: PyGameComponent = {
+export const healthBarComponent: PyGameComponent<HealthBarProperties> = {
   type: 'healthBar',
   id: 'healthBar',
   name: 'Health Bar',
   description: 'Visual health indicator',
-  wizardDescription: 'A bar that shows how much health or energy is left! It goes down when taking damage and can go up when healing. Perfect for showing player or enemy health!',
-  properties: {} as Record<string, any>,
+  wizardDescription:
+    'A bar that shows how much health or energy is left! It goes down when taking damage and can go up when healing. Perfect for showing player or enemy health!',
+  properties: {},
   defaultProperties: {
     x: 10,
     y: 40,
@@ -262,29 +266,33 @@ export const healthBarComponent: PyGameComponent = {
     height: 20,
     color: '#22C55E',
     backgroundColor: '#374151',
-    showText: true
+    showText: true,
   },
   preview: (ctx: CanvasRenderingContext2D, props: HealthBarProperties) => {
     // Draw background
     ctx.fillStyle = props.backgroundColor;
     ctx.fillRect(props.x, props.y, props.width, props.height);
-    
+
     // Draw health fill
     const fillWidth = (props.current / props.max) * props.width;
     ctx.fillStyle = props.color;
     ctx.fillRect(props.x, props.y, fillWidth, props.height);
-    
+
     // Draw border
     ctx.strokeStyle = 'rgba(0,0,0,0.3)';
     ctx.strokeRect(props.x, props.y, props.width, props.height);
-    
+
     // Draw text if enabled
     if (props.showText) {
       ctx.fillStyle = 'white';
       ctx.font = '14px Arial';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText(`${props.current}/${props.max}`, props.x + props.width/2, props.y + props.height/2);
+      ctx.fillText(
+        `${props.current}/${props.max}`,
+        props.x + props.width / 2,
+        props.y + props.height / 2
+      );
     }
   },
   generateCode: (props: HealthBarProperties) => `
@@ -331,5 +339,5 @@ class HealthBar:
             text_surface = self.font.render(text, True, (255, 255, 255))
             text_rect = text_surface.get_rect(
                 center=(self.x + self.width//2, self.y + self.height//2))
-            screen.blit(text_surface, text_rect)`
+            screen.blit(text_surface, text_rect)`,
 };

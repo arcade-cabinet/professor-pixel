@@ -12,9 +12,7 @@ export function loadLessons(): Promise<Lesson[]> {
     const baseUrl = (import.meta.env.BASE_URL || '/').replace(/\/$/, '');
     const response = await fetch(`${baseUrl}/api/static/lessons.json`);
     if (!response.ok) {
-      throw new Error(
-        `lessons.json fetch failed: HTTP ${response.status} ${response.statusText}`,
-      );
+      throw new Error(`lessons.json fetch failed: HTTP ${response.status} ${response.statusText}`);
     }
     const raw = (await response.json()) as unknown;
     const parsed = LessonSchema.array().safeParse(raw);

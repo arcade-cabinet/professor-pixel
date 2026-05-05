@@ -45,7 +45,7 @@ describe('Grader e2e — every lesson solution scores 1.0', () => {
         const result = await gradeCode(ctx);
         if (result.score < 1.0 || !result.passed) {
           failures.push(
-            `${lesson.id}/${step.id}: score=${result.score.toFixed(2)} passed=${result.passed} feedback=${result.feedback.slice(0, 200)}`,
+            `${lesson.id}/${step.id}: score=${result.score.toFixed(2)} passed=${result.passed} feedback=${result.feedback.slice(0, 200)}`
           );
         }
       }
@@ -53,8 +53,7 @@ describe('Grader e2e — every lesson solution scores 1.0', () => {
 
     if (failures.length > 0) {
       throw new Error(
-        `Grader regression — ${failures.length} step(s) didn't score 1.0:\n` +
-          failures.join('\n'),
+        `Grader regression — ${failures.length} step(s) didn't score 1.0:\n` + failures.join('\n')
       );
     }
   }, 90_000);

@@ -1,10 +1,13 @@
-import { ClientStorage } from "@lib/storage/client";
+import { ClientStorage } from '@lib/storage/client';
+import type { UserProgress, Project, InsertProject } from '@lib/types/schema';
 
 // Environment detection for storage mode
 export const isStaticMode = (): boolean => {
   // Detect if we're in GitHub Pages static mode
-  return import.meta.env.VITE_STATIC_MODE === 'true' || 
-         typeof window !== 'undefined' && window.location.hostname.includes('github.io');
+  return (
+    import.meta.env.VITE_STATIC_MODE === 'true' ||
+    (typeof window !== 'undefined' && window.location.hostname.includes('github.io'))
+  );
 };
 
 // Singleton client storage instance
@@ -34,7 +37,7 @@ export class StorageAdapter {
     return this.storage.getLesson(id);
   }
 
-  // Progress methods  
+  // Progress methods
   async getUserProgress(userId: string = 'anonymous-user') {
     return this.storage.getUserProgress(userId);
   }
@@ -43,7 +46,11 @@ export class StorageAdapter {
     return this.storage.getUserProgressForLesson(userId, lessonId);
   }
 
-  async updateUserProgress(lessonId: string, progressData: any, userId: string = 'anonymous-user') {
+  async updateUserProgress(
+    lessonId: string,
+    progressData: Partial<UserProgress>,
+    userId: string = 'anonymous-user'
+  ) {
     return this.storage.updateUserProgress(userId, lessonId, progressData);
   }
 
@@ -56,11 +63,11 @@ export class StorageAdapter {
     return this.storage.getProject(id);
   }
 
-  async createProject(project: any, userId: string = 'anonymous-user') {
+  async createProject(project: Omit<InsertProject, 'userId'>, userId: string = 'anonymous-user') {
     return this.storage.createProject({ ...project, userId });
   }
 
-  async updateProject(id: string, updates: any) {
+  async updateProject(id: string, updates: Partial<Project>) {
     return this.storage.updateProject(id, updates);
   }
 

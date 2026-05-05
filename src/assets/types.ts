@@ -1,7 +1,7 @@
 // Asset Library Type Definitions
 // CC0 Asset management system for PyGame Palace
 
-export type AssetCategory = 
+export type AssetCategory =
   | 'characters'
   | 'enemies'
   | 'items'
@@ -11,13 +11,9 @@ export type AssetCategory =
   | 'ui'
   | 'misc';
 
-export type AssetType = 
-  | 'sprite'
-  | 'sound'
-  | 'music'
-  | 'background';
+export type AssetType = 'sprite' | 'sound' | 'music' | 'background';
 
-export type SoundCategory = 
+export type SoundCategory =
   | 'jump'
   | 'collect'
   | 'hit'

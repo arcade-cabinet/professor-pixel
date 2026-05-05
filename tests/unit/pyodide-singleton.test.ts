@@ -34,18 +34,15 @@ describe('pyodide-singleton', () => {
     __resetPyodideForTests();
     originalFetch = globalThis.fetch;
     globalThis.fetch = vi.fn().mockResolvedValue({ ok: true } as Response);
-    appendChildSpy = spyAppendChild()
-      .mockImplementation(<T extends Node>(node: T): T => {
-        // Simulate the script firing onload synchronously.
-        queueMicrotask(() => {
-          const script = node as unknown as HTMLScriptElement;
-          (window as unknown as TestWindow).loadPyodide = vi
-            .fn()
-            .mockResolvedValue(fakePyodide);
-          script.onload?.(new Event('load'));
-        });
-        return node;
+    appendChildSpy = spyAppendChild().mockImplementation(<T extends Node>(node: T): T => {
+      // Simulate the script firing onload synchronously.
+      queueMicrotask(() => {
+        const script = node as unknown as HTMLScriptElement;
+        (window as unknown as TestWindow).loadPyodide = vi.fn().mockResolvedValue(fakePyodide);
+        script.onload?.(new Event('load'));
       });
+      return node;
+    });
   });
 
   afterEach(() => {
@@ -69,13 +66,12 @@ describe('pyodide-singleton', () => {
 
   it('rethrows wrapped error when the loader script fails to attach', async () => {
     appendChildSpy.mockRestore();
-    appendChildSpy = spyAppendChild()
-      .mockImplementation(<T extends Node>(node: T): T => {
-        queueMicrotask(() => {
-          (node as unknown as HTMLScriptElement).onerror?.(new Event('error'));
-        });
-        return node;
+    appendChildSpy = spyAppendChild().mockImplementation(<T extends Node>(node: T): T => {
+      queueMicrotask(() => {
+        (node as unknown as HTMLScriptElement).onerror?.(new Event('error'));
       });
+      return node;
+    });
 
     await expect(getPyodide()).rejects.toBeInstanceOf(PyodideLoadError);
   });
@@ -84,16 +80,12 @@ describe('pyodide-singleton', () => {
     appendChildSpy.mockRestore();
     appendChildSpy = spyAppendChild()
       .mockImplementationOnce(<T extends Node>(node: T): T => {
-        queueMicrotask(() =>
-          (node as unknown as HTMLScriptElement).onerror?.(new Event('error')),
-        );
+        queueMicrotask(() => (node as unknown as HTMLScriptElement).onerror?.(new Event('error')));
         return node;
       })
       .mockImplementationOnce(<T extends Node>(node: T): T => {
         queueMicrotask(() => {
-          (window as unknown as TestWindow).loadPyodide = vi
-            .fn()
-            .mockResolvedValue(fakePyodide);
+          (window as unknown as TestWindow).loadPyodide = vi.fn().mockResolvedValue(fakePyodide);
           (node as unknown as HTMLScriptElement).onload?.(new Event('load'));
         });
         return node;

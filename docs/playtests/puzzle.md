@@ -12,7 +12,9 @@ summary: Wizard playtest notes for the puzzle game type
 - Selected: "I want to make people think"
 - Pixel: "Ooh, smart choice! There's nothing like that 'aha!' moment when you solve a tricky puzzle!"
 - Follow-up: "Let's create your brain-teasing challenge!"
-- **BROKEN**: transitionToSpecializedFlow fails
+- **CLOSED (commit 21dba7b):** transitionToSpecializedFlow now loads `/puzzle-flow.json` correctly via the post-restructure `app/components/wizard/dialogue-engine.tsx`. Pinned by `tests/integration/wizard-dialogue-engine.test.tsx`. The original "fails" report referred to the deleted legacy `client/src/components/wizard-dialogue-engine.tsx`.
+
+> **Engineering status:** The remaining `**WEAK**` / `**FIX**` items below are flow-JSON content authoring tasks (theme packs, A/B framing, missing scenes). The dialogue engine supports them today; what's missing is the content. Tracked as content-design work, not engineering.
 
 ## Expected Flow (from puzzle-flow.json)
 ### Stage 1: Puzzle Type (GOOD A/B/C)

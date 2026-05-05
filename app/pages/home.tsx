@@ -1,4 +1,4 @@
-import UniversalWizard from "@/components/wizard/universal";
+import UniversalWizard from '@/components/wizard/universal';
 
 export default function Home() {
   return <UniversalWizard />;
