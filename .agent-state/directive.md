@@ -331,7 +331,7 @@ Branch: feat/player-experience-pillar-4
 
 - [x] task-001a src/i18n/{strings,index,use-strings}.ts catalog scaffold + chrome banners + home + not-found migrated
 - [x] task-001b lessons.tsx migrated to strings catalog
-- [ ] task-001c lesson.tsx migrated to strings catalog
+- [x] task-001c lesson.tsx migrated to strings catalog
 - [ ] task-001d profile.tsx migrated to strings catalog
 - [ ] task-001e wizard/universal.tsx migrated to strings catalog
 - [ ] task-001f pixel/menu.tsx migrated to strings catalog

@@ -27,6 +27,7 @@ import { loadLessons } from '@lib/lessons';
 import { getClientStorage } from '@lib/storage/mode';
 import { gradeCode, type GradingContext } from '@lib/grading';
 import { getEducationalError } from '@lib/errors/educational';
+import { strings } from '@lib/i18n';
 
 // Import Pixel images
 import pixelHappy from '@assets/pixel/Pixel_happy_excited_expression_22a41625.png';
@@ -36,42 +37,12 @@ import pixelEncouraging from '@assets/pixel/Pixel_encouraging_supportive_express
 import pixelTeaching from '@assets/pixel/Pixel_teaching_explaining_expression_27e09763.png';
 import pixelCoding from '@assets/pixel/Pixel_coding_programming_expression_56de8ca0.png';
 
-// Pixel's conversational dialogues for different situations
-const pixelDialogues = {
-  stepStart: [
-    "Alright! Let's dive into {title}! 🌟",
-    'This is going to be fun - {title} time! 🎉',
-    "Ready for {title}? I'm excited to show you! ✨",
-    "Here we go with {title}! You've got this! 💪",
-  ],
-  stepComplete: [
-    'Amazing work! You nailed it! 🎉',
-    "That's exactly right! You're a natural! 🌟",
-    'Perfect! I knew you could do it! 💫',
-    "Brilliant! You're really getting the hang of this! 🚀",
-  ],
-  stepError: [
-    "Oops! No worries, let's fix this together! 💙",
-    "That's not quite right, but you're super close! 🔍",
-    "Let me help you debug this - we'll solve it! 🛠️",
-    'Almost there! Just a small tweak needed! ✨',
-  ],
-  hint: [
-    "Need a hint? Here's a tip: ",
-    'Let me help! Try this: ',
-    "Here's a friendly nudge: ",
-    'Stuck? No problem! Consider this: ',
-  ],
-  lessonComplete: [
-    "🎊 WOOHOO! You completed the lesson! You're amazing!",
-    "🏆 Lesson complete! You're officially awesome at this!",
-    "🌟 Fantastic job! You've mastered another skill!",
-    '🚀 Mission accomplished! Ready for your next adventure?',
-  ],
-};
+// Pixel's conversational dialogues live in the i18n catalog
+// (strings.lesson.pixelDialogues). Local alias keeps the call sites tidy.
+const pixelDialogues = strings.lesson.pixelDialogues;
 
 // Get random dialogue from array
-const getRandomDialogue = (dialogues: string[], replacements?: Record<string, string>) => {
+const getRandomDialogue = (dialogues: readonly string[], replacements?: Record<string, string>) => {
   let dialogue = dialogues[Math.floor(Math.random() * dialogues.length)];
   if (replacements) {
     Object.entries(replacements).forEach(([key, value]) => {
@@ -184,7 +155,7 @@ export default function LessonEnhanced() {
 
   const executeCode = async (inputValues: string = '', runAutoGrading = false) => {
     if (!pythonRunner || !code.trim()) {
-      setPixelDialogue("Let's add some code first! You can do it! 💪");
+      setPixelDialogue(strings.lesson.inline.addCodeFirst);
       setPixelImage(pixelEncouraging);
       return;
     }
@@ -212,7 +183,7 @@ export default function LessonEnhanced() {
         if (runAutoGrading) {
           setGradingResult({
             passed: false,
-            feedback: "Your code has an error. Let's fix it together!",
+            feedback: strings.lesson.inline.codeError,
             actualOutput: result.error,
           });
         }
@@ -249,7 +220,7 @@ export default function LessonEnhanced() {
               currentStep: Math.max(currentStepIndex + 1, progress?.currentStep || 0),
             });
           } else {
-            setPixelDialogue("Not quite right yet, but you're close! Check the feedback below!");
+            setPixelDialogue(strings.lesson.inline.almostThere);
             setPixelImage(pixelEncouraging);
             updateProgressMutation.mutate({ code });
           }
@@ -269,7 +240,7 @@ export default function LessonEnhanced() {
           updateProgressMutation.mutate({ code });
         }
       } else {
-        setPixelDialogue('Great job running your code! Keep going! 🌟');
+        setPixelDialogue(strings.lesson.inline.ranSuccess);
         setPixelImage(pixelHappy);
         updateProgressMutation.mutate({ code });
       }
@@ -279,7 +250,7 @@ export default function LessonEnhanced() {
       // just the grader-catch above. Otherwise a "TypeError: Cannot read
       // properties of undefined" would still leak verbatim to the kid in
       // the editor's error <pre>.
-      const raw = err instanceof Error ? err.message : 'An error occurred';
+      const raw = err instanceof Error ? err.message : strings.lesson.inline.runtimeFallback;
       console.error('[lesson] executeCode failed:', raw);
       const friendly = getEducationalError(raw);
       setError(`${friendly.friendlyMessage} ${friendly.explanation}`);
@@ -381,9 +352,13 @@ export default function LessonEnhanced() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-yellow-50 dark:from-gray-900 dark:via-purple-900/10 dark:to-pink-900/10 flex items-center justify-center px-6">
         <Card className="max-w-md p-6 text-center space-y-4">
-          <motion.img src={pixelThinking} alt="Pixel concerned" className="w-20 h-20 mx-auto" />
+          <motion.img
+            src={pixelThinking}
+            alt={strings.lesson.pixelAlt.concerned}
+            className="w-20 h-20 mx-auto"
+          />
           <h2 className="text-lg font-semibold text-foreground">
-            {isPyodide ? "Python didn't load" : 'Lessons failed to load'}
+            {isPyodide ? strings.lesson.error.pythonHeading : strings.lesson.error.lessonsHeading}
           </h2>
           <p className="text-sm text-muted-foreground">
             {err instanceof Error ? err.message : String(err)}
@@ -396,7 +371,7 @@ export default function LessonEnhanced() {
             }
             data-testid="button-retry-load"
           >
-            Try again
+            {strings.lesson.error.tryAgain}
           </Button>
         </Card>
       </div>
@@ -409,13 +384,13 @@ export default function LessonEnhanced() {
         <div className="text-center">
           <motion.img
             src={pixelThinking}
-            alt="Pixel thinking"
+            alt={strings.lesson.pixelAlt.thinking}
             className="w-20 h-20 mx-auto mb-4"
             animate={{ rotate: [0, 10, -10, 0] }}
             transition={{ duration: 2, repeat: Infinity }}
           />
           <p className="text-purple-600 dark:text-purple-400">
-            {pyodideLoading ? 'Setting up Python for you...' : 'Loading your lesson...'}
+            {pyodideLoading ? strings.lesson.loading.pyodide : strings.lesson.loading.lesson}
           </p>
         </div>
       </div>
@@ -431,13 +406,19 @@ export default function LessonEnhanced() {
       <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-yellow-50 dark:from-gray-900 dark:via-purple-900/10 dark:to-pink-900/10">
         <div className="flex items-center justify-center h-screen">
           <Card className="p-8 bg-white/80 dark:bg-gray-800/80 backdrop-blur">
-            <img src={pixelThinking} alt="Pixel confused" className="w-20 h-20 mx-auto mb-4" />
-            <p className="text-center text-gray-600 dark:text-gray-400">Lesson not found</p>
+            <img
+              src={pixelThinking}
+              alt={strings.lesson.pixelAlt.confused}
+              className="w-20 h-20 mx-auto mb-4"
+            />
+            <p className="text-center text-gray-600 dark:text-gray-400">
+              {strings.lesson.notFound.message}
+            </p>
             <Button
               onClick={() => setLocation('/lessons')}
               className="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500"
             >
-              Back to Lessons
+              {strings.lesson.notFound.backToLessons}
             </Button>
           </Card>
         </div>
@@ -473,13 +454,13 @@ export default function LessonEnhanced() {
               <div className="text-center mb-6">
                 <motion.img
                   src={pixelCelebrating}
-                  alt="Pixel celebrating"
+                  alt={strings.lesson.pixelAlt.celebrating}
                   className="w-24 h-24 mx-auto mb-4"
                   animate={{ y: [0, -10, 0], rotate: [0, 5, -5, 0] }}
                   transition={{ duration: 2, repeat: Infinity }}
                 />
                 <h2 className="text-2xl font-bold mb-2 bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-                  Lesson Complete! 🎉
+                  {strings.lesson.completion.heading}
                 </h2>
                 <p className="text-gray-600 dark:text-gray-400">{pixelDialogue}</p>
               </div>
@@ -496,7 +477,7 @@ export default function LessonEnhanced() {
                     size="lg"
                   >
                     <BookOpen className="w-5 h-5 mr-2" />
-                    Continue to Next Lesson
+                    {strings.lesson.completion.continueNext}
                   </Button>
                 )}
 
@@ -509,7 +490,7 @@ export default function LessonEnhanced() {
                   size="lg"
                 >
                   <Rocket className="w-5 h-5 mr-2" />
-                  I'm Ready to Build a Game!
+                  {strings.lesson.completion.buildGame}
                 </Button>
 
                 <Button
@@ -522,7 +503,7 @@ export default function LessonEnhanced() {
                   size="lg"
                 >
                   <Trophy className="w-5 h-5 mr-2" />
-                  View All Lessons
+                  {strings.lesson.completion.viewAll}
                 </Button>
               </div>
             </motion.div>
@@ -545,14 +526,17 @@ export default function LessonEnhanced() {
               <div className="flex items-center gap-4">
                 <motion.img
                   src={pixelImage}
-                  alt="Pixel"
+                  alt={strings.lesson.pixelAlt.avatar}
                   className="w-16 h-16"
                   animate={{ y: [0, -3, 0] }}
                   transition={{ duration: 2, repeat: Infinity }}
                 />
                 <div className="flex-1">
                   <h3 className="font-semibold text-gray-800 dark:text-gray-200 mb-1">
-                    Step {currentStepIndex + 1}: {currentStep?.title}
+                    {strings.lesson.guidance.stepHeading(
+                      currentStepIndex + 1,
+                      currentStep?.title ?? ''
+                    )}
                   </h3>
                   <motion.p
                     key={pixelDialogue}
@@ -569,7 +553,7 @@ export default function LessonEnhanced() {
               <div className="flex items-center gap-4">
                 <div className="w-32">
                   <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">
-                    Progress: {Math.round(progressPercent)}%
+                    {strings.lesson.guidance.progress(Math.round(progressPercent))}
                   </div>
                   <Progress value={progressPercent} className="h-2" />
                 </div>
@@ -581,7 +565,7 @@ export default function LessonEnhanced() {
                     className="bg-yellow-50 dark:bg-yellow-900/20 border-yellow-300 dark:border-yellow-700"
                   >
                     <Sparkles className="w-4 h-4 mr-1" />
-                    Need a Hint?
+                    {strings.lesson.guidance.needHint}
                   </Button>
                 )}
               </div>
@@ -596,7 +580,7 @@ export default function LessonEnhanced() {
               <Card className="mb-4 p-4 bg-white/80 dark:bg-gray-800/80 backdrop-blur">
                 <h4 className="font-semibold text-gray-800 dark:text-gray-200 mb-2 flex items-center">
                   <BookOpen className="w-5 h-5 mr-2 text-purple-500" />
-                  What to do:
+                  {strings.lesson.guidance.whatToDo}
                 </h4>
                 <p className="text-gray-600 dark:text-gray-400">{currentStep?.description}</p>
               </Card>
@@ -623,7 +607,7 @@ export default function LessonEnhanced() {
                   disabled={!pythonRunner}
                 >
                   <Zap className="w-4 h-4 mr-2" />
-                  Run Code
+                  {strings.lesson.guidance.runCode}
                 </Button>
 
                 <Button
@@ -632,7 +616,7 @@ export default function LessonEnhanced() {
                   disabled={!pythonRunner || !currentStep?.tests}
                 >
                   <Code2 className="w-4 h-4 mr-2" />
-                  Check Solution
+                  {strings.lesson.guidance.checkSolution}
                 </Button>
               </div>
             </div>
@@ -642,7 +626,7 @@ export default function LessonEnhanced() {
               {/* Game Canvas removed - output only shown in code editor */}
               <div className="flex-1 mb-4">
                 <Card className="h-full p-4 bg-gray-900 text-green-400 font-mono overflow-auto">
-                  <pre>{output || 'Run your code to see output here!'}</pre>
+                  <pre>{output || strings.lesson.guidance.placeholderOutput}</pre>
                   {error && <pre className="text-red-500 mt-2">{error}</pre>}
                 </Card>
               </div>
@@ -655,11 +639,15 @@ export default function LessonEnhanced() {
                   <h4 className="font-semibold mb-2 flex items-center">
                     {error ? (
                       <>
-                        <span className="text-red-600 dark:text-red-400">Error Output</span>
+                        <span className="text-red-600 dark:text-red-400">
+                          {strings.lesson.guidance.errorOutputHeading}
+                        </span>
                       </>
                     ) : (
                       <>
-                        <span className="text-green-600 dark:text-green-400">Output</span>
+                        <span className="text-green-600 dark:text-green-400">
+                          {strings.lesson.guidance.outputHeading}
+                        </span>
                       </>
                     )}
                   </h4>
@@ -697,7 +685,7 @@ export default function LessonEnhanced() {
                 className="bg-white/50 dark:bg-gray-800/50"
               >
                 <ChevronLeft className="w-4 h-4 mr-1" />
-                Previous
+                {strings.lesson.guidance.previous}
               </Button>
 
               <div className="flex items-center gap-2">
@@ -721,12 +709,12 @@ export default function LessonEnhanced() {
               >
                 {currentStepIndex === lesson.content.steps.length - 1 ? (
                   <>
-                    Complete Lesson
+                    {strings.lesson.guidance.completeLesson}
                     <Trophy className="w-4 h-4 ml-1" />
                   </>
                 ) : (
                   <>
-                    Next
+                    {strings.lesson.guidance.next}
                     <ChevronRight className="w-4 h-4 ml-1" />
                   </>
                 )}
