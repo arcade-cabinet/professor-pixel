@@ -1,9 +1,19 @@
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Lightbulb, ArrowRight, Trophy, X, Copy, Code, CheckCircle, Sparkles, Zap } from "lucide-react";
-import { useState, useEffect } from "react";
-import { useToast } from "@lib/hooks/use-toast";
-import { motion, AnimatePresence } from "framer-motion";
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import {
+  Lightbulb,
+  ArrowRight,
+  Trophy,
+  X,
+  Copy,
+  Code,
+  CheckCircle,
+  Sparkles,
+  Zap,
+} from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { useToast } from '@lib/hooks/use-toast';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface FloatingFeedbackProps {
   step: {
@@ -25,7 +35,15 @@ interface FloatingFeedbackProps {
   } | null;
 }
 
-export default function FloatingFeedback({ step, onNextStep, onCompleteLesson, onApplySolution, showNext, isLastStep, gradingResult }: FloatingFeedbackProps) {
+export default function FloatingFeedback({
+  step,
+  onNextStep,
+  onCompleteLesson,
+  onApplySolution,
+  showNext,
+  isLastStep,
+  gradingResult,
+}: FloatingFeedbackProps) {
   const [isVisible, setIsVisible] = useState(true);
   const [showSolution, setShowSolution] = useState(false);
   const [justCopied, setJustCopied] = useState(false);
@@ -55,14 +73,14 @@ export default function FloatingFeedback({ step, onNextStep, onCompleteLesson, o
       setJustCopied(true);
       setTimeout(() => setJustCopied(false), 2000);
       toast({
-        title: "Solution copied!",
-        description: "The solution has been copied to your clipboard.",
+        title: 'Solution copied!',
+        description: 'The solution has been copied to your clipboard.',
       });
     } catch (err) {
       toast({
-        title: "Failed to copy",
-        description: "Please try selecting and copying the text manually.",
-        variant: "destructive",
+        title: 'Failed to copy',
+        description: 'Please try selecting and copying the text manually.',
+        variant: 'destructive',
       });
     }
   };
@@ -70,8 +88,8 @@ export default function FloatingFeedback({ step, onNextStep, onCompleteLesson, o
   const handleApplySolution = () => {
     onApplySolution(step.solution);
     toast({
-      title: "Solution applied!",
-      description: "The solution has been added to the code editor.",
+      title: 'Solution applied!',
+      description: 'The solution has been added to the code editor.',
     });
   };
 
@@ -83,23 +101,32 @@ export default function FloatingFeedback({ step, onNextStep, onCompleteLesson, o
         initial={{ opacity: 0, y: 50, scale: 0.95 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: 50, scale: 0.95 }}
-        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
         className="fixed bottom-8 right-8 z-40"
       >
-        <Card className="w-96 shadow-2xl border-2 border-border bg-card/95 backdrop-blur-sm hover:shadow-3xl transition-shadow duration-300" data-testid="floating-feedback">
+        <Card
+          className="w-96 shadow-2xl border-2 border-border bg-card/95 backdrop-blur-sm hover:shadow-3xl transition-shadow duration-300"
+          data-testid="floating-feedback"
+        >
           <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-secondary/5 rounded-lg pointer-events-none"></div>
-          
+
           <CardContent className="p-6 relative">
             <div className="flex items-start justify-between mb-4">
-              <motion.div 
+              <motion.div
                 className="flex items-start gap-3"
                 initial={{ x: -20 }}
                 animate={{ x: 0 }}
                 transition={{ delay: 0.1 }}
               >
                 <motion.div
-                  animate={showNext ? { rotate: [0, 360], scale: [1, 1.2, 1] } : { rotate: [0, -10, 10, -10, 0] }}
-                  transition={showNext ? { duration: 0.5 } : { duration: 2, repeat: Infinity, delay: 1 }}
+                  animate={
+                    showNext
+                      ? { rotate: [0, 360], scale: [1, 1.2, 1] }
+                      : { rotate: [0, -10, 10, -10, 0] }
+                  }
+                  transition={
+                    showNext ? { duration: 0.5 } : { duration: 2, repeat: Infinity, delay: 1 }
+                  }
                   className="relative"
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-secondary to-primary rounded-full blur opacity-50"></div>
@@ -113,11 +140,11 @@ export default function FloatingFeedback({ step, onNextStep, onCompleteLesson, o
                 </motion.div>
                 <div className="flex-1">
                   <h4 className="text-lg font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                    {showNext ? "Excellent Work! 🎉" : "Step Guidance"}
+                    {showNext ? 'Excellent Work! 🎉' : 'Step Guidance'}
                   </h4>
                 </div>
               </motion.div>
-              
+
               <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
                 <Button
                   variant="ghost"
@@ -131,25 +158,21 @@ export default function FloatingFeedback({ step, onNextStep, onCompleteLesson, o
               </motion.div>
             </div>
 
-            <motion.div 
+            <motion.div
               className="space-y-4"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.2 }}
             >
               {showNext ? (
-                <motion.div
-                  initial={{ scale: 0.95 }}
-                  animate={{ scale: 1 }}
-                  className="space-y-3"
-                >
+                <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} className="space-y-3">
                   <div className="flex items-center gap-2 text-success">
                     <CheckCircle className="h-5 w-5" />
                     <span className="font-semibold">Step Completed!</span>
                   </div>
                   <p className="text-base text-muted-foreground leading-relaxed">
-                    {isLastStep 
-                      ? "Amazing job! You've mastered all the concepts in this lesson. Ready to complete it?" 
+                    {isLastStep
+                      ? "Amazing job! You've mastered all the concepts in this lesson. Ready to complete it?"
                       : "Great progress! You're ready to tackle the next challenge."}
                   </p>
                 </motion.div>
@@ -179,14 +202,14 @@ export default function FloatingFeedback({ step, onNextStep, onCompleteLesson, o
                   <motion.div
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
-                    transition={{ type: "spring", stiffness: 500, delay: 0.3 }}
+                    transition={{ type: 'spring', stiffness: 500, delay: 0.3 }}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                   >
                     <Button
                       onClick={isLastStep ? onCompleteLesson : onNextStep}
                       className="bg-gradient-to-r from-primary to-secondary text-white hover:shadow-lg transition-all duration-300 group"
-                      data-testid={isLastStep ? "button-complete-lesson" : "button-next-step"}
+                      data-testid={isLastStep ? 'button-complete-lesson' : 'button-next-step'}
                     >
                       {isLastStep ? (
                         <>
@@ -203,7 +226,7 @@ export default function FloatingFeedback({ step, onNextStep, onCompleteLesson, o
                     </Button>
                   </motion.div>
                 )}
-                
+
                 <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                   <Button
                     variant="outline"
@@ -212,7 +235,7 @@ export default function FloatingFeedback({ step, onNextStep, onCompleteLesson, o
                     data-testid="button-show-solution"
                   >
                     <Code className="h-4 w-4 mr-2" />
-                    {showSolution ? "Hide Solution" : "Show Solution"}
+                    {showSolution ? 'Hide Solution' : 'Show Solution'}
                   </Button>
                 </motion.div>
               </div>
@@ -221,18 +244,21 @@ export default function FloatingFeedback({ step, onNextStep, onCompleteLesson, o
                 {showSolution && (
                   <motion.div
                     initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "auto" }}
+                    animate={{ opacity: 1, height: 'auto' }}
                     exit={{ opacity: 0, height: 0 }}
                     transition={{ duration: 0.3 }}
                     className="space-y-3"
                   >
                     <div className="relative">
                       <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-secondary/10 rounded-lg blur-xl"></div>
-                      <div className="relative p-4 bg-gray-900 text-gray-100 font-mono text-base rounded-lg overflow-x-auto border border-gray-700 shadow-lg" data-testid="solution-display">
+                      <div
+                        className="relative p-4 bg-gray-900 text-gray-100 font-mono text-base rounded-lg overflow-x-auto border border-gray-700 shadow-lg"
+                        data-testid="solution-display"
+                      >
                         <pre className="whitespace-pre-wrap leading-relaxed">{step.solution}</pre>
                       </div>
                     </div>
-                    
+
                     <div className="flex gap-2">
                       <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                         <Button
@@ -255,7 +281,7 @@ export default function FloatingFeedback({ step, onNextStep, onCompleteLesson, o
                           )}
                         </Button>
                       </motion.div>
-                      
+
                       <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                         <Button
                           variant="secondary"

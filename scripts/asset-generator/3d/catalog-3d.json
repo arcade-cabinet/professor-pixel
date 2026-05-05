@@ -33,20 +33,14 @@
       "category": "buildings",
       "size_kb": 7.12,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "environment",
-        "city building",
-        "background structure"
-      ],
+      "suggested_usage": ["environment", "city building", "background structure"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "balconywall"
-      ]
+      "tags": ["balconywall"]
     },
     {
       "file_path": "assets/3d/models/buildings/balconyWallFence.glb",
@@ -56,20 +50,14 @@
       "category": "buildings",
       "size_kb": 11.54,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "environment",
-        "city building",
-        "background structure"
-      ],
+      "suggested_usage": ["environment", "city building", "background structure"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "balconywallfence"
-      ]
+      "tags": ["balconywallfence"]
     },
     {
       "file_path": "assets/3d/models/buildings/bannerGreen.glb",
@@ -79,20 +67,14 @@
       "category": "buildings",
       "size_kb": 8.45,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "environment",
-        "city building",
-        "background structure"
-      ],
+      "suggested_usage": ["environment", "city building", "background structure"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "bannergreen"
-      ]
+      "tags": ["bannergreen"]
     },
     {
       "file_path": "assets/3d/models/buildings/bannerRed.glb",
@@ -102,20 +84,14 @@
       "category": "buildings",
       "size_kb": 8.27,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "environment",
-        "city building",
-        "background structure"
-      ],
+      "suggested_usage": ["environment", "city building", "background structure"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "bannerred"
-      ]
+      "tags": ["bannerred"]
     },
     {
       "file_path": "assets/3d/models/buildings/barricade-doorway-a.glb",
@@ -125,22 +101,14 @@
       "category": "buildings",
       "size_kb": 8.02,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "environment",
-        "city building",
-        "background structure"
-      ],
+      "suggested_usage": ["environment", "city building", "background structure"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "barricade",
-        "doorway",
-        "a"
-      ]
+      "tags": ["barricade", "doorway", "a"]
     },
     {
       "file_path": "assets/3d/models/buildings/barricade-doorway-b.glb",
@@ -150,22 +118,14 @@
       "category": "buildings",
       "size_kb": 12.28,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "environment",
-        "city building",
-        "background structure"
-      ],
+      "suggested_usage": ["environment", "city building", "background structure"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "barricade",
-        "doorway",
-        "b"
-      ]
+      "tags": ["barricade", "doorway", "b"]
     },
     {
       "file_path": "assets/3d/models/buildings/barricade-doorway-c.glb",
@@ -175,22 +135,14 @@
       "category": "buildings",
       "size_kb": 13.62,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "environment",
-        "city building",
-        "background structure"
-      ],
+      "suggested_usage": ["environment", "city building", "background structure"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "barricade",
-        "doorway",
-        "c"
-      ]
+      "tags": ["barricade", "doorway", "c"]
     },
     {
       "file_path": "assets/3d/models/buildings/barricade-window-a.glb",
@@ -200,22 +152,14 @@
       "category": "buildings",
       "size_kb": 8.02,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "environment",
-        "city building",
-        "background structure"
-      ],
+      "suggested_usage": ["environment", "city building", "background structure"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "barricade",
-        "window",
-        "a"
-      ]
+      "tags": ["barricade", "window", "a"]
     },
     {
       "file_path": "assets/3d/models/buildings/barricade-window-b.glb",
@@ -225,22 +169,14 @@
       "category": "buildings",
       "size_kb": 12.28,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "environment",
-        "city building",
-        "background structure"
-      ],
+      "suggested_usage": ["environment", "city building", "background structure"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "barricade",
-        "window",
-        "b"
-      ]
+      "tags": ["barricade", "window", "b"]
     },
     {
       "file_path": "assets/3d/models/buildings/barricade-window-c.glb",
@@ -250,22 +186,14 @@
       "category": "buildings",
       "size_kb": 13.61,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "environment",
-        "city building",
-        "background structure"
-      ],
+      "suggested_usage": ["environment", "city building", "background structure"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "barricade",
-        "window",
-        "c"
-      ]
+      "tags": ["barricade", "window", "c"]
     },
     {
       "file_path": "assets/3d/models/buildings/blade.glb",
@@ -275,20 +203,14 @@
       "category": "buildings",
       "size_kb": 17.61,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "environment",
-        "city building",
-        "background structure"
-      ],
+      "suggested_usage": ["environment", "city building", "background structure"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "blade"
-      ]
+      "tags": ["blade"]
     },
     {
       "file_path": "assets/3d/models/buildings/border.glb",
@@ -298,20 +220,14 @@
       "category": "buildings",
       "size_kb": 3.41,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "environment",
-        "city building",
-        "background structure"
-      ],
+      "suggested_usage": ["environment", "city building", "background structure"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "border"
-      ]
+      "tags": ["border"]
     },
     {
       "file_path": "assets/3d/models/buildings/border-corner.glb",
@@ -321,21 +237,14 @@
       "category": "buildings",
       "size_kb": 5.18,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "environment",
-        "city building",
-        "background structure"
-      ],
+      "suggested_usage": ["environment", "city building", "background structure"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "border",
-        "corner"
-      ]
+      "tags": ["border", "corner"]
     },
     {
       "file_path": "assets/3d/models/buildings/border-corner-diagonal.glb",
@@ -345,22 +254,14 @@
       "category": "buildings",
       "size_kb": 5.25,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "environment",
-        "city building",
-        "background structure"
-      ],
+      "suggested_usage": ["environment", "city building", "background structure"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "border",
-        "corner",
-        "diagonal"
-      ]
+      "tags": ["border", "corner", "diagonal"]
     },
     {
       "file_path": "assets/3d/models/buildings/border-corner-round.glb",
@@ -370,22 +271,14 @@
       "category": "buildings",
       "size_kb": 14.83,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "environment",
-        "city building",
-        "background structure"
-      ],
+      "suggested_usage": ["environment", "city building", "background structure"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "border",
-        "corner",
-        "round"
-      ]
+      "tags": ["border", "corner", "round"]
     },
     {
       "file_path": "assets/3d/models/buildings/border-corner-small.glb",
@@ -395,22 +288,14 @@
       "category": "buildings",
       "size_kb": 5.2,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "environment",
-        "city building",
-        "background structure"
-      ],
+      "suggested_usage": ["environment", "city building", "background structure"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "border",
-        "corner",
-        "small"
-      ]
+      "tags": ["border", "corner", "small"]
     },
     {
       "file_path": "assets/3d/models/buildings/border-high.glb",
@@ -420,21 +305,14 @@
       "category": "buildings",
       "size_kb": 3.4,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "environment",
-        "city building",
-        "background structure"
-      ],
+      "suggested_usage": ["environment", "city building", "background structure"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "border",
-        "high"
-      ]
+      "tags": ["border", "high"]
     },
     {
       "file_path": "assets/3d/models/buildings/border-high-corner.glb",
@@ -444,22 +322,14 @@
       "category": "buildings",
       "size_kb": 5.18,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "environment",
-        "city building",
-        "background structure"
-      ],
+      "suggested_usage": ["environment", "city building", "background structure"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "border",
-        "high",
-        "corner"
-      ]
+      "tags": ["border", "high", "corner"]
     },
     {
       "file_path": "assets/3d/models/buildings/border-high-corner-diagonal.glb",
@@ -469,23 +339,14 @@
       "category": "buildings",
       "size_kb": 5.23,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "environment",
-        "city building",
-        "background structure"
-      ],
+      "suggested_usage": ["environment", "city building", "background structure"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "border",
-        "high",
-        "corner",
-        "diagonal"
-      ]
+      "tags": ["border", "high", "corner", "diagonal"]
     },
     {
       "file_path": "assets/3d/models/buildings/border-high-corner-round.glb",
@@ -495,23 +356,14 @@
       "category": "buildings",
       "size_kb": 14.83,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "environment",
-        "city building",
-        "background structure"
-      ],
+      "suggested_usage": ["environment", "city building", "background structure"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "border",
-        "high",
-        "corner",
-        "round"
-      ]
+      "tags": ["border", "high", "corner", "round"]
     },
     {
       "file_path": "assets/3d/models/buildings/border-high-corner-small.glb",
@@ -521,23 +373,14 @@
       "category": "buildings",
       "size_kb": 5.2,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "environment",
-        "city building",
-        "background structure"
-      ],
+      "suggested_usage": ["environment", "city building", "background structure"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "border",
-        "high",
-        "corner",
-        "small"
-      ]
+      "tags": ["border", "high", "corner", "small"]
     },
     {
       "file_path": "assets/3d/models/buildings/cart.glb",
@@ -547,20 +390,14 @@
       "category": "buildings",
       "size_kb": 32.23,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "environment",
-        "city building",
-        "background structure"
-      ],
+      "suggested_usage": ["environment", "city building", "background structure"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "cart"
-      ]
+      "tags": ["cart"]
     },
     {
       "file_path": "assets/3d/models/buildings/cartHigh.glb",
@@ -570,20 +407,14 @@
       "category": "buildings",
       "size_kb": 57.24,
       "poly_count_estimate": "medium",
-      "suggested_usage": [
-        "environment",
-        "city building",
-        "background structure"
-      ],
+      "suggested_usage": ["environment", "city building", "background structure"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "carthigh"
-      ]
+      "tags": ["carthigh"]
     },
     {
       "file_path": "assets/3d/models/buildings/chimney.glb",
@@ -593,20 +424,14 @@
       "category": "buildings",
       "size_kb": 5.74,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "environment",
-        "city building",
-        "background structure"
-      ],
+      "suggested_usage": ["environment", "city building", "background structure"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "chimney"
-      ]
+      "tags": ["chimney"]
     },
     {
       "file_path": "assets/3d/models/buildings/chimneyBase.glb",
@@ -616,20 +441,14 @@
       "category": "buildings",
       "size_kb": 7.75,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "environment",
-        "city building",
-        "background structure"
-      ],
+      "suggested_usage": ["environment", "city building", "background structure"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "chimneybase"
-      ]
+      "tags": ["chimneybase"]
     },
     {
       "file_path": "assets/3d/models/buildings/chimneyTop.glb",
@@ -639,20 +458,14 @@
       "category": "buildings",
       "size_kb": 9.32,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "environment",
-        "city building",
-        "background structure"
-      ],
+      "suggested_usage": ["environment", "city building", "background structure"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "chimneytop"
-      ]
+      "tags": ["chimneytop"]
     },
     {
       "file_path": "assets/3d/models/buildings/column.glb",
@@ -662,20 +475,14 @@
       "category": "buildings",
       "size_kb": 4.17,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "environment",
-        "city building",
-        "background structure"
-      ],
+      "suggested_usage": ["environment", "city building", "background structure"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "column"
-      ]
+      "tags": ["column"]
     },
     {
       "file_path": "assets/3d/models/buildings/column-thin.glb",
@@ -685,21 +492,14 @@
       "category": "buildings",
       "size_kb": 4.24,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "environment",
-        "city building",
-        "background structure"
-      ],
+      "suggested_usage": ["environment", "city building", "background structure"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "column",
-        "thin"
-      ]
+      "tags": ["column", "thin"]
     },
     {
       "file_path": "assets/3d/models/buildings/column-wide.glb",
@@ -709,21 +509,14 @@
       "category": "buildings",
       "size_kb": 4.24,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "environment",
-        "city building",
-        "background structure"
-      ],
+      "suggested_usage": ["environment", "city building", "background structure"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "column",
-        "wide"
-      ]
+      "tags": ["column", "wide"]
     },
     {
       "file_path": "assets/3d/models/buildings/detail-pipe.glb",
@@ -733,21 +526,14 @@
       "category": "buildings",
       "size_kb": 7.25,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "environment",
-        "city building",
-        "background structure"
-      ],
+      "suggested_usage": ["environment", "city building", "background structure"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "detail",
-        "pipe"
-      ]
+      "tags": ["detail", "pipe"]
     },
     {
       "file_path": "assets/3d/models/buildings/door-rotate-round-a.glb",
@@ -757,23 +543,14 @@
       "category": "buildings",
       "size_kb": 22.74,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "environment",
-        "city building",
-        "background structure"
-      ],
+      "suggested_usage": ["environment", "city building", "background structure"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "door",
-        "rotate",
-        "round",
-        "a"
-      ]
+      "tags": ["door", "rotate", "round", "a"]
     },
     {
       "file_path": "assets/3d/models/buildings/door-rotate-round-b.glb",
@@ -783,23 +560,14 @@
       "category": "buildings",
       "size_kb": 32.43,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "environment",
-        "city building",
-        "background structure"
-      ],
+      "suggested_usage": ["environment", "city building", "background structure"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "door",
-        "rotate",
-        "round",
-        "b"
-      ]
+      "tags": ["door", "rotate", "round", "b"]
     },
     {
       "file_path": "assets/3d/models/buildings/door-rotate-round-c.glb",
@@ -809,23 +577,14 @@
       "category": "buildings",
       "size_kb": 39.02,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "environment",
-        "city building",
-        "background structure"
-      ],
+      "suggested_usage": ["environment", "city building", "background structure"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "door",
-        "rotate",
-        "round",
-        "c"
-      ]
+      "tags": ["door", "rotate", "round", "c"]
     },
     {
       "file_path": "assets/3d/models/buildings/door-rotate-round-d.glb",
@@ -835,23 +594,14 @@
       "category": "buildings",
       "size_kb": 41.52,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "environment",
-        "city building",
-        "background structure"
-      ],
+      "suggested_usage": ["environment", "city building", "background structure"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "door",
-        "rotate",
-        "round",
-        "d"
-      ]
+      "tags": ["door", "rotate", "round", "d"]
     },
     {
       "file_path": "assets/3d/models/buildings/door-rotate-square-a.glb",
@@ -861,23 +611,14 @@
       "category": "buildings",
       "size_kb": 25.02,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "environment",
-        "city building",
-        "background structure"
-      ],
+      "suggested_usage": ["environment", "city building", "background structure"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "door",
-        "rotate",
-        "square",
-        "a"
-      ]
+      "tags": ["door", "rotate", "square", "a"]
     },
     {
       "file_path": "assets/3d/models/buildings/door-rotate-square-b.glb",
@@ -887,23 +628,14 @@
       "category": "buildings",
       "size_kb": 23.88,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "environment",
-        "city building",
-        "background structure"
-      ],
+      "suggested_usage": ["environment", "city building", "background structure"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "door",
-        "rotate",
-        "square",
-        "b"
-      ]
+      "tags": ["door", "rotate", "square", "b"]
     },
     {
       "file_path": "assets/3d/models/buildings/door-rotate-square-c.glb",
@@ -913,23 +645,14 @@
       "category": "buildings",
       "size_kb": 28.35,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "environment",
-        "city building",
-        "background structure"
-      ],
+      "suggested_usage": ["environment", "city building", "background structure"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "door",
-        "rotate",
-        "square",
-        "c"
-      ]
+      "tags": ["door", "rotate", "square", "c"]
     },
     {
       "file_path": "assets/3d/models/buildings/door-rotate-square-d.glb",
@@ -939,23 +662,14 @@
       "category": "buildings",
       "size_kb": 30.21,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "environment",
-        "city building",
-        "background structure"
-      ],
+      "suggested_usage": ["environment", "city building", "background structure"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "door",
-        "rotate",
-        "square",
-        "d"
-      ]
+      "tags": ["door", "rotate", "square", "d"]
     },
     {
       "file_path": "assets/3d/models/buildings/fence.glb",
@@ -965,20 +679,14 @@
       "category": "buildings",
       "size_kb": 7.09,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "environment",
-        "city building",
-        "background structure"
-      ],
+      "suggested_usage": ["environment", "city building", "background structure"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "fence"
-      ]
+      "tags": ["fence"]
     },
     {
       "file_path": "assets/3d/models/buildings/fenceBroken.glb",
@@ -988,20 +696,14 @@
       "category": "buildings",
       "size_kb": 10.93,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "environment",
-        "city building",
-        "background structure"
-      ],
+      "suggested_usage": ["environment", "city building", "background structure"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "fencebroken"
-      ]
+      "tags": ["fencebroken"]
     },
     {
       "file_path": "assets/3d/models/buildings/fenceCurved.glb",
@@ -1011,20 +713,14 @@
       "category": "buildings",
       "size_kb": 20.88,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "environment",
-        "city building",
-        "background structure"
-      ],
+      "suggested_usage": ["environment", "city building", "background structure"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "fencecurved"
-      ]
+      "tags": ["fencecurved"]
     },
     {
       "file_path": "assets/3d/models/buildings/fenceGate.glb",
@@ -1034,20 +730,14 @@
       "category": "buildings",
       "size_kb": 28.07,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "environment",
-        "city building",
-        "background structure"
-      ],
+      "suggested_usage": ["environment", "city building", "background structure"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "fencegate"
-      ]
+      "tags": ["fencegate"]
     },
     {
       "file_path": "assets/3d/models/buildings/floor-corner-diagonal.glb",
@@ -1057,22 +747,14 @@
       "category": "buildings",
       "size_kb": 3.11,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "environment",
-        "city building",
-        "background structure"
-      ],
+      "suggested_usage": ["environment", "city building", "background structure"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "floor",
-        "corner",
-        "diagonal"
-      ]
+      "tags": ["floor", "corner", "diagonal"]
     },
     {
       "file_path": "assets/3d/models/buildings/floor-corner-round.glb",
@@ -1082,22 +764,14 @@
       "category": "buildings",
       "size_kb": 5.79,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "environment",
-        "city building",
-        "background structure"
-      ],
+      "suggested_usage": ["environment", "city building", "background structure"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "floor",
-        "corner",
-        "round"
-      ]
+      "tags": ["floor", "corner", "round"]
     },
     {
       "file_path": "assets/3d/models/buildings/fountainCenter.glb",
@@ -1107,20 +781,14 @@
       "category": "buildings",
       "size_kb": 3.24,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "environment",
-        "city building",
-        "background structure"
-      ],
+      "suggested_usage": ["environment", "city building", "background structure"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "fountaincenter"
-      ]
+      "tags": ["fountaincenter"]
     },
     {
       "file_path": "assets/3d/models/buildings/fountainCorner.glb",
@@ -1130,20 +798,14 @@
       "category": "buildings",
       "size_kb": 7.63,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "environment",
-        "city building",
-        "background structure"
-      ],
+      "suggested_usage": ["environment", "city building", "background structure"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "fountaincorner"
-      ]
+      "tags": ["fountaincorner"]
     },
     {
       "file_path": "assets/3d/models/buildings/fountainCornerInner.glb",
@@ -1153,20 +815,14 @@
       "category": "buildings",
       "size_kb": 14.02,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "environment",
-        "city building",
-        "background structure"
-      ],
+      "suggested_usage": ["environment", "city building", "background structure"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "fountaincornerinner"
-      ]
+      "tags": ["fountaincornerinner"]
     },
     {
       "file_path": "assets/3d/models/buildings/fountainCornerInnerSquare.glb",
@@ -1176,20 +832,14 @@
       "category": "buildings",
       "size_kb": 6.68,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "environment",
-        "city building",
-        "background structure"
-      ],
+      "suggested_usage": ["environment", "city building", "background structure"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "fountaincornerinnersquare"
-      ]
+      "tags": ["fountaincornerinnersquare"]
     },
     {
       "file_path": "assets/3d/models/buildings/fountainCurved.glb",
@@ -1199,20 +849,14 @@
       "category": "buildings",
       "size_kb": 20.04,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "environment",
-        "city building",
-        "background structure"
-      ],
+      "suggested_usage": ["environment", "city building", "background structure"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "fountaincurved"
-      ]
+      "tags": ["fountaincurved"]
     },
     {
       "file_path": "assets/3d/models/buildings/fountainEdge.glb",
@@ -1222,20 +866,14 @@
       "category": "buildings",
       "size_kb": 6.04,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "environment",
-        "city building",
-        "background structure"
-      ],
+      "suggested_usage": ["environment", "city building", "background structure"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "fountainedge"
-      ]
+      "tags": ["fountainedge"]
     },
     {
       "file_path": "assets/3d/models/characters/character-female-a.glb",
@@ -1245,22 +883,14 @@
       "category": "characters",
       "size_kb": 267.04,
       "poly_count_estimate": "high",
-      "suggested_usage": [
-        "player character",
-        "NPC",
-        "enemy"
-      ],
+      "suggested_usage": ["player character", "NPC", "enemy"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "character",
-        "female",
-        "a"
-      ]
+      "tags": ["character", "female", "a"]
     },
     {
       "file_path": "assets/3d/models/characters/character-female-b.glb",
@@ -1270,22 +900,14 @@
       "category": "characters",
       "size_kb": 246.23,
       "poly_count_estimate": "high",
-      "suggested_usage": [
-        "player character",
-        "NPC",
-        "enemy"
-      ],
+      "suggested_usage": ["player character", "NPC", "enemy"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "character",
-        "female",
-        "b"
-      ]
+      "tags": ["character", "female", "b"]
     },
     {
       "file_path": "assets/3d/models/characters/character-female-c.glb",
@@ -1295,22 +917,14 @@
       "category": "characters",
       "size_kb": 246.13,
       "poly_count_estimate": "high",
-      "suggested_usage": [
-        "player character",
-        "NPC",
-        "enemy"
-      ],
+      "suggested_usage": ["player character", "NPC", "enemy"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "character",
-        "female",
-        "c"
-      ]
+      "tags": ["character", "female", "c"]
     },
     {
       "file_path": "assets/3d/models/characters/character-female-d.glb",
@@ -1320,22 +934,14 @@
       "category": "characters",
       "size_kb": 252.7,
       "poly_count_estimate": "high",
-      "suggested_usage": [
-        "player character",
-        "NPC",
-        "enemy"
-      ],
+      "suggested_usage": ["player character", "NPC", "enemy"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "character",
-        "female",
-        "d"
-      ]
+      "tags": ["character", "female", "d"]
     },
     {
       "file_path": "assets/3d/models/characters/character-female-e.glb",
@@ -1345,22 +951,14 @@
       "category": "characters",
       "size_kb": 242.2,
       "poly_count_estimate": "high",
-      "suggested_usage": [
-        "player character",
-        "NPC",
-        "enemy"
-      ],
+      "suggested_usage": ["player character", "NPC", "enemy"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "character",
-        "female",
-        "e"
-      ]
+      "tags": ["character", "female", "e"]
     },
     {
       "file_path": "assets/3d/models/characters/character-female-f.glb",
@@ -1370,22 +968,14 @@
       "category": "characters",
       "size_kb": 253.41,
       "poly_count_estimate": "high",
-      "suggested_usage": [
-        "player character",
-        "NPC",
-        "enemy"
-      ],
+      "suggested_usage": ["player character", "NPC", "enemy"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "character",
-        "female",
-        "f"
-      ]
+      "tags": ["character", "female", "f"]
     },
     {
       "file_path": "assets/3d/models/characters/character-male-a.glb",
@@ -1395,22 +985,14 @@
       "category": "characters",
       "size_kb": 241.13,
       "poly_count_estimate": "high",
-      "suggested_usage": [
-        "player character",
-        "NPC",
-        "enemy"
-      ],
+      "suggested_usage": ["player character", "NPC", "enemy"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "character",
-        "male",
-        "a"
-      ]
+      "tags": ["character", "male", "a"]
     },
     {
       "file_path": "assets/3d/models/characters/character-male-b.glb",
@@ -1420,22 +1002,14 @@
       "category": "characters",
       "size_kb": 241.54,
       "poly_count_estimate": "high",
-      "suggested_usage": [
-        "player character",
-        "NPC",
-        "enemy"
-      ],
+      "suggested_usage": ["player character", "NPC", "enemy"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "character",
-        "male",
-        "b"
-      ]
+      "tags": ["character", "male", "b"]
     },
     {
       "file_path": "assets/3d/models/characters/character-male-c.glb",
@@ -1445,22 +1019,14 @@
       "category": "characters",
       "size_kb": 256.94,
       "poly_count_estimate": "high",
-      "suggested_usage": [
-        "player character",
-        "NPC",
-        "enemy"
-      ],
+      "suggested_usage": ["player character", "NPC", "enemy"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "character",
-        "male",
-        "c"
-      ]
+      "tags": ["character", "male", "c"]
     },
     {
       "file_path": "assets/3d/models/characters/character-male-d.glb",
@@ -1470,22 +1036,14 @@
       "category": "characters",
       "size_kb": 239.44,
       "poly_count_estimate": "high",
-      "suggested_usage": [
-        "player character",
-        "NPC",
-        "enemy"
-      ],
+      "suggested_usage": ["player character", "NPC", "enemy"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "character",
-        "male",
-        "d"
-      ]
+      "tags": ["character", "male", "d"]
     },
     {
       "file_path": "assets/3d/models/characters/character-male-e.glb",
@@ -1495,22 +1053,14 @@
       "category": "characters",
       "size_kb": 237.02,
       "poly_count_estimate": "high",
-      "suggested_usage": [
-        "player character",
-        "NPC",
-        "enemy"
-      ],
+      "suggested_usage": ["player character", "NPC", "enemy"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "character",
-        "male",
-        "e"
-      ]
+      "tags": ["character", "male", "e"]
     },
     {
       "file_path": "assets/3d/models/characters/character-male-f.glb",
@@ -1520,22 +1070,14 @@
       "category": "characters",
       "size_kb": 243.54,
       "poly_count_estimate": "high",
-      "suggested_usage": [
-        "player character",
-        "NPC",
-        "enemy"
-      ],
+      "suggested_usage": ["player character", "NPC", "enemy"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "character",
-        "male",
-        "f"
-      ]
+      "tags": ["character", "male", "f"]
     },
     {
       "file_path": "assets/3d/models/nature/bamboo.gltf",
@@ -1545,20 +1087,14 @@
       "category": "nature",
       "size_kb": 2.78,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "environment",
-        "scenery",
-        "outdoor decoration"
-      ],
+      "suggested_usage": ["environment", "scenery", "outdoor decoration"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "bamboo"
-      ]
+      "tags": ["bamboo"]
     },
     {
       "file_path": "assets/3d/models/nature/bridge_arch.gltf",
@@ -1568,21 +1104,14 @@
       "category": "nature",
       "size_kb": 3.48,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "environment",
-        "scenery",
-        "outdoor decoration"
-      ],
+      "suggested_usage": ["environment", "scenery", "outdoor decoration"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "bridge",
-        "arch"
-      ]
+      "tags": ["bridge", "arch"]
     },
     {
       "file_path": "assets/3d/models/nature/bridge_straight.gltf",
@@ -1592,21 +1121,14 @@
       "category": "nature",
       "size_kb": 3.53,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "environment",
-        "scenery",
-        "outdoor decoration"
-      ],
+      "suggested_usage": ["environment", "scenery", "outdoor decoration"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "bridge",
-        "straight"
-      ]
+      "tags": ["bridge", "straight"]
     },
     {
       "file_path": "assets/3d/models/nature/cactus_large.gltf",
@@ -1616,21 +1138,14 @@
       "category": "nature",
       "size_kb": 2.85,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "environment",
-        "scenery",
-        "outdoor decoration"
-      ],
+      "suggested_usage": ["environment", "scenery", "outdoor decoration"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "cactus",
-        "large"
-      ]
+      "tags": ["cactus", "large"]
     },
     {
       "file_path": "assets/3d/models/nature/cactus_short.gltf",
@@ -1640,21 +1155,14 @@
       "category": "nature",
       "size_kb": 2.82,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "environment",
-        "scenery",
-        "outdoor decoration"
-      ],
+      "suggested_usage": ["environment", "scenery", "outdoor decoration"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "cactus",
-        "short"
-      ]
+      "tags": ["cactus", "short"]
     },
     {
       "file_path": "assets/3d/models/nature/cactus_tall.gltf",
@@ -1664,21 +1172,14 @@
       "category": "nature",
       "size_kb": 2.87,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "environment",
-        "scenery",
-        "outdoor decoration"
-      ],
+      "suggested_usage": ["environment", "scenery", "outdoor decoration"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "cactus",
-        "tall"
-      ]
+      "tags": ["cactus", "tall"]
     },
     {
       "file_path": "assets/3d/models/nature/campfire_large.gltf",
@@ -1688,21 +1189,14 @@
       "category": "nature",
       "size_kb": 2.75,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "environment",
-        "scenery",
-        "outdoor decoration"
-      ],
+      "suggested_usage": ["environment", "scenery", "outdoor decoration"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "campfire",
-        "large"
-      ]
+      "tags": ["campfire", "large"]
     },
     {
       "file_path": "assets/3d/models/nature/campfire_small.gltf",
@@ -1712,21 +1206,14 @@
       "category": "nature",
       "size_kb": 3.62,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "environment",
-        "scenery",
-        "outdoor decoration"
-      ],
+      "suggested_usage": ["environment", "scenery", "outdoor decoration"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "campfire",
-        "small"
-      ]
+      "tags": ["campfire", "small"]
     },
     {
       "file_path": "assets/3d/models/nature/campfireStones_blocks.gltf",
@@ -1736,21 +1223,14 @@
       "category": "nature",
       "size_kb": 2.85,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "terrain",
-        "obstacles",
-        "landscape"
-      ],
+      "suggested_usage": ["terrain", "obstacles", "landscape"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "campfirestones",
-        "blocks"
-      ]
+      "tags": ["campfirestones", "blocks"]
     },
     {
       "file_path": "assets/3d/models/nature/campfireStones_rocks.gltf",
@@ -1760,21 +1240,14 @@
       "category": "nature",
       "size_kb": 2.95,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "terrain",
-        "obstacles",
-        "landscape"
-      ],
+      "suggested_usage": ["terrain", "obstacles", "landscape"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "campfirestones",
-        "rocks"
-      ]
+      "tags": ["campfirestones", "rocks"]
     },
     {
       "file_path": "assets/3d/models/nature/canoe.gltf",
@@ -1784,20 +1257,14 @@
       "category": "nature",
       "size_kb": 3.5,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "environment",
-        "scenery",
-        "outdoor decoration"
-      ],
+      "suggested_usage": ["environment", "scenery", "outdoor decoration"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "canoe"
-      ]
+      "tags": ["canoe"]
     },
     {
       "file_path": "assets/3d/models/nature/canoe_paddle.gltf",
@@ -1807,21 +1274,14 @@
       "category": "nature",
       "size_kb": 2.73,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "environment",
-        "scenery",
-        "outdoor decoration"
-      ],
+      "suggested_usage": ["environment", "scenery", "outdoor decoration"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "canoe",
-        "paddle"
-      ]
+      "tags": ["canoe", "paddle"]
     },
     {
       "file_path": "assets/3d/models/nature/cliffBrown.gltf",
@@ -1831,20 +1291,14 @@
       "category": "nature",
       "size_kb": 2.66,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "terrain",
-        "level boundaries",
-        "landscape"
-      ],
+      "suggested_usage": ["terrain", "level boundaries", "landscape"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "cliffbrown"
-      ]
+      "tags": ["cliffbrown"]
     },
     {
       "file_path": "assets/3d/models/nature/cliffBrown_block.gltf",
@@ -1854,21 +1308,14 @@
       "category": "nature",
       "size_kb": 3.38,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "terrain",
-        "level boundaries",
-        "landscape"
-      ],
+      "suggested_usage": ["terrain", "level boundaries", "landscape"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "cliffbrown",
-        "block"
-      ]
+      "tags": ["cliffbrown", "block"]
     },
     {
       "file_path": "assets/3d/models/nature/cliffBrown_blockHalf.gltf",
@@ -1878,21 +1325,14 @@
       "category": "nature",
       "size_kb": 3.41,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "terrain",
-        "level boundaries",
-        "landscape"
-      ],
+      "suggested_usage": ["terrain", "level boundaries", "landscape"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "cliffbrown",
-        "blockhalf"
-      ]
+      "tags": ["cliffbrown", "blockhalf"]
     },
     {
       "file_path": "assets/3d/models/nature/cliffBrown_blockQuarter.gltf",
@@ -1902,21 +1342,14 @@
       "category": "nature",
       "size_kb": 3.41,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "terrain",
-        "level boundaries",
-        "landscape"
-      ],
+      "suggested_usage": ["terrain", "level boundaries", "landscape"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "cliffbrown",
-        "blockquarter"
-      ]
+      "tags": ["cliffbrown", "blockquarter"]
     },
     {
       "file_path": "assets/3d/models/nature/cliffBrown_cornerInnerMid.gltf",
@@ -1926,21 +1359,14 @@
       "category": "nature",
       "size_kb": 2.69,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "terrain",
-        "level boundaries",
-        "landscape"
-      ],
+      "suggested_usage": ["terrain", "level boundaries", "landscape"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "cliffbrown",
-        "cornerinnermid"
-      ]
+      "tags": ["cliffbrown", "cornerinnermid"]
     },
     {
       "file_path": "assets/3d/models/nature/cliffBrown_cornerInnerTop.gltf",
@@ -1950,21 +1376,14 @@
       "category": "nature",
       "size_kb": 3.45,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "terrain",
-        "level boundaries",
-        "landscape"
-      ],
+      "suggested_usage": ["terrain", "level boundaries", "landscape"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "cliffbrown",
-        "cornerinnertop"
-      ]
+      "tags": ["cliffbrown", "cornerinnertop"]
     },
     {
       "file_path": "assets/3d/models/nature/cliffBrown_cornerMid.gltf",
@@ -1974,21 +1393,14 @@
       "category": "nature",
       "size_kb": 2.7,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "terrain",
-        "level boundaries",
-        "landscape"
-      ],
+      "suggested_usage": ["terrain", "level boundaries", "landscape"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "cliffbrown",
-        "cornermid"
-      ]
+      "tags": ["cliffbrown", "cornermid"]
     },
     {
       "file_path": "assets/3d/models/nature/cliffBrown_cornerTop.gltf",
@@ -1998,21 +1410,14 @@
       "category": "nature",
       "size_kb": 3.49,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "terrain",
-        "level boundaries",
-        "landscape"
-      ],
+      "suggested_usage": ["terrain", "level boundaries", "landscape"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "cliffbrown",
-        "cornertop"
-      ]
+      "tags": ["cliffbrown", "cornertop"]
     },
     {
       "file_path": "assets/3d/models/nature/cliffBrown_entrance.gltf",
@@ -2022,21 +1427,14 @@
       "category": "nature",
       "size_kb": 2.72,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "terrain",
-        "level boundaries",
-        "landscape"
-      ],
+      "suggested_usage": ["terrain", "level boundaries", "landscape"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "cliffbrown",
-        "entrance"
-      ]
+      "tags": ["cliffbrown", "entrance"]
     },
     {
       "file_path": "assets/3d/models/nature/cliffBrown_half.gltf",
@@ -2046,21 +1444,14 @@
       "category": "nature",
       "size_kb": 3.53,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "terrain",
-        "level boundaries",
-        "landscape"
-      ],
+      "suggested_usage": ["terrain", "level boundaries", "landscape"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "cliffbrown",
-        "half"
-      ]
+      "tags": ["cliffbrown", "half"]
     },
     {
       "file_path": "assets/3d/models/nature/cliffBrown_halfCorner.gltf",
@@ -2070,21 +1461,14 @@
       "category": "nature",
       "size_kb": 3.51,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "terrain",
-        "level boundaries",
-        "landscape"
-      ],
+      "suggested_usage": ["terrain", "level boundaries", "landscape"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "cliffbrown",
-        "halfcorner"
-      ]
+      "tags": ["cliffbrown", "halfcorner"]
     },
     {
       "file_path": "assets/3d/models/nature/cliffBrown_halfCornerInner.gltf",
@@ -2094,21 +1478,14 @@
       "category": "nature",
       "size_kb": 3.46,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "terrain",
-        "level boundaries",
-        "landscape"
-      ],
+      "suggested_usage": ["terrain", "level boundaries", "landscape"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "cliffbrown",
-        "halfcornerinner"
-      ]
+      "tags": ["cliffbrown", "halfcornerinner"]
     },
     {
       "file_path": "assets/3d/models/nature/cliffBrown_steps.gltf",
@@ -2118,21 +1495,14 @@
       "category": "nature",
       "size_kb": 3.46,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "terrain",
-        "level boundaries",
-        "landscape"
-      ],
+      "suggested_usage": ["terrain", "level boundaries", "landscape"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "cliffbrown",
-        "steps"
-      ]
+      "tags": ["cliffbrown", "steps"]
     },
     {
       "file_path": "assets/3d/models/nature/cliffBrown_stepsCornerInner.gltf",
@@ -2142,21 +1512,14 @@
       "category": "nature",
       "size_kb": 3.45,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "terrain",
-        "level boundaries",
-        "landscape"
-      ],
+      "suggested_usage": ["terrain", "level boundaries", "landscape"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "cliffbrown",
-        "stepscornerinner"
-      ]
+      "tags": ["cliffbrown", "stepscornerinner"]
     },
     {
       "file_path": "assets/3d/models/nature/cliffBrown_stepsEnd.gltf",
@@ -2166,21 +1529,14 @@
       "category": "nature",
       "size_kb": 3.49,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "terrain",
-        "level boundaries",
-        "landscape"
-      ],
+      "suggested_usage": ["terrain", "level boundaries", "landscape"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "cliffbrown",
-        "stepsend"
-      ]
+      "tags": ["cliffbrown", "stepsend"]
     },
     {
       "file_path": "assets/3d/models/nature/cliffBrown_top.gltf",
@@ -2190,21 +1546,14 @@
       "category": "nature",
       "size_kb": 3.52,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "terrain",
-        "level boundaries",
-        "landscape"
-      ],
+      "suggested_usage": ["terrain", "level boundaries", "landscape"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "cliffbrown",
-        "top"
-      ]
+      "tags": ["cliffbrown", "top"]
     },
     {
       "file_path": "assets/3d/models/nature/cliffBrown_waterfallMid.gltf",
@@ -2214,21 +1563,14 @@
       "category": "nature",
       "size_kb": 3.51,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "terrain",
-        "level boundaries",
-        "landscape"
-      ],
+      "suggested_usage": ["terrain", "level boundaries", "landscape"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "cliffbrown",
-        "waterfallmid"
-      ]
+      "tags": ["cliffbrown", "waterfallmid"]
     },
     {
       "file_path": "assets/3d/models/nature/cliffBrown_waterfallTop.gltf",
@@ -2238,21 +1580,14 @@
       "category": "nature",
       "size_kb": 4.25,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "terrain",
-        "level boundaries",
-        "landscape"
-      ],
+      "suggested_usage": ["terrain", "level boundaries", "landscape"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "cliffbrown",
-        "waterfalltop"
-      ]
+      "tags": ["cliffbrown", "waterfalltop"]
     },
     {
       "file_path": "assets/3d/models/nature/cliffGrey.gltf",
@@ -2262,20 +1597,14 @@
       "category": "nature",
       "size_kb": 2.66,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "terrain",
-        "level boundaries",
-        "landscape"
-      ],
+      "suggested_usage": ["terrain", "level boundaries", "landscape"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "cliffgrey"
-      ]
+      "tags": ["cliffgrey"]
     },
     {
       "file_path": "assets/3d/models/nature/cliffGrey_block.gltf",
@@ -2285,21 +1614,14 @@
       "category": "nature",
       "size_kb": 3.38,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "terrain",
-        "level boundaries",
-        "landscape"
-      ],
+      "suggested_usage": ["terrain", "level boundaries", "landscape"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "cliffgrey",
-        "block"
-      ]
+      "tags": ["cliffgrey", "block"]
     },
     {
       "file_path": "assets/3d/models/nature/cliffGrey_blockHalf.gltf",
@@ -2309,21 +1631,14 @@
       "category": "nature",
       "size_kb": 3.41,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "terrain",
-        "level boundaries",
-        "landscape"
-      ],
+      "suggested_usage": ["terrain", "level boundaries", "landscape"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "cliffgrey",
-        "blockhalf"
-      ]
+      "tags": ["cliffgrey", "blockhalf"]
     },
     {
       "file_path": "assets/3d/models/nature/cliffGrey_blockQuarter.gltf",
@@ -2333,21 +1648,14 @@
       "category": "nature",
       "size_kb": 3.41,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "terrain",
-        "level boundaries",
-        "landscape"
-      ],
+      "suggested_usage": ["terrain", "level boundaries", "landscape"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "cliffgrey",
-        "blockquarter"
-      ]
+      "tags": ["cliffgrey", "blockquarter"]
     },
     {
       "file_path": "assets/3d/models/nature/cliffGrey_cornerInnerMid.gltf",
@@ -2357,21 +1665,14 @@
       "category": "nature",
       "size_kb": 2.69,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "terrain",
-        "level boundaries",
-        "landscape"
-      ],
+      "suggested_usage": ["terrain", "level boundaries", "landscape"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "cliffgrey",
-        "cornerinnermid"
-      ]
+      "tags": ["cliffgrey", "cornerinnermid"]
     },
     {
       "file_path": "assets/3d/models/nature/cliffGrey_cornerInnerTop.gltf",
@@ -2381,21 +1682,14 @@
       "category": "nature",
       "size_kb": 3.47,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "terrain",
-        "level boundaries",
-        "landscape"
-      ],
+      "suggested_usage": ["terrain", "level boundaries", "landscape"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "cliffgrey",
-        "cornerinnertop"
-      ]
+      "tags": ["cliffgrey", "cornerinnertop"]
     },
     {
       "file_path": "assets/3d/models/nature/cliffGrey_cornerMid.gltf",
@@ -2405,21 +1699,14 @@
       "category": "nature",
       "size_kb": 3.45,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "terrain",
-        "level boundaries",
-        "landscape"
-      ],
+      "suggested_usage": ["terrain", "level boundaries", "landscape"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "cliffgrey",
-        "cornermid"
-      ]
+      "tags": ["cliffgrey", "cornermid"]
     },
     {
       "file_path": "assets/3d/models/nature/cliffGrey_cornerTop.gltf",
@@ -2429,21 +1716,14 @@
       "category": "nature",
       "size_kb": 3.5,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "terrain",
-        "level boundaries",
-        "landscape"
-      ],
+      "suggested_usage": ["terrain", "level boundaries", "landscape"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "cliffgrey",
-        "cornertop"
-      ]
+      "tags": ["cliffgrey", "cornertop"]
     },
     {
       "file_path": "assets/3d/models/nature/cliffGrey_entrance.gltf",
@@ -2453,21 +1733,14 @@
       "category": "nature",
       "size_kb": 2.72,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "terrain",
-        "level boundaries",
-        "landscape"
-      ],
+      "suggested_usage": ["terrain", "level boundaries", "landscape"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "cliffgrey",
-        "entrance"
-      ]
+      "tags": ["cliffgrey", "entrance"]
     },
     {
       "file_path": "assets/3d/models/nature/cliffGrey_half.gltf",
@@ -2477,21 +1750,14 @@
       "category": "nature",
       "size_kb": 3.54,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "terrain",
-        "level boundaries",
-        "landscape"
-      ],
+      "suggested_usage": ["terrain", "level boundaries", "landscape"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "cliffgrey",
-        "half"
-      ]
+      "tags": ["cliffgrey", "half"]
     },
     {
       "file_path": "assets/3d/models/props/advocado-half.glb",
@@ -2501,21 +1767,14 @@
       "category": "props",
       "size_kb": 10.98,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "decoration",
-        "interactive object",
-        "environment detail"
-      ],
+      "suggested_usage": ["decoration", "interactive object", "environment detail"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "advocado",
-        "half"
-      ]
+      "tags": ["advocado", "half"]
     },
     {
       "file_path": "assets/3d/models/props/apple.glb",
@@ -2525,20 +1784,14 @@
       "category": "props",
       "size_kb": 14.04,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "decoration",
-        "interactive object",
-        "environment detail"
-      ],
+      "suggested_usage": ["decoration", "interactive object", "environment detail"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "apple"
-      ]
+      "tags": ["apple"]
     },
     {
       "file_path": "assets/3d/models/props/apple-half.glb",
@@ -2548,21 +1801,14 @@
       "category": "props",
       "size_kb": 10.69,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "decoration",
-        "interactive object",
-        "environment detail"
-      ],
+      "suggested_usage": ["decoration", "interactive object", "environment detail"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "apple",
-        "half"
-      ]
+      "tags": ["apple", "half"]
     },
     {
       "file_path": "assets/3d/models/props/avocado.glb",
@@ -2572,20 +1818,14 @@
       "category": "props",
       "size_kb": 5.93,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "decoration",
-        "interactive object",
-        "environment detail"
-      ],
+      "suggested_usage": ["decoration", "interactive object", "environment detail"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "avocado"
-      ]
+      "tags": ["avocado"]
     },
     {
       "file_path": "assets/3d/models/props/bacon.glb",
@@ -2595,20 +1835,14 @@
       "category": "props",
       "size_kb": 5.56,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "decoration",
-        "interactive object",
-        "environment detail"
-      ],
+      "suggested_usage": ["decoration", "interactive object", "environment detail"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "bacon"
-      ]
+      "tags": ["bacon"]
     },
     {
       "file_path": "assets/3d/models/props/bacon-raw.glb",
@@ -2618,21 +1852,14 @@
       "category": "props",
       "size_kb": 5.57,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "decoration",
-        "interactive object",
-        "environment detail"
-      ],
+      "suggested_usage": ["decoration", "interactive object", "environment detail"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "bacon",
-        "raw"
-      ]
+      "tags": ["bacon", "raw"]
     },
     {
       "file_path": "assets/3d/models/props/bag.glb",
@@ -2642,20 +1869,14 @@
       "category": "props",
       "size_kb": 6.26,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "decoration",
-        "interactive object",
-        "environment detail"
-      ],
+      "suggested_usage": ["decoration", "interactive object", "environment detail"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "bag"
-      ]
+      "tags": ["bag"]
     },
     {
       "file_path": "assets/3d/models/props/bag-flat.glb",
@@ -2665,21 +1886,14 @@
       "category": "props",
       "size_kb": 11.02,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "decoration",
-        "interactive object",
-        "environment detail"
-      ],
+      "suggested_usage": ["decoration", "interactive object", "environment detail"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "bag",
-        "flat"
-      ]
+      "tags": ["bag", "flat"]
     },
     {
       "file_path": "assets/3d/models/props/banana.glb",
@@ -2689,20 +1903,14 @@
       "category": "props",
       "size_kb": 12.06,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "decoration",
-        "interactive object",
-        "environment detail"
-      ],
+      "suggested_usage": ["decoration", "interactive object", "environment detail"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "banana"
-      ]
+      "tags": ["banana"]
     },
     {
       "file_path": "assets/3d/models/props/barrel.glb",
@@ -2712,20 +1920,14 @@
       "category": "props",
       "size_kb": 26.18,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "decoration",
-        "interactive object",
-        "environment detail"
-      ],
+      "suggested_usage": ["decoration", "interactive object", "environment detail"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "barrel"
-      ]
+      "tags": ["barrel"]
     },
     {
       "file_path": "assets/3d/models/props/beet.glb",
@@ -2735,20 +1937,14 @@
       "category": "props",
       "size_kb": 10.13,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "decoration",
-        "interactive object",
-        "environment detail"
-      ],
+      "suggested_usage": ["decoration", "interactive object", "environment detail"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "beet"
-      ]
+      "tags": ["beet"]
     },
     {
       "file_path": "assets/3d/models/props/bottle-ketchup.glb",
@@ -2758,21 +1954,14 @@
       "category": "props",
       "size_kb": 9.39,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "decoration",
-        "interactive object",
-        "environment detail"
-      ],
+      "suggested_usage": ["decoration", "interactive object", "environment detail"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "bottle",
-        "ketchup"
-      ]
+      "tags": ["bottle", "ketchup"]
     },
     {
       "file_path": "assets/3d/models/props/bottle-musterd.glb",
@@ -2782,21 +1971,14 @@
       "category": "props",
       "size_kb": 9.39,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "decoration",
-        "interactive object",
-        "environment detail"
-      ],
+      "suggested_usage": ["decoration", "interactive object", "environment detail"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "bottle",
-        "musterd"
-      ]
+      "tags": ["bottle", "musterd"]
     },
     {
       "file_path": "assets/3d/models/props/bottle-oil.glb",
@@ -2806,21 +1988,14 @@
       "category": "props",
       "size_kb": 10.25,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "decoration",
-        "interactive object",
-        "environment detail"
-      ],
+      "suggested_usage": ["decoration", "interactive object", "environment detail"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "bottle",
-        "oil"
-      ]
+      "tags": ["bottle", "oil"]
     },
     {
       "file_path": "assets/3d/models/props/bowl.glb",
@@ -2830,20 +2005,14 @@
       "category": "props",
       "size_kb": 6.19,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "decoration",
-        "interactive object",
-        "environment detail"
-      ],
+      "suggested_usage": ["decoration", "interactive object", "environment detail"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "bowl"
-      ]
+      "tags": ["bowl"]
     },
     {
       "file_path": "assets/3d/models/props/bowl-broth.glb",
@@ -2853,21 +2022,14 @@
       "category": "props",
       "size_kb": 16.24,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "decoration",
-        "interactive object",
-        "environment detail"
-      ],
+      "suggested_usage": ["decoration", "interactive object", "environment detail"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "bowl",
-        "broth"
-      ]
+      "tags": ["bowl", "broth"]
     },
     {
       "file_path": "assets/3d/models/props/bowl-cereal.glb",
@@ -2877,21 +2039,14 @@
       "category": "props",
       "size_kb": 12.18,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "decoration",
-        "interactive object",
-        "environment detail"
-      ],
+      "suggested_usage": ["decoration", "interactive object", "environment detail"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "bowl",
-        "cereal"
-      ]
+      "tags": ["bowl", "cereal"]
     },
     {
       "file_path": "assets/3d/models/props/bowl-soup.glb",
@@ -2901,21 +2056,14 @@
       "category": "props",
       "size_kb": 10.93,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "decoration",
-        "interactive object",
-        "environment detail"
-      ],
+      "suggested_usage": ["decoration", "interactive object", "environment detail"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "bowl",
-        "soup"
-      ]
+      "tags": ["bowl", "soup"]
     },
     {
       "file_path": "assets/3d/models/props/bread.glb",
@@ -2925,20 +2073,14 @@
       "category": "props",
       "size_kb": 9.25,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "decoration",
-        "interactive object",
-        "environment detail"
-      ],
+      "suggested_usage": ["decoration", "interactive object", "environment detail"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "bread"
-      ]
+      "tags": ["bread"]
     },
     {
       "file_path": "assets/3d/models/props/broccoli.glb",
@@ -2948,20 +2090,14 @@
       "category": "props",
       "size_kb": 19.97,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "decoration",
-        "interactive object",
-        "environment detail"
-      ],
+      "suggested_usage": ["decoration", "interactive object", "environment detail"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "broccoli"
-      ]
+      "tags": ["broccoli"]
     },
     {
       "file_path": "assets/3d/models/props/burger.glb",
@@ -2971,20 +2107,14 @@
       "category": "props",
       "size_kb": 33.73,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "decoration",
-        "interactive object",
-        "environment detail"
-      ],
+      "suggested_usage": ["decoration", "interactive object", "environment detail"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "burger"
-      ]
+      "tags": ["burger"]
     },
     {
       "file_path": "assets/3d/models/props/burger-cheese.glb",
@@ -2994,21 +2124,14 @@
       "category": "props",
       "size_kb": 25.29,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "decoration",
-        "interactive object",
-        "environment detail"
-      ],
+      "suggested_usage": ["decoration", "interactive object", "environment detail"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "burger",
-        "cheese"
-      ]
+      "tags": ["burger", "cheese"]
     },
     {
       "file_path": "assets/3d/models/props/burger-cheese-double.glb",
@@ -3018,22 +2141,14 @@
       "category": "props",
       "size_kb": 43.38,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "decoration",
-        "interactive object",
-        "environment detail"
-      ],
+      "suggested_usage": ["decoration", "interactive object", "environment detail"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "burger",
-        "cheese",
-        "double"
-      ]
+      "tags": ["burger", "cheese", "double"]
     },
     {
       "file_path": "assets/3d/models/props/burger-double.glb",
@@ -3043,21 +2158,14 @@
       "category": "props",
       "size_kb": 54.39,
       "poly_count_estimate": "medium",
-      "suggested_usage": [
-        "decoration",
-        "interactive object",
-        "environment detail"
-      ],
+      "suggested_usage": ["decoration", "interactive object", "environment detail"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "burger",
-        "double"
-      ]
+      "tags": ["burger", "double"]
     },
     {
       "file_path": "assets/3d/models/props/cabbage.glb",
@@ -3067,20 +2175,14 @@
       "category": "props",
       "size_kb": 15.0,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "decoration",
-        "interactive object",
-        "environment detail"
-      ],
+      "suggested_usage": ["decoration", "interactive object", "environment detail"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "cabbage"
-      ]
+      "tags": ["cabbage"]
     },
     {
       "file_path": "assets/3d/models/props/cake.glb",
@@ -3090,20 +2192,14 @@
       "category": "props",
       "size_kb": 71.18,
       "poly_count_estimate": "medium",
-      "suggested_usage": [
-        "decoration",
-        "interactive object",
-        "environment detail"
-      ],
+      "suggested_usage": ["decoration", "interactive object", "environment detail"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "cake"
-      ]
+      "tags": ["cake"]
     },
     {
       "file_path": "assets/3d/models/props/cake-birthday.glb",
@@ -3113,21 +2209,14 @@
       "category": "props",
       "size_kb": 112.62,
       "poly_count_estimate": "medium",
-      "suggested_usage": [
-        "decoration",
-        "interactive object",
-        "environment detail"
-      ],
+      "suggested_usage": ["decoration", "interactive object", "environment detail"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "cake",
-        "birthday"
-      ]
+      "tags": ["cake", "birthday"]
     },
     {
       "file_path": "assets/3d/models/props/cake-slicer.glb",
@@ -3137,21 +2226,14 @@
       "category": "props",
       "size_kb": 4.94,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "decoration",
-        "interactive object",
-        "environment detail"
-      ],
+      "suggested_usage": ["decoration", "interactive object", "environment detail"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "cake",
-        "slicer"
-      ]
+      "tags": ["cake", "slicer"]
     },
     {
       "file_path": "assets/3d/models/props/can-open.glb",
@@ -3161,21 +2243,14 @@
       "category": "props",
       "size_kb": 18.0,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "decoration",
-        "interactive object",
-        "environment detail"
-      ],
+      "suggested_usage": ["decoration", "interactive object", "environment detail"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "can",
-        "open"
-      ]
+      "tags": ["can", "open"]
     },
     {
       "file_path": "assets/3d/models/props/can-small.glb",
@@ -3185,21 +2260,14 @@
       "category": "props",
       "size_kb": 15.59,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "decoration",
-        "interactive object",
-        "environment detail"
-      ],
+      "suggested_usage": ["decoration", "interactive object", "environment detail"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "can",
-        "small"
-      ]
+      "tags": ["can", "small"]
     },
     {
       "file_path": "assets/3d/models/vehicles/alien.glb",
@@ -3209,20 +2277,14 @@
       "category": "vehicles",
       "size_kb": 27.13,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "traffic",
-        "civilian vehicle",
-        "transportation"
-      ],
+      "suggested_usage": ["traffic", "civilian vehicle", "transportation"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "alien"
-      ]
+      "tags": ["alien"]
     },
     {
       "file_path": "assets/3d/models/vehicles/ambulance.glb",
@@ -3232,20 +2294,14 @@
       "category": "vehicles",
       "size_kb": 228.14,
       "poly_count_estimate": "high",
-      "suggested_usage": [
-        "emergency vehicle",
-        "medical response",
-        "city service"
-      ],
+      "suggested_usage": ["emergency vehicle", "medical response", "city service"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "ambulance"
-      ]
+      "tags": ["ambulance"]
     },
     {
       "file_path": "assets/3d/models/vehicles/astronautA.glb",
@@ -3255,20 +2311,14 @@
       "category": "vehicles",
       "size_kb": 27.26,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "traffic",
-        "civilian vehicle",
-        "transportation"
-      ],
+      "suggested_usage": ["traffic", "civilian vehicle", "transportation"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "astronauta"
-      ]
+      "tags": ["astronauta"]
     },
     {
       "file_path": "assets/3d/models/vehicles/astronautB.glb",
@@ -3278,20 +2328,14 @@
       "category": "vehicles",
       "size_kb": 27.17,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "traffic",
-        "civilian vehicle",
-        "transportation"
-      ],
+      "suggested_usage": ["traffic", "civilian vehicle", "transportation"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "astronautb"
-      ]
+      "tags": ["astronautb"]
     },
     {
       "file_path": "assets/3d/models/vehicles/barrel.glb",
@@ -3301,20 +2345,14 @@
       "category": "vehicles",
       "size_kb": 4.55,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "traffic",
-        "civilian vehicle",
-        "transportation"
-      ],
+      "suggested_usage": ["traffic", "civilian vehicle", "transportation"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "barrel"
-      ]
+      "tags": ["barrel"]
     },
     {
       "file_path": "assets/3d/models/vehicles/barrels.glb",
@@ -3324,20 +2362,14 @@
       "category": "vehicles",
       "size_kb": 20.32,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "traffic",
-        "civilian vehicle",
-        "transportation"
-      ],
+      "suggested_usage": ["traffic", "civilian vehicle", "transportation"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "barrels"
-      ]
+      "tags": ["barrels"]
     },
     {
       "file_path": "assets/3d/models/vehicles/barrels_rail.glb",
@@ -3347,21 +2379,14 @@
       "category": "vehicles",
       "size_kb": 29.57,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "traffic",
-        "civilian vehicle",
-        "transportation"
-      ],
+      "suggested_usage": ["traffic", "civilian vehicle", "transportation"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "barrels",
-        "rail"
-      ]
+      "tags": ["barrels", "rail"]
     },
     {
       "file_path": "assets/3d/models/vehicles/bones.glb",
@@ -3371,20 +2396,14 @@
       "category": "vehicles",
       "size_kb": 13.88,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "traffic",
-        "civilian vehicle",
-        "transportation"
-      ],
+      "suggested_usage": ["traffic", "civilian vehicle", "transportation"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "bones"
-      ]
+      "tags": ["bones"]
     },
     {
       "file_path": "assets/3d/models/vehicles/box.glb",
@@ -3394,20 +2413,14 @@
       "category": "vehicles",
       "size_kb": 13.79,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "traffic",
-        "civilian vehicle",
-        "transportation"
-      ],
+      "suggested_usage": ["traffic", "civilian vehicle", "transportation"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "box"
-      ]
+      "tags": ["box"]
     },
     {
       "file_path": "assets/3d/models/vehicles/carAmbulance.gltf",
@@ -3417,20 +2430,14 @@
       "category": "vehicles",
       "size_kb": 11.86,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "emergency vehicle",
-        "medical response",
-        "city service"
-      ],
+      "suggested_usage": ["emergency vehicle", "medical response", "city service"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "carambulance"
-      ]
+      "tags": ["carambulance"]
     },
     {
       "file_path": "assets/3d/models/vehicles/carDelivery.gltf",
@@ -3440,20 +2447,14 @@
       "category": "vehicles",
       "size_kb": 14.07,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "traffic",
-        "civilian vehicle",
-        "transportation"
-      ],
+      "suggested_usage": ["traffic", "civilian vehicle", "transportation"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "cardelivery"
-      ]
+      "tags": ["cardelivery"]
     },
     {
       "file_path": "assets/3d/models/vehicles/carFormula.gltf",
@@ -3463,20 +2464,14 @@
       "category": "vehicles",
       "size_kb": 9.64,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "traffic",
-        "civilian vehicle",
-        "transportation"
-      ],
+      "suggested_usage": ["traffic", "civilian vehicle", "transportation"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "carformula"
-      ]
+      "tags": ["carformula"]
     },
     {
       "file_path": "assets/3d/models/vehicles/carGarbage.gltf",
@@ -3486,20 +2481,14 @@
       "category": "vehicles",
       "size_kb": 16.97,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "traffic",
-        "civilian vehicle",
-        "transportation"
-      ],
+      "suggested_usage": ["traffic", "civilian vehicle", "transportation"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "cargarbage"
-      ]
+      "tags": ["cargarbage"]
     },
     {
       "file_path": "assets/3d/models/vehicles/carJeep.gltf",
@@ -3509,20 +2498,14 @@
       "category": "vehicles",
       "size_kb": 11.13,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "traffic",
-        "civilian vehicle",
-        "transportation"
-      ],
+      "suggested_usage": ["traffic", "civilian vehicle", "transportation"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "carjeep"
-      ]
+      "tags": ["carjeep"]
     },
     {
       "file_path": "assets/3d/models/vehicles/carLuxury.gltf",
@@ -3532,20 +2515,14 @@
       "category": "vehicles",
       "size_kb": 10.44,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "traffic",
-        "civilian vehicle",
-        "transportation"
-      ],
+      "suggested_usage": ["traffic", "civilian vehicle", "transportation"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "carluxury"
-      ]
+      "tags": ["carluxury"]
     },
     {
       "file_path": "assets/3d/models/vehicles/carPolice.gltf",
@@ -3555,20 +2532,14 @@
       "category": "vehicles",
       "size_kb": 14.05,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "police car",
-        "emergency vehicle",
-        "city traffic"
-      ],
+      "suggested_usage": ["police car", "emergency vehicle", "city traffic"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "carpolice"
-      ]
+      "tags": ["carpolice"]
     },
     {
       "file_path": "assets/3d/models/vehicles/carSedan.gltf",
@@ -3578,20 +2549,14 @@
       "category": "vehicles",
       "size_kb": 10.42,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "traffic",
-        "civilian vehicle",
-        "transportation"
-      ],
+      "suggested_usage": ["traffic", "civilian vehicle", "transportation"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "carsedan"
-      ]
+      "tags": ["carsedan"]
     },
     {
       "file_path": "assets/3d/models/vehicles/carSports.gltf",
@@ -3601,20 +2566,14 @@
       "category": "vehicles",
       "size_kb": 9.16,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "traffic",
-        "civilian vehicle",
-        "transportation"
-      ],
+      "suggested_usage": ["traffic", "civilian vehicle", "transportation"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "carsports"
-      ]
+      "tags": ["carsports"]
     },
     {
       "file_path": "assets/3d/models/vehicles/carStation.gltf",
@@ -3624,20 +2583,14 @@
       "category": "vehicles",
       "size_kb": 10.44,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "traffic",
-        "civilian vehicle",
-        "transportation"
-      ],
+      "suggested_usage": ["traffic", "civilian vehicle", "transportation"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "carstation"
-      ]
+      "tags": ["carstation"]
     },
     {
       "file_path": "assets/3d/models/vehicles/carTaxi.gltf",
@@ -3647,20 +2600,14 @@
       "category": "vehicles",
       "size_kb": 10.43,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "traffic",
-        "civilian vehicle",
-        "transportation"
-      ],
+      "suggested_usage": ["traffic", "civilian vehicle", "transportation"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "cartaxi"
-      ]
+      "tags": ["cartaxi"]
     },
     {
       "file_path": "assets/3d/models/vehicles/carTractor.gltf",
@@ -3670,20 +2617,14 @@
       "category": "vehicles",
       "size_kb": 10.79,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "traffic",
-        "civilian vehicle",
-        "transportation"
-      ],
+      "suggested_usage": ["traffic", "civilian vehicle", "transportation"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "cartractor"
-      ]
+      "tags": ["cartractor"]
     },
     {
       "file_path": "assets/3d/models/vehicles/carTractorShovel.gltf",
@@ -3693,20 +2634,14 @@
       "category": "vehicles",
       "size_kb": 13.32,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "traffic",
-        "civilian vehicle",
-        "transportation"
-      ],
+      "suggested_usage": ["traffic", "civilian vehicle", "transportation"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "cartractorshovel"
-      ]
+      "tags": ["cartractorshovel"]
     },
     {
       "file_path": "assets/3d/models/vehicles/carTruck.gltf",
@@ -3716,20 +2651,14 @@
       "category": "vehicles",
       "size_kb": 10.44,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "cargo transport",
-        "heavy vehicle",
-        "industrial"
-      ],
+      "suggested_usage": ["cargo transport", "heavy vehicle", "industrial"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "cartruck"
-      ]
+      "tags": ["cartruck"]
     },
     {
       "file_path": "assets/3d/models/vehicles/carTruckFlat.gltf",
@@ -3739,20 +2668,14 @@
       "category": "vehicles",
       "size_kb": 10.44,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "cargo transport",
-        "heavy vehicle",
-        "industrial"
-      ],
+      "suggested_usage": ["cargo transport", "heavy vehicle", "industrial"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "cartruckflat"
-      ]
+      "tags": ["cartruckflat"]
     },
     {
       "file_path": "assets/3d/models/vehicles/chimney.glb",
@@ -3762,20 +2685,14 @@
       "category": "vehicles",
       "size_kb": 8.71,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "traffic",
-        "civilian vehicle",
-        "transportation"
-      ],
+      "suggested_usage": ["traffic", "civilian vehicle", "transportation"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "chimney"
-      ]
+      "tags": ["chimney"]
     },
     {
       "file_path": "assets/3d/models/vehicles/chimney_detailed.glb",
@@ -3785,21 +2702,14 @@
       "category": "vehicles",
       "size_kb": 18.9,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "traffic",
-        "civilian vehicle",
-        "transportation"
-      ],
+      "suggested_usage": ["traffic", "civilian vehicle", "transportation"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "chimney",
-        "detailed"
-      ]
+      "tags": ["chimney", "detailed"]
     },
     {
       "file_path": "assets/3d/models/vehicles/cone.glb",
@@ -3809,20 +2719,14 @@
       "category": "vehicles",
       "size_kb": 16.32,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "traffic",
-        "civilian vehicle",
-        "transportation"
-      ],
+      "suggested_usage": ["traffic", "civilian vehicle", "transportation"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "cone"
-      ]
+      "tags": ["cone"]
     },
     {
       "file_path": "assets/3d/models/vehicles/cone-flat.glb",
@@ -3832,21 +2736,14 @@
       "category": "vehicles",
       "size_kb": 16.34,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "traffic",
-        "civilian vehicle",
-        "transportation"
-      ],
+      "suggested_usage": ["traffic", "civilian vehicle", "transportation"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "cone",
-        "flat"
-      ]
+      "tags": ["cone", "flat"]
     },
     {
       "file_path": "assets/3d/models/vehicles/corridor.glb",
@@ -3856,20 +2753,14 @@
       "category": "vehicles",
       "size_kb": 6.71,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "traffic",
-        "civilian vehicle",
-        "transportation"
-      ],
+      "suggested_usage": ["traffic", "civilian vehicle", "transportation"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "corridor"
-      ]
+      "tags": ["corridor"]
     },
     {
       "file_path": "assets/3d/models/vehicles/corridor_corner.glb",
@@ -3879,21 +2770,14 @@
       "category": "vehicles",
       "size_kb": 8.16,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "traffic",
-        "civilian vehicle",
-        "transportation"
-      ],
+      "suggested_usage": ["traffic", "civilian vehicle", "transportation"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "corridor",
-        "corner"
-      ]
+      "tags": ["corridor", "corner"]
     },
     {
       "file_path": "assets/3d/models/vehicles/corridor_cornerRound.glb",
@@ -3903,21 +2787,14 @@
       "category": "vehicles",
       "size_kb": 25.0,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "traffic",
-        "civilian vehicle",
-        "transportation"
-      ],
+      "suggested_usage": ["traffic", "civilian vehicle", "transportation"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "corridor",
-        "cornerround"
-      ]
+      "tags": ["corridor", "cornerround"]
     },
     {
       "file_path": "assets/3d/models/vehicles/corridor_cornerRoundWindow.glb",
@@ -3927,21 +2804,14 @@
       "category": "vehicles",
       "size_kb": 29.81,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "traffic",
-        "civilian vehicle",
-        "transportation"
-      ],
+      "suggested_usage": ["traffic", "civilian vehicle", "transportation"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "corridor",
-        "cornerroundwindow"
-      ]
+      "tags": ["corridor", "cornerroundwindow"]
     },
     {
       "file_path": "assets/3d/models/vehicles/corridor_cross.glb",
@@ -3951,21 +2821,14 @@
       "category": "vehicles",
       "size_kb": 12.15,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "traffic",
-        "civilian vehicle",
-        "transportation"
-      ],
+      "suggested_usage": ["traffic", "civilian vehicle", "transportation"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "corridor",
-        "cross"
-      ]
+      "tags": ["corridor", "cross"]
     },
     {
       "file_path": "assets/3d/models/vehicles/corridor_detailed.glb",
@@ -3975,21 +2838,14 @@
       "category": "vehicles",
       "size_kb": 11.41,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "traffic",
-        "civilian vehicle",
-        "transportation"
-      ],
+      "suggested_usage": ["traffic", "civilian vehicle", "transportation"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "corridor",
-        "detailed"
-      ]
+      "tags": ["corridor", "detailed"]
     },
     {
       "file_path": "assets/3d/models/vehicles/debris-bolt.glb",
@@ -3999,21 +2855,14 @@
       "category": "vehicles",
       "size_kb": 4.67,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "traffic",
-        "civilian vehicle",
-        "transportation"
-      ],
+      "suggested_usage": ["traffic", "civilian vehicle", "transportation"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "debris",
-        "bolt"
-      ]
+      "tags": ["debris", "bolt"]
     },
     {
       "file_path": "assets/3d/models/vehicles/debris-bumper.glb",
@@ -4023,21 +2872,14 @@
       "category": "vehicles",
       "size_kb": 11.06,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "traffic",
-        "civilian vehicle",
-        "transportation"
-      ],
+      "suggested_usage": ["traffic", "civilian vehicle", "transportation"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "debris",
-        "bumper"
-      ]
+      "tags": ["debris", "bumper"]
     },
     {
       "file_path": "assets/3d/models/vehicles/debris-door.glb",
@@ -4047,21 +2889,14 @@
       "category": "vehicles",
       "size_kb": 6.91,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "traffic",
-        "civilian vehicle",
-        "transportation"
-      ],
+      "suggested_usage": ["traffic", "civilian vehicle", "transportation"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "debris",
-        "door"
-      ]
+      "tags": ["debris", "door"]
     },
     {
       "file_path": "assets/3d/models/vehicles/debris-door-window.glb",
@@ -4071,22 +2906,14 @@
       "category": "vehicles",
       "size_kb": 7.41,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "traffic",
-        "civilian vehicle",
-        "transportation"
-      ],
+      "suggested_usage": ["traffic", "civilian vehicle", "transportation"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "debris",
-        "door",
-        "window"
-      ]
+      "tags": ["debris", "door", "window"]
     },
     {
       "file_path": "assets/3d/models/vehicles/debris-drivetrain.glb",
@@ -4096,21 +2923,14 @@
       "category": "vehicles",
       "size_kb": 36.05,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "traffic",
-        "civilian vehicle",
-        "transportation"
-      ],
+      "suggested_usage": ["traffic", "civilian vehicle", "transportation"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "debris",
-        "drivetrain"
-      ]
+      "tags": ["debris", "drivetrain"]
     },
     {
       "file_path": "assets/3d/models/vehicles/debris-drivetrain-axle.glb",
@@ -4120,22 +2940,14 @@
       "category": "vehicles",
       "size_kb": 18.32,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "traffic",
-        "civilian vehicle",
-        "transportation"
-      ],
+      "suggested_usage": ["traffic", "civilian vehicle", "transportation"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "debris",
-        "drivetrain",
-        "axle"
-      ]
+      "tags": ["debris", "drivetrain", "axle"]
     },
     {
       "file_path": "assets/3d/models/vehicles/debris-nut.glb",
@@ -4145,21 +2957,14 @@
       "category": "vehicles",
       "size_kb": 4.65,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "traffic",
-        "civilian vehicle",
-        "transportation"
-      ],
+      "suggested_usage": ["traffic", "civilian vehicle", "transportation"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "debris",
-        "nut"
-      ]
+      "tags": ["debris", "nut"]
     },
     {
       "file_path": "assets/3d/models/vehicles/debris-plate-a.glb",
@@ -4169,22 +2974,14 @@
       "category": "vehicles",
       "size_kb": 4.95,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "traffic",
-        "civilian vehicle",
-        "transportation"
-      ],
+      "suggested_usage": ["traffic", "civilian vehicle", "transportation"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "debris",
-        "plate",
-        "a"
-      ]
+      "tags": ["debris", "plate", "a"]
     },
     {
       "file_path": "assets/3d/models/vehicles/debris-plate-b.glb",
@@ -4194,22 +2991,14 @@
       "category": "vehicles",
       "size_kb": 5.27,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "traffic",
-        "civilian vehicle",
-        "transportation"
-      ],
+      "suggested_usage": ["traffic", "civilian vehicle", "transportation"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "debris",
-        "plate",
-        "b"
-      ]
+      "tags": ["debris", "plate", "b"]
     },
     {
       "file_path": "assets/3d/models/vehicles/debris-plate-small-a.glb",
@@ -4219,23 +3008,14 @@
       "category": "vehicles",
       "size_kb": 4.14,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "traffic",
-        "civilian vehicle",
-        "transportation"
-      ],
+      "suggested_usage": ["traffic", "civilian vehicle", "transportation"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "debris",
-        "plate",
-        "small",
-        "a"
-      ]
+      "tags": ["debris", "plate", "small", "a"]
     },
     {
       "file_path": "assets/3d/models/vehicles/debris-plate-small-b.glb",
@@ -4245,23 +3025,14 @@
       "category": "vehicles",
       "size_kb": 5.28,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "traffic",
-        "civilian vehicle",
-        "transportation"
-      ],
+      "suggested_usage": ["traffic", "civilian vehicle", "transportation"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "debris",
-        "plate",
-        "small",
-        "b"
-      ]
+      "tags": ["debris", "plate", "small", "b"]
     },
     {
       "file_path": "assets/3d/models/vehicles/debris-spoiler-a.glb",
@@ -4271,22 +3042,14 @@
       "category": "vehicles",
       "size_kb": 5.5,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "traffic",
-        "civilian vehicle",
-        "transportation"
-      ],
+      "suggested_usage": ["traffic", "civilian vehicle", "transportation"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "debris",
-        "spoiler",
-        "a"
-      ]
+      "tags": ["debris", "spoiler", "a"]
     },
     {
       "file_path": "assets/3d/models/vehicles/debris-spoiler-b.glb",
@@ -4296,22 +3059,14 @@
       "category": "vehicles",
       "size_kb": 8.41,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "traffic",
-        "civilian vehicle",
-        "transportation"
-      ],
+      "suggested_usage": ["traffic", "civilian vehicle", "transportation"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "debris",
-        "spoiler",
-        "b"
-      ]
+      "tags": ["debris", "spoiler", "b"]
     },
     {
       "file_path": "assets/3d/models/vehicles/debris-tire.glb",
@@ -4321,21 +3076,14 @@
       "category": "vehicles",
       "size_kb": 25.95,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "traffic",
-        "civilian vehicle",
-        "transportation"
-      ],
+      "suggested_usage": ["traffic", "civilian vehicle", "transportation"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "debris",
-        "tire"
-      ]
+      "tags": ["debris", "tire"]
     },
     {
       "file_path": "assets/3d/models/vehicles/delivery.glb",
@@ -4345,20 +3093,14 @@
       "category": "vehicles",
       "size_kb": 234.66,
       "poly_count_estimate": "high",
-      "suggested_usage": [
-        "traffic",
-        "civilian vehicle",
-        "transportation"
-      ],
+      "suggested_usage": ["traffic", "civilian vehicle", "transportation"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "delivery"
-      ]
+      "tags": ["delivery"]
     },
     {
       "file_path": "assets/3d/models/vehicles/delivery-flat.glb",
@@ -4368,21 +3110,14 @@
       "category": "vehicles",
       "size_kb": 209.45,
       "poly_count_estimate": "high",
-      "suggested_usage": [
-        "traffic",
-        "civilian vehicle",
-        "transportation"
-      ],
+      "suggested_usage": ["traffic", "civilian vehicle", "transportation"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "delivery",
-        "flat"
-      ]
+      "tags": ["delivery", "flat"]
     },
     {
       "file_path": "assets/3d/models/vehicles/firetruck.glb",
@@ -4392,20 +3127,14 @@
       "category": "vehicles",
       "size_kb": 227.02,
       "poly_count_estimate": "high",
-      "suggested_usage": [
-        "cargo transport",
-        "heavy vehicle",
-        "industrial"
-      ],
+      "suggested_usage": ["cargo transport", "heavy vehicle", "industrial"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "firetruck"
-      ]
+      "tags": ["firetruck"]
     },
     {
       "file_path": "assets/3d/models/vehicles/garbage-truck.glb",
@@ -4415,21 +3144,14 @@
       "category": "vehicles",
       "size_kb": 261.96,
       "poly_count_estimate": "high",
-      "suggested_usage": [
-        "cargo transport",
-        "heavy vehicle",
-        "industrial"
-      ],
+      "suggested_usage": ["cargo transport", "heavy vehicle", "industrial"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "garbage",
-        "truck"
-      ]
+      "tags": ["garbage", "truck"]
     },
     {
       "file_path": "assets/3d/models/vehicles/police.glb",
@@ -4439,20 +3161,14 @@
       "category": "vehicles",
       "size_kb": 190.78,
       "poly_count_estimate": "medium",
-      "suggested_usage": [
-        "police car",
-        "emergency vehicle",
-        "city traffic"
-      ],
+      "suggested_usage": ["police car", "emergency vehicle", "city traffic"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "police"
-      ]
+      "tags": ["police"]
     },
     {
       "file_path": "assets/3d/models/vehicles/race.glb",
@@ -4462,20 +3178,14 @@
       "category": "vehicles",
       "size_kb": 163.37,
       "poly_count_estimate": "medium",
-      "suggested_usage": [
-        "racing game",
-        "sports car",
-        "high-speed vehicle"
-      ],
+      "suggested_usage": ["racing game", "sports car", "high-speed vehicle"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "race"
-      ]
+      "tags": ["race"]
     },
     {
       "file_path": "assets/3d/models/vehicles/race-future.glb",
@@ -4485,21 +3195,14 @@
       "category": "vehicles",
       "size_kb": 169.12,
       "poly_count_estimate": "medium",
-      "suggested_usage": [
-        "racing game",
-        "sports car",
-        "high-speed vehicle"
-      ],
+      "suggested_usage": ["racing game", "sports car", "high-speed vehicle"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "race",
-        "future"
-      ]
+      "tags": ["race", "future"]
     },
     {
       "file_path": "assets/3d/models/vehicles/sedan.glb",
@@ -4509,20 +3212,14 @@
       "category": "vehicles",
       "size_kb": 168.2,
       "poly_count_estimate": "medium",
-      "suggested_usage": [
-        "traffic",
-        "civilian vehicle",
-        "transportation"
-      ],
+      "suggested_usage": ["traffic", "civilian vehicle", "transportation"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "sedan"
-      ]
+      "tags": ["sedan"]
     },
     {
       "file_path": "assets/3d/models/vehicles/sedan-sports.glb",
@@ -4532,21 +3229,14 @@
       "category": "vehicles",
       "size_kb": 173.53,
       "poly_count_estimate": "medium",
-      "suggested_usage": [
-        "traffic",
-        "civilian vehicle",
-        "transportation"
-      ],
+      "suggested_usage": ["traffic", "civilian vehicle", "transportation"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "sedan",
-        "sports"
-      ]
+      "tags": ["sedan", "sports"]
     },
     {
       "file_path": "assets/3d/models/vehicles/suv.glb",
@@ -4556,20 +3246,14 @@
       "category": "vehicles",
       "size_kb": 202.72,
       "poly_count_estimate": "high",
-      "suggested_usage": [
-        "traffic",
-        "civilian vehicle",
-        "transportation"
-      ],
+      "suggested_usage": ["traffic", "civilian vehicle", "transportation"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "suv"
-      ]
+      "tags": ["suv"]
     },
     {
       "file_path": "assets/3d/models/vehicles/suv-luxury.glb",
@@ -4579,21 +3263,14 @@
       "category": "vehicles",
       "size_kb": 171.8,
       "poly_count_estimate": "medium",
-      "suggested_usage": [
-        "traffic",
-        "civilian vehicle",
-        "transportation"
-      ],
+      "suggested_usage": ["traffic", "civilian vehicle", "transportation"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "suv",
-        "luxury"
-      ]
+      "tags": ["suv", "luxury"]
     },
     {
       "file_path": "assets/3d/models/vehicles/taxi.glb",
@@ -4603,20 +3280,14 @@
       "category": "vehicles",
       "size_kb": 171.48,
       "poly_count_estimate": "medium",
-      "suggested_usage": [
-        "traffic",
-        "civilian vehicle",
-        "transportation"
-      ],
+      "suggested_usage": ["traffic", "civilian vehicle", "transportation"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "taxi"
-      ]
+      "tags": ["taxi"]
     },
     {
       "file_path": "assets/3d/models/vehicles/tractor-police.glb",
@@ -4626,21 +3297,14 @@
       "category": "vehicles",
       "size_kb": 191.72,
       "poly_count_estimate": "medium",
-      "suggested_usage": [
-        "police car",
-        "emergency vehicle",
-        "city traffic"
-      ],
+      "suggested_usage": ["police car", "emergency vehicle", "city traffic"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "tractor",
-        "police"
-      ]
+      "tags": ["tractor", "police"]
     },
     {
       "file_path": "assets/3d/models/vehicles/truck.glb",
@@ -4650,20 +3314,14 @@
       "category": "vehicles",
       "size_kb": 172.24,
       "poly_count_estimate": "medium",
-      "suggested_usage": [
-        "cargo transport",
-        "heavy vehicle",
-        "industrial"
-      ],
+      "suggested_usage": ["cargo transport", "heavy vehicle", "industrial"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "truck"
-      ]
+      "tags": ["truck"]
     },
     {
       "file_path": "assets/3d/models/vehicles/truck-flat.glb",
@@ -4673,21 +3331,14 @@
       "category": "vehicles",
       "size_kb": 202.58,
       "poly_count_estimate": "high",
-      "suggested_usage": [
-        "cargo transport",
-        "heavy vehicle",
-        "industrial"
-      ],
+      "suggested_usage": ["cargo transport", "heavy vehicle", "industrial"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "truck",
-        "flat"
-      ]
+      "tags": ["truck", "flat"]
     },
     {
       "file_path": "assets/3d/models/vehicles/van.glb",
@@ -4697,20 +3348,14 @@
       "category": "vehicles",
       "size_kb": 171.57,
       "poly_count_estimate": "medium",
-      "suggested_usage": [
-        "traffic",
-        "civilian vehicle",
-        "transportation"
-      ],
+      "suggested_usage": ["traffic", "civilian vehicle", "transportation"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "van"
-      ]
+      "tags": ["van"]
     },
     {
       "file_path": "assets/3d/models/vehicles/vehicle-drag-racer.glb",
@@ -4720,22 +3365,14 @@
       "category": "vehicles",
       "size_kb": 102.18,
       "poly_count_estimate": "medium",
-      "suggested_usage": [
-        "racing game",
-        "sports car",
-        "high-speed vehicle"
-      ],
+      "suggested_usage": ["racing game", "sports car", "high-speed vehicle"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "vehicle",
-        "drag",
-        "racer"
-      ]
+      "tags": ["vehicle", "drag", "racer"]
     },
     {
       "file_path": "assets/3d/models/vehicles/vehicle-monster-truck.glb",
@@ -4745,22 +3382,14 @@
       "category": "vehicles",
       "size_kb": 118.78,
       "poly_count_estimate": "medium",
-      "suggested_usage": [
-        "cargo transport",
-        "heavy vehicle",
-        "industrial"
-      ],
+      "suggested_usage": ["cargo transport", "heavy vehicle", "industrial"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "vehicle",
-        "monster",
-        "truck"
-      ]
+      "tags": ["vehicle", "monster", "truck"]
     },
     {
       "file_path": "assets/3d/models/vehicles/vehicle-racer.glb",
@@ -4770,21 +3399,14 @@
       "category": "vehicles",
       "size_kb": 101.88,
       "poly_count_estimate": "medium",
-      "suggested_usage": [
-        "racing game",
-        "sports car",
-        "high-speed vehicle"
-      ],
+      "suggested_usage": ["racing game", "sports car", "high-speed vehicle"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "vehicle",
-        "racer"
-      ]
+      "tags": ["vehicle", "racer"]
     },
     {
       "file_path": "assets/3d/models/vehicles/vehicle-racer-low.glb",
@@ -4794,22 +3416,14 @@
       "category": "vehicles",
       "size_kb": 101.38,
       "poly_count_estimate": "medium",
-      "suggested_usage": [
-        "racing game",
-        "sports car",
-        "high-speed vehicle"
-      ],
+      "suggested_usage": ["racing game", "sports car", "high-speed vehicle"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "vehicle",
-        "racer",
-        "low"
-      ]
+      "tags": ["vehicle", "racer", "low"]
     },
     {
       "file_path": "assets/3d/models/vehicles/vehicle-suv.glb",
@@ -4819,21 +3433,14 @@
       "category": "vehicles",
       "size_kb": 104.22,
       "poly_count_estimate": "medium",
-      "suggested_usage": [
-        "traffic",
-        "civilian vehicle",
-        "transportation"
-      ],
+      "suggested_usage": ["traffic", "civilian vehicle", "transportation"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "vehicle",
-        "suv"
-      ]
+      "tags": ["vehicle", "suv"]
     },
     {
       "file_path": "assets/3d/models/vehicles/vehicle-truck.glb",
@@ -4843,21 +3450,14 @@
       "category": "vehicles",
       "size_kb": 101.06,
       "poly_count_estimate": "medium",
-      "suggested_usage": [
-        "cargo transport",
-        "heavy vehicle",
-        "industrial"
-      ],
+      "suggested_usage": ["cargo transport", "heavy vehicle", "industrial"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "vehicle",
-        "truck"
-      ]
+      "tags": ["vehicle", "truck"]
     },
     {
       "file_path": "assets/3d/models/vehicles/vehicle-vintage-racer.glb",
@@ -4867,22 +3467,14 @@
       "category": "vehicles",
       "size_kb": 99.76,
       "poly_count_estimate": "medium",
-      "suggested_usage": [
-        "racing game",
-        "sports car",
-        "high-speed vehicle"
-      ],
+      "suggested_usage": ["racing game", "sports car", "high-speed vehicle"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "vehicle",
-        "vintage",
-        "racer"
-      ]
+      "tags": ["vehicle", "vintage", "racer"]
     },
     {
       "file_path": "assets/3d/models/vehicles/wheel-truck.glb",
@@ -4892,21 +3484,14 @@
       "category": "vehicles",
       "size_kb": 33.52,
       "poly_count_estimate": "low",
-      "suggested_usage": [
-        "cargo transport",
-        "heavy vehicle",
-        "industrial"
-      ],
+      "suggested_usage": ["cargo transport", "heavy vehicle", "industrial"],
       "scale_info": {
         "recommended_scale": 1.0,
         "units": "meters",
         "notes": "Low-poly model optimized for real-time rendering"
       },
       "texture_references": [],
-      "tags": [
-        "wheel",
-        "truck"
-      ]
+      "tags": ["wheel", "truck"]
     }
   ],
   "textures": {

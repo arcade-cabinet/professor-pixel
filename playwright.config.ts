@@ -6,11 +6,7 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
-  reporter: [
-    ['html'],
-    ['json', { outputFile: 'test-results/test-results.json' }],
-    ['line']
-  ],
+  reporter: [['html'], ['json', { outputFile: 'test-results/test-results.json' }], ['line']],
   use: {
     baseURL: 'http://localhost:5173',
     screenshot: 'only-on-failure',
@@ -18,34 +14,34 @@ export default defineConfig({
     trace: 'on-first-retry',
     // Increase timeouts to allow for complex interactions
     actionTimeout: 15000,
-    navigationTimeout: 30000
+    navigationTimeout: 30000,
   },
   projects: [
     // Desktop Testing (1920x1080) - Standard desktop resolution
     {
       name: 'desktop-chromium',
-      use: { 
+      use: {
         ...devices['Desktop Chrome'],
         viewport: { width: 1920, height: 1080 },
-        hasTouch: false
+        hasTouch: false,
       },
     },
     {
       name: 'desktop-firefox',
-      use: { 
+      use: {
         ...devices['Desktop Firefox'],
         viewport: { width: 1920, height: 1080 },
-        hasTouch: false
+        hasTouch: false,
       },
     },
-    
+
     // Tablet Testing (768x1024) - Standard tablet resolution
     {
       name: 'tablet-portrait',
       use: {
         ...devices['iPad'],
         viewport: { width: 768, height: 1024 },
-        hasTouch: true
+        hasTouch: true,
       },
     },
     {
@@ -53,10 +49,10 @@ export default defineConfig({
       use: {
         ...devices['iPad'],
         viewport: { width: 1024, height: 768 },
-        hasTouch: true
+        hasTouch: true,
       },
     },
-    
+
     // Mobile Portrait Testing (375x667) - iPhone 8 dimensions
     {
       name: 'mobile-portrait',
@@ -64,10 +60,10 @@ export default defineConfig({
         ...devices['iPhone 8'],
         viewport: { width: 375, height: 667 },
         hasTouch: true,
-        isMobile: true
+        isMobile: true,
       },
     },
-    
+
     // Mobile Landscape Testing (667x375) - iPhone 8 landscape
     {
       name: 'mobile-landscape',
@@ -75,21 +71,21 @@ export default defineConfig({
         ...devices['iPhone 8'],
         viewport: { width: 667, height: 375 },
         hasTouch: true,
-        isMobile: true
+        isMobile: true,
       },
     },
-    
+
     // Additional mobile testing for modern devices
     {
       name: 'mobile-modern',
       use: {
         ...devices['iPhone 12'],
         hasTouch: true,
-        isMobile: true
+        isMobile: true,
       },
-    }
+    },
   ],
-  
+
   // Development server configuration
   webServer: {
     command: 'pnpm dev',
@@ -97,10 +93,10 @@ export default defineConfig({
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000, // 2 minutes to start
   },
-  
+
   // Global setup for error detection
   globalSetup: './tests/e2e/global-setup.ts',
-  
+
   // Test output directories
   outputDir: 'test-results/',
 });

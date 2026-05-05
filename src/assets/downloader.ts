@@ -17,15 +17,15 @@ export const directAssetLinks = {
       sourceUrl: 'https://managore.itch.io/m5x7',
       directLink: null, // Would need actual CDN link
       localPath: 'assets/fonts/m5x7.ttf',
-      license: 'CC0'
+      license: 'CC0',
     },
     {
       name: 'Press Start 2P',
       sourceUrl: 'https://fonts.googleapis.com/css2?family=Press+Start+2P',
       directLink: 'https://fonts.gstatic.com/s/pressstart2p/v14/e3t4euO8T-267oIAQAu6jDQyK0nR.ttf',
       localPath: 'assets/fonts/press-start-2p.ttf',
-      license: 'OFL'
-    }
+      license: 'OFL',
+    },
   ],
   sprites: [
     {
@@ -33,8 +33,8 @@ export const directAssetLinks = {
       sourceUrl: 'https://kenney.nl/assets/platformer-pack-redux',
       directLink: null,
       localPath: 'assets/sprites/kenney-platformer/',
-      license: 'CC0'
-    }
+      license: 'CC0',
+    },
   ],
   sounds: [
     {
@@ -42,9 +42,9 @@ export const directAssetLinks = {
       sourceUrl: 'https://freesound.org',
       directLink: null,
       localPath: 'assets/sounds/jump.wav',
-      license: 'CC0'
-    }
-  ]
+      license: 'CC0',
+    },
+  ],
 };
 
 // Python script to help download assets

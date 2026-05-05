@@ -10,20 +10,30 @@ interface EdgeSwipeOptions {
 export function useEdgeSwipe({
   onEdgeSwipe,
   edgeThreshold = 50,
-  enabled = true
+  enabled = true,
 }: EdgeSwipeOptions = {}) {
   const isSwipingRef = useRef(false);
-  
-  const checkEdgeSwipe = (eventData: SwipeEventData, direction: 'up' | 'down' | 'left' | 'right') => {
+
+  const checkEdgeSwipe = (
+    eventData: SwipeEventData,
+    direction: 'up' | 'down' | 'left' | 'right'
+  ) => {
     if (!enabled || !onEdgeSwipe || !eventData || !eventData.initial) return;
-    
+
     const [startX, startY] = eventData.initial;
     const screenWidth = window.innerWidth;
     const screenHeight = window.innerHeight;
-    
+
     // Debug logging
-    console.log('Edge swipe check:', { direction, startX, startY, screenWidth, screenHeight, edgeThreshold });
-    
+    console.log('Edge swipe check:', {
+      direction,
+      startX,
+      startY,
+      screenWidth,
+      screenHeight,
+      edgeThreshold,
+    });
+
     // Check which edge the swipe started from
     switch (direction) {
       case 'down':
@@ -98,6 +108,6 @@ export function useEdgeSwipe({
 
   return {
     handlers,
-    isSwipingRef
+    isSwipingRef,
   };
 }

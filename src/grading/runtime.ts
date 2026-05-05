@@ -15,7 +15,7 @@ export async function validateRuntime(
   output: string,
   rules: RuntimeRules | undefined,
   input: string | undefined,
-  pyodide: PyodideInstance | null,
+  pyodide: PyodideInstance | null
 ): Promise<RuleResult[]> {
   if (!rules) return [];
   const results: RuleResult[] = [];
@@ -25,9 +25,7 @@ export async function validateRuntime(
     results.push({
       id: `runtime.outputContains:${needle}`,
       passed: ok,
-      message: ok
-        ? `Output contains "${needle}"`
-        : `Output should contain "${needle}"`,
+      message: ok ? `Output contains "${needle}"` : `Output should contain "${needle}"`,
     });
   }
 
@@ -57,9 +55,7 @@ export async function validateRuntime(
     results.push({
       id: `runtime.variableExists:${name}`,
       passed: exists,
-      message: exists
-        ? `Variable ${name} exists`
-        : `Variable ${name} should be defined`,
+      message: exists ? `Variable ${name} exists` : `Variable ${name} should be defined`,
     });
   }
 
@@ -72,9 +68,7 @@ export async function validateRuntime(
     results.push({
       id: `runtime.functionCalled:${name}`,
       passed: ok,
-      message: ok
-        ? `${name}() appears called`
-        : `Make sure ${name}() runs`,
+      message: ok ? `${name}() appears called` : `Make sure ${name}() runs`,
     });
   }
 

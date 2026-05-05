@@ -263,7 +263,18 @@ export interface Entity {
 
 export interface EntityBehavior {
   id: string;
-  type: 'move' | 'patrol' | 'follow' | 'rotate' | 'bounce' | 'jump' | 'shoot' | 'collect' | 'spawn' | 'destroy' | 'custom';
+  type:
+    | 'move'
+    | 'patrol'
+    | 'follow'
+    | 'rotate'
+    | 'bounce'
+    | 'jump'
+    | 'shoot'
+    | 'collect'
+    | 'spawn'
+    | 'destroy'
+    | 'custom';
   parameters: Record<string, any>;
   trigger?: BehaviorTrigger;
   enabled?: boolean;
@@ -341,7 +352,15 @@ export interface EditorState {
   lockedLayers?: number[];
 }
 
-export type EditorTool = 'select' | 'move' | 'rotate' | 'scale' | 'duplicate' | 'delete' | 'pan' | 'zoom';
+export type EditorTool =
+  | 'select'
+  | 'move'
+  | 'rotate'
+  | 'scale'
+  | 'duplicate'
+  | 'delete'
+  | 'pan'
+  | 'zoom';
 
 export interface HistoryEntry {
   type: 'add' | 'delete' | 'modify' | 'batch';

@@ -38,7 +38,7 @@ jobs:
           NODE_ENV: production
 
   lint:
-    name: Lint (advisory)
+    name: Biome (blocking)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -56,15 +56,8 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      # Advisory until the codebase is brought into a clean state.
-      # Tracked in docs/STATE.md ("Standards alignment").
-      - name: ESLint
-        run: pnpm exec eslint .
-        continue-on-error: true
-
-      - name: Prettier
-        run: pnpm exec prettier --check .
-        continue-on-error: true
+      - name: Biome check (lint + format)
+        run: pnpm lint
 
   test:
     name: Vitest (unit + integration + component)

@@ -1,13 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  ChevronDown, 
-  Trophy, 
-  Sparkles, 
-  MessageCircle,
-  Target,
-  Star
-} from 'lucide-react';
+import { ChevronDown, Trophy, Sparkles, MessageCircle, Target, Star } from 'lucide-react';
 import pixelImage from '@assets/pixel/Pixel_happy_excited_expression_22a41625.png';
 import { SessionActions } from '@lib/wizard/types';
 
@@ -21,24 +14,24 @@ interface PixelMinimizedProps {
 
 const encouragementMessages = [
   "You're doing great! 🌟",
-  "Keep it up, champion! 💪",
-  "Amazing progress! 🎉",
+  'Keep it up, champion! 💪',
+  'Amazing progress! 🎉',
   "You've got this! 🚀",
-  "Brilliant work! ✨",
-  "I believe in you! 💜",
-  "So proud of you! 🌈",
-  "You're a natural! 🎮"
+  'Brilliant work! ✨',
+  'I believe in you! 💜',
+  'So proud of you! 🌈',
+  "You're a natural! 🎮",
 ];
 
 const tips = [
-  "Try experimenting with different speeds!",
-  "Remember to test your game often!",
-  "Small changes can make a big difference!",
+  'Try experimenting with different speeds!',
+  'Remember to test your game often!',
+  'Small changes can make a big difference!',
   "Don't forget to save your progress!",
-  "Try adding sound effects for more fun!",
-  "Colors can change the whole mood!",
-  "Every game developer started like you!",
-  "Mistakes are just learning opportunities!"
+  'Try adding sound effects for more fun!',
+  'Colors can change the whole mood!',
+  'Every game developer started like you!',
+  'Mistakes are just learning opportunities!',
 ];
 
 export default function PixelMinimized({
@@ -46,7 +39,7 @@ export default function PixelMinimized({
   sessionActions,
   isMobile,
   currentLesson,
-  currentGame
+  currentGame,
 }: PixelMinimizedProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [showTooltip, setShowTooltip] = useState(false);
@@ -57,22 +50,19 @@ export default function PixelMinimized({
   const timeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
   // Position based on device
-  const position = isMobile 
-    ? "top-2 right-2" 
-    : "top-4 left-4";
+  const position = isMobile ? 'top-2 right-2' : 'top-4 left-4';
 
   // Size based on device
-  const size = isMobile
-    ? "w-12 h-12"
-    : "w-14 h-14";
+  const size = isMobile ? 'w-12 h-12' : 'w-14 h-14';
 
   // Show random encouragement periodically
   useEffect(() => {
     const showRandomEncouragement = () => {
-      const randomMessage = encouragementMessages[Math.floor(Math.random() * encouragementMessages.length)];
+      const randomMessage =
+        encouragementMessages[Math.floor(Math.random() * encouragementMessages.length)];
       setEncouragementMessage(randomMessage);
       setShowEncouragement(true);
-      
+
       setTimeout(() => {
         setShowEncouragement(false);
       }, 4000);
@@ -80,7 +70,7 @@ export default function PixelMinimized({
 
     // Show first encouragement after 30 seconds
     const firstTimer = setTimeout(showRandomEncouragement, 30000);
-    
+
     // Then show every 2 minutes
     const interval = setInterval(showRandomEncouragement, 120000);
 
@@ -96,7 +86,7 @@ export default function PixelMinimized({
       const animations: Array<'blink' | 'wave'> = ['blink', 'wave'];
       const randomAnim = animations[Math.floor(Math.random() * animations.length)];
       setIdleAnimation(randomAnim);
-      
+
       setTimeout(() => {
         setIdleAnimation(null);
       }, 1000);
@@ -125,12 +115,12 @@ export default function PixelMinimized({
     if (isHovered) {
       const randomTip = tips[Math.floor(Math.random() * tips.length)];
       setCurrentTip(randomTip);
-      
+
       // Show tooltip after a short delay
       const timer = setTimeout(() => {
         if (isHovered) setShowTooltip(true);
       }, 500);
-      
+
       return () => clearTimeout(timer);
     } else {
       setShowTooltip(false);
@@ -138,7 +128,9 @@ export default function PixelMinimized({
   }, [isHovered]);
 
   // Calculate progress
-  const completedLessons = sessionActions.completedSteps.filter(step => step.includes('lesson')).length;
+  const completedLessons = sessionActions.completedSteps.filter((step) =>
+    step.includes('lesson')
+  ).length;
   const hasAchievements = sessionActions.completedSteps.length > 3;
 
   // Handle click with swipe down on mobile
@@ -150,7 +142,7 @@ export default function PixelMinimized({
 
   // Swipe handler for mobile
   const handleTouchStart = useRef<{ y: number } | null>(null);
-  
+
   const handleTouchStartEvent = (e: React.TouchEvent) => {
     handleTouchStart.current = { y: e.touches[0].clientY };
   };
@@ -158,7 +150,8 @@ export default function PixelMinimized({
   const handleTouchEnd = (e: React.TouchEvent) => {
     if (handleTouchStart.current && isMobile) {
       const deltaY = e.changedTouches[0].clientY - handleTouchStart.current.y;
-      if (deltaY > 50) { // Swipe down threshold
+      if (deltaY > 50) {
+        // Swipe down threshold
         onRestore();
       }
     }
@@ -180,46 +173,64 @@ export default function PixelMinimized({
           onClick={handleInteraction}
           whileHover={!isMobile ? { scale: 1.15 } : undefined}
           whileTap={{ scale: 0.95 }}
-          animate={idleAnimation === 'wave' ? {
-            rotate: [0, -10, 10, -10, 0]
-          } : undefined}
-          transition={idleAnimation === 'wave' ? {
-            duration: 0.5,
-            ease: "easeInOut"
-          } : undefined}
+          animate={
+            idleAnimation === 'wave'
+              ? {
+                  rotate: [0, -10, 10, -10, 0],
+                }
+              : undefined
+          }
+          transition={
+            idleAnimation === 'wave'
+              ? {
+                  duration: 0.5,
+                  ease: 'easeInOut',
+                }
+              : undefined
+          }
         >
           {/* Avatar container */}
-          <div className={`relative ${size} rounded-full overflow-hidden shadow-lg ring-2 ring-purple-400 ring-offset-2 ring-offset-white dark:ring-offset-gray-900`}>
+          <div
+            className={`relative ${size} rounded-full overflow-hidden shadow-lg ring-2 ring-purple-400 ring-offset-2 ring-offset-white dark:ring-offset-gray-900`}
+          >
             <motion.img
               src={pixelImage}
               alt="Pixel Assistant"
               className="w-full h-full object-cover"
               style={{ imageRendering: 'crisp-edges' }}
-              animate={idleAnimation === 'blink' ? {
-                scaleY: [1, 0.1, 1]
-              } : {
-                scale: [1, 1.05, 1]
-              }}
-              transition={idleAnimation === 'blink' ? {
-                duration: 0.2,
-                times: [0, 0.5, 1]
-              } : {
-                duration: 2,
-                repeat: Infinity,
-                ease: "easeInOut"
-              }}
+              animate={
+                idleAnimation === 'blink'
+                  ? {
+                      scaleY: [1, 0.1, 1],
+                    }
+                  : {
+                      scale: [1, 1.05, 1],
+                    }
+              }
+              transition={
+                idleAnimation === 'blink'
+                  ? {
+                      duration: 0.2,
+                      times: [0, 0.5, 1],
+                    }
+                  : {
+                      duration: 2,
+                      repeat: Infinity,
+                      ease: 'easeInOut',
+                    }
+              }
             />
-            
+
             {/* Pulse animation overlay */}
             <motion.div
               className="absolute inset-0 bg-gradient-to-t from-purple-400/20 to-transparent"
               animate={{
-                opacity: [0, 0.5, 0]
+                opacity: [0, 0.5, 0],
               }}
               transition={{
                 duration: 2,
                 repeat: Infinity,
-                ease: "easeInOut"
+                ease: 'easeInOut',
               }}
             />
           </div>
@@ -237,7 +248,7 @@ export default function PixelMinimized({
               className="absolute -top-1 -right-1"
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
-              transition={{ type: "spring", delay: 0.5 }}
+              transition={{ type: 'spring', delay: 0.5 }}
             >
               <Trophy className="w-4 h-4 text-yellow-500" />
             </motion.div>
@@ -272,12 +283,10 @@ export default function PixelMinimized({
                     <p className="text-sm font-medium text-gray-800 dark:text-gray-200 mb-1">
                       Pixel's Tip:
                     </p>
-                    <p className="text-xs text-gray-600 dark:text-gray-400">
-                      {currentTip}
-                    </p>
+                    <p className="text-xs text-gray-600 dark:text-gray-400">{currentTip}</p>
                   </div>
                 </div>
-                
+
                 {/* Current activity */}
                 {(currentLesson || currentGame) && (
                   <div className="mt-2 pt-2 border-t border-purple-100 dark:border-purple-900">
@@ -308,15 +317,17 @@ export default function PixelMinimized({
             initial={{ opacity: 0, scale: 0.8, y: -20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.8, y: -20 }}
-            transition={{ type: "spring", damping: 20 }}
+            transition={{ type: 'spring', damping: 20 }}
           >
             <div className="relative">
               {/* Speech bubble tail */}
-              <div className={`absolute ${isMobile ? '-top-2 right-6' : '-top-2 left-6'} w-0 h-0 
+              <div
+                className={`absolute ${isMobile ? '-top-2 right-6' : '-top-2 left-6'} w-0 h-0 
                 border-l-[8px] border-l-transparent
                 border-r-[8px] border-r-transparent
-                border-b-[8px] border-b-white dark:border-b-gray-900`} />
-              
+                border-b-[8px] border-b-white dark:border-b-gray-900`}
+              />
+
               {/* Speech bubble content */}
               <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg p-3 max-w-[200px] border border-purple-200 dark:border-purple-800">
                 <div className="flex items-center gap-2">

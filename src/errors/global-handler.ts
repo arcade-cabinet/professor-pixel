@@ -79,7 +79,7 @@ class GlobalErrorHandler {
       level: 'error',
       context: 'Global JavaScript Error',
       errorId: this.generateErrorId(),
-      handled: false
+      handled: false,
     };
 
     this.track(error);
@@ -108,7 +108,7 @@ class GlobalErrorHandler {
       level: 'error',
       context: 'Unhandled Promise Rejection',
       errorId: this.generateErrorId(),
-      handled: false
+      handled: false,
     };
 
     this.track(error);
@@ -134,9 +134,9 @@ class GlobalErrorHandler {
     const originalError = console.error;
     console.error = (...args: any[]) => {
       // Track console.error calls as potential application errors
-      const errorMessage = args.map(arg => 
-        typeof arg === 'string' ? arg : JSON.stringify(arg)
-      ).join(' ');
+      const errorMessage = args
+        .map((arg) => (typeof arg === 'string' ? arg : JSON.stringify(arg)))
+        .join(' ');
 
       if (!errorMessage.includes('Error Boundary') && !errorMessage.includes('React error')) {
         const error: GlobalError = {
@@ -146,7 +146,7 @@ class GlobalErrorHandler {
           level: 'error',
           context: 'Console Error',
           errorId: this.generateErrorId(),
-          handled: true
+          handled: true,
         };
 
         this.track(error);
@@ -167,7 +167,7 @@ class GlobalErrorHandler {
     }
 
     // Notify listeners
-    this.listeners.forEach(listener => {
+    this.listeners.forEach((listener) => {
       try {
         listener(error);
       } catch (e) {
@@ -189,12 +189,18 @@ class GlobalErrorHandler {
 
   private getErrorIcon(type: string): string {
     switch (type) {
-      case 'javascript': return '🔴';
-      case 'promise': return '🟡';
-      case 'react-error': return '⚛️';
-      case 'network': return '🌐';
-      case 'python': return '🐍';
-      default: return '❌';
+      case 'javascript':
+        return '🔴';
+      case 'promise':
+        return '🟡';
+      case 'react-error':
+        return '⚛️';
+      case 'network':
+        return '🌐';
+      case 'python':
+        return '🐍';
+      default:
+        return '❌';
     }
   }
 
@@ -204,9 +210,7 @@ class GlobalErrorHandler {
 
   private persistErrors() {
     try {
-      const criticalErrors = this.errors
-        .filter(error => error.level === 'error')
-        .slice(0, 10); // Only persist last 10 critical errors
+      const criticalErrors = this.errors.filter((error) => error.level === 'error').slice(0, 10); // Only persist last 10 critical errors
 
       localStorage.setItem('pygame-errors', JSON.stringify(criticalErrors));
     } catch (e) {
@@ -222,14 +226,14 @@ class GlobalErrorHandler {
   clearErrors() {
     this.errors = [];
     localStorage.removeItem('pygame-errors');
-    
+
     if (this.debugMode) {
       console.log('🧹 Cleared all tracked errors');
     }
   }
 
   getErrorsForType(type: string): GlobalError[] {
-    return this.errors.filter(error => error.type === type);
+    return this.errors.filter((error) => error.type === type);
   }
 
   getRecentErrors(limit = 10): GlobalError[] {
@@ -237,7 +241,7 @@ class GlobalErrorHandler {
   }
 
   getCriticalErrors(): GlobalError[] {
-    return this.errors.filter(error => error.level === 'error');
+    return this.errors.filter((error) => error.level === 'error');
   }
 
   subscribe(listener: (error: GlobalError) => void): () => void {
@@ -267,12 +271,10 @@ class GlobalErrorHandler {
       'loading chunk',
       'network',
       'fetch failed',
-      'timeout'
+      'timeout',
     ];
 
-    return recoverablePatterns.some(pattern => 
-      error.error.toLowerCase().includes(pattern)
-    );
+    return recoverablePatterns.some((pattern) => error.error.toLowerCase().includes(pattern));
   }
 
   getRecoveryActions(error: GlobalError): string[] {
@@ -297,12 +299,12 @@ class GlobalErrorHandler {
       total: this.errors.length,
       byType: {} as Record<string, number>,
       byLevel: {} as Record<string, number>,
-      recentCount: this.errors.filter(e => 
-        Date.now() - new Date(e.timestamp).getTime() < 5 * 60 * 1000 // Last 5 minutes
-      ).length
+      recentCount: this.errors.filter(
+        (e) => Date.now() - new Date(e.timestamp).getTime() < 5 * 60 * 1000 // Last 5 minutes
+      ).length,
     };
 
-    this.errors.forEach(error => {
+    this.errors.forEach((error) => {
       stats.byType[error.type] = (stats.byType[error.type] || 0) + 1;
       stats.byLevel[error.level] = (stats.byLevel[error.level] || 0) + 1;
     });
@@ -325,7 +327,7 @@ export const errorTracker: ErrorTracker = {
   getErrors: () => globalErrorHandler.getErrors(),
   clearErrors: () => globalErrorHandler.clearErrors(),
   getErrorsForType: (type: string) => globalErrorHandler.getErrorsForType(type),
-  getRecentErrors: (limit?: number) => globalErrorHandler.getRecentErrors(limit)
+  getRecentErrors: (limit?: number) => globalErrorHandler.getRecentErrors(limit),
 };
 
 // Utility functions for common error patterns
@@ -338,11 +340,15 @@ export function trackNetworkError(error: Error, context: string) {
     level: 'error',
     context,
     errorId: `net-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-    handled: true
+    handled: true,
   });
 }
 
-export function trackCustomError(message: string, context: string, level: 'error' | 'warning' | 'info' = 'error') {
+export function trackCustomError(
+  message: string,
+  context: string,
+  level: 'error' | 'warning' | 'info' = 'error'
+) {
   globalErrorHandler.track({
     type: 'custom',
     error: message,
@@ -350,7 +356,7 @@ export function trackCustomError(message: string, context: string, level: 'error
     level,
     context,
     errorId: `custom-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-    handled: true
+    handled: true,
   });
 }
 
@@ -364,7 +370,7 @@ export const debugUtils = {
   },
   triggerTestPromiseRejection: () => {
     Promise.reject(new Error('Test promise rejection from debug utils'));
-  }
+  },
 };
 
 // Make debug utils available globally in development

@@ -45,10 +45,7 @@ export class WorkerPythonRunner {
     });
 
     try {
-      const result = await Promise.race([
-        remote.runSnippet(opts.code, opts.input),
-        timeoutPromise,
-      ]);
+      const result = await Promise.race([remote.runSnippet(opts.code, opts.input), timeoutPromise]);
       if (timer) clearTimeout(timer);
       return clipResult(result, maxStdout);
     } catch (err) {
@@ -105,8 +102,7 @@ function clipResult(result: RunResult, maxStdout: number): RunResult {
   if (result.output.length <= maxStdout) return result;
   return {
     output:
-      result.output.slice(0, maxStdout) +
-      `\n[output truncated — exceeded ${maxStdout} bytes]`,
+      result.output.slice(0, maxStdout) + `\n[output truncated — exceeded ${maxStdout} bytes]`,
     error: result.error,
   };
 }

@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from "react";
-import { globalErrorHandler, type GlobalError } from "@lib/errors/global-handler";
+import { useState, useEffect, useCallback } from 'react';
+import { globalErrorHandler, type GlobalError } from '@lib/errors/global-handler';
 
 /**
  * Debug hook for development and troubleshooting
@@ -19,7 +19,7 @@ export function useDebug() {
       // Ctrl+Shift+D or Cmd+Shift+D to toggle debug panel
       if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key === 'D') {
         event.preventDefault();
-        setIsDebugPanelOpen(prev => !prev);
+        setIsDebugPanelOpen((prev) => !prev);
       }
 
       // Ctrl+Shift+E or Cmd+Shift+E to toggle debug mode
@@ -46,7 +46,7 @@ export function useDebug() {
 
     updateErrors();
     const unsubscribe = globalErrorHandler.subscribe(updateErrors);
-    
+
     return unsubscribe;
   }, []);
 
@@ -69,13 +69,16 @@ export function useDebug() {
     setErrors([]);
   }, []);
 
-  const logDebugInfo = useCallback((label: string, data: any) => {
-    if (isDebugMode) {
-      console.group(`🐛 Debug: ${label}`);
-      console.log(data);
-      console.groupEnd();
-    }
-  }, [isDebugMode]);
+  const logDebugInfo = useCallback(
+    (label: string, data: any) => {
+      if (isDebugMode) {
+        console.group(`🐛 Debug: ${label}`);
+        console.log(data);
+        console.groupEnd();
+      }
+    },
+    [isDebugMode]
+  );
 
   const trackCustomError = useCallback((message: string, context?: string) => {
     globalErrorHandler.track({
@@ -85,14 +88,14 @@ export function useDebug() {
       level: 'error',
       context: context || 'Custom Debug Error',
       errorId: `debug-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      handled: true
+      handled: true,
     });
   }, []);
 
   const getSystemHealth = useCallback(() => {
     const errorStats = globalErrorHandler.getErrorStats();
-    const recentErrors = errors.filter(error => 
-      Date.now() - new Date(error.timestamp).getTime() < 5 * 60 * 1000
+    const recentErrors = errors.filter(
+      (error) => Date.now() - new Date(error.timestamp).getTime() < 5 * 60 * 1000
     );
 
     return {
@@ -100,7 +103,7 @@ export function useDebug() {
       errorCount: errorStats.total,
       recentErrorCount: recentErrors.length,
       criticalErrorCount: errorStats.byLevel.error || 0,
-      lastError: errors[0] || null
+      lastError: errors[0] || null,
     };
   }, [errors]);
 
@@ -110,7 +113,7 @@ export function useDebug() {
     isDebugPanelOpen,
     errors,
     hasRecentErrors: errors.length > 0,
-    
+
     // Actions
     toggleDebugMode,
     openDebugPanel,
@@ -118,16 +121,16 @@ export function useDebug() {
     clearErrors,
     logDebugInfo,
     trackCustomError,
-    
+
     // Utilities
     getSystemHealth,
-    
+
     // Shortcuts info
     shortcuts: {
       togglePanel: 'Ctrl+Shift+D',
       toggleMode: 'Ctrl+Shift+E',
-      closePanel: 'Escape'
-    }
+      closePanel: 'Escape',
+    },
   };
 }
 
@@ -139,7 +142,7 @@ export function usePerformanceMonitor() {
     renderCount: 0,
     lastRenderTime: 0,
     averageRenderTime: 0,
-    memoryUsage: 0
+    memoryUsage: 0,
   });
 
   const startRenderMeasure = useCallback(() => {
@@ -148,58 +151,66 @@ export function usePerformanceMonitor() {
 
   const endRenderMeasure = useCallback((startTime: number, componentName?: string) => {
     const renderTime = performance.now() - startTime;
-    
-    setMetrics(prev => {
+
+    setMetrics((prev) => {
       const newRenderCount = prev.renderCount + 1;
-      const newAverageRenderTime = ((prev.averageRenderTime * (newRenderCount - 1)) + renderTime) / newRenderCount;
-      
+      const newAverageRenderTime =
+        (prev.averageRenderTime * (newRenderCount - 1) + renderTime) / newRenderCount;
+
       return {
         renderCount: newRenderCount,
         lastRenderTime: renderTime,
         averageRenderTime: newAverageRenderTime,
-        memoryUsage: performance.memory ? Math.round(performance.memory.usedJSHeapSize / 1024 / 1024) : 0
+        memoryUsage: performance.memory
+          ? Math.round(performance.memory.usedJSHeapSize / 1024 / 1024)
+          : 0,
       };
     });
 
     // Log slow renders in debug mode
     if (globalErrorHandler.getDebugMode() && renderTime > 100) {
-      console.warn(`🐌 Slow render detected: ${componentName || 'Unknown component'} took ${renderTime.toFixed(2)}ms`);
+      console.warn(
+        `🐌 Slow render detected: ${componentName || 'Unknown component'} took ${renderTime.toFixed(2)}ms`
+      );
     }
 
     return renderTime;
   }, []);
 
-  const measureAsync = useCallback(async <T,>(
-    asyncFn: () => Promise<T>,
-    label?: string
-  ): Promise<T> => {
-    const startTime = performance.now();
-    
-    try {
-      const result = await asyncFn();
-      const duration = performance.now() - startTime;
-      
-      if (globalErrorHandler.getDebugMode()) {
-        console.log(`⏱️ ${label || 'Async operation'} completed in ${duration.toFixed(2)}ms`);
+  const measureAsync = useCallback(
+    async <T>(asyncFn: () => Promise<T>, label?: string): Promise<T> => {
+      const startTime = performance.now();
+
+      try {
+        const result = await asyncFn();
+        const duration = performance.now() - startTime;
+
+        if (globalErrorHandler.getDebugMode()) {
+          console.log(`⏱️ ${label || 'Async operation'} completed in ${duration.toFixed(2)}ms`);
+        }
+
+        return result;
+      } catch (error) {
+        const duration = performance.now() - startTime;
+
+        if (globalErrorHandler.getDebugMode()) {
+          console.error(
+            `❌ ${label || 'Async operation'} failed after ${duration.toFixed(2)}ms:`,
+            error
+          );
+        }
+
+        throw error;
       }
-      
-      return result;
-    } catch (error) {
-      const duration = performance.now() - startTime;
-      
-      if (globalErrorHandler.getDebugMode()) {
-        console.error(`❌ ${label || 'Async operation'} failed after ${duration.toFixed(2)}ms:`, error);
-      }
-      
-      throw error;
-    }
-  }, []);
+    },
+    []
+  );
 
   return {
     metrics,
     startRenderMeasure,
     endRenderMeasure,
-    measureAsync
+    measureAsync,
   };
 }
 
@@ -213,29 +224,38 @@ export function useComponentDebug(componentName: string) {
   useEffect(() => {
     if (isDebugMode) {
       const startTime = startRenderMeasure();
-      
+
       return () => {
         endRenderMeasure(startTime, componentName);
       };
     }
   });
 
-  const logProps = useCallback((props: any) => {
-    logDebugInfo(`${componentName} Props`, props);
-  }, [componentName, logDebugInfo]);
+  const logProps = useCallback(
+    (props: any) => {
+      logDebugInfo(`${componentName} Props`, props);
+    },
+    [componentName, logDebugInfo]
+  );
 
-  const logState = useCallback((state: any) => {
-    logDebugInfo(`${componentName} State`, state);
-  }, [componentName, logDebugInfo]);
+  const logState = useCallback(
+    (state: any) => {
+      logDebugInfo(`${componentName} State`, state);
+    },
+    [componentName, logDebugInfo]
+  );
 
-  const logEffect = useCallback((effectName: string, dependencies?: any[]) => {
-    logDebugInfo(`${componentName} Effect: ${effectName}`, { dependencies });
-  }, [componentName, logDebugInfo]);
+  const logEffect = useCallback(
+    (effectName: string, dependencies?: any[]) => {
+      logDebugInfo(`${componentName} Effect: ${effectName}`, { dependencies });
+    },
+    [componentName, logDebugInfo]
+  );
 
   return {
     logProps,
     logState,
     logEffect,
-    isDebugMode
+    isDebugMode,
   };
 }

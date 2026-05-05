@@ -99,7 +99,14 @@ describe('gradeCode', () => {
     };
     const stepWithCap: LessonStep = {
       ...exactStep,
-      tests: [{ expectedOutput: '', mode: 'rules', timeoutMs: 2000, runtimeRules: { outputContains: ['x'] } }],
+      tests: [
+        {
+          expectedOutput: '',
+          mode: 'rules',
+          timeoutMs: 2000,
+          runtimeRules: { outputContains: ['x'] },
+        },
+      ],
     };
     const result = await gradeCode({
       code: 'while True: pass',

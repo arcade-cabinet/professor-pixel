@@ -5,14 +5,15 @@ export const breakoutTemplate: GameTemplate = {
   id: 'breakout',
   name: 'Breakout',
   description: 'Classic brick-breaking game with paddle and ball',
-  wizardDescription: 'Break all the bricks with a bouncing ball! Move your paddle to keep the ball in play. A classic game that teaches collision detection and game physics.',
+  wizardDescription:
+    'Break all the bricks with a bouncing ball! Move your paddle to keep the ball in play. A classic game that teaches collision detection and game physics.',
   difficulty: 'intermediate',
   settings: {
     screenWidth: 800,
     screenHeight: 600,
     backgroundColor: '#1a1a1a',
     fps: 60,
-    title: 'Breakout Game'
+    title: 'Breakout Game',
   },
   components: [
     {
@@ -26,8 +27,8 @@ export const breakoutTemplate: GameTemplate = {
         speed: 10,
         color: '#00FF00',
         playerControlled: true,
-        controls: 'arrows'
-      }
+        controls: 'arrows',
+      },
     },
     {
       type: 'ball',
@@ -40,8 +41,8 @@ export const breakoutTemplate: GameTemplate = {
         velocityY: -4,
         color: '#FFFFFF',
         gravity: 0,
-        bounciness: 1
-      }
+        bounciness: 1,
+      },
     },
     {
       type: 'scoreText',
@@ -51,15 +52,15 @@ export const breakoutTemplate: GameTemplate = {
         x: 10,
         y: 10,
         fontSize: 24,
-        color: '#FFFFFF'
-      }
-    }
+        color: '#FFFFFF',
+      },
+    },
   ],
   preview: (ctx: CanvasRenderingContext2D) => {
     // Dark background
     ctx.fillStyle = '#1a1a1a';
     ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-    
+
     // Bricks
     const brickColors = ['#FF0000', '#FFA500', '#FFFF00', '#00FF00', '#0000FF'];
     for (let row = 0; row < 5; row++) {
@@ -70,11 +71,11 @@ export const breakoutTemplate: GameTemplate = {
         ctx.fillRect(x, y, 65, 20);
       }
     }
-    
+
     // Paddle
     ctx.fillStyle = '#00FF00';
     ctx.fillRect(ctx.canvas.width / 2 - 40, 380, 80, 12);
-    
+
     // Ball
     ctx.fillStyle = '#FFFFFF';
     ctx.beginPath();
@@ -328,5 +329,5 @@ while running:
 
 # Quit
 pygame.quit()
-sys.exit()`
+sys.exit()`,
 };

@@ -17,7 +17,13 @@ const AUDIO_EXT = new Set(['.wav', '.ogg', '.mp3', '.m4a']);
 
 // Top-level dir → asset category mapping. Anything else falls through to 'misc'.
 const SPRITE_DIRS = new Set([
-  'characters', 'enemies', 'items', 'effects', 'tiles', 'vehicles', 'misc',
+  'characters',
+  'enemies',
+  'items',
+  'effects',
+  'tiles',
+  'vehicles',
+  'misc',
   'sprites',
 ]);
 const BACKGROUND_DIRS = new Set(['backgrounds']);
@@ -29,7 +35,11 @@ function walk(root) {
   while (stack.length) {
     const dir = stack.pop();
     let entries;
-    try { entries = readdirSync(dir, { withFileTypes: true }); } catch { continue; }
+    try {
+      entries = readdirSync(dir, { withFileTypes: true });
+    } catch {
+      continue;
+    }
     for (const e of entries) {
       const full = join(dir, e.name);
       if (e.isDirectory()) stack.push(full);
@@ -118,23 +128,32 @@ function tagsFromName(name) {
   return name
     .toLowerCase()
     .split(/[-_\s.]+/)
-    .filter(t => t.length > 1 && !/^\d+$/.test(t));
+    .filter((t) => t.length > 1 && !/^\d+$/.test(t));
 }
 
 function main() {
   let files;
-  try { files = walk(publicAssets); }
-  catch (e) {
+  try {
+    files = walk(publicAssets);
+  } catch (e) {
     console.error(`[asset-catalog] cannot read ${publicAssets}:`, e.message);
     process.exit(1);
   }
 
-  const catalog = { sprites: [], sounds: [], backgrounds: [], generatedAt: new Date().toISOString() };
+  const catalog = {
+    sprites: [],
+    sounds: [],
+    backgrounds: [],
+    generatedAt: new Date().toISOString(),
+  };
   let skipped = 0;
   for (const f of files) {
     if (basename(f) === 'catalog.json') continue;
     const c = classify(f);
-    if (!c) { skipped++; continue; }
+    if (!c) {
+      skipped++;
+      continue;
+    }
     if (c.kind === 'sprite') catalog.sprites.push(c);
     else if (c.kind === 'background') catalog.backgrounds.push(c);
     else if (c.kind === 'sound') catalog.sounds.push(c);
@@ -143,8 +162,8 @@ function main() {
   writeFileSync(outFile, JSON.stringify(catalog, null, 2));
   console.log(
     `[asset-catalog] wrote ${outFile}: ` +
-    `${catalog.sprites.length} sprites, ${catalog.backgrounds.length} backgrounds, ` +
-    `${catalog.sounds.length} sounds (${skipped} skipped).`,
+      `${catalog.sprites.length} sprites, ${catalog.backgrounds.length} backgrounds, ` +
+      `${catalog.sounds.length} sounds (${skipped} skipped).`
   );
 }
 

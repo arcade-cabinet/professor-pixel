@@ -5,14 +5,15 @@ export const platformerTemplate: GameTemplate = {
   id: 'simple-platformer',
   name: 'Simple Platformer',
   description: 'A basic platform game with jumping, gravity, and a goal',
-  wizardDescription: 'Create a fun jumping game where you hop across platforms to reach the goal! Perfect for beginners who want to learn about gravity and collision detection.',
+  wizardDescription:
+    'Create a fun jumping game where you hop across platforms to reach the goal! Perfect for beginners who want to learn about gravity and collision detection.',
   difficulty: 'beginner',
   settings: {
     screenWidth: 800,
     screenHeight: 600,
     backgroundColor: '#87CEEB',
     fps: 60,
-    title: 'My Platform Adventure'
+    title: 'My Platform Adventure',
   },
   components: [
     {
@@ -25,8 +26,8 @@ export const platformerTemplate: GameTemplate = {
         velocityY: 0,
         width: 40,
         height: 40,
-        color: '#4F46E5'
-      }
+        color: '#4F46E5',
+      },
     },
     {
       type: 'platform',
@@ -36,8 +37,8 @@ export const platformerTemplate: GameTemplate = {
         y: 500,
         width: 800,
         height: 100,
-        color: '#10B981'
-      }
+        color: '#10B981',
+      },
     },
     {
       type: 'platform',
@@ -47,8 +48,8 @@ export const platformerTemplate: GameTemplate = {
         y: 400,
         width: 100,
         height: 20,
-        color: '#10B981'
-      }
+        color: '#10B981',
+      },
     },
     {
       type: 'platform',
@@ -58,8 +59,8 @@ export const platformerTemplate: GameTemplate = {
         y: 320,
         width: 100,
         height: 20,
-        color: '#10B981'
-      }
+        color: '#10B981',
+      },
     },
     {
       type: 'platform',
@@ -69,8 +70,8 @@ export const platformerTemplate: GameTemplate = {
         y: 240,
         width: 100,
         height: 20,
-        color: '#10B981'
-      }
+        color: '#10B981',
+      },
     },
     {
       type: 'collectible',
@@ -81,8 +82,8 @@ export const platformerTemplate: GameTemplate = {
         type: 'key',
         value: 100,
         size: 30,
-        color: '#FBBF24'
-      }
+        color: '#FBBF24',
+      },
     },
     {
       type: 'scoreText',
@@ -92,28 +93,28 @@ export const platformerTemplate: GameTemplate = {
         x: 200,
         y: 50,
         fontSize: 20,
-        color: '#000000'
-      }
-    }
+        color: '#000000',
+      },
+    },
   ],
   preview: (ctx: CanvasRenderingContext2D) => {
     // Draw simplified platformer preview
     ctx.fillStyle = '#87CEEB';
     ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-    
+
     // Ground
     ctx.fillStyle = '#10B981';
     ctx.fillRect(0, 400, ctx.canvas.width, 200);
-    
+
     // Platforms
     ctx.fillRect(150, 350, 80, 15);
     ctx.fillRect(300, 300, 80, 15);
     ctx.fillRect(450, 250, 80, 15);
-    
+
     // Player
     ctx.fillStyle = '#4F46E5';
     ctx.fillRect(50, 365, 30, 30);
-    
+
     // Goal
     ctx.fillStyle = '#FBBF24';
     ctx.beginPath();
@@ -292,5 +293,5 @@ while running:
 
 # Quit
 pygame.quit()
-sys.exit()`
+sys.exit()`,
 };

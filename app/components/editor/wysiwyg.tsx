@@ -31,7 +31,7 @@ interface PygameWysiwygEditorProps {
 export default function PygameWysiwygEditor({
   className,
   onClose,
-  initialComponents = []
+  initialComponents = [],
 }: PygameWysiwygEditorProps) {
   const [placedComponents, setPlacedComponents] = useState<PlacedComponent[]>(initialComponents);
   const [selectedComponentId, setSelectedComponentId] = useState<string | null>(null);
@@ -40,41 +40,56 @@ export default function PygameWysiwygEditor({
   const [snapToGrid, setSnapToGrid] = useState(true);
   const [activeTab, setActiveTab] = useState<'visual' | 'code'>('visual');
 
-  const selectedComponent = placedComponents.find(c => c.id === selectedComponentId);
+  const selectedComponent = placedComponents.find((c) => c.id === selectedComponentId);
 
-  const handleDrop = useCallback((componentId: string, x: number, y: number) => {
-    const newComponent: PlacedComponent = {
-      id: `${componentId}-${Date.now()}`,
-      componentId,
-      x: snapToGrid ? Math.round(x / 20) * 20 : x,
-      y: snapToGrid ? Math.round(y / 20) * 20 : y,
-      properties: {}
-    };
-    setPlacedComponents(prev => [...prev, newComponent]);
-    setSelectedComponentId(newComponent.id);
-  }, [snapToGrid]);
+  const handleDrop = useCallback(
+    (componentId: string, x: number, y: number) => {
+      const newComponent: PlacedComponent = {
+        id: `${componentId}-${Date.now()}`,
+        componentId,
+        x: snapToGrid ? Math.round(x / 20) * 20 : x,
+        y: snapToGrid ? Math.round(y / 20) * 20 : y,
+        properties: {},
+      };
+      setPlacedComponents((prev) => [...prev, newComponent]);
+      setSelectedComponentId(newComponent.id);
+    },
+    [snapToGrid]
+  );
 
-  const handleComponentMove = useCallback((id: string, x: number, y: number) => {
-    setPlacedComponents(prev => prev.map(comp => 
-      comp.id === id 
-        ? { ...comp, x: snapToGrid ? Math.round(x / 20) * 20 : x, y: snapToGrid ? Math.round(y / 20) * 20 : y }
-        : comp
-    ));
-  }, [snapToGrid]);
+  const handleComponentMove = useCallback(
+    (id: string, x: number, y: number) => {
+      setPlacedComponents((prev) =>
+        prev.map((comp) =>
+          comp.id === id
+            ? {
+                ...comp,
+                x: snapToGrid ? Math.round(x / 20) * 20 : x,
+                y: snapToGrid ? Math.round(y / 20) * 20 : y,
+              }
+            : comp
+        )
+      );
+    },
+    [snapToGrid]
+  );
 
-  const handleComponentDelete = useCallback((id: string) => {
-    setPlacedComponents(prev => prev.filter(comp => comp.id !== id));
-    if (selectedComponentId === id) {
-      setSelectedComponentId(null);
-    }
-  }, [selectedComponentId]);
+  const handleComponentDelete = useCallback(
+    (id: string) => {
+      setPlacedComponents((prev) => prev.filter((comp) => comp.id !== id));
+      if (selectedComponentId === id) {
+        setSelectedComponentId(null);
+      }
+    },
+    [selectedComponentId]
+  );
 
   const handlePropertyChange = useCallback((id: string, property: string, value: any) => {
-    setPlacedComponents(prev => prev.map(comp =>
-      comp.id === id
-        ? { ...comp, properties: { ...comp.properties, [property]: value } }
-        : comp
-    ));
+    setPlacedComponents((prev) =>
+      prev.map((comp) =>
+        comp.id === id ? { ...comp, properties: { ...comp.properties, [property]: value } } : comp
+      )
+    );
   }, []);
 
   const handlePlay = () => setIsPlaying(true);
@@ -86,10 +101,12 @@ export default function PygameWysiwygEditor({
 
   return (
     <DndProvider backend={HTML5Backend}>
-      <div className={cn(
-        "flex flex-col h-screen bg-gradient-to-br from-purple-50 to-pink-50",
-        className
-      )}>
+      <div
+        className={cn(
+          'flex flex-col h-screen bg-gradient-to-br from-purple-50 to-pink-50',
+          className
+        )}
+      >
         {/* Header Toolbar */}
         <div className="flex items-center justify-between p-4 bg-white/80 backdrop-blur-sm border-b border-purple-200/50">
           <div className="flex items-center gap-4">
@@ -98,7 +115,7 @@ export default function PygameWysiwygEditor({
             </h2>
             <div className="flex items-center gap-2">
               <Button
-                variant={isPlaying ? "outline" : "default"}
+                variant={isPlaying ? 'outline' : 'default'}
                 size="sm"
                 onClick={handlePlay}
                 disabled={isPlaying}
@@ -108,7 +125,7 @@ export default function PygameWysiwygEditor({
                 Play
               </Button>
               <Button
-                variant={isPlaying ? "default" : "outline"}
+                variant={isPlaying ? 'default' : 'outline'}
                 size="sm"
                 onClick={handlePause}
                 disabled={!isPlaying}
@@ -117,36 +134,23 @@ export default function PygameWysiwygEditor({
                 <Pause className="w-4 h-4" />
                 Pause
               </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleReset}
-                className="gap-2"
-              >
+              <Button variant="outline" size="sm" onClick={handleReset} className="gap-2">
                 <RotateCw className="w-4 h-4" />
                 Reset
               </Button>
             </div>
           </div>
-          
+
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
-              <Switch
-                id="show-grid"
-                checked={showGrid}
-                onCheckedChange={setShowGrid}
-              />
+              <Switch id="show-grid" checked={showGrid} onCheckedChange={setShowGrid} />
               <Label htmlFor="show-grid" className="text-sm flex items-center gap-1">
                 <Grid3x3 className="w-4 h-4" />
                 Grid
               </Label>
             </div>
             <div className="flex items-center gap-2">
-              <Switch
-                id="snap-to-grid"
-                checked={snapToGrid}
-                onCheckedChange={setSnapToGrid}
-              />
+              <Switch id="snap-to-grid" checked={snapToGrid} onCheckedChange={setSnapToGrid} />
               <Label htmlFor="snap-to-grid" className="text-sm">
                 Snap
               </Label>
@@ -166,7 +170,11 @@ export default function PygameWysiwygEditor({
 
           {/* Center - Canvas or Code View */}
           <div className="flex-1 flex flex-col">
-            <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'visual' | 'code')} className="flex-1 flex flex-col">
+            <Tabs
+              value={activeTab}
+              onValueChange={(v) => setActiveTab(v as 'visual' | 'code')}
+              className="flex-1 flex flex-col"
+            >
               <TabsList className="mx-4 mt-4 self-start">
                 <TabsTrigger value="visual" className="gap-2">
                   <Eye className="w-4 h-4" />
@@ -177,7 +185,7 @@ export default function PygameWysiwygEditor({
                   Python Code
                 </TabsTrigger>
               </TabsList>
-              
+
               <TabsContent value="visual" className="flex-1 p-4">
                 <PygameEditorCanvas
                   components={placedComponents}
@@ -190,12 +198,9 @@ export default function PygameWysiwygEditor({
                   onDelete={handleComponentDelete}
                 />
               </TabsContent>
-              
+
               <TabsContent value="code" className="flex-1 p-4">
-                <PygameEditorCodePanel
-                  components={placedComponents}
-                  className="h-full"
-                />
+                <PygameEditorCodePanel components={placedComponents} className="h-full" />
               </TabsContent>
             </Tabs>
           </div>

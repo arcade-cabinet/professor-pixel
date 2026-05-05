@@ -12,7 +12,7 @@ interface PixelMinimizeAnimationProps {
 export default function PixelMinimizeAnimation({
   message = "I'll be right here if you need me!",
   onAnimationComplete,
-  isMobile
+  isMobile,
 }: PixelMinimizeAnimationProps) {
   const [phase, setPhase] = useState<'message' | 'animating' | 'complete'>('message');
 
@@ -35,7 +35,7 @@ export default function PixelMinimizeAnimation({
   }, [onAnimationComplete]);
 
   // Target position based on device
-  const targetPosition = isMobile 
+  const targetPosition = isMobile
     ? { x: window.innerWidth - 70, y: 10 } // Top-right for mobile
     : { x: 10, y: 10 }; // Top-left for desktop
 
@@ -53,7 +53,7 @@ export default function PixelMinimizeAnimation({
           >
             <div className="flex flex-col items-center gap-4">
               <div className="relative">
-                <img 
+                <img
                   src={pixelImage}
                   alt="Pixel"
                   className="w-32 h-32 object-cover rounded-full shadow-xl"
@@ -63,27 +63,25 @@ export default function PixelMinimizeAnimation({
                 <motion.div
                   className="absolute -top-2 -right-2"
                   animate={{ rotate: 360 }}
-                  transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                  transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
                 >
                   <Sparkles className="w-6 h-6 text-yellow-400" />
                 </motion.div>
                 <motion.div
                   className="absolute -bottom-2 -left-2"
                   animate={{ rotate: -360 }}
-                  transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                  transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
                 >
                   <Sparkles className="w-5 h-5 text-purple-400" />
                 </motion.div>
               </div>
-              <motion.div 
+              <motion.div
                 className="bg-white/95 dark:bg-gray-900/95 rounded-2xl px-6 py-3 shadow-lg"
                 initial={{ y: 10, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.3 }}
               >
-                <p className="text-lg font-medium text-gray-800 dark:text-gray-200">
-                  {message}
-                </p>
+                <p className="text-lg font-medium text-gray-800 dark:text-gray-200">{message}</p>
               </motion.div>
             </div>
           </motion.div>
@@ -95,39 +93,35 @@ export default function PixelMinimizeAnimation({
             {/* Pixel Avatar Animating */}
             <motion.div
               className="absolute pointer-events-auto"
-              initial={{ 
+              initial={{
                 x: window.innerWidth / 2 - 64,
                 y: window.innerHeight / 2 - 64,
-                scale: 1 
+                scale: 1,
               }}
-              animate={{ 
+              animate={{
                 x: targetPosition.x,
                 y: targetPosition.y,
-                scale: 0.4
+                scale: 0.4,
               }}
-              transition={{ 
+              transition={{
                 duration: 1.2,
-                type: "spring",
+                type: 'spring',
                 damping: 15,
-                stiffness: 100
+                stiffness: 100,
               }}
             >
               <div className="relative">
-                <motion.img 
+                <motion.img
                   src={pixelImage}
                   alt="Pixel"
                   className="w-32 h-32 object-cover rounded-full shadow-xl"
                   style={{ imageRendering: 'crisp-edges' }}
-                  animate={{ 
-                    filter: [
-                      "brightness(1)",
-                      "brightness(1.3)",
-                      "brightness(1)"
-                    ]
+                  animate={{
+                    filter: ['brightness(1)', 'brightness(1.3)', 'brightness(1)'],
                   }}
                   transition={{ duration: 1.2 }}
                 />
-                
+
                 {/* Glow effect during transition */}
                 <motion.div
                   className="absolute inset-0 rounded-full"
@@ -135,9 +129,9 @@ export default function PixelMinimizeAnimation({
                     background: 'radial-gradient(circle, rgba(168,85,247,0.5) 0%, transparent 70%)',
                   }}
                   initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ 
+                  animate={{
                     opacity: [0, 1, 0],
-                    scale: [0.8, 1.5, 0.8]
+                    scale: [0.8, 1.5, 0.8],
                   }}
                   transition={{ duration: 1.2 }}
                 />
@@ -151,12 +145,12 @@ export default function PixelMinimizeAnimation({
                     animate={{
                       x: [0, -20 * (i + 1)],
                       y: [0, -10 * (i + 1)],
-                      opacity: [0, 1, 0]
+                      opacity: [0, 1, 0],
                     }}
                     transition={{
                       duration: 0.8,
                       delay: i * 0.1,
-                      ease: "easeOut"
+                      ease: 'easeOut',
                     }}
                   >
                     <Sparkles className={`w-${4 - i} h-${4 - i} text-purple-400`} />
@@ -174,20 +168,22 @@ export default function PixelMinimizeAnimation({
                   initial={{
                     x: window.innerWidth / 2,
                     y: window.innerHeight / 2,
-                    opacity: 0
+                    opacity: 0,
                   }}
                   animate={{
                     x: window.innerWidth / 2 + (Math.random() - 0.5) * 200,
                     y: window.innerHeight / 2 + (Math.random() - 0.5) * 200,
-                    opacity: [0, 1, 0]
+                    opacity: [0, 1, 0],
                   }}
                   transition={{
                     duration: 1.5,
                     delay: i * 0.05,
-                    ease: "easeOut"
+                    ease: 'easeOut',
                   }}
                 >
-                  <div className={`w-2 h-2 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full`} />
+                  <div
+                    className={`w-2 h-2 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full`}
+                  />
                 </motion.div>
               ))}
             </div>
@@ -203,27 +199,27 @@ export const minimizeAnimationVariants = {
   initial: {
     scale: 1,
     opacity: 1,
-    filter: "brightness(1)"
+    filter: 'brightness(1)',
   },
   minimizing: {
     scale: 0.4,
     opacity: 0.9,
-    filter: "brightness(1.2)",
+    filter: 'brightness(1.2)',
     transition: {
       duration: 1.2,
-      type: "spring",
+      type: 'spring',
       damping: 15,
-      stiffness: 100
-    }
+      stiffness: 100,
+    },
   },
   minimized: {
     scale: 0.4,
     opacity: 1,
-    filter: "brightness(1)",
+    filter: 'brightness(1)',
     transition: {
-      duration: 0.3
-    }
-  }
+      duration: 0.3,
+    },
+  },
 };
 
 // Bounce animation for settling
@@ -235,7 +231,7 @@ export const bounceInAnimation = {
     transition: {
       duration: 0.6,
       times: [0, 0.6, 0.8, 1],
-      ease: "easeOut"
-    }
-  }
+      ease: 'easeOut',
+    },
+  },
 };

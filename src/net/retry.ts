@@ -41,7 +41,7 @@ class RetryMechanism {
     jitter: true,
     shouldRetry: (error: any, attempt: number) => this.defaultShouldRetry(error, attempt),
     onRetry: () => {},
-    onFinalFailure: () => {}
+    onFinalFailure: () => {},
   };
 
   private defaultShouldRetry(error: any, attempt: number): boolean {
@@ -50,20 +50,23 @@ class RetryMechanism {
 
     // Retry network errors
     if (error?.name === 'NetworkError' || error?.code === 'NETWORK_ERROR') return true;
-    
+
     // Retry timeout errors
     if (error?.name === 'TimeoutError' || error?.message?.includes('timeout')) return true;
-    
+
     // Retry 5xx server errors
     if (error?.status >= 500 && error?.status < 600) return true;
-    
+
     // Retry specific client errors that might be temporary
     if (error?.status === 408 || error?.status === 429) return true; // Request timeout, Too Many Requests
-    
+
     // Retry connection failures
-    if (error?.message?.includes('Failed to fetch') || 
-        error?.message?.includes('Connection failed') ||
-        error?.message?.includes('ERR_NETWORK')) return true;
+    if (
+      error?.message?.includes('Failed to fetch') ||
+      error?.message?.includes('Connection failed') ||
+      error?.message?.includes('ERR_NETWORK')
+    )
+      return true;
 
     // Don't retry client errors (4xx except specific ones)
     if (error?.status >= 400 && error?.status < 500) return false;
@@ -77,20 +80,20 @@ class RetryMechanism {
 
   private calculateDelay(attempt: number, options: Required<RetryOptions>): number {
     let delay = options.baseDelay * Math.pow(options.backoffMultiplier, attempt - 1);
-    
+
     // Apply maximum delay
     delay = Math.min(delay, options.maxDelay);
-    
+
     // Add jitter if enabled
     if (options.jitter) {
       delay = delay * (0.5 + Math.random() * 0.5); // 50-100% of calculated delay
     }
-    
+
     return Math.round(delay);
   }
 
   private sleep(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   /**
@@ -111,7 +114,7 @@ class RetryMechanism {
           success: true,
           data,
           attempts: attempt,
-          totalTime: Date.now() - startTime
+          totalTime: Date.now() - startTime,
         };
       } catch (error) {
         lastError = error;
@@ -123,23 +126,26 @@ class RetryMechanism {
         if (attempt < options.maxAttempts) {
           const delay = this.calculateDelay(attempt, options);
           options.onRetry(error, attempt);
-          
+
           if (import.meta.env.DEV) {
-            console.warn(`🔄 Retry attempt ${attempt}/${options.maxAttempts} failed, retrying in ${delay}ms:`, error);
+            console.warn(
+              `🔄 Retry attempt ${attempt}/${options.maxAttempts} failed, retrying in ${delay}ms:`,
+              error
+            );
           }
-          
+
           await this.sleep(delay);
         }
       }
     }
 
     options.onFinalFailure(lastError, options.maxAttempts);
-    
+
     return {
       success: false,
       error: lastError,
       attempts: options.maxAttempts,
-      totalTime: Date.now() - startTime
+      totalTime: Date.now() - startTime,
     };
   }
 
@@ -147,30 +153,33 @@ class RetryMechanism {
    * Retry a fetch request with proper error handling
    */
   async fetchWithRetry(
-    url: string, 
+    url: string,
     fetchOptions: RequestInit = {},
     retryOptions: RetryOptions = {}
   ): Promise<Response> {
-    const result = await this.withRetry(async () => {
-      const response = await fetch(url, fetchOptions);
-      
-      if (!response.ok) {
-        const error = new Error(`HTTP ${response.status}: ${response.statusText}`);
-        (error as any).status = response.status;
-        (error as any).statusText = response.statusText;
-        throw error;
-      }
-      
-      return response;
-    }, {
-      ...retryOptions,
-      onRetry: (error, attempt) => {
-        if (import.meta.env.DEV) {
-          console.warn(`🌐 Network request failed (attempt ${attempt}):`, { url, error });
+    const result = await this.withRetry(
+      async () => {
+        const response = await fetch(url, fetchOptions);
+
+        if (!response.ok) {
+          const error = new Error(`HTTP ${response.status}: ${response.statusText}`);
+          (error as any).status = response.status;
+          (error as any).statusText = response.statusText;
+          throw error;
         }
-        retryOptions.onRetry?.(error, attempt);
+
+        return response;
+      },
+      {
+        ...retryOptions,
+        onRetry: (error, attempt) => {
+          if (import.meta.env.DEV) {
+            console.warn(`🌐 Network request failed (attempt ${attempt}):`, { url, error });
+          }
+          retryOptions.onRetry?.(error, attempt);
+        },
       }
-    });
+    );
 
     if (!result.success) {
       throw result.error;
@@ -217,7 +226,7 @@ class RetryMechanism {
         if (error?.type === 'SyntaxError') return false; // Don't retry syntax errors
         return false; // Don't retry most Python errors
       },
-      ...retryOptions
+      ...retryOptions,
     };
 
     const result = await this.withRetry(executeFn, pythonRetryOptions);
@@ -246,7 +255,7 @@ class RetryMechanism {
         if (error?.status === 408 || error?.status === 429) return true;
         return false;
       },
-      ...retryOptions
+      ...retryOptions,
     };
 
     const result = await this.withRetry(operation, fileRetryOptions);
@@ -269,14 +278,21 @@ export const withRetry = <T>(operation: () => Promise<T>, options?: RetryOptions
 export const fetchWithRetry = (url: string, options?: RequestInit, retryOptions?: RetryOptions) =>
   retryMechanism.fetchWithRetry(url, options, retryOptions);
 
-export const apiCallWithRetry = <T>(url: string, options?: RequestInit, retryOptions?: RetryOptions) =>
-  retryMechanism.apiCallWithRetry<T>(url, options, retryOptions);
+export const apiCallWithRetry = <T>(
+  url: string,
+  options?: RequestInit,
+  retryOptions?: RetryOptions
+) => retryMechanism.apiCallWithRetry<T>(url, options, retryOptions);
 
-export const pythonExecutionWithRetry = <T>(executeFn: () => Promise<T>, retryOptions?: RetryOptions) =>
-  retryMechanism.pythonExecutionWithRetry(executeFn, retryOptions);
+export const pythonExecutionWithRetry = <T>(
+  executeFn: () => Promise<T>,
+  retryOptions?: RetryOptions
+) => retryMechanism.pythonExecutionWithRetry(executeFn, retryOptions);
 
-export const fileOperationWithRetry = <T>(operation: () => Promise<T>, retryOptions?: RetryOptions) =>
-  retryMechanism.fileOperationWithRetry(operation, retryOptions);
+export const fileOperationWithRetry = <T>(
+  operation: () => Promise<T>,
+  retryOptions?: RetryOptions
+) => retryMechanism.fileOperationWithRetry(operation, retryOptions);
 
 // Hook for React components
 export interface UseRetryState {
@@ -294,7 +310,7 @@ export function useRetry(maxRetries = 3) {
     isRetrying: false,
     retryCount: 0,
     lastError: null,
-    canRetry: true
+    canRetry: true,
   });
 
   const retry = async <T>(operation: () => Promise<T>): Promise<T> => {
@@ -308,7 +324,7 @@ export function useRetry(maxRetries = 3) {
             ...prev,
             retryCount: attempt,
             lastError: error,
-            canRetry: attempt < maxRetries
+            canRetry: attempt < maxRetries,
           }));
         },
         onFinalFailure: (error, attempts) => {
@@ -316,9 +332,9 @@ export function useRetry(maxRetries = 3) {
             ...prev,
             lastError: error,
             canRetry: false,
-            isRetrying: false
+            isRetrying: false,
           }));
-        }
+        },
       });
 
       if (result.success) {
@@ -327,7 +343,7 @@ export function useRetry(maxRetries = 3) {
           isRetrying: false,
           retryCount: 0,
           lastError: null,
-          canRetry: true
+          canRetry: true,
         }));
         return result.data!;
       } else {
@@ -337,7 +353,7 @@ export function useRetry(maxRetries = 3) {
       setState((prev: UseRetryState) => ({
         ...prev,
         isRetrying: false,
-        lastError: error
+        lastError: error,
       }));
       throw error;
     }
@@ -348,14 +364,14 @@ export function useRetry(maxRetries = 3) {
       isRetrying: false,
       retryCount: 0,
       lastError: null,
-      canRetry: true
+      canRetry: true,
     });
   };
 
   return {
     ...state,
     retry,
-    reset
+    reset,
   };
 }
 
@@ -374,22 +390,22 @@ export const educationalRetry = {
         const messages = [
           `Having trouble ${context}. Trying again... (attempt ${attempt})`,
           `Still working on ${context}. This might take a moment... (attempt ${attempt})`,
-          `Almost there! One more try ${context}... (attempt ${attempt})`
+          `Almost there! One more try ${context}... (attempt ${attempt})`,
         ];
         const message = messages[Math.min(attempt - 1, messages.length - 1)];
         onMessage?.(message);
       },
       onFinalFailure: (error) => {
         onMessage?.(`Unable to complete ${context}. Please check your connection and try again.`);
-      }
+      },
     });
-    
+
     if (!result.success) {
       throw result.error;
     }
-    
+
     return result.data!;
-  }
+  },
 };
 
 export default retryMechanism;

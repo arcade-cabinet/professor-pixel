@@ -17,7 +17,7 @@ vi.mock('@lib/storage/persistence', () => ({
   saveWizardStateDebounced: vi.fn(),
   loadWizardState: vi.fn(),
   clearWizardState: vi.fn(),
-  PersistedWizardState: {}
+  PersistedWizardState: {},
 }));
 
 // Mock fetch for flow loading
@@ -31,25 +31,25 @@ describe('WizardDialogueEngine Integration Tests', () => {
     // Set up storage mocks
     localStorageMock = new LocalStorageMock();
     sessionStorageMock = new SessionStorageMock();
-    
+
     Object.defineProperty(window, 'localStorage', {
       value: localStorageMock,
-      writable: true
+      writable: true,
     });
     Object.defineProperty(window, 'sessionStorage', {
       value: sessionStorageMock,
-      writable: true
+      writable: true,
     });
-    
+
     // Clear all mocks
     vi.clearAllMocks();
     vi.useFakeTimers();
-    
+
     // Default mock responses
     (persistence.loadWizardState as any).mockReturnValue(null);
     (global.fetch as any).mockResolvedValue({
       ok: true,
-      json: () => Promise.resolve(createMockFlowData())
+      json: () => Promise.resolve(createMockFlowData()),
     });
   });
 
@@ -62,7 +62,7 @@ describe('WizardDialogueEngine Integration Tests', () => {
       const mockFlowData = createMockFlowData();
       (global.fetch as any).mockResolvedValue({
         ok: true,
-        json: () => Promise.resolve(mockFlowData)
+        json: () => Promise.resolve(mockFlowData),
       });
 
       const { result } = renderHook(() => useWizardDialogue());
@@ -85,19 +85,19 @@ describe('WizardDialogueEngine Integration Tests', () => {
         start: createMockWizardNode({
           id: 'start',
           text: 'Welcome to platformer creation!',
-          options: [{ text: 'Begin', next: 'setup' }]
+          options: [{ text: 'Begin', next: 'setup' }],
         }),
         setup: createMockWizardNode({
           id: 'setup',
-          text: 'Let\'s set up your platformer',
-          options: [{ text: 'Next', next: 'end' }]
-        })
+          text: "Let's set up your platformer",
+          options: [{ text: 'Next', next: 'end' }],
+        }),
       };
 
       // First load default flow
       (global.fetch as any).mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve(createMockFlowData())
+        json: () => Promise.resolve(createMockFlowData()),
       });
 
       const { result } = renderHook(() => useWizardDialogue());
@@ -106,15 +106,15 @@ describe('WizardDialogueEngine Integration Tests', () => {
       // Now set gameType to trigger specialized flow loading
       (global.fetch as any).mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve(platformerFlowData)
+        json: () => Promise.resolve(platformerFlowData),
       });
 
       act(() => {
-        result.current.setSessionActions(prev => ({
+        result.current.setSessionActions((prev) => ({
           ...prev,
           gameType: 'platformer',
           selectedGameType: 'platformer',
-          transitionToSpecializedFlow: true
+          transitionToSpecializedFlow: true,
         }));
       });
 
@@ -129,9 +129,9 @@ describe('WizardDialogueEngine Integration Tests', () => {
 
     it('should handle flow loading errors gracefully', async () => {
       (global.fetch as any).mockRejectedValue(new Error('Network error'));
-      
+
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-      
+
       const { result } = renderHook(() => useWizardDialogue());
 
       await waitForHook(() => {
@@ -143,7 +143,7 @@ describe('WizardDialogueEngine Integration Tests', () => {
         expect.stringContaining('Failed to load wizard flow'),
         expect.any(Error)
       );
-      
+
       consoleSpy.mockRestore();
     });
 
@@ -151,7 +151,7 @@ describe('WizardDialogueEngine Integration Tests', () => {
       const mockFlowData = createMockFlowData();
       (global.fetch as any).mockResolvedValue({
         ok: true,
-        json: () => Promise.resolve(mockFlowData)
+        json: () => Promise.resolve(mockFlowData),
       });
 
       const { result } = renderHook(() => useWizardDialogue());
@@ -182,9 +182,9 @@ describe('WizardDialogueEngine Integration Tests', () => {
           gameType: null,
           currentProject: null,
           completedSteps: ['intro'],
-          unlockedEditor: false
+          unlockedEditor: false,
         },
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
 
       (persistence.loadWizardState as any).mockReturnValue(persistedState);
@@ -192,7 +192,7 @@ describe('WizardDialogueEngine Integration Tests', () => {
       const mockFlowData = createMockFlowData();
       (global.fetch as any).mockResolvedValue({
         ok: true,
-        json: () => Promise.resolve(mockFlowData)
+        json: () => Promise.resolve(mockFlowData),
       });
 
       const { result } = renderHook(() => useWizardDialogue());
@@ -211,7 +211,7 @@ describe('WizardDialogueEngine Integration Tests', () => {
       const mockFlowData = createMockFlowData();
       (global.fetch as any).mockResolvedValue({
         ok: true,
-        json: () => Promise.resolve(mockFlowData)
+        json: () => Promise.resolve(mockFlowData),
       });
 
       const { result } = renderHook(() => useWizardDialogue());
@@ -221,7 +221,7 @@ describe('WizardDialogueEngine Integration Tests', () => {
       act(() => {
         result.current.handleOptionSelect({
           text: 'Start journey',
-          next: 'choose-game'
+          next: 'choose-game',
         });
       });
 
@@ -235,8 +235,8 @@ describe('WizardDialogueEngine Integration Tests', () => {
         expect.objectContaining({
           currentNodeId: 'choose-game',
           sessionActions: expect.objectContaining({
-            choices: ['Start journey']
-          })
+            choices: ['Start journey'],
+          }),
         })
       );
     });
@@ -246,7 +246,7 @@ describe('WizardDialogueEngine Integration Tests', () => {
       const defaultFlow = createMockFlowData();
       (global.fetch as any).mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve(defaultFlow)
+        json: () => Promise.resolve(defaultFlow),
       });
 
       const { result } = renderHook(() => useWizardDialogue());
@@ -257,7 +257,7 @@ describe('WizardDialogueEngine Integration Tests', () => {
         result.current.handleOptionSelect({
           text: 'Platformer',
           next: 'platformer-intro',
-          params: { gameType: 'platformer' }
+          params: { gameType: 'platformer' },
         });
       });
 
@@ -265,21 +265,21 @@ describe('WizardDialogueEngine Integration Tests', () => {
       const platformerFlow = {
         start: createMockWizardNode({
           id: 'start',
-          text: 'Platformer flow start'
-        })
+          text: 'Platformer flow start',
+        }),
       };
 
       (global.fetch as any).mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve(platformerFlow)
+        json: () => Promise.resolve(platformerFlow),
       });
 
       // Transition to specialized flow
       act(() => {
-        result.current.setSessionActions(prev => ({
+        result.current.setSessionActions((prev) => ({
           ...prev,
           gameType: 'platformer',
-          transitionToSpecializedFlow: true
+          transitionToSpecializedFlow: true,
         }));
       });
 
@@ -296,7 +296,7 @@ describe('WizardDialogueEngine Integration Tests', () => {
       const mockFlowData = createMockFlowData();
       (global.fetch as any).mockResolvedValue({
         ok: true,
-        json: () => Promise.resolve(mockFlowData)
+        json: () => Promise.resolve(mockFlowData),
       });
 
       // Initial render
@@ -307,7 +307,7 @@ describe('WizardDialogueEngine Integration Tests', () => {
       act(() => {
         result.current.handleOptionSelect({
           text: 'Start journey',
-          next: 'choose-game'
+          next: 'choose-game',
         });
       });
 
@@ -315,7 +315,7 @@ describe('WizardDialogueEngine Integration Tests', () => {
         result.current.handleOptionSelect({
           text: 'Platformer',
           next: 'platformer-intro',
-          params: { gameType: 'platformer' }
+          params: { gameType: 'platformer' },
         });
       });
 
@@ -326,7 +326,7 @@ describe('WizardDialogueEngine Integration Tests', () => {
 
       // Simulate saving the state
       const lastSaveCall = (persistence.saveWizardStateDebounced as any).mock.calls.slice(-1)[0][0];
-      
+
       // Unmount (simulate page unload)
       unmount();
 
@@ -349,7 +349,7 @@ describe('WizardDialogueEngine Integration Tests', () => {
       const mockFlowData = createMockFlowData();
       (global.fetch as any).mockResolvedValue({
         ok: true,
-        json: () => Promise.resolve(mockFlowData)
+        json: () => Promise.resolve(mockFlowData),
       });
 
       const { result } = renderHook(() => useWizardDialogue());
@@ -360,7 +360,7 @@ describe('WizardDialogueEngine Integration Tests', () => {
       act(() => {
         result.current.handleOptionSelect({
           text: 'Start journey',
-          next: 'choose-game'
+          next: 'choose-game',
         });
       });
 
@@ -372,7 +372,7 @@ describe('WizardDialogueEngine Integration Tests', () => {
       const mockFlowData = createMockFlowData();
       (global.fetch as any).mockResolvedValue({
         ok: true,
-        json: () => Promise.resolve(mockFlowData)
+        json: () => Promise.resolve(mockFlowData),
       });
 
       const { result } = renderHook(() => useWizardDialogue());
@@ -381,7 +381,7 @@ describe('WizardDialogueEngine Integration Tests', () => {
       act(() => {
         result.current.handleOptionSelect({
           text: 'Start journey',
-          next: 'choose-game'
+          next: 'choose-game',
         });
       });
 
@@ -391,7 +391,7 @@ describe('WizardDialogueEngine Integration Tests', () => {
         result.current.handleOptionSelect({
           text: 'Platformer',
           next: 'platformer-intro',
-          params: { gameType: 'platformer' }
+          params: { gameType: 'platformer' },
         });
       });
 
@@ -403,7 +403,7 @@ describe('WizardDialogueEngine Integration Tests', () => {
       const mockFlowData = createMockFlowData();
       (global.fetch as any).mockResolvedValue({
         ok: true,
-        json: () => Promise.resolve(mockFlowData)
+        json: () => Promise.resolve(mockFlowData),
       });
 
       const { result } = renderHook(() => useWizardDialogue());
@@ -413,11 +413,11 @@ describe('WizardDialogueEngine Integration Tests', () => {
         result.current.handleOptionSelect({
           text: 'RPG',
           next: 'rpg-intro',
-          params: { 
+          params: {
             gameType: 'rpg',
             unlockedEditor: true,
-            completedSteps: ['intro', 'game-selection']
-          }
+            completedSteps: ['intro', 'game-selection'],
+          },
         });
       });
 
@@ -430,7 +430,7 @@ describe('WizardDialogueEngine Integration Tests', () => {
       const mockFlowData = createMockFlowData();
       (global.fetch as any).mockResolvedValue({
         ok: true,
-        json: () => Promise.resolve(mockFlowData)
+        json: () => Promise.resolve(mockFlowData),
       });
 
       const { result } = renderHook(() => useWizardDialogue());
@@ -448,7 +448,7 @@ describe('WizardDialogueEngine Integration Tests', () => {
       const mockFlowData = createMockFlowData();
       (global.fetch as any).mockResolvedValue({
         ok: true,
-        json: () => Promise.resolve(mockFlowData)
+        json: () => Promise.resolve(mockFlowData),
       });
 
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
@@ -479,13 +479,13 @@ describe('WizardDialogueEngine Integration Tests', () => {
         start: createMockWizardNode({
           id: 'start',
           text: 'Step 1|Step 2|Step 3',
-          options: [{ text: 'Next', next: 'end' }]
-        })
+          options: [{ text: 'Next', next: 'end' }],
+        }),
       };
 
       (global.fetch as any).mockResolvedValue({
         ok: true,
-        json: () => Promise.resolve(mockFlowData)
+        json: () => Promise.resolve(mockFlowData),
       });
 
       const { result } = renderHook(() => useWizardDialogue());
@@ -511,18 +511,18 @@ describe('WizardDialogueEngine Integration Tests', () => {
         start: createMockWizardNode({
           id: 'start',
           text: 'Step 1|Step 2',
-          options: [{ text: 'Next', next: 'second' }]
+          options: [{ text: 'Next', next: 'second' }],
         }),
         second: createMockWizardNode({
           id: 'second',
           text: 'New node',
-          options: []
-        })
+          options: [],
+        }),
       };
 
       (global.fetch as any).mockResolvedValue({
         ok: true,
-        json: () => Promise.resolve(mockFlowData)
+        json: () => Promise.resolve(mockFlowData),
       });
 
       const { result } = renderHook(() => useWizardDialogue());
@@ -538,7 +538,7 @@ describe('WizardDialogueEngine Integration Tests', () => {
       act(() => {
         result.current.handleOptionSelect({
           text: 'Next',
-          next: 'second'
+          next: 'second',
         });
       });
 
@@ -553,18 +553,18 @@ describe('WizardDialogueEngine Integration Tests', () => {
       const platformerFlow = {
         start: createMockWizardNode({
           id: 'start',
-          text: 'Platformer specific content'
-        })
+          text: 'Platformer specific content',
+        }),
       };
 
       (global.fetch as any)
         .mockResolvedValueOnce({
           ok: true,
-          json: () => Promise.resolve(defaultFlow)
+          json: () => Promise.resolve(defaultFlow),
         })
         .mockResolvedValueOnce({
           ok: true,
-          json: () => Promise.resolve(platformerFlow)
+          json: () => Promise.resolve(platformerFlow),
         });
 
       const { result } = renderHook(() => useWizardDialogue());
@@ -572,11 +572,11 @@ describe('WizardDialogueEngine Integration Tests', () => {
 
       // Set gameType to trigger specialized flow
       act(() => {
-        result.current.setSessionActions(prev => ({
+        result.current.setSessionActions((prev) => ({
           ...prev,
           gameType: 'platformer',
           selectedGameType: 'platformer',
-          transitionToSpecializedFlow: true
+          transitionToSpecializedFlow: true,
         }));
       });
 
@@ -593,24 +593,26 @@ describe('WizardDialogueEngine Integration Tests', () => {
       (global.fetch as any)
         .mockResolvedValueOnce({
           ok: true,
-          json: () => Promise.resolve(defaultFlow)
+          json: () => Promise.resolve(defaultFlow),
         })
         .mockRejectedValueOnce(new Error('404 Not Found'));
 
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
-      const { result } = renderHook(() => useWizardDialogue({
-        flowType: 'game-dev'
-      }));
-      
+      const { result } = renderHook(() =>
+        useWizardDialogue({
+          flowType: 'game-dev',
+        })
+      );
+
       await waitForHook(() => expect(result.current.isLoading).toBe(false));
 
       // Try to load specialized flow that doesn't exist
       act(() => {
-        result.current.setSessionActions(prev => ({
+        result.current.setSessionActions((prev) => ({
           ...prev,
           gameType: 'nonexistent',
-          transitionToSpecializedFlow: true
+          transitionToSpecializedFlow: true,
         }));
       });
 
@@ -641,11 +643,11 @@ describe('WizardDialogueEngine Integration Tests', () => {
       const mockFlowData = createMockFlowData();
       (global.fetch as any).mockResolvedValue({
         ok: true,
-        json: () => Promise.resolve(mockFlowData)
+        json: () => Promise.resolve(mockFlowData),
       });
 
       const { result } = renderHook(() => useWizardDialogue());
-      
+
       await waitForHook(() => {
         expect(result.current.isLoading).toBe(false);
       });
@@ -663,7 +665,7 @@ describe('WizardDialogueEngine Integration Tests', () => {
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
       const { result } = renderHook(() => useWizardDialogue());
-      
+
       await waitForHook(() => {
         expect(result.current.isLoading).toBe(false);
       });

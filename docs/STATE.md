@@ -51,7 +51,7 @@ Sized roughly so any one item is a single PR.
 
 ### Type / schema cleanup
 
-- **Treat `@typescript-eslint/no-explicit-any` as `error`** (currently `warn`). 209 instances at last count — its own PRQ. Likely subsumed by the Biome migration.
+- **Treat `noExplicitAny` as `error`** (currently `warn` after Biome migration in M1.5). 296 instances across the tree — slated for M2.1 of the modernization pillar.
 - **Re-enable Vitest coverage thresholds** (90/85/90/90 lines/branches/functions/statements).
 
 ### Visual / accessibility

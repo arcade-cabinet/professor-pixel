@@ -17,7 +17,8 @@ export const paddleComponent: PyGameComponent = {
   id: 'paddle',
   name: 'Paddle',
   description: 'Player-controlled paddle for pong games',
-  wizardDescription: 'A paddle that you can control to hit balls! Use this for games like Pong or to catch falling objects. You can move it with keyboard keys or the mouse.',
+  wizardDescription:
+    'A paddle that you can control to hit balls! Use this for games like Pong or to catch falling objects. You can move it with keyboard keys or the mouse.',
   properties: {} as Record<string, any>,
   defaultProperties: {
     x: 50,
@@ -27,7 +28,7 @@ export const paddleComponent: PyGameComponent = {
     speed: 5,
     color: '#8B5CF6',
     playerControlled: true,
-    controls: 'arrows'
+    controls: 'arrows',
   },
   preview: (ctx: CanvasRenderingContext2D, props: PaddleProperties) => {
     ctx.fillStyle = props.color;
@@ -71,5 +72,5 @@ class Paddle:
         self.rect.y = self.y
     
     def draw(self, screen):
-        pygame.draw.rect(screen, self.color, self.rect)`
+        pygame.draw.rect(screen, self.color, self.rect)`,
 };

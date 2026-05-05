@@ -6,14 +6,15 @@ export const collectingTemplate: GameTemplate = {
   id: 'collecting-game',
   name: 'Coin Collector',
   description: 'Collect items while avoiding obstacles in a timed challenge',
-  wizardDescription: 'Race against time to collect all the coins while dodging dangerous obstacles! Features power-ups, lives system, and increasing difficulty. Learn about collision detection and game progression!',
+  wizardDescription:
+    'Race against time to collect all the coins while dodging dangerous obstacles! Features power-ups, lives system, and increasing difficulty. Learn about collision detection and game progression!',
   difficulty: 'beginner',
   settings: {
     screenWidth: 800,
     screenHeight: 600,
     backgroundColor: '#2D5016',
     fps: 60,
-    title: 'Coin Collector'
+    title: 'Coin Collector',
   },
   components: [
     {
@@ -26,8 +27,8 @@ export const collectingTemplate: GameTemplate = {
         height: 30,
         velocityX: 0,
         velocityY: 0,
-        color: '#4169E1'
-      }
+        color: '#4169E1',
+      },
     },
     {
       type: 'collectible',
@@ -39,8 +40,8 @@ export const collectingTemplate: GameTemplate = {
         value: 10,
         size: 20,
         color: '#FFD700',
-        respawns: true
-      }
+        respawns: true,
+      },
     },
     {
       type: 'enemy',
@@ -52,8 +53,8 @@ export const collectingTemplate: GameTemplate = {
         speed: 2,
         width: 30,
         height: 30,
-        color: '#8B0000'
-      }
+        color: '#8B0000',
+      },
     },
     {
       type: 'scoreText',
@@ -63,8 +64,8 @@ export const collectingTemplate: GameTemplate = {
         x: 10,
         y: 10,
         fontSize: 24,
-        color: '#FFFFFF'
-      }
+        color: '#FFFFFF',
+      },
     },
     {
       type: 'timer',
@@ -76,8 +77,8 @@ export const collectingTemplate: GameTemplate = {
         onComplete: 'game_over',
         countDown: true,
         fontSize: 24,
-        color: '#FFFFFF'
-      }
+        color: '#FFFFFF',
+      },
     },
     {
       type: 'healthBar',
@@ -91,35 +92,40 @@ export const collectingTemplate: GameTemplate = {
         height: 20,
         color: '#FF0000',
         backgroundColor: '#333333',
-        showText: true
-      }
-    }
+        showText: true,
+      },
+    },
   ],
   preview: (ctx: CanvasRenderingContext2D) => {
     // Green background
     ctx.fillStyle = '#2D5016';
     ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-    
+
     // Player
     ctx.fillStyle = '#4169E1';
     ctx.beginPath();
     ctx.arc(ctx.canvas.width / 2, ctx.canvas.height / 2, 15, 0, Math.PI * 2);
     ctx.fill();
-    
+
     // Coins
     ctx.fillStyle = '#FFD700';
-    const coinPositions = [[150, 150], [450, 200], [300, 350], [550, 300]];
+    const coinPositions = [
+      [150, 150],
+      [450, 200],
+      [300, 350],
+      [550, 300],
+    ];
     coinPositions.forEach(([x, y]) => {
       ctx.beginPath();
       ctx.arc(x, y, 10, 0, Math.PI * 2);
       ctx.fill();
     });
-    
+
     // Obstacles
     ctx.fillStyle = '#8B0000';
     ctx.fillRect(200, 250, 30, 30);
     ctx.fillRect(500, 150, 30, 30);
-    
+
     // Power-up
     ctx.fillStyle = '#FF69B4';
     drawStar(ctx, 400, 100, 12, 5);
@@ -439,5 +445,5 @@ while running:
 
 # Quit
 pygame.quit()
-sys.exit()`
+sys.exit()`,
 };

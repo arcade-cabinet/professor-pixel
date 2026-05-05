@@ -23,25 +23,27 @@ export function useDeviceType(): DeviceCapabilities {
     const width = window.innerWidth;
     const height = window.innerHeight;
     const pixelRatio = window.devicePixelRatio || 1;
-    
+
     // Check if touch device
-    const isTouchDevice = 'ontouchstart' in window || 
-                         navigator.maxTouchPoints > 0 || 
-                         (navigator as any).msMaxTouchPoints > 0;
+    const isTouchDevice =
+      'ontouchstart' in window ||
+      navigator.maxTouchPoints > 0 ||
+      (navigator as any).msMaxTouchPoints > 0;
 
     // Detect foldable devices (wider aspect ratio when unfolded)
     const aspectRatio = Math.max(width, height) / Math.min(width, height);
-    const isFoldable = isTouchDevice && 
-                      width > 768 && 
-                      (aspectRatio > 2.1 || // Unfolded state
-                       (width > 820 && width < 1024 && height > 1000)); // Galaxy Fold, Surface Duo
+    const isFoldable =
+      isTouchDevice &&
+      width > 768 &&
+      (aspectRatio > 2.1 || // Unfolded state
+        (width > 820 && width < 1024 && height > 1000)); // Galaxy Fold, Surface Duo
 
     // Determine device type based on screen size and capabilities
     let deviceType: DeviceType;
     let isMobile = false;
     let isTablet = false;
     let isDesktop = false;
-    
+
     if (isFoldable) {
       deviceType = 'foldable';
       // Foldables can behave like tablets or mobile depending on state
@@ -70,7 +72,7 @@ export function useDeviceType(): DeviceCapabilities {
       screenWidth: width,
       screenHeight: height,
       isTouchDevice,
-      pixelRatio
+      pixelRatio,
     };
   }
 
@@ -81,7 +83,7 @@ export function useDeviceType(): DeviceCapabilities {
 
     // Listen for resize events (includes orientation changes)
     window.addEventListener('resize', handleResize);
-    
+
     // Also listen for orientation change specifically
     window.addEventListener('orientationchange', handleResize);
 

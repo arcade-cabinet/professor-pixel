@@ -4,12 +4,12 @@ export const healthComponent: PygameSystemSpec = {
   id: 'health',
   name: 'Health System',
   category: 'ui',
-  
+
   assetSlots: {
     effect: 'ui/hearts.png',
-    sound: 'audio/sfx/damage.ogg'
+    sound: 'audio/sfx/damage.ogg',
   },
-  
+
   variants: {
     A: {
       name: 'Heart System',
@@ -103,7 +103,7 @@ class HealthSystem:
                     flash_surf = pygame.Surface((self.player.rect.width, self.player.rect.height))
                     flash_surf.set_alpha(128)
                     flash_surf.fill((255, 255, 255))
-                    screen.blit(flash_surf, (self.player.x, self.player.y))`
+                    screen.blit(flash_surf, (self.player.x, self.player.y))`,
     },
     B: {
       name: 'Health Bar',
@@ -218,16 +218,16 @@ class HealthSystem:
         # Low health warning
         if health_percent <= self.low_health_threshold:
             warning_text = font.render("LOW HEALTH!", True, (255, 0, 0))
-            screen.blit(warning_text, (start_x, start_y + bar_height + 15))`
-    }
+            screen.blit(warning_text, (start_x, start_y + bar_height + 15))`,
+    },
   },
-  
+
   parameters: {
     max_health: 100,
     heart_count: 5,
     invulnerable_duration: 1.5,
     max_shield: 50,
     shield_regen_rate: 10,
-    shield_regen_delay: 3
-  }
+    shield_regen_delay: 3,
+  },
 };

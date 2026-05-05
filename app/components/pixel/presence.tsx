@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { 
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import {
   Gamepad2,
   BookOpen,
   ChevronRight,
@@ -10,10 +10,10 @@ import {
   Code2,
   Rocket,
   History,
-  X
-} from "lucide-react";
-import { sessionHistory } from "@lib/storage/session-history";
-import { useIsMobile } from "@lib/hooks/use-media-query";
+  X,
+} from 'lucide-react';
+import { sessionHistory } from '@lib/storage/session-history';
+import { useIsMobile } from '@lib/hooks/use-media-query';
 
 // Import Pixel images
 import pixelHappy from '@assets/pixel/Pixel_happy_excited_expression_22a41625.png';
@@ -39,11 +39,11 @@ interface PixelPresenceProps {
   currentPath?: string;
 }
 
-export default function PixelPresence({ onNavigate, currentPath = "/" }: PixelPresenceProps) {
+export default function PixelPresence({ onNavigate, currentPath = '/' }: PixelPresenceProps) {
   const [state, setState] = useState<PresenceState>('waiting-corner');
   const [currentChoices, setCurrentChoices] = useState<Choice[]>([]);
   const [pixelImage, setPixelImage] = useState(pixelWelcoming);
-  const [dialogue, setDialogue] = useState("Need help?");
+  const [dialogue, setDialogue] = useState('Need help?');
   const [showContent, setShowContent] = useState(false);
   const [mobileDialogueOpen, setMobileDialogueOpen] = useState(false);
   const isMobile = useIsMobile();
@@ -61,7 +61,7 @@ export default function PixelPresence({ onNavigate, currentPath = "/" }: PixelPr
         setPixelImage(pixelGaming);
         setDialogue("Great choice! Let's build something awesome!");
         setTimeout(() => onNavigate('/project-builder'), 500);
-      }
+      },
     },
     {
       id: 'learn-python',
@@ -74,8 +74,8 @@ export default function PixelPresence({ onNavigate, currentPath = "/" }: PixelPr
         setPixelImage(pixelTeaching);
         setDialogue("Perfect! Let's start with the basics!");
         setTimeout(() => onNavigate('/lesson/python-basics'), 500);
-      }
-    }
+      },
+    },
   ];
 
   // Lesson completion choices
@@ -88,9 +88,9 @@ export default function PixelPresence({ onNavigate, currentPath = "/" }: PixelPr
         sessionHistory.trackChoice('next-lesson', 'Next lesson!');
         setState('waiting-corner');
         setPixelImage(pixelTeaching);
-        setDialogue("On to the next challenge!");
+        setDialogue('On to the next challenge!');
         // Navigate to next lesson logic here
-      }
+      },
     },
     {
       id: 'make-game-now',
@@ -102,8 +102,8 @@ export default function PixelPresence({ onNavigate, currentPath = "/" }: PixelPr
         setPixelImage(pixelGaming);
         setDialogue("Let's build your game!");
         setTimeout(() => onNavigate('/project-builder'), 500);
-      }
-    }
+      },
+    },
   ];
 
   // Initialize based on current path
@@ -114,11 +114,11 @@ export default function PixelPresence({ onNavigate, currentPath = "/" }: PixelPr
       setShowContent(false);
       return;
     }
-    
+
     // Show corner presence on all other pages
     setState('waiting-corner');
     setShowContent(true);
-    
+
     if (currentPath?.includes('/lesson')) {
       setPixelImage(pixelTeaching);
     } else if (currentPath?.includes('/wizard')) {
@@ -174,7 +174,7 @@ export default function PixelPresence({ onNavigate, currentPath = "/" }: PixelPr
       icon: ChevronRight,
       action: () => {
         collapsePixel();
-      }
+      },
     },
     {
       id: 'go-home',
@@ -183,10 +183,9 @@ export default function PixelPresence({ onNavigate, currentPath = "/" }: PixelPr
       action: () => {
         onNavigate('/');
         collapsePixel();
-      }
-    }
+      },
+    },
   ];
-
 
   // Position and size variants for animations
   const variants = {
@@ -199,7 +198,7 @@ export default function PixelPresence({ onNavigate, currentPath = "/" }: PixelPr
       height: 'auto',
       scale: 1,
       position: 'fixed' as const,
-      zIndex: 1000
+      zIndex: 1000,
     },
     'waiting-corner': {
       top: '80px',
@@ -210,7 +209,7 @@ export default function PixelPresence({ onNavigate, currentPath = "/" }: PixelPr
       height: '48px',
       scale: 1,
       position: 'fixed' as const,
-      zIndex: 999
+      zIndex: 999,
     },
     'expanded-corner': {
       top: '80px',
@@ -221,8 +220,8 @@ export default function PixelPresence({ onNavigate, currentPath = "/" }: PixelPr
       height: 'auto',
       scale: 1,
       position: 'fixed' as const,
-      zIndex: 1000
-    }
+      zIndex: 1000,
+    },
   };
 
   // Don't show on home page
@@ -239,27 +238,25 @@ export default function PixelPresence({ onNavigate, currentPath = "/" }: PixelPr
           initial={state}
           animate={state}
           exit={{ opacity: 0 }}
-          transition={{ 
-            type: "spring", 
-            stiffness: 100, 
+          transition={{
+            type: 'spring',
+            stiffness: 100,
             damping: 20,
-            duration: 0.6 
+            duration: 0.6,
           }}
           className="pointer-events-auto"
           style={{ position: 'fixed' }}
         >
-          {state === 'center-stage' ? (
-            // Not used anymore - home page handles center stage
-            null
-          ) : state === 'waiting-corner' ? (
+          {state === 'center-stage' ? // Not used anymore - home page handles center stage
+          null : state === 'waiting-corner' ? (
             // Small corner mode - just the avatar
             <motion.button
               className="relative group cursor-pointer"
               onClick={() => {
                 if (currentPath?.includes('/lesson')) {
-                  expandPixel(lessonChoices, "How did that go?", pixelThinking);
+                  expandPixel(lessonChoices, 'How did that go?', pixelThinking);
                 } else {
-                  expandPixel(expandedMenuChoices, "What would you like to do?", pixelThinking);
+                  expandPixel(expandedMenuChoices, 'What would you like to do?', pixelThinking);
                 }
               }}
               whileHover={{ scale: 1.1 }}
@@ -267,9 +264,9 @@ export default function PixelPresence({ onNavigate, currentPath = "/" }: PixelPr
               data-testid="pixel-expand"
             >
               <div className="w-10 h-10 md:w-12 md:h-12 rounded-full overflow-hidden border-2 border-purple-500/50 shadow-lg">
-                <img 
-                  src={pixelImage} 
-                  alt="Pixel" 
+                <img
+                  src={pixelImage}
+                  alt="Pixel"
                   className="w-full h-full object-cover"
                   style={{ imageRendering: 'crisp-edges' }}
                   data-testid="pixel-avatar"
@@ -295,9 +292,9 @@ export default function PixelPresence({ onNavigate, currentPath = "/" }: PixelPr
                 {/* Header with Pixel */}
                 <div className="flex items-center space-x-3">
                   <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-purple-500/30">
-                    <img 
-                      src={pixelImage} 
-                      alt="Pixel" 
+                    <img
+                      src={pixelImage}
+                      alt="Pixel"
                       className="w-full h-full object-cover"
                       style={{ imageRendering: 'crisp-edges' }}
                       data-testid="pixel-avatar"
@@ -325,9 +322,9 @@ export default function PixelPresence({ onNavigate, currentPath = "/" }: PixelPr
                         collapsePixel();
                       }}
                       size="sm"
-                      variant={index === 0 ? "default" : "outline"}
+                      variant={index === 0 ? 'default' : 'outline'}
                       className="w-full justify-start"
-                      data-testid={index === 0 ? "pixel-choice-a" : "pixel-choice-b"}
+                      data-testid={index === 0 ? 'pixel-choice-a' : 'pixel-choice-b'}
                     >
                       {choice.icon && <choice.icon className="w-4 h-4 mr-2" />}
                       <span>{choice.label}</span>
@@ -373,7 +370,7 @@ export default function PixelPresence({ onNavigate, currentPath = "/" }: PixelPr
                     collapsePixel();
                   }}
                   size="lg"
-                  variant={index === 0 ? "default" : "outline"}
+                  variant={index === 0 ? 'default' : 'outline'}
                   className="w-full justify-start py-4 text-left"
                   data-testid={`mobile-choice-${index}`}
                 >
@@ -385,7 +382,6 @@ export default function PixelPresence({ onNavigate, currentPath = "/" }: PixelPr
           </Card>
         </motion.div>
       )}
-
     </>
   );
 }

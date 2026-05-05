@@ -20,7 +20,7 @@ export const pygameComponents = {
   movement: [jumpComponent, walkComponent],
   combat: [shootingComponent, meleeComponent],
   ui: [healthComponent, scoreComponent],
-  world: [gravityComponent, collisionComponent]
+  world: [gravityComponent, collisionComponent],
 };
 
 // Flat list of all components for easy iteration
@@ -32,12 +32,12 @@ export const allComponents = [
   healthComponent,
   scoreComponent,
   gravityComponent,
-  collisionComponent
+  collisionComponent,
 ];
 
 // Helper to get a component by ID
 export function getComponentById(id: string) {
-  return allComponents.find(component => component.id === id);
+  return allComponents.find((component) => component.id === id);
 }
 
 // Helper to get components by category

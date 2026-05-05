@@ -34,9 +34,7 @@ async function loadPyodideScript(scriptSrc: string): Promise<void> {
   if (typeof window !== 'undefined' && window.loadPyodide) return;
 
   await new Promise<void>((resolve, reject) => {
-    const existing = document.querySelector<HTMLScriptElement>(
-      `script[src="${scriptSrc}"]`,
-    );
+    const existing = document.querySelector<HTMLScriptElement>(`script[src="${scriptSrc}"]`);
     if (existing) {
       if (window.loadPyodide) {
         resolve();
@@ -46,7 +44,7 @@ async function loadPyodideScript(scriptSrc: string): Promise<void> {
       existing.addEventListener(
         'error',
         () => reject(new PyodideLoadError(`Failed to load ${scriptSrc}`)),
-        { once: true },
+        { once: true }
       );
       return;
     }
@@ -55,8 +53,7 @@ async function loadPyodideScript(scriptSrc: string): Promise<void> {
     script.src = scriptSrc;
     script.async = true;
     script.onload = () => resolve();
-    script.onerror = () =>
-      reject(new PyodideLoadError(`Failed to load ${scriptSrc}`));
+    script.onerror = () => reject(new PyodideLoadError(`Failed to load ${scriptSrc}`));
     document.head.appendChild(script);
   });
 }
@@ -80,16 +77,11 @@ async function bootstrap(opts: BootstrapOptions): Promise<PyodideInstance> {
   try {
     await loadPyodideScript(scriptSrc);
   } catch (cause) {
-    throw new PyodideLoadError(
-      'Pyodide loader script failed to attach to the page',
-      { cause },
-    );
+    throw new PyodideLoadError('Pyodide loader script failed to attach to the page', { cause });
   }
 
   if (!window.loadPyodide) {
-    throw new PyodideLoadError(
-      'Pyodide script loaded but window.loadPyodide is undefined',
-    );
+    throw new PyodideLoadError('Pyodide script loaded but window.loadPyodide is undefined');
   }
 
   try {

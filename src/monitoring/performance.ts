@@ -61,9 +61,9 @@ class PerformanceMonitor {
           dns: navigationTiming.domainLookupEnd - navigationTiming.domainLookupStart,
           connection: navigationTiming.connectEnd - navigationTiming.connectStart,
           request: navigationTiming.responseEnd - navigationTiming.requestStart,
-          dom: navigationTiming.domContentLoadedEventEnd - navigationTiming.domLoading
+          dom: navigationTiming.domContentLoadedEventEnd - navigationTiming.domLoading,
         },
-        timestamp: new Date()
+        timestamp: new Date(),
       });
     }
 
@@ -71,7 +71,8 @@ class PerformanceMonitor {
     if (performance.getEntriesByType) {
       const resources = performance.getEntriesByType('resource');
       resources.forEach((resource: any) => {
-        if (resource.duration > 100) { // Only track resources that take > 100ms
+        if (resource.duration > 100) {
+          // Only track resources that take > 100ms
           this.addMetric({
             id: `resource-${resource.name}`,
             name: resource.name.split('/').pop() || 'Unknown Resource',
@@ -82,9 +83,9 @@ class PerformanceMonitor {
             status: 'completed',
             metadata: {
               size: resource.transferSize,
-              type: resource.initiatorType
+              type: resource.initiatorType,
             },
-            timestamp: new Date()
+            timestamp: new Date(),
           });
         }
       });
@@ -97,14 +98,14 @@ class PerformanceMonitor {
     window.fetch = async (...args) => {
       const metricId = this.startMetric('api', `API: ${args[0]}`, {
         url: args[0],
-        method: args[1]?.method || 'GET'
+        method: args[1]?.method || 'GET',
       });
 
       try {
         const response = await originalFetch(...args);
         this.endMetric(metricId, response.ok ? 'completed' : 'failed', {
           status: response.status,
-          statusText: response.statusText
+          statusText: response.statusText,
         });
         return response;
       } catch (error: unknown) {
@@ -117,7 +118,7 @@ class PerformanceMonitor {
 
   private addMetric(metric: PerformanceMetric) {
     this.metrics.unshift(metric);
-    
+
     // Maintain max metrics limit
     if (this.metrics.length > this.maxMetrics) {
       this.metrics = this.metrics.slice(0, this.maxMetrics);
@@ -128,7 +129,7 @@ class PerformanceMonitor {
 
   private notifyObservers() {
     const stats = this.getStats();
-    this.observers.forEach(observer => {
+    this.observers.forEach((observer) => {
       try {
         observer(stats);
       } catch (e) {
@@ -138,7 +139,11 @@ class PerformanceMonitor {
   }
 
   // Start tracking a performance metric
-  startMetric(type: PerformanceMetric['type'], name: string, metadata?: Record<string, any>): string {
+  startMetric(
+    type: PerformanceMetric['type'],
+    name: string,
+    metadata?: Record<string, any>
+  ): string {
     if (!this.isEnabled) return '';
 
     const id = `${type}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
@@ -149,7 +154,7 @@ class PerformanceMonitor {
       startTime: performance.now(),
       status: 'running',
       metadata,
-      timestamp: new Date()
+      timestamp: new Date(),
     };
 
     this.activeMetrics.set(id, metric);
@@ -157,7 +162,11 @@ class PerformanceMonitor {
   }
 
   // End tracking a performance metric
-  endMetric(id: string, status: 'completed' | 'failed', additionalMetadata?: Record<string, any>): number {
+  endMetric(
+    id: string,
+    status: 'completed' | 'failed',
+    additionalMetadata?: Record<string, any>
+  ): number {
     if (!this.isEnabled || !id) return 0;
 
     const metric = this.activeMetrics.get(id);
@@ -171,7 +180,7 @@ class PerformanceMonitor {
       endTime,
       duration,
       status,
-      metadata: { ...metric.metadata, ...additionalMetadata }
+      metadata: { ...metric.metadata, ...additionalMetadata },
     };
 
     this.activeMetrics.delete(id);
@@ -183,7 +192,7 @@ class PerformanceMonitor {
   // Convenience methods for specific types
   measureComponent(componentName: string, renderFn: () => void): number {
     const metricId = this.startMetric('component', `Component: ${componentName}`);
-    
+
     try {
       renderFn();
       return this.endMetric(metricId, 'completed');
@@ -195,13 +204,13 @@ class PerformanceMonitor {
   }
 
   async measureAsync<T>(
-    type: PerformanceMetric['type'], 
-    name: string, 
+    type: PerformanceMetric['type'],
+    name: string,
     asyncFn: () => Promise<T>,
     metadata?: Record<string, any>
   ): Promise<T> {
     const metricId = this.startMetric(type, name, metadata);
-    
+
     try {
       const result = await asyncFn();
       this.endMetric(metricId, 'completed');
@@ -218,7 +227,7 @@ class PerformanceMonitor {
     const metricId = this.startMetric('python', `Python: ${codePreview}`, {
       codeLength: code.length,
       hasGameLoop: code.includes('while') && code.includes('pygame'),
-      hasImports: code.includes('import')
+      hasImports: code.includes('import'),
     });
 
     try {
@@ -237,7 +246,7 @@ class PerformanceMonitor {
     const metricId = this.startMetric('python', `Python: ${codePreview}`, {
       codeLength: code.length,
       hasGameLoop: code.includes('while') && code.includes('pygame'),
-      hasImports: code.includes('import')
+      hasImports: code.includes('import'),
     });
 
     try {
@@ -258,7 +267,7 @@ class PerformanceMonitor {
   }
 
   timeAsync<T>(
-    label: string, 
+    label: string,
     asyncFn: () => Promise<T>,
     type: PerformanceMetric['type'] = 'custom'
   ): Promise<T> {
@@ -267,24 +276,27 @@ class PerformanceMonitor {
 
   // Statistics and analysis
   getStats(): PerformanceStats {
-    const completedMetrics = this.metrics.filter(m => m.status === 'completed' && m.duration);
-    const failedMetrics = this.metrics.filter(m => m.status === 'failed');
-    
-    const apiMetrics = completedMetrics.filter(m => m.type === 'api');
-    const componentMetrics = completedMetrics.filter(m => m.type === 'component');
-    const pythonMetrics = completedMetrics.filter(m => m.type === 'python');
+    const completedMetrics = this.metrics.filter((m) => m.status === 'completed' && m.duration);
+    const failedMetrics = this.metrics.filter((m) => m.status === 'failed');
 
-    const averageApiResponseTime = apiMetrics.length > 0 
-      ? apiMetrics.reduce((sum, m) => sum + m.duration!, 0) / apiMetrics.length 
-      : 0;
+    const apiMetrics = completedMetrics.filter((m) => m.type === 'api');
+    const componentMetrics = completedMetrics.filter((m) => m.type === 'component');
+    const pythonMetrics = completedMetrics.filter((m) => m.type === 'python');
 
-    const averageComponentRenderTime = componentMetrics.length > 0 
-      ? componentMetrics.reduce((sum, m) => sum + m.duration!, 0) / componentMetrics.length 
-      : 0;
+    const averageApiResponseTime =
+      apiMetrics.length > 0
+        ? apiMetrics.reduce((sum, m) => sum + m.duration!, 0) / apiMetrics.length
+        : 0;
 
-    const averagePythonExecutionTime = pythonMetrics.length > 0 
-      ? pythonMetrics.reduce((sum, m) => sum + m.duration!, 0) / pythonMetrics.length 
-      : 0;
+    const averageComponentRenderTime =
+      componentMetrics.length > 0
+        ? componentMetrics.reduce((sum, m) => sum + m.duration!, 0) / componentMetrics.length
+        : 0;
+
+    const averagePythonExecutionTime =
+      pythonMetrics.length > 0
+        ? pythonMetrics.reduce((sum, m) => sum + m.duration!, 0) / pythonMetrics.length
+        : 0;
 
     const slowestOperations = completedMetrics
       .sort((a, b) => (b.duration || 0) - (a.duration || 0))
@@ -292,9 +304,8 @@ class PerformanceMonitor {
 
     const recentMetrics = this.metrics.slice(0, 20);
 
-    const errorRate = this.metrics.length > 0 
-      ? (failedMetrics.length / this.metrics.length) * 100 
-      : 0;
+    const errorRate =
+      this.metrics.length > 0 ? (failedMetrics.length / this.metrics.length) * 100 : 0;
 
     return {
       averageApiResponseTime,
@@ -302,7 +313,7 @@ class PerformanceMonitor {
       averagePythonExecutionTime,
       slowestOperations,
       recentMetrics,
-      errorRate
+      errorRate,
     };
   }
 
@@ -315,15 +326,15 @@ class PerformanceMonitor {
     let filtered = this.metrics;
 
     if (filter?.type) {
-      filtered = filtered.filter(m => m.type === filter.type);
+      filtered = filtered.filter((m) => m.type === filter.type);
     }
 
     if (filter?.status) {
-      filtered = filtered.filter(m => m.status === filter.status);
+      filtered = filtered.filter((m) => m.status === filter.status);
     }
 
     if (filter?.minDuration) {
-      filtered = filtered.filter(m => (m.duration || 0) >= filter.minDuration!);
+      filtered = filtered.filter((m) => (m.duration || 0) >= filter.minDuration!);
     }
 
     if (filter?.limit) {
@@ -334,11 +345,9 @@ class PerformanceMonitor {
   }
 
   getSlowOperations(threshold: number = 1000): PerformanceMetric[] {
-    return this.metrics.filter(m => 
-      m.status === 'completed' && 
-      m.duration && 
-      m.duration > threshold
-    ).sort((a, b) => (b.duration || 0) - (a.duration || 0));
+    return this.metrics
+      .filter((m) => m.status === 'completed' && m.duration && m.duration > threshold)
+      .sort((a, b) => (b.duration || 0) - (a.duration || 0));
   }
 
   // Memory monitoring
@@ -347,10 +356,10 @@ class PerformanceMonitor {
       const used = Math.round((performance as any).memory.usedJSHeapSize / 1024 / 1024);
       const total = Math.round((performance as any).memory.totalJSHeapSize / 1024 / 1024);
       const percentage = Math.round((used / total) * 100);
-      
+
       return { used, total, percentage };
     }
-    
+
     return null;
   }
 
@@ -385,8 +394,8 @@ class PerformanceMonitor {
       memoryUsage: this.getMemoryUsage(),
       config: {
         isEnabled: this.isEnabled,
-        maxMetrics: this.maxMetrics
-      }
+        maxMetrics: this.maxMetrics,
+      },
     };
 
     return JSON.stringify(exportData, null, 2);
@@ -442,7 +451,7 @@ class PerformanceMonitor {
     return {
       isHealthy: issues.length === 0,
       issues,
-      recommendations
+      recommendations,
     };
   }
 }
@@ -451,16 +460,19 @@ class PerformanceMonitor {
 export const performanceMonitor = new PerformanceMonitor();
 
 // Export convenience functions
-export const measureComponent = (name: string, renderFn: () => void) => 
+export const measureComponent = (name: string, renderFn: () => void) =>
   performanceMonitor.measureComponent(name, renderFn);
 
-export const measureAsync = <T>(type: PerformanceMetric['type'], name: string, asyncFn: () => Promise<T>) => 
-  performanceMonitor.measureAsync(type, name, asyncFn);
+export const measureAsync = <T>(
+  type: PerformanceMetric['type'],
+  name: string,
+  asyncFn: () => Promise<T>
+) => performanceMonitor.measureAsync(type, name, asyncFn);
 
-export const measurePython = <T>(code: string, executeFn: () => T) => 
+export const measurePython = <T>(code: string, executeFn: () => T) =>
   performanceMonitor.measurePythonExecution(code, executeFn);
 
-export const measurePythonAsync = <T>(code: string, executeFn: () => Promise<T>) => 
+export const measurePythonAsync = <T>(code: string, executeFn: () => Promise<T>) =>
   performanceMonitor.measurePythonExecutionAsync(code, executeFn);
 
 // Make performance monitor available globally in development

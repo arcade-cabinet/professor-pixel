@@ -71,7 +71,7 @@ Aliases: `@/*` → `./app/*`, `@lib/*` → `./src/*`, `@assets/*` → `./app/ass
 - `pnpm check` exits 0
 - The test suite covering the change passes
 - For UI changes, you actually loaded the page in a browser and exercised the path
-- No new ESLint/Prettier complaints (`npx eslint .`, `npx prettier --check .`)
+- No new Biome complaints (`pnpm lint`)
 - No new `console.error` / `console.warn` in the dev console for the affected route
 
 If you can't verify a UI change in a browser, say so explicitly in the PR. Don't claim a green CI is the same as "this works."
@@ -96,7 +96,7 @@ The following require explicit human approval each time, even for AI agents oper
 | `esbuild` | bundles the Express server for production |
 | `vitest` | unit + integration tests |
 | `playwright` | e2e tests (canonical) |
-| `eslint`, `prettier` | lint + format |
+| `biome` | lint + format (replaces ESLint + Prettier as of M1.5) |
 | `drizzle-kit` | schema migrations |
 | `release-please` | release notes + version bumps from Conventional Commits |
 

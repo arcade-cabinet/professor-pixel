@@ -26,11 +26,15 @@ export class ErrorDetector {
     this.page.on('console', (msg) => {
       const text = msg.text();
       const type = msg.type();
-      
+
       if (type === 'error') {
         this.consoleErrors.push(text);
         // Also capture JavaScript errors
-        if (text.includes('Error:') || text.includes('TypeError:') || text.includes('ReferenceError:')) {
+        if (
+          text.includes('Error:') ||
+          text.includes('TypeError:') ||
+          text.includes('ReferenceError:')
+        ) {
           this.jsErrors.push(text);
         }
       } else if (type === 'warning') {
@@ -67,27 +71,33 @@ export class ErrorDetector {
       // Check for Vite error overlay
       const viteOverlay = this.page.locator('vite-error-overlay');
       const viteOverlayVisible = await viteOverlay.isVisible().catch(() => false);
-      
+
       if (viteOverlayVisible) {
         const errorMessage = await viteOverlay.textContent().catch(() => 'Unknown Vite error');
         return { hasError: true, message: errorMessage ?? undefined };
       }
 
       // Check for Replit's runtime error modal
-      const runtimeErrorModal = this.page.locator('[data-testid="runtime-error-modal"], .runtime-error');
+      const runtimeErrorModal = this.page.locator(
+        '[data-testid="runtime-error-modal"], .runtime-error'
+      );
       const modalVisible = await runtimeErrorModal.isVisible().catch(() => false);
-      
+
       if (modalVisible) {
-        const errorMessage = await runtimeErrorModal.textContent().catch(() => 'Unknown runtime error');
+        const errorMessage = await runtimeErrorModal
+          .textContent()
+          .catch(() => 'Unknown runtime error');
         return { hasError: true, message: errorMessage ?? undefined };
       }
 
       // Check for generic error boundaries
       const errorBoundary = this.page.locator('.error-boundary, [data-testid="error-boundary"]');
       const boundaryVisible = await errorBoundary.isVisible().catch(() => false);
-      
+
       if (boundaryVisible) {
-        const errorMessage = await errorBoundary.textContent().catch(() => 'Component error boundary triggered');
+        const errorMessage = await errorBoundary
+          .textContent()
+          .catch(() => 'Component error boundary triggered');
         return { hasError: true, message: errorMessage ?? undefined };
       }
 
@@ -103,9 +113,13 @@ export class ErrorDetector {
 
     try {
       // Check for missing components or broken renders
-      const suspenseFallbacks = await this.page.locator('[data-testid*="loading"], .loading').count();
+      const suspenseFallbacks = await this.page
+        .locator('[data-testid*="loading"], .loading')
+        .count();
       if (suspenseFallbacks > 5) {
-        renderErrors.push(`Too many loading states detected (${suspenseFallbacks}), possible render issues`);
+        renderErrors.push(
+          `Too many loading states detected (${suspenseFallbacks}), possible render issues`
+        );
       }
 
       // Check for error states in components
@@ -115,7 +129,9 @@ export class ErrorDetector {
       }
 
       // Check for empty or broken content areas
-      const emptyContent = await this.page.locator('.min-h-screen:empty, [data-testid="content"]:empty').count();
+      const emptyContent = await this.page
+        .locator('.min-h-screen:empty, [data-testid="content"]:empty')
+        .count();
       if (emptyContent > 0) {
         renderErrors.push(`${emptyContent} empty content areas detected`);
       }
@@ -171,29 +187,35 @@ export class ErrorDetector {
 
   async assertNoErrors(customMessage = 'No errors should be present') {
     const errorReport = await this.getFullErrorReport();
-    
+
     const errorMessages: string[] = [];
-    
+
     if (errorReport.hasViteError) {
       errorMessages.push(`Vite Error: ${errorReport.viteErrorMessage}`);
     }
-    
+
     if (errorReport.consoleErrors.length > 0) {
-      errorMessages.push(`Console Errors (${errorReport.consoleErrors.length}): ${errorReport.consoleErrors.slice(0, 3).join(', ')}${errorReport.consoleErrors.length > 3 ? '...' : ''}`);
+      errorMessages.push(
+        `Console Errors (${errorReport.consoleErrors.length}): ${errorReport.consoleErrors.slice(0, 3).join(', ')}${errorReport.consoleErrors.length > 3 ? '...' : ''}`
+      );
     }
-    
+
     if (errorReport.jsErrors.length > 0) {
-      errorMessages.push(`JS Errors (${errorReport.jsErrors.length}): ${errorReport.jsErrors.slice(0, 2).join(', ')}${errorReport.jsErrors.length > 2 ? '...' : ''}`);
+      errorMessages.push(
+        `JS Errors (${errorReport.jsErrors.length}): ${errorReport.jsErrors.slice(0, 2).join(', ')}${errorReport.jsErrors.length > 2 ? '...' : ''}`
+      );
     }
-    
+
     if (errorReport.networkErrors.length > 0) {
-      errorMessages.push(`Network Errors (${errorReport.networkErrors.length}): ${errorReport.networkErrors.slice(0, 2).join(', ')}${errorReport.networkErrors.length > 2 ? '...' : ''}`);
+      errorMessages.push(
+        `Network Errors (${errorReport.networkErrors.length}): ${errorReport.networkErrors.slice(0, 2).join(', ')}${errorReport.networkErrors.length > 2 ? '...' : ''}`
+      );
     }
-    
+
     if (errorReport.componentRenderErrors.length > 0) {
       errorMessages.push(`Render Errors: ${errorReport.componentRenderErrors.join(', ')}`);
     }
-    
+
     if (errorReport.importErrors.length > 0) {
       errorMessages.push(`Import Errors: ${errorReport.importErrors.join(', ')}`);
     }
@@ -212,27 +234,27 @@ export class ErrorDetector {
 }
 
 export async function withErrorDetection<T>(
-  page: Page, 
+  page: Page,
   action: (detector: ErrorDetector) => Promise<T>,
   assertNoErrors = true
 ): Promise<T> {
   const detector = new ErrorDetector(page);
-  
+
   try {
     const result = await action(detector);
-    
+
     if (assertNoErrors) {
       await detector.assertNoErrors();
     }
-    
+
     return result;
   } catch (error) {
     // Take screenshot on error
-    await page.screenshot({ 
+    await page.screenshot({
       path: `test-results/screenshots/error-${Date.now()}.png`,
-      fullPage: true 
+      fullPage: true,
     });
-    
+
     throw error;
   }
 }

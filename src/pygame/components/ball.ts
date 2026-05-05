@@ -18,7 +18,8 @@ export const ballComponent: PyGameComponent = {
   id: 'ball',
   name: 'Ball',
   description: 'A bouncing physics object for pong/breakout games',
-  wizardDescription: 'A bouncy ball that can roll and bounce around! Perfect for games like Pong, Breakout, or any game where you need something that bounces off walls.',
+  wizardDescription:
+    'A bouncy ball that can roll and bounce around! Perfect for games like Pong, Breakout, or any game where you need something that bounces off walls.',
   properties: {} as Record<string, any>,
   defaultProperties: {
     x: 200,
@@ -28,7 +29,7 @@ export const ballComponent: PyGameComponent = {
     velocityY: 3,
     color: '#EF4444',
     gravity: 0.2,
-    bounciness: 0.8
+    bounciness: 0.8,
   },
   preview: (ctx: CanvasRenderingContext2D, props: BallProperties) => {
     ctx.fillStyle = props.color;
@@ -38,7 +39,13 @@ export const ballComponent: PyGameComponent = {
     // Add shine effect
     ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
     ctx.beginPath();
-    ctx.arc(props.x - props.radius * 0.3, props.y - props.radius * 0.3, props.radius * 0.3, 0, Math.PI * 2);
+    ctx.arc(
+      props.x - props.radius * 0.3,
+      props.y - props.radius * 0.3,
+      props.radius * 0.3,
+      0,
+      Math.PI * 2
+    );
     ctx.fill();
   },
   generateCode: (props: BallProperties) => `
@@ -68,5 +75,5 @@ class Ball:
             self.y = max(self.radius, min(screen_height - self.radius, self.y))
     
     def draw(self, screen):
-        pygame.draw.circle(screen, self.color, (int(self.x), int(self.y)), self.radius)`
+        pygame.draw.circle(screen, self.color, (int(self.x), int(self.y)), self.radius)`,
 };

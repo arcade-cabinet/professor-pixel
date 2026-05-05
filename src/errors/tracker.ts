@@ -3,8 +3,8 @@
  * Provides comprehensive error tracking, analytics, and debugging capabilities
  */
 
-import { logger, type LogLevel } from "@lib/monitoring/console-logger";
-import { globalErrorHandler, type GlobalError } from "./global-handler";
+import { logger, type LogLevel } from '@lib/monitoring/console-logger';
+import { globalErrorHandler, type GlobalError } from './global-handler';
 
 export interface ErrorContext {
   userId?: string;
@@ -33,7 +33,7 @@ export interface TrackedError {
   errorId?: string;
   componentStack?: string;
   handled?: boolean;
-  
+
   // TrackedError specific properties
   id: string;
   errorContext: ErrorContext;
@@ -136,7 +136,7 @@ class ErrorTracker {
       sessionId: this.sessionId,
       timestamp: new Date(),
       url: window.location.href,
-      userAgent: navigator.userAgent
+      userAgent: navigator.userAgent,
     };
   }
 
@@ -148,9 +148,9 @@ class ErrorTracker {
       if (error.type === 'react-error') return 'high';
       return 'medium';
     }
-    
+
     if (error.level === 'warning') return 'low';
-    
+
     return 'medium';
   }
 
@@ -164,7 +164,7 @@ class ErrorTracker {
 
   private generateErrorTags(error: GlobalError): string[] {
     const tags: string[] = [error.type, error.level];
-    
+
     if (error.context) {
       if (error.context.includes('pyodide')) tags.push('pyodide');
       if (error.context.includes('pygame')) tags.push('pygame');
@@ -172,34 +172,34 @@ class ErrorTracker {
       if (error.context.includes('project')) tags.push('project');
       if (error.context.includes('gallery')) tags.push('gallery');
     }
-    
+
     return tags;
   }
 
   private extractErrorPattern(error: GlobalError): string {
     // Create a pattern from error message, removing variable parts
     let pattern = error.error;
-    
+
     // Remove numbers, IDs, and timestamps
     pattern = pattern.replace(/\b\d+\b/g, 'N');
     pattern = pattern.replace(/\b[a-f0-9]{8,}\b/g, 'ID');
     pattern = pattern.replace(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/g, 'TIMESTAMP');
-    
+
     // Remove file paths
     pattern = pattern.replace(/\/[^\s]+\.(js|ts|py)/g, '/FILE');
-    
+
     // Remove URLs
     pattern = pattern.replace(/https?:\/\/[^\s]+/g, 'URL');
-    
+
     return pattern;
   }
 
   trackError(globalError: GlobalError, additionalContext?: Partial<ErrorContext>): string {
     const errorId = `error-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    
+
     const context: ErrorContext = {
       ...this.createErrorContext(),
-      ...additionalContext
+      ...additionalContext,
     };
 
     const trackedError: TrackedError = {
@@ -217,14 +217,14 @@ class ErrorTracker {
       errorId: globalError.errorId,
       componentStack: globalError.componentStack,
       handled: globalError.handled,
-      
+
       // TrackedError specific properties
       id: errorId,
       errorContext: context,
       resolved: false,
       severity: this.determineErrorSeverity(globalError),
       category: this.categorizeError(globalError),
-      tags: this.generateErrorTags(globalError)
+      tags: this.generateErrorTags(globalError),
     };
 
     this.trackedErrors.set(errorId, trackedError);
@@ -232,7 +232,7 @@ class ErrorTracker {
     // Update error patterns
     const pattern = this.extractErrorPattern(globalError);
     const existingPattern = this.errorPatterns.get(pattern);
-    
+
     if (existingPattern) {
       existingPattern.count++;
       existingPattern.lastOccurrence = new Date();
@@ -244,7 +244,7 @@ class ErrorTracker {
         pattern,
         count: 1,
         lastOccurrence: new Date(),
-        affectedUsers: [context.sessionId]
+        affectedUsers: [context.sessionId],
       });
     }
 
@@ -253,18 +253,18 @@ class ErrorTracker {
       const oldestErrors = Array.from(this.trackedErrors.entries())
         .sort(([, a], [, b]) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
         .slice(0, this.trackedErrors.size - this.maxErrors);
-      
+
       oldestErrors.forEach(([id]) => this.trackedErrors.delete(id));
     }
 
     // Persist data
     this.persistData();
-    
+
     // Log the tracked error
-    logger.system.info('Error tracked', { 
-      errorId, 
+    logger.system.info('Error tracked', {
+      errorId,
       severity: trackedError.severity,
-      category: trackedError.category 
+      category: trackedError.category,
     });
 
     // Notify observers
@@ -324,19 +324,19 @@ class ErrorTracker {
     let errors = Array.from(this.trackedErrors.values());
 
     if (filter?.category) {
-      errors = errors.filter(e => e.category === filter.category);
+      errors = errors.filter((e) => e.category === filter.category);
     }
 
     if (filter?.severity) {
-      errors = errors.filter(e => e.severity === filter.severity);
+      errors = errors.filter((e) => e.severity === filter.severity);
     }
 
     if (filter?.resolved !== undefined) {
-      errors = errors.filter(e => e.resolved === filter.resolved);
+      errors = errors.filter((e) => e.resolved === filter.resolved);
     }
 
     if (filter?.tags) {
-      errors = errors.filter(e => filter.tags!.some(tag => e.tags.includes(tag)));
+      errors = errors.filter((e) => filter.tags!.some((tag) => e.tags.includes(tag)));
     }
 
     // Sort by timestamp (newest first)
@@ -357,26 +357,32 @@ class ErrorTracker {
 
   getAnalytics(): ErrorAnalytics {
     const errors = Array.from(this.trackedErrors.values());
-    const resolvedErrors = errors.filter(e => e.resolved);
+    const resolvedErrors = errors.filter((e) => e.resolved);
 
     // Error counts by level
-    const errorsByLevel = errors.reduce((acc, error) => {
-      // Map GlobalError level to LogLevel
-      const logLevel: LogLevel = error.level === 'warning' ? 'warn' : error.level as LogLevel;
-      acc[logLevel] = (acc[logLevel] || 0) + 1;
-      return acc;
-    }, {} as Record<LogLevel, number>);
+    const errorsByLevel = errors.reduce(
+      (acc, error) => {
+        // Map GlobalError level to LogLevel
+        const logLevel: LogLevel = error.level === 'warning' ? 'warn' : (error.level as LogLevel);
+        acc[logLevel] = (acc[logLevel] || 0) + 1;
+        return acc;
+      },
+      {} as Record<LogLevel, number>
+    );
 
     // Error counts by category
-    const errorsByCategory = errors.reduce((acc, error) => {
-      acc[error.category] = (acc[error.category] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
+    const errorsByCategory = errors.reduce(
+      (acc, error) => {
+        acc[error.category] = (acc[error.category] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>
+    );
 
     // Errors by hour of day
     const errorsByTime = Array.from({ length: 24 }, (_, hour) => ({
       hour,
-      count: errors.filter(error => new Date(error.timestamp).getHours() === hour).length
+      count: errors.filter((error) => new Date(error.timestamp).getHours() === hour).length,
     }));
 
     // Top error patterns
@@ -384,14 +390,15 @@ class ErrorTracker {
 
     // Resolution metrics
     const resolutionRate = errors.length > 0 ? (resolvedErrors.length / errors.length) * 100 : 0;
-    
+
     const resolutionTimes = resolvedErrors
-      .filter(e => e.resolutionTime)
-      .map(e => e.resolutionTime!.getTime() - new Date(e.timestamp).getTime());
-    
-    const averageResolutionTime = resolutionTimes.length > 0 
-      ? resolutionTimes.reduce((sum, time) => sum + time, 0) / resolutionTimes.length
-      : 0;
+      .filter((e) => e.resolutionTime)
+      .map((e) => e.resolutionTime!.getTime() - new Date(e.timestamp).getTime());
+
+    const averageResolutionTime =
+      resolutionTimes.length > 0
+        ? resolutionTimes.reduce((sum, time) => sum + time, 0) / resolutionTimes.length
+        : 0;
 
     return {
       totalErrors: errors.length,
@@ -400,7 +407,7 @@ class ErrorTracker {
       errorsByTime,
       topErrors,
       resolutionRate,
-      averageResolutionTime
+      averageResolutionTime,
     };
   }
 
@@ -410,7 +417,7 @@ class ErrorTracker {
       timestamp: new Date().toISOString(),
       errors: Array.from(this.trackedErrors.values()),
       patterns: Array.from(this.errorPatterns.values()),
-      analytics: this.getAnalytics()
+      analytics: this.getAnalytics(),
     };
 
     return JSON.stringify(exportData, null, 2);
@@ -418,7 +425,7 @@ class ErrorTracker {
 
   clearOldErrors(olderThanDays = 7) {
     const cutoff = new Date(Date.now() - olderThanDays * 24 * 60 * 60 * 1000);
-    
+
     let removedCount = 0;
     for (const [id, error] of Array.from(this.trackedErrors.entries())) {
       if (new Date(error.timestamp) < cutoff) {
@@ -443,7 +450,7 @@ class ErrorTracker {
 
   private notifyObservers() {
     const analytics = this.getAnalytics();
-    this.observers.forEach(observer => {
+    this.observers.forEach((observer) => {
       try {
         observer(analytics);
       } catch (e: any) {
@@ -454,10 +461,15 @@ class ErrorTracker {
 
   // Educational error helpers
   getSimilarErrors(errorMessage: string, limit = 3): TrackedError[] {
-    const pattern = this.extractErrorPattern({ error: errorMessage, type: 'custom', level: 'error', timestamp: new Date().toISOString() } as GlobalError);
-    
+    const pattern = this.extractErrorPattern({
+      error: errorMessage,
+      type: 'custom',
+      level: 'error',
+      timestamp: new Date().toISOString(),
+    } as GlobalError);
+
     return this.getErrors({ limit: 50 })
-      .filter(error => {
+      .filter((error) => {
         const errorPattern = this.extractErrorPattern(error);
         return this.calculateSimilarity(pattern, errorPattern) > 0.7;
       })
@@ -467,10 +479,10 @@ class ErrorTracker {
   private calculateSimilarity(str1: string, str2: string): number {
     const words1 = str1.toLowerCase().split(/\s+/);
     const words2 = str2.toLowerCase().split(/\s+/);
-    
-    const common = words1.filter(word => words2.includes(word));
+
+    const common = words1.filter((word) => words2.includes(word));
     const total = new Set([...words1, ...words2]).size;
-    
+
     return common.length / total;
   }
 
@@ -479,11 +491,12 @@ class ErrorTracker {
     if (!error) return [];
 
     const suggestions: string[] = [];
-    
+
     // Look for similar resolved errors
-    const similarResolved = this.getSimilarErrors(error.error)
-      .filter(e => e.resolved && e.resolution);
-    
+    const similarResolved = this.getSimilarErrors(error.error).filter(
+      (e) => e.resolved && e.resolution
+    );
+
     if (similarResolved.length > 0) {
       suggestions.push(`Similar issue resolved: ${similarResolved[0].resolution}`);
     }

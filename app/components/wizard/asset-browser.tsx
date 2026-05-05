@@ -2,34 +2,15 @@
 // Visual browser for CC0 game assets with filtering and preview
 
 import { useState, useMemo, useCallback, useEffect } from 'react';
-import { 
-  Search, 
-  Filter, 
-  Grid3x3, 
-  List,
-  X,
-  Check,
-  Info,
-  Sparkles
-} from 'lucide-react';
+import { Search, Filter, Grid3x3, List, X, Check, Info, Sparkles } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { 
-  Tooltip, 
-  TooltipContent, 
-  TooltipProvider, 
-  TooltipTrigger 
-} from '@/components/ui/tooltip';
-import { 
-  GameAsset, 
-  AssetType, 
-  AssetFilter,
-  AssetSelection
-} from '@lib/assets/types';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { GameAsset, AssetType, AssetFilter, AssetSelection } from '@lib/assets/types';
 import { assetManager } from '@lib/assets/manager';
 
 interface AssetBrowserProps {
@@ -51,7 +32,7 @@ export default function AssetBrowserWizard({
   gameType,
   onClose,
   embedded = false,
-  showPixelSuggestions = true
+  showPixelSuggestions = true,
 }: AssetBrowserProps) {
   const [selectedTab, setSelectedTab] = useState<AssetType | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -72,8 +53,9 @@ export default function AssetBrowserWizard({
   const filteredAssets = useMemo(() => {
     const filter: AssetFilter = {
       search: searchQuery || undefined,
-      type: selectedTab === 'all' ? undefined : selectedTab as AssetType,
-      category: selectedCategory === 'all' ? undefined : (selectedCategory as AssetFilter['category']),
+      type: selectedTab === 'all' ? undefined : (selectedTab as AssetType),
+      category:
+        selectedCategory === 'all' ? undefined : (selectedCategory as AssetFilter['category']),
     };
 
     if (assetType) {
@@ -86,60 +68,63 @@ export default function AssetBrowserWizard({
   // Get unique categories from filtered assets
   const categories = useMemo(() => {
     const cats = new Set<string>();
-    filteredAssets.forEach(asset => {
+    filteredAssets.forEach((asset) => {
       if ('category' in asset) {
         cats.add(asset.category);
       }
     });
     return Array.from(cats);
   }, [filteredAssets]);
-  
+
   // Calculate pagination
   const totalPages = Math.ceil(filteredAssets.length / itemsPerPage);
   const paginatedAssets = useMemo(() => {
     const startIndex = (currentPage - 1) * itemsPerPage;
     return filteredAssets.slice(startIndex, startIndex + itemsPerPage);
   }, [filteredAssets, currentPage, itemsPerPage]);
-  
+
   // Reset page when filters change
   useEffect(() => {
     setCurrentPage(1);
   }, [searchQuery, selectedTab, selectedCategory, assetType]);
 
   // Handle asset selection
-  const handleAssetClick = useCallback((asset: GameAsset) => {
-    if (multiSelect) {
-      const newSelected = new Set(selectedAssets);
-      if (newSelected.has(asset.id)) {
-        newSelected.delete(asset.id);
+  const handleAssetClick = useCallback(
+    (asset: GameAsset) => {
+      if (multiSelect) {
+        const newSelected = new Set(selectedAssets);
+        if (newSelected.has(asset.id)) {
+          newSelected.delete(asset.id);
+        } else {
+          newSelected.add(asset.id);
+        }
+        setSelectedAssets(newSelected);
+
+        if (onMultiSelect) {
+          const assets = Array.from(newSelected)
+            .map((id) => assetManager.getAssetById(id))
+            .filter(Boolean) as GameAsset[];
+          onMultiSelect(assets);
+        }
       } else {
-        newSelected.add(asset.id);
+        if (onSelect) {
+          onSelect(asset);
+        }
       }
-      setSelectedAssets(newSelected);
-      
-      if (onMultiSelect) {
-        const assets = Array.from(newSelected)
-          .map(id => assetManager.getAssetById(id))
-          .filter(Boolean) as GameAsset[];
-        onMultiSelect(assets);
-      }
-    } else {
-      if (onSelect) {
-        onSelect(asset);
-      }
-    }
-  }, [multiSelect, selectedAssets, onSelect, onMultiSelect]);
+    },
+    [multiSelect, selectedAssets, onSelect, onMultiSelect]
+  );
 
   // Render asset card
   const renderAssetCard = (asset: GameAsset) => {
     const isSelected = selectedAssets.has(asset.id);
-    const isSuggested = suggestedAssets && (
-      (suggestedAssets.player?.id === asset.id) ||
-      (suggestedAssets.enemies?.some(e => e.id === asset.id)) ||
-      (suggestedAssets.items?.some(i => i.id === asset.id)) ||
-      (suggestedAssets.background?.id === asset.id) ||
-      (suggestedAssets.music?.id === asset.id)
-    );
+    const isSuggested =
+      suggestedAssets &&
+      (suggestedAssets.player?.id === asset.id ||
+        suggestedAssets.enemies?.some((e) => e.id === asset.id) ||
+        suggestedAssets.items?.some((i) => i.id === asset.id) ||
+        suggestedAssets.background?.id === asset.id ||
+        suggestedAssets.music?.id === asset.id);
 
     return (
       <TooltipProvider key={asset.id}>
@@ -163,7 +148,7 @@ export default function AssetBrowserWizard({
                   <Check className="w-5 h-5 text-purple-600 bg-white rounded-full" />
                 </div>
               )}
-              
+
               {/* Suggested by Pixel indicator */}
               {isSuggested && (
                 <div className="absolute top-1 left-1 z-10">
@@ -176,19 +161,18 @@ export default function AssetBrowserWizard({
                   {/* Asset preview */}
                   <div className="aspect-square bg-gray-100 dark:bg-gray-800 rounded flex items-center justify-center overflow-hidden">
                     {(asset.type === 'sprite' || asset.type === 'background') && asset.thumbnail ? (
-                      <img 
-                        src={asset.thumbnail} 
+                      <img
+                        src={asset.thumbnail}
                         alt={asset.name}
                         className="w-full h-full object-contain"
                       />
                     ) : (
                       <div className="text-4xl">
-                        {asset.type === 'sound' ? '🔊' : 
-                         asset.type === 'music' ? '🎵' : '📦'}
+                        {asset.type === 'sound' ? '🔊' : asset.type === 'music' ? '🎵' : '📦'}
                       </div>
                     )}
                   </div>
-                  
+
                   {/* Asset name */}
                   <div className="mt-2">
                     <p className="text-sm font-medium truncate">{asset.name}</p>
@@ -202,15 +186,14 @@ export default function AssetBrowserWizard({
                   {/* List view */}
                   <div className="w-12 h-12 bg-gray-100 dark:bg-gray-800 rounded flex items-center justify-center overflow-hidden">
                     {(asset.type === 'sprite' || asset.type === 'background') && asset.thumbnail ? (
-                      <img 
-                        src={asset.thumbnail} 
+                      <img
+                        src={asset.thumbnail}
                         alt={asset.name}
                         className="w-full h-full object-contain"
                       />
                     ) : (
                       <div className="text-xl">
-                        {asset.type === 'sound' ? '🔊' : 
-                         asset.type === 'music' ? '🎵' : '📦'}
+                        {asset.type === 'sound' ? '🔊' : asset.type === 'music' ? '🎵' : '📦'}
                       </div>
                     )}
                   </div>
@@ -223,18 +206,16 @@ export default function AssetBrowserWizard({
               )}
             </Card>
           </TooltipTrigger>
-          
+
           <TooltipContent side="bottom" className="max-w-xs">
             <div className="space-y-2">
               <p className="font-semibold">{asset.name}</p>
               <p className="text-sm">{asset.description}</p>
               {asset.suggestedUse && (
-                <p className="text-sm italic text-gray-600">
-                  💡 {asset.suggestedUse}
-                </p>
+                <p className="text-sm italic text-gray-600">💡 {asset.suggestedUse}</p>
               )}
               <div className="flex flex-wrap gap-1">
-                {asset.tags.slice(0, 3).map(tag => (
+                {asset.tags.slice(0, 3).map((tag) => (
                   <Badge key={tag} variant="secondary" className="text-xs">
                     {tag}
                   </Badge>
@@ -249,13 +230,16 @@ export default function AssetBrowserWizard({
   };
 
   return (
-    <div 
+    <div
       data-testid="asset-browser"
-      className={`${embedded ? '' : 'fixed inset-0 z-50 bg-black/50 flex items-center justify-center'}`}>
-      <div className={`
+      className={`${embedded ? '' : 'fixed inset-0 z-50 bg-black/50 flex items-center justify-center'}`}
+    >
+      <div
+        className={`
         ${embedded ? 'w-full h-full' : 'bg-white dark:bg-gray-900 rounded-lg shadow-xl w-full max-w-4xl max-h-[80vh]'}
         flex flex-col
-      `}>
+      `}
+      >
         {/* Header */}
         <div className="p-4 border-b flex items-center justify-between">
           <div className="flex items-center space-x-3">
@@ -267,7 +251,7 @@ export default function AssetBrowserWizard({
               </Badge>
             )}
           </div>
-          
+
           <div className="flex items-center space-x-2">
             {/* View mode toggle */}
             <Button
@@ -278,14 +262,9 @@ export default function AssetBrowserWizard({
             >
               {viewMode === 'grid' ? <List className="w-4 h-4" /> : <Grid3x3 className="w-4 h-4" />}
             </Button>
-            
+
             {!embedded && onClose && (
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={onClose}
-                data-testid="button-close"
-              >
+              <Button variant="ghost" size="sm" onClick={onClose} data-testid="button-close">
                 <X className="w-4 h-4" />
               </Button>
             )}
@@ -305,7 +284,7 @@ export default function AssetBrowserWizard({
                 data-testid="input-search"
               />
             </div>
-            
+
             {/* Category filter */}
             {categories.length > 0 && (
               <select
@@ -315,7 +294,7 @@ export default function AssetBrowserWizard({
                 data-testid="select-category"
               >
                 <option value="all">All Categories</option>
-                {categories.map(cat => (
+                {categories.map((cat) => (
                   <option key={cat} value={cat}>
                     {cat.charAt(0).toUpperCase() + cat.slice(1)}
                   </option>
@@ -328,11 +307,21 @@ export default function AssetBrowserWizard({
           {!assetType && (
             <Tabs value={selectedTab} onValueChange={(v) => setSelectedTab(v as any)}>
               <TabsList className="w-full">
-                <TabsTrigger value="all" className="flex-1">All</TabsTrigger>
-                <TabsTrigger value="sprite" className="flex-1">Sprites</TabsTrigger>
-                <TabsTrigger value="sound" className="flex-1">Sounds</TabsTrigger>
-                <TabsTrigger value="music" className="flex-1">Music</TabsTrigger>
-                <TabsTrigger value="background" className="flex-1">Backgrounds</TabsTrigger>
+                <TabsTrigger value="all" className="flex-1">
+                  All
+                </TabsTrigger>
+                <TabsTrigger value="sprite" className="flex-1">
+                  Sprites
+                </TabsTrigger>
+                <TabsTrigger value="sound" className="flex-1">
+                  Sounds
+                </TabsTrigger>
+                <TabsTrigger value="music" className="flex-1">
+                  Music
+                </TabsTrigger>
+                <TabsTrigger value="background" className="flex-1">
+                  Backgrounds
+                </TabsTrigger>
               </TabsList>
             </Tabs>
           )}
@@ -340,22 +329,25 @@ export default function AssetBrowserWizard({
 
         {/* Asset grid */}
         <ScrollArea className="flex-1 p-4">
-          <div className={`
-            ${viewMode === 'grid' 
-              ? 'grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3'
-              : 'space-y-2'
+          <div
+            className={`
+            ${
+              viewMode === 'grid'
+                ? 'grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3'
+                : 'space-y-2'
             }
-          `}>
-            {paginatedAssets.map(asset => renderAssetCard(asset))}
+          `}
+          >
+            {paginatedAssets.map((asset) => renderAssetCard(asset))}
           </div>
-          
+
           {/* Pagination controls */}
           {totalPages > 1 && (
             <div className="flex justify-center items-center space-x-2 mt-4">
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                 disabled={currentPage === 1}
                 data-testid="pagination-prev"
               >
@@ -367,7 +359,7 @@ export default function AssetBrowserWizard({
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                 disabled={currentPage === totalPages}
                 data-testid="pagination-next"
               >
@@ -375,7 +367,7 @@ export default function AssetBrowserWizard({
               </Button>
             </div>
           )}
-          
+
           {filteredAssets.length === 0 && (
             <div className="text-center py-12 text-gray-500">
               <p>No assets found matching your criteria</p>

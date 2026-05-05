@@ -45,7 +45,7 @@ for (const name of RUNTIME_FILES) {
     // ship a broken vendored Pyodide that only manifests at lesson-page load.
     throw new Error(
       `[copy-pyodide] required runtime asset missing: ${name} (looked in ${src}). ` +
-        `Reinstall pyodide or check the package version.`,
+        `Reinstall pyodide or check the package version.`
     );
   }
   copyFileSync(from, to);

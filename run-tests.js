@@ -33,7 +33,7 @@ Commands:
 
 Example: node run-tests.js unit
 `);
-  }
+  },
 };
 
 function runCommand(cmd, args) {

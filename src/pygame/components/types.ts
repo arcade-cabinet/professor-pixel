@@ -5,7 +5,19 @@
 // Component Type Definitions
 // ============================================================================
 
-export type ComponentType = 'sprite' | 'platform' | 'ball' | 'paddle' | 'enemy' | 'collectible' | 'background' | 'scoreText' | 'button' | 'particleEffect' | 'timer' | 'healthBar';
+export type ComponentType =
+  | 'sprite'
+  | 'platform'
+  | 'ball'
+  | 'paddle'
+  | 'enemy'
+  | 'collectible'
+  | 'background'
+  | 'scoreText'
+  | 'button'
+  | 'particleEffect'
+  | 'timer'
+  | 'healthBar';
 
 export interface PyGameComponent {
   type: ComponentType;
@@ -158,16 +170,18 @@ export interface HealthBarProperties {
 
 export function hexToRgb(hex: string): [number, number, number] {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-  return result 
-    ? [
-        parseInt(result[1], 16),
-        parseInt(result[2], 16),
-        parseInt(result[3], 16)
-      ]
+  return result
+    ? [parseInt(result[1], 16), parseInt(result[2], 16), parseInt(result[3], 16)]
     : [0, 0, 0];
 }
 
-export function drawStar(ctx: CanvasRenderingContext2D, cx: number, cy: number, radius: number, points: number) {
+export function drawStar(
+  ctx: CanvasRenderingContext2D,
+  cx: number,
+  cy: number,
+  radius: number,
+  points: number
+) {
   const step = Math.PI / points;
   ctx.beginPath();
   for (let i = 0; i < 2 * points; i++) {
@@ -186,8 +200,8 @@ export function drawHeart(ctx: CanvasRenderingContext2D, x: number, y: number, s
   ctx.beginPath();
   ctx.moveTo(x, y + size / 4);
   ctx.bezierCurveTo(x, y, x - size / 2, y, x - size / 2, y + size / 4);
-  ctx.bezierCurveTo(x - size / 2, y + size / 2, x, y + size * 3 / 4, x, y + size);
-  ctx.bezierCurveTo(x, y + size * 3 / 4, x + size / 2, y + size / 2, x + size / 2, y + size / 4);
+  ctx.bezierCurveTo(x - size / 2, y + size / 2, x, y + (size * 3) / 4, x, y + size);
+  ctx.bezierCurveTo(x, y + (size * 3) / 4, x + size / 2, y + size / 2, x + size / 2, y + size / 4);
   ctx.bezierCurveTo(x + size / 2, y, x, y, x, y + size / 4);
   ctx.fill();
 }

@@ -17,12 +17,7 @@ interface GameParams {
 // Generate complete pygame code from wizard choices
 export function generatePygameCode(choices: GameChoice[], params: GameParams = {}): string {
   const template: CodeTemplate = {
-    imports: [
-      'import pygame',
-      'import random',
-      'import math',
-      'from pygame.locals import *'
-    ],
+    imports: ['import pygame', 'import random', 'import math', 'from pygame.locals import *'],
     setup: [
       '# Initialize Pygame',
       'pygame.init()',
@@ -38,15 +33,15 @@ export function generatePygameCode(choices: GameChoice[], params: GameParams = {
       `enemy_speed = ${params.enemySpeed || 3}`,
       'gravity = 0.5',
       'ground_y = 300',
-      ''
+      '',
     ],
     gameLoop: [],
     eventHandlers: [],
-    classes: []
+    classes: [],
   };
 
   // Process each choice and add appropriate code
-  choices.forEach(choice => {
+  choices.forEach((choice) => {
     switch (choice.type) {
       case 'character':
         addCharacterCode(template, choice, params);
@@ -75,7 +70,7 @@ export function generatePygameCode(choices: GameChoice[], params: GameParams = {
 
 function addCharacterCode(template: CodeTemplate, choice: GameChoice, params: GameParams) {
   const characterType = choice.id;
-  
+
   // Add character class
   template.classes.push(`
 class Player:
@@ -149,11 +144,11 @@ class Player:
 
   // Add player initialization
   template.setup.push('player = Player()');
-  
+
   // Add player update in game loop
   template.gameLoop.push('    player.update()');
   template.gameLoop.push('    player.draw(screen)');
-  
+
   // Add controls
   template.eventHandlers.push(`
     keys = pygame.key.get_pressed()
@@ -170,7 +165,7 @@ class Player:
 
 function addEnemyCode(template: CodeTemplate, choice: GameChoice, params: GameParams) {
   const enemyBehavior = choice.behavior || 'patrol';
-  
+
   template.classes.push(`
 class Enemy:
     def __init__(self, x, y):
@@ -222,7 +217,7 @@ class Enemy:
 `);
 
   template.setup.push(`enemies = [Enemy(300, ground_y - 35), Enemy(450, ground_y - 35)]`);
-  
+
   template.gameLoop.push(`
     # Update enemies
     for enemy in enemies:
@@ -238,7 +233,7 @@ class Enemy:
 
 function addCollectibleCode(template: CodeTemplate, choice: GameChoice, params: GameParams) {
   const collectibleType = choice.id;
-  
+
   template.classes.push(`
 class Collectible:
     def __init__(self, x, y, item_type="coin"):
@@ -315,7 +310,7 @@ for i in range(5):
 
 function addBackgroundCode(template: CodeTemplate, choice: GameChoice) {
   const bgType = choice.id || 'sky';
-  
+
   template.setup.push(`
 # Background settings
 bg_color = ${getBackgroundColor(bgType)}
@@ -349,8 +344,8 @@ clouds = [(random.randint(0, 640), random.randint(20, 100)) for _ in range(5)]
 
 function addGameRuleCode(template: CodeTemplate, choice: GameChoice) {
   const rule = choice.id;
-  
-  switch(rule) {
+
+  switch (rule) {
     case 'time_limit':
       template.setup.push('time_limit = 60');
       template.setup.push('start_time = pygame.time.get_ticks()');
@@ -361,7 +356,7 @@ function addGameRuleCode(template: CodeTemplate, choice: GameChoice) {
         running = False
 `);
       break;
-      
+
     case 'score_target':
       template.setup.push('target_score = 100');
       template.gameLoop.push(`
@@ -371,7 +366,7 @@ function addGameRuleCode(template: CodeTemplate, choice: GameChoice) {
         running = False
 `);
       break;
-      
+
     case 'survival':
       template.gameLoop.push(`
     # Survival mode - spawn more enemies over time
@@ -384,8 +379,8 @@ function addGameRuleCode(template: CodeTemplate, choice: GameChoice) {
 
 function addMechanicCode(template: CodeTemplate, choice: GameChoice, params: GameParams) {
   const mechanic = choice.id;
-  
-  switch(mechanic) {
+
+  switch (mechanic) {
     case 'double_jump':
       template.setup.push('double_jump_available = True');
       template.classes[0] = template.classes[0].replace(
@@ -401,7 +396,7 @@ function addMechanicCode(template: CodeTemplate, choice: GameChoice, params: Gam
             double_jump_available = False`
       );
       break;
-      
+
     case 'dash':
       template.eventHandlers.push(`
     if keys[K_LSHIFT]:
@@ -411,7 +406,7 @@ function addMechanicCode(template: CodeTemplate, choice: GameChoice, params: Gam
             player.x += speed * 3
 `);
       break;
-      
+
     case 'shoot':
       template.classes.push(`
 class Projectile:
@@ -492,31 +487,31 @@ function buildCompleteCode(template: CodeTemplate): string {
     '    # Add click interaction logic here',
     '    score += 1',
     '',
-    'pygame.quit()'
+    'pygame.quit()',
   ];
-  
+
   return code.join('\n');
 }
 
 // Helper functions
 function getColorForCharacter(type: string): string {
   const colors: Record<string, string> = {
-    'robot': '(150, 150, 200)',
-    'ninja': '(50, 50, 50)',
-    'wizard': '(100, 50, 200)',
-    'warrior': '(200, 100, 50)',
-    'alien': '(50, 200, 100)'
+    robot: '(150, 150, 200)',
+    ninja: '(50, 50, 50)',
+    wizard: '(100, 50, 200)',
+    warrior: '(200, 100, 50)',
+    alien: '(50, 200, 100)',
   };
   return colors[type] || '(100, 100, 255)';
 }
 
 function getBackgroundColor(type: string): string {
   const colors: Record<string, string> = {
-    'sky': '(135, 206, 235)',
-    'space': '(10, 10, 30)',
-    'cave': '(50, 50, 60)',
-    'desert': '(255, 220, 180)',
-    'forest': '(34, 139, 34)'
+    sky: '(135, 206, 235)',
+    space: '(10, 10, 30)',
+    cave: '(50, 50, 60)',
+    desert: '(255, 220, 180)',
+    forest: '(34, 139, 34)',
   };
   return colors[type] || '(135, 206, 235)';
 }

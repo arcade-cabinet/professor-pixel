@@ -50,7 +50,7 @@ describe('WorkerPythonRunner', () => {
     fakeRunSnippet.mockImplementationOnce(() => new Promise(() => {})); // never resolves
     const runner = new WorkerPythonRunner();
     await expect(
-      runner.runSnippet({ code: 'while True: pass', timeoutMs: 50 }),
+      runner.runSnippet({ code: 'while True: pass', timeoutMs: 50 })
     ).rejects.toBeInstanceOf(PythonTimeoutError);
   });
 
@@ -58,7 +58,7 @@ describe('WorkerPythonRunner', () => {
     fakeRunSnippet.mockImplementationOnce(() => new Promise(() => {}));
     const runner = new WorkerPythonRunner();
     await expect(
-      runner.runSnippet({ code: 'while True: pass', timeoutMs: 30 }),
+      runner.runSnippet({ code: 'while True: pass', timeoutMs: 30 })
     ).rejects.toBeInstanceOf(PythonTimeoutError);
     // Next call must rebuild the worker via ensure()
     fakeRunSnippet.mockResolvedValueOnce({ output: 'ok', error: null });

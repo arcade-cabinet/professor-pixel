@@ -4,22 +4,22 @@ declare module 'yarn-bound' {
     isAvailable?: boolean;
     metadata?: any;
   }
-  
+
   export interface TextResult {
     text: string;
   }
-  
+
   export interface OptionsResult {
     options: DialogueOption[];
   }
-  
+
   export interface CommandResult {
     command: string;
     args: any[];
   }
-  
+
   export type DialogueResult = TextResult | OptionsResult | CommandResult | null;
-  
+
   export class Runner {
     constructor();
     load(content: string): void;
@@ -32,7 +32,7 @@ declare module 'yarn-bound' {
     advance(): DialogueResult;
     choose(optionIndex: number): void;
   }
-  
+
   export class BuiltinTypeParser {
     constructor();
   }

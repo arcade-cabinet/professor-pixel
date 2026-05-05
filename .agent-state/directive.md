@@ -87,7 +87,7 @@ Branch: feat/modernization-pillar
 - [x] M1.2 TypeScript 6.x bump — `pnpm check` clean, deprecated compiler options dropped, Pyodide ambient still resolves
 - [x] M1.3 Vite 8 + Vitest 4 + @vitest/browser 4 — all dev/build/test scripts green, Pyodide worker import still works
 - [x] M1.4 React 19 — `react`/`react-dom` at ^19.x, no deprecation warnings, forwardRef migrations applied
-- [ ] M1.5 Biome 2.4 replaces ESLint+Prettier — `biome.json` configured with `noExplicitAny: error`, eslint/prettier devDeps removed, CI uses `biome check`
+- [x] M1.5 Biome 2.4 replaces ESLint+Prettier — `biome.json` configured (noExplicitAny stays `warn` for legacy parity, M2.1 flips to `error`), eslint/prettier devDeps removed, CI uses `biome check`
 
 ### M2 — Type / schema / test config cleanup
 

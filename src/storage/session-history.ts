@@ -46,7 +46,7 @@ class SessionHistory {
       type,
       description,
       data,
-      canRevert
+      canRevert,
     };
 
     // If we're not at the end of history, remove future events
@@ -56,7 +56,7 @@ class SessionHistory {
 
     this.events.push(event);
     this.currentPosition = this.events.length - 1;
-    
+
     this.saveToStorage();
     this.notifyListeners();
   }
@@ -66,17 +66,17 @@ class SessionHistory {
     this.addEvent('choice', `Selected: ${label}`, {
       choiceId,
       label,
-      path
+      path,
     });
   }
 
   // Track a lesson completion
   trackLesson(lessonId: string, lessonName: string, completed: boolean = false): void {
-    this.addEvent(
-      'lesson',
-      completed ? `Completed: ${lessonName}` : `Started: ${lessonName}`,
-      { lessonId, lessonName, completed }
-    );
+    this.addEvent('lesson', completed ? `Completed: ${lessonName}` : `Started: ${lessonName}`, {
+      lessonId,
+      lessonName,
+      completed,
+    });
   }
 
   // Track editor changes
@@ -88,16 +88,21 @@ class SessionHistory {
   trackComponentSelection(componentName: string, componentType: string): void {
     this.addEvent('component', `Selected ${componentType}: ${componentName}`, {
       componentName,
-      componentType
+      componentType,
     });
   }
 
   // Track navigation
   trackNavigation(fromPath: string, toPath: string): void {
-    this.addEvent('navigation', `Navigated to ${toPath}`, {
-      fromPath,
-      toPath
-    }, false);
+    this.addEvent(
+      'navigation',
+      `Navigated to ${toPath}`,
+      {
+        fromPath,
+        toPath,
+      },
+      false
+    );
   }
 
   // Get all events
@@ -109,33 +114,33 @@ class SessionHistory {
   getState(): SessionState {
     return {
       events: this.getEvents(),
-      currentPosition: this.currentPosition
+      currentPosition: this.currentPosition,
     };
   }
 
   // Jump to a specific event
   jumpToEvent(eventId: string): SessionEvent | null {
-    const index = this.events.findIndex(e => e.id === eventId);
+    const index = this.events.findIndex((e) => e.id === eventId);
     if (index === -1) return null;
 
     this.currentPosition = index;
     this.saveToStorage();
     this.notifyListeners();
-    
+
     return this.events[index];
   }
 
   // Revert to a specific event (removes all events after it)
   revertToEvent(eventId: string): SessionEvent | null {
-    const index = this.events.findIndex(e => e.id === eventId);
+    const index = this.events.findIndex((e) => e.id === eventId);
     if (index === -1) return null;
 
     this.events = this.events.slice(0, index + 1);
     this.currentPosition = index;
-    
+
     this.saveToStorage();
     this.notifyListeners();
-    
+
     return this.events[index];
   }
 
@@ -143,7 +148,7 @@ class SessionHistory {
   clearHistory(): void {
     this.events = [];
     this.currentPosition = -1;
-    
+
     this.saveToStorage();
     this.notifyListeners();
   }
@@ -152,7 +157,7 @@ class SessionHistory {
   subscribe(listener: (state: SessionState) => void): () => void {
     this.listeners.add(listener);
     listener(this.getState()); // Send initial state
-    
+
     return () => {
       this.listeners.delete(listener);
     };
@@ -161,18 +166,18 @@ class SessionHistory {
   // Notify all listeners
   private notifyListeners(): void {
     const state = this.getState();
-    this.listeners.forEach(listener => listener(state));
+    this.listeners.forEach((listener) => listener(state));
   }
 
   // Save to localStorage
   private saveToStorage(): void {
     try {
       const data = {
-        events: this.events.map(e => ({
+        events: this.events.map((e) => ({
           ...e,
-          timestamp: e.timestamp.toISOString()
+          timestamp: e.timestamp.toISOString(),
         })),
-        currentPosition: this.currentPosition
+        currentPosition: this.currentPosition,
       };
       localStorage.setItem(this.STORAGE_KEY, JSON.stringify(data));
     } catch (error) {
@@ -188,7 +193,7 @@ class SessionHistory {
         const data = JSON.parse(stored);
         this.events = data.events.map((e: any) => ({
           ...e,
-          timestamp: new Date(e.timestamp)
+          timestamp: new Date(e.timestamp),
         }));
         this.currentPosition = data.currentPosition;
       }
@@ -201,7 +206,7 @@ class SessionHistory {
 
   // Get events by type
   getEventsByType(type: SessionEvent['type']): SessionEvent[] {
-    return this.events.filter(e => e.type === type);
+    return this.events.filter((e) => e.type === type);
   }
 
   // Get recent events

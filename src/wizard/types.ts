@@ -93,7 +93,12 @@ export interface SessionActions {
 // Session action for PixelMenu
 export interface SessionAction {
   id: string;
-  type: 'game_created' | 'lesson_completed' | 'asset_selected' | 'code_generated' | 'settings_changed';
+  type:
+    | 'game_created'
+    | 'lesson_completed'
+    | 'asset_selected'
+    | 'code_generated'
+    | 'settings_changed';
   title: string;
   description?: string;
   timestamp: Date;
@@ -104,7 +109,12 @@ export interface SessionAction {
 export type LayoutMode = 'desktop' | 'phone-portrait' | 'phone-landscape';
 
 // Embedded component types
-export type EmbeddedComponentType = 'none' | 'code-editor' | 'professional-editor' | 'block-builder' | 'pygame-runner';
+export type EmbeddedComponentType =
+  | 'none'
+  | 'code-editor'
+  | 'professional-editor'
+  | 'block-builder'
+  | 'pygame-runner';
 
 // Pixel state
 export type PixelState = 'center-stage' | 'minimized';

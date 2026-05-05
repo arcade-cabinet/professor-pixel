@@ -17,7 +17,7 @@ export function useOrientation(): OrientationState {
       isPortrait,
       isLandscape: !isPortrait,
       orientation: isPortrait ? 'portrait' : 'landscape',
-      angle: 0
+      angle: 0,
     };
   });
 
@@ -25,19 +25,19 @@ export function useOrientation(): OrientationState {
     const handleOrientationChange = () => {
       const isPortrait = window.innerHeight > window.innerWidth;
       const angle = (window.screen as any)?.orientation?.angle || 0;
-      
+
       setOrientation({
         isPortrait,
         isLandscape: !isPortrait,
         orientation: isPortrait ? 'portrait' : 'landscape',
-        angle
+        angle,
       });
     };
 
     // Listen for both resize and orientationchange events
     window.addEventListener('resize', handleOrientationChange);
     window.addEventListener('orientationchange', handleOrientationChange);
-    
+
     // Also listen for screen orientation API if available
     if (window.screen?.orientation) {
       window.screen.orientation.addEventListener('change', handleOrientationChange);

@@ -5,14 +5,15 @@ export const pongTemplate: GameTemplate = {
   id: 'pong',
   name: 'Pong',
   description: 'Classic two-paddle game with bouncing ball and score tracking',
-  wizardDescription: 'The classic Pong game! Two paddles hit a ball back and forth. First to 5 points wins! A great way to learn about ball physics and AI opponents.',
+  wizardDescription:
+    'The classic Pong game! Two paddles hit a ball back and forth. First to 5 points wins! A great way to learn about ball physics and AI opponents.',
   difficulty: 'beginner',
   settings: {
     screenWidth: 800,
     screenHeight: 600,
     backgroundColor: '#000000',
     fps: 60,
-    title: 'Pong Game'
+    title: 'Pong Game',
   },
   components: [
     {
@@ -26,8 +27,8 @@ export const pongTemplate: GameTemplate = {
         speed: 7,
         color: '#FFFFFF',
         playerControlled: true,
-        controls: 'wasd'
-      }
+        controls: 'wasd',
+      },
     },
     {
       type: 'paddle',
@@ -40,8 +41,8 @@ export const pongTemplate: GameTemplate = {
         speed: 7,
         color: '#FFFFFF',
         playerControlled: true,
-        controls: 'arrows'
-      }
+        controls: 'arrows',
+      },
     },
     {
       type: 'ball',
@@ -54,8 +55,8 @@ export const pongTemplate: GameTemplate = {
         velocityY: 3,
         color: '#FFFFFF',
         gravity: 0,
-        bounciness: 1.05
-      }
+        bounciness: 1.05,
+      },
     },
     {
       type: 'scoreText',
@@ -65,8 +66,8 @@ export const pongTemplate: GameTemplate = {
         x: 350,
         y: 50,
         fontSize: 48,
-        color: '#FFFFFF'
-      }
+        color: '#FFFFFF',
+      },
     },
     {
       type: 'scoreText',
@@ -76,15 +77,15 @@ export const pongTemplate: GameTemplate = {
         x: 430,
         y: 50,
         fontSize: 48,
-        color: '#FFFFFF'
-      }
-    }
+        color: '#FFFFFF',
+      },
+    },
   ],
   preview: (ctx: CanvasRenderingContext2D) => {
     // Black background
     ctx.fillStyle = '#000000';
     ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-    
+
     // Center line
     ctx.strokeStyle = '#FFFFFF';
     ctx.setLineDash([5, 5]);
@@ -93,17 +94,17 @@ export const pongTemplate: GameTemplate = {
     ctx.lineTo(ctx.canvas.width / 2, ctx.canvas.height);
     ctx.stroke();
     ctx.setLineDash([]);
-    
+
     // Paddles
     ctx.fillStyle = '#FFFFFF';
     ctx.fillRect(40, 200, 12, 80);
     ctx.fillRect(ctx.canvas.width - 52, 200, 12, 80);
-    
+
     // Ball
     ctx.beginPath();
     ctx.arc(ctx.canvas.width / 2, ctx.canvas.height / 2, 8, 0, Math.PI * 2);
     ctx.fill();
-    
+
     // Scores
     ctx.font = '36px monospace';
     ctx.textAlign = 'center';
@@ -301,5 +302,5 @@ while running:
 
 # Quit
 pygame.quit()
-sys.exit()`
+sys.exit()`,
 };

@@ -1,10 +1,12 @@
-import { ClientStorage } from "@lib/storage/client";
+import { ClientStorage } from '@lib/storage/client';
 
 // Environment detection for storage mode
 export const isStaticMode = (): boolean => {
   // Detect if we're in GitHub Pages static mode
-  return import.meta.env.VITE_STATIC_MODE === 'true' || 
-         typeof window !== 'undefined' && window.location.hostname.includes('github.io');
+  return (
+    import.meta.env.VITE_STATIC_MODE === 'true' ||
+    (typeof window !== 'undefined' && window.location.hostname.includes('github.io'))
+  );
 };
 
 // Singleton client storage instance
@@ -34,7 +36,7 @@ export class StorageAdapter {
     return this.storage.getLesson(id);
   }
 
-  // Progress methods  
+  // Progress methods
   async getUserProgress(userId: string = 'anonymous-user') {
     return this.storage.getUserProgress(userId);
   }

@@ -14,7 +14,7 @@ import type { GradeResult, GradingContext, RuleResult, TestSpec } from './types'
  */
 export async function gradeCode(
   context: GradingContext,
-  preExecutionResult?: { output: string; error: string | null },
+  preExecutionResult?: { output: string; error: string | null }
 ): Promise<GradeResult> {
   const { code, step, input, runner, pyodide } = context;
 
@@ -49,8 +49,7 @@ export async function gradeCode(
 
   const tests = step.tests ?? [];
   const allAstOnly =
-    tests.length > 0 &&
-    tests.every((t) => t.mode === 'rules' && t.astRules && !t.runtimeRules);
+    tests.length > 0 && tests.every((t) => t.mode === 'rules' && t.astRules && !t.runtimeRules);
 
   if (executionError && !allAstOnly) {
     // Only short-circuit when at least one test depends on runtime state.
@@ -84,12 +83,7 @@ export async function gradeCode(
   for (const test of tests) {
     if (test.mode === 'rules' && (test.astRules || test.runtimeRules)) {
       const astResults = await validateAst(code, test.astRules, pyodide);
-      const runtimeResults = await validateRuntime(
-        actualOutput,
-        test.runtimeRules,
-        input,
-        pyodide,
-      );
+      const runtimeResults = await validateRuntime(actualOutput, test.runtimeRules, input, pyodide);
       astAll.push(...astResults);
       runtimeAll.push(...runtimeResults);
     } else {
@@ -121,9 +115,7 @@ function matchesExpectedOutput(actual: string, test: TestSpec): boolean {
   return norm(actual) === norm(test.expectedOutput);
 }
 
-function collectStepCaps(
-  tests: TestSpec[],
-): { timeoutMs?: number; maxStdout?: number } {
+function collectStepCaps(tests: TestSpec[]): { timeoutMs?: number; maxStdout?: number } {
   let timeoutMs: number | undefined;
   let maxStdout: number | undefined;
   for (const t of tests) {
@@ -143,7 +135,7 @@ function buildFeedback(
   rules: RuleResult[],
   exactPasses: number,
   exactTotal: number,
-  tests: TestSpec[],
+  tests: TestSpec[]
 ): string {
   if (passed) return 'Perfect — your code passes every check.';
 

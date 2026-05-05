@@ -4,11 +4,11 @@ export const collisionComponent: PygameSystemSpec = {
   id: 'collision',
   name: 'Collision System',
   category: 'world',
-  
+
   assetSlots: {
-    sound: 'audio/sfx/collision.ogg'
+    sound: 'audio/sfx/collision.ogg',
   },
-  
+
   variants: {
     A: {
       name: 'Box Collision',
@@ -96,7 +96,7 @@ class CollisionSystem:
         # Play collision sound
         if '{{sound}}':
             # Would play collision sound here
-            pass`
+            pass`,
     },
     B: {
       name: 'Physics Collision',
@@ -236,12 +236,12 @@ class CollisionSystem:
         # Draw collision pairs
         for obj1, obj2 in self.collision_pairs:
             pygame.draw.line(screen, (255, 0, 0),
-                           obj1.rect.center, obj2.rect.center, 2)`
-    }
+                           obj1.rect.center, obj2.rect.center, 2)`,
+    },
   },
-  
+
   parameters: {
     bounciness: 0.8,
-    friction: 0.1
-  }
+    friction: 0.1,
+  },
 };

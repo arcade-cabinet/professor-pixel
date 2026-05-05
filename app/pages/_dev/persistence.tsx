@@ -11,7 +11,7 @@ import {
   clearSessionState,
   clearAllData,
   setCookie,
-  getCookie
+  getCookie,
 } from '@lib/storage/persistence';
 
 export default function PersistenceTest() {
@@ -25,7 +25,7 @@ export default function PersistenceTest() {
     const sessState = loadSessionState();
     const prefs = loadUserPreferences();
     const cookie = getCookie('test_cookie');
-    
+
     setWizardState(wizState);
     setSessionState(sessState);
     setPreferences(prefs);
@@ -49,9 +49,9 @@ export default function PersistenceTest() {
         gameType: 'platformer',
         currentProject: null,
         completedSteps: ['step1', 'step2'],
-        unlockedEditor: true
+        unlockedEditor: true,
       },
-      updatedAt: new Date().toISOString()
+      updatedAt: new Date().toISOString(),
     });
     refreshStates();
   };
@@ -70,9 +70,9 @@ export default function PersistenceTest() {
         isMinimizing: false,
         minimizeMessage: 'Test message',
         previewMode: 'full',
-        viewMode: 'generated'
+        viewMode: 'generated',
       },
-      updatedAt: new Date().toISOString()
+      updatedAt: new Date().toISOString(),
     });
     refreshStates();
   };
@@ -82,7 +82,7 @@ export default function PersistenceTest() {
       theme: 'dark',
       dismissedTips: ['tip1', 'tip2', 'tip3'],
       soundEnabled: false,
-      autoSaveEnabled: true
+      autoSaveEnabled: true,
     });
     refreshStates();
   };
@@ -95,34 +95,26 @@ export default function PersistenceTest() {
   return (
     <div className="p-8 max-w-4xl mx-auto space-y-6">
       <h1 className="text-2xl font-bold mb-6">Persistence System Test</h1>
-      
+
       <div className="space-y-4">
         <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded">
           <h2 className="font-semibold mb-2">Wizard State (localStorage)</h2>
-          <pre className="text-xs overflow-auto">
-            {JSON.stringify(wizardState, null, 2)}
-          </pre>
+          <pre className="text-xs overflow-auto">{JSON.stringify(wizardState, null, 2)}</pre>
         </div>
 
         <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded">
           <h2 className="font-semibold mb-2">Session State (sessionStorage)</h2>
-          <pre className="text-xs overflow-auto">
-            {JSON.stringify(sessionState, null, 2)}
-          </pre>
+          <pre className="text-xs overflow-auto">{JSON.stringify(sessionState, null, 2)}</pre>
         </div>
 
         <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded">
           <h2 className="font-semibold mb-2">User Preferences (cookies)</h2>
-          <pre className="text-xs overflow-auto">
-            {JSON.stringify(preferences, null, 2)}
-          </pre>
+          <pre className="text-xs overflow-auto">{JSON.stringify(preferences, null, 2)}</pre>
         </div>
 
         <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded">
           <h2 className="font-semibold mb-2">Test Cookie</h2>
-          <pre className="text-xs overflow-auto">
-            {testCookie || 'No test cookie set'}
-          </pre>
+          <pre className="text-xs overflow-auto">{testCookie || 'No test cookie set'}</pre>
         </div>
       </div>
 
@@ -131,16 +123,36 @@ export default function PersistenceTest() {
         <Button onClick={testSaveSessionState}>Save Test Session State</Button>
         <Button onClick={testSavePreferences}>Save Test Preferences</Button>
         <Button onClick={testSetCookie}>Set Test Cookie</Button>
-        <Button onClick={() => { clearWizardState(); refreshStates(); }} variant="destructive">
+        <Button
+          onClick={() => {
+            clearWizardState();
+            refreshStates();
+          }}
+          variant="destructive"
+        >
           Clear Wizard State
         </Button>
-        <Button onClick={() => { clearSessionState(); refreshStates(); }} variant="destructive">
+        <Button
+          onClick={() => {
+            clearSessionState();
+            refreshStates();
+          }}
+          variant="destructive"
+        >
           Clear Session State
         </Button>
-        <Button onClick={() => { clearAllData(); refreshStates(); }} variant="destructive">
+        <Button
+          onClick={() => {
+            clearAllData();
+            refreshStates();
+          }}
+          variant="destructive"
+        >
           Clear All Data
         </Button>
-        <Button onClick={refreshStates} variant="outline">Refresh Display</Button>
+        <Button onClick={refreshStates} variant="outline">
+          Refresh Display
+        </Button>
       </div>
     </div>
   );

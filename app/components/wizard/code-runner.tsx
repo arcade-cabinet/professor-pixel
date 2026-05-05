@@ -35,9 +35,7 @@ export function WizardCodeEditor({ onClose, className = '' }: CodeRunnerProps) {
           )}
         </div>
         <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 h-[calc(100%-5rem)]">
-          <p className="text-gray-500 dark:text-gray-400">
-            Code editor implementation pending...
-          </p>
+          <p className="text-gray-500 dark:text-gray-400">Code editor implementation pending...</p>
         </div>
       </Card>
     </motion.div>
@@ -115,11 +113,7 @@ export function CodeBlockBuilder({ onClose, className = '' }: CodeRunnerProps) {
 }
 
 // Main code runner component that switches between different editors
-export default function WizardCodeRunner({ 
-  type, 
-  onClose,
-  className = '' 
-}: CodeRunnerProps) {
+export default function WizardCodeRunner({ type, onClose, className = '' }: CodeRunnerProps) {
   switch (type) {
     case 'code-editor':
       return <WizardCodeEditor type={type} onClose={onClose} className={className} />;

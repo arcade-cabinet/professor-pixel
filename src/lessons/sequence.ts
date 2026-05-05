@@ -21,10 +21,7 @@ export interface SequencedLessons {
  * students for an authoring mistake. The lessons-roundtrip test catches that
  * case at CI time.
  */
-export function sequenceLessons(
-  lessons: Lesson[],
-  progress: UserProgress[],
-): SequencedLessons {
+export function sequenceLessons(lessons: Lesson[], progress: UserProgress[]): SequencedLessons {
   const completedIds = new Set(progress.filter((p) => p.completed).map((p) => p.lessonId));
   const lessonById = new Map<string, Lesson>(lessons.map((l) => [l.id, l]));
 

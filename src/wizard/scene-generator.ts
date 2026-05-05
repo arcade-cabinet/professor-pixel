@@ -28,39 +28,43 @@ export interface GeneratorOptions {
 }
 
 // Template parameter replacer
-function replaceTemplateParams(code: string, params: Record<string, any>, assets: Record<string, string> = {}): string {
+function replaceTemplateParams(
+  code: string,
+  params: Record<string, any>,
+  assets: Record<string, string> = {}
+): string {
   let result = code;
-  
+
   // Replace parameters
   Object.entries(params).forEach(([key, value]) => {
     const regex = new RegExp(`\{\{${key}\}\}`, 'g');
     result = result.replace(regex, String(value));
   });
-  
+
   // Replace asset references
   Object.entries(assets).forEach(([key, path]) => {
     const regex = new RegExp(`\{\{${key}\}\}`, 'g');
     result = result.replace(regex, `"${path}"`);
   });
-  
+
   return result;
 }
 
 // Helper function to determine component category
 function determineComponentCategory(type: ComponentType): string {
   const categoryMap: Record<ComponentType, string> = {
-    'sprite': 'movement',
-    'platform': 'world',
-    'ball': 'movement',
-    'paddle': 'movement',
-    'enemy': 'combat',
-    'collectible': 'world',
-    'background': 'world',
-    'scoreText': 'ui',
-    'button': 'ui',
-    'particleEffect': 'ui',
-    'timer': 'ui',
-    'healthBar': 'ui'
+    sprite: 'movement',
+    platform: 'world',
+    ball: 'movement',
+    paddle: 'movement',
+    enemy: 'combat',
+    collectible: 'world',
+    background: 'world',
+    scoreText: 'ui',
+    button: 'ui',
+    particleEffect: 'ui',
+    timer: 'ui',
+    healthBar: 'ui',
   };
   return categoryMap[type] || 'world';
 }
@@ -68,33 +72,33 @@ function determineComponentCategory(type: ComponentType): string {
 // Main scene generator function
 export function generatePygameScene(options: GeneratorOptions): string {
   const { sceneConfig, selectedComponents } = options;
-  
+
   // Group components by type for organized code generation
   const componentSystems: Record<string, string[]> = {
     movement: [],
     combat: [],
     ui: [],
-    world: []
+    world: [],
   };
-  
+
   // Process each selected component
-  selectedComponents.forEach(selection => {
+  selectedComponents.forEach((selection) => {
     const component = getComponentById(selection.componentId);
     if (!component) return;
-    
+
     // Generate code using the component's generateCode method
     const componentCode = component.generateCode({
       ...component.defaultProperties,
-      ...selection.parameters
+      ...selection.parameters,
     });
-    
+
     // Determine category based on component type
     const category = determineComponentCategory(component.type);
-    
+
     // Add the generated code to the appropriate system
     componentSystems[category].push(componentCode);
   });
-  
+
   // Generate the complete pygame script
   return `#!/usr/bin/env python3
 """
@@ -224,37 +228,40 @@ ${componentSystems.ui.length > 0 ? '\n# UI Systems\n' + componentSystems.ui.join
 ${componentSystems.world.length > 0 ? '\n# World Systems\n' + componentSystems.world.join('\n') : ''}
 
 # Initialize component systems
-${selectedComponents.map(sel => {
-  const component = getComponentById(sel.componentId);
-  if (!component) return '';
-  
-  // Generate initialization code based on component type
-  switch(component.id) {
-    case 'jump':
-      return 'jump_system = JumpSystem(player)';
-    case 'walk':
-      return 'walk_system = WalkSystem(player)';
-    case 'shooting':
-      return 'shooting_system = ShootingSystem(player)';
-    case 'melee':
-      return 'melee_system = MeleeSystem(player)';
-    case 'health':
-      return 'health_system = HealthSystem(player)';
-    case 'score':
-      return 'score_system = ScoreSystem()';
-    case 'gravity':
-      return 'gravity_system = GravitySystem()\ngravity_system.add_entity(player)';
-    case 'collision':
-      // Check variant to use correct method name
-      if (sel.variant === 'B') {
-        return 'collision_system = CollisionSystem()\nfor platform in platforms:\n    collision_system.add_static_object(platform)';
-      } else {
-        return 'collision_system = CollisionSystem()\nfor platform in platforms:\n    collision_system.add_solid(platform)';
-      }
-    default:
-      return '';
-  }
-}).filter(line => line).join('\n')}
+${selectedComponents
+  .map((sel) => {
+    const component = getComponentById(sel.componentId);
+    if (!component) return '';
+
+    // Generate initialization code based on component type
+    switch (component.id) {
+      case 'jump':
+        return 'jump_system = JumpSystem(player)';
+      case 'walk':
+        return 'walk_system = WalkSystem(player)';
+      case 'shooting':
+        return 'shooting_system = ShootingSystem(player)';
+      case 'melee':
+        return 'melee_system = MeleeSystem(player)';
+      case 'health':
+        return 'health_system = HealthSystem(player)';
+      case 'score':
+        return 'score_system = ScoreSystem()';
+      case 'gravity':
+        return 'gravity_system = GravitySystem()\ngravity_system.add_entity(player)';
+      case 'collision':
+        // Check variant to use correct method name
+        if (sel.variant === 'B') {
+          return 'collision_system = CollisionSystem()\nfor platform in platforms:\n    collision_system.add_static_object(platform)';
+        } else {
+          return 'collision_system = CollisionSystem()\nfor platform in platforms:\n    collision_system.add_solid(platform)';
+        }
+      default:
+        return '';
+    }
+  })
+  .filter((line) => line)
+  .join('\n')}
 
 # Main game loop
 running = True
@@ -277,32 +284,35 @@ while running:
     mouse_pos = pygame.mouse.get_pos()
     
     # Update systems
-${selectedComponents.map(sel => {
-  const component = getComponentById(sel.componentId);
-  if (!component) return '';
-  
-  // Generate update code based on component type
-  switch(component.id) {
-    case 'jump':
-      return '    jump_system.update(keys, dt)';
-    case 'walk':
-      return '    walk_system.update(keys, dt)';
-    case 'shooting':
-      return '    shooting_system.update(keys, mouse_pos, dt)';
-    case 'melee':
-      return '    melee_system.update(keys, enemies, dt)';
-    case 'health':
-      return '    health_system.update(dt)';
-    case 'score':
-      return '    score_system.update(dt)\n    score_system.collect_item(player.rect)';
-    case 'gravity':
-      return '    gravity_system.update(dt, platforms)';
-    case 'collision':
-      return '    collision_system.update()';
-    default:
-      return '';
-  }
-}).filter(line => line).join('\n')}
+${selectedComponents
+  .map((sel) => {
+    const component = getComponentById(sel.componentId);
+    if (!component) return '';
+
+    // Generate update code based on component type
+    switch (component.id) {
+      case 'jump':
+        return '    jump_system.update(keys, dt)';
+      case 'walk':
+        return '    walk_system.update(keys, dt)';
+      case 'shooting':
+        return '    shooting_system.update(keys, mouse_pos, dt)';
+      case 'melee':
+        return '    melee_system.update(keys, enemies, dt)';
+      case 'health':
+        return '    health_system.update(dt)';
+      case 'score':
+        return '    score_system.update(dt)\n    score_system.collect_item(player.rect)';
+      case 'gravity':
+        return '    gravity_system.update(dt, platforms)';
+      case 'collision':
+        return '    collision_system.update()';
+      default:
+        return '';
+    }
+  })
+  .filter((line) => line)
+  .join('\n')}
     
     # Update player position
     if hasattr(player, 'velocity_x'):
@@ -330,24 +340,27 @@ ${selectedComponents.map(sel => {
         enemy.draw(screen)
     
     # Draw component visuals
-${selectedComponents.map(sel => {
-  const component = getComponentById(sel.componentId);
-  if (!component) return '';
-  
-  // Generate draw code for components with visual elements
-  switch(component.id) {
-    case 'shooting':
-      return '    shooting_system.draw(screen)';
-    case 'melee':
-      return '    melee_system.draw(screen)';
-    case 'health':
-      return '    health_system.draw(screen)';
-    case 'score':
-      return '    score_system.draw(screen)';
-    default:
-      return '';
-  }
-}).filter(line => line).join('\n')}
+${selectedComponents
+  .map((sel) => {
+    const component = getComponentById(sel.componentId);
+    if (!component) return '';
+
+    // Generate draw code for components with visual elements
+    switch (component.id) {
+      case 'shooting':
+        return '    shooting_system.draw(screen)';
+      case 'melee':
+        return '    melee_system.draw(screen)';
+      case 'health':
+        return '    health_system.draw(screen)';
+      case 'score':
+        return '    score_system.draw(screen)';
+      default:
+        return '';
+    }
+  })
+  .filter((line) => line)
+  .join('\n')}
     
     # Update display
     pygame.display.flip()
@@ -365,47 +378,47 @@ export function generateTestScene(): string {
       width: 800,
       height: 600,
       fps: 60,
-      backgroundColor: '#1a1a2e'
+      backgroundColor: '#1a1a2e',
     },
     selectedComponents: [
       {
         componentId: 'walk',
         variant: 'A',
         assets: {},
-        parameters: { max_speed: 200 }
+        parameters: { max_speed: 200 },
       },
       {
         componentId: 'jump',
         variant: 'A',
         assets: {},
-        parameters: { jump_power: 15 }
+        parameters: { jump_power: 15 },
       },
       {
         componentId: 'gravity',
         variant: 'A',
         assets: {},
-        parameters: {}
+        parameters: {},
       },
       {
         componentId: 'collision',
         variant: 'A',
         assets: {},
-        parameters: {}
+        parameters: {},
       },
       {
         componentId: 'health',
         variant: 'A',
         assets: {},
-        parameters: { max_health: 100 }
+        parameters: { max_health: 100 },
       },
       {
         componentId: 'score',
         variant: 'A',
         assets: {},
-        parameters: {}
-      }
-    ]
+        parameters: {},
+      },
+    ],
   };
-  
+
   return generatePygameScene(testConfig);
 }

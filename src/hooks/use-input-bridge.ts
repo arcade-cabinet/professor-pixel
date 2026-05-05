@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback } from 'react';
 
 interface InputPrompt {
   prompt: string;
@@ -9,7 +9,7 @@ export function useInputBridge() {
   const [currentPrompt, setCurrentPrompt] = useState<InputPrompt | null>(null);
   const resolverRef = useRef<((value: string | null) => void) | null>(null);
 
-  const open = useCallback((prompt: string = ""): Promise<string | null> => {
+  const open = useCallback((prompt: string = ''): Promise<string | null> => {
     return new Promise((resolve) => {
       // If there's already a pending prompt, reject it
       if (resolverRef.current) {
@@ -39,7 +39,7 @@ export function useInputBridge() {
 
   return {
     isOpen: currentPrompt !== null,
-    prompt: currentPrompt?.prompt || "",
+    prompt: currentPrompt?.prompt || '',
     open,
     handleSubmit,
     handleCancel,

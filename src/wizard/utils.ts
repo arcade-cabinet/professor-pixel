@@ -1,9 +1,4 @@
-import { 
-  WizardNode, 
-  DeviceState, 
-  LayoutMode,
-  SessionActions
-} from './types';
+import { WizardNode, DeviceState, LayoutMode, SessionActions } from './types';
 import { BREAKPOINTS, GAME_TYPE_ICONS } from './constants';
 
 // Device detection utilities
@@ -47,15 +42,15 @@ export const getGameTypeIcon = (optionText: string): any => {
 
 // Check if should show options
 export const shouldShowOptions = (
-  currentNode: WizardNode | null, 
+  currentNode: WizardNode | null,
   dialogueStep: number
 ): boolean => {
   if (!currentNode) return false;
-  
+
   if (currentNode.multiStep) {
     return dialogueStep >= currentNode.multiStep.length - 1 && !!currentNode.options;
   }
-  
+
   return !!currentNode.options;
 };
 
@@ -65,11 +60,11 @@ export const shouldShowContinue = (
   dialogueStep: number
 ): boolean => {
   if (!currentNode) return false;
-  
+
   if (currentNode.multiStep) {
     return dialogueStep < currentNode.multiStep.length - 1;
   }
-  
+
   return false;
 };
 
@@ -80,13 +75,13 @@ export const getCurrentText = (
   sessionActions?: SessionActions
 ): string => {
   if (!currentNode) return '';
-  
+
   if (currentNode.multiStep) {
     return currentNode.multiStep[dialogueStep];
   }
-  
+
   let text = '';
-  
+
   // Handle conditional text based on game type
   if (currentNode.conditionalText && sessionActions?.gameType) {
     const conditionalTexts = currentNode.conditionalText.gameType;
@@ -94,28 +89,29 @@ export const getCurrentText = (
       text = conditionalTexts[sessionActions.gameType] || conditionalTexts.default || '';
     }
   }
-  
+
   // Fall back to regular text if no conditional text
   if (!text) {
     text = currentNode.text || '';
   }
-  
+
   // Add followUp text if present
   if (currentNode.followUp) {
     text = text ? `${text}\n\n${currentNode.followUp}` : currentNode.followUp;
   }
-  
+
   // Add conditional followUp based on game type
   if (currentNode.conditionalFollowUp && sessionActions?.gameType) {
     const conditionalFollowUps = currentNode.conditionalFollowUp.gameType;
     if (conditionalFollowUps) {
-      const followUpText = conditionalFollowUps[sessionActions.gameType] || conditionalFollowUps.default || '';
+      const followUpText =
+        conditionalFollowUps[sessionActions.gameType] || conditionalFollowUps.default || '';
       if (followUpText) {
         text = text ? `${text}\n\n${followUpText}` : followUpText;
       }
     }
   }
-  
+
   return text;
 };
 
@@ -126,36 +122,58 @@ export const updateSessionActionsForOption = (
 ): SessionActions => {
   const updatedActions = {
     ...sessionActions,
-    choices: [...sessionActions.choices, optionText]
+    choices: [...sessionActions.choices, optionText],
   };
 
   // Only update gameType from option text if:
   // 1. We don't already have a gameType set (prevents overriding existing flow)
   // 2. The option text is for initial game type selection (not component variants)
   // Check if this is a game type selection by looking for specific patterns
-  const isGameTypeSelection = !sessionActions.gameType && 
+  const isGameTypeSelection =
+    !sessionActions.gameType &&
     (optionText.match(/^(Platformer|RPG|Dungeon|Racing|Puzzle|Adventure)\s*-/i) ||
-     optionText.match(/^(Jumpy|Epic|Creepy|Speed|Brain|Point-and-Click)/i));
-  
+      optionText.match(/^(Jumpy|Epic|Creepy|Speed|Brain|Point-and-Click)/i));
+
   if (!isGameTypeSelection) {
     // Don't modify gameType if this isn't an initial game selection
     return updatedActions;
   }
-  
+
   // Handle special game type actions based on option text
   const lowerText = optionText.toLowerCase();
-  
-  if (lowerText.includes('platformer') || lowerText.includes('jumpy') || lowerText.includes('bouncy')) {
+
+  if (
+    lowerText.includes('platformer') ||
+    lowerText.includes('jumpy') ||
+    lowerText.includes('bouncy')
+  ) {
     updatedActions.gameType = 'platformer';
-  } else if (lowerText.includes('rpg') || lowerText.includes('sword') || lowerText.includes('sorcery') || lowerText.includes('epic')) {
+  } else if (
+    lowerText.includes('rpg') ||
+    lowerText.includes('sword') ||
+    lowerText.includes('sorcery') ||
+    lowerText.includes('epic')
+  ) {
     updatedActions.gameType = 'rpg';
   } else if (lowerText.includes('dungeon') || lowerText.includes('creepy')) {
     updatedActions.gameType = 'dungeon';
-  } else if (lowerText.includes('racing') || lowerText.includes('speed') || lowerText.includes('turbo')) {
+  } else if (
+    lowerText.includes('racing') ||
+    lowerText.includes('speed') ||
+    lowerText.includes('turbo')
+  ) {
     updatedActions.gameType = 'racing';
-  } else if (lowerText.includes('puzzle') || lowerText.includes('brain') || lowerText.includes('tricky')) {
+  } else if (
+    lowerText.includes('puzzle') ||
+    lowerText.includes('brain') ||
+    lowerText.includes('tricky')
+  ) {
     updatedActions.gameType = 'puzzle';
-  } else if (lowerText.includes('adventure') || lowerText.includes('explore') || lowerText.includes('point-and-click')) {
+  } else if (
+    lowerText.includes('adventure') ||
+    lowerText.includes('explore') ||
+    lowerText.includes('point-and-click')
+  ) {
     updatedActions.gameType = 'adventure';
   }
 
@@ -181,10 +199,7 @@ export const shouldUseOptionGrid = (optionCount: number, isMobile: boolean): boo
 };
 
 // Get button variant based on context
-export const getButtonVariant = (
-  isMobile: boolean,
-  optionCount: number
-): 'outline' | 'default' => {
+export const getButtonVariant = (isMobile: boolean, optionCount: number): 'outline' | 'default' => {
   if (isMobile) return 'outline';
   if (optionCount > 4) return 'outline';
   return 'default';

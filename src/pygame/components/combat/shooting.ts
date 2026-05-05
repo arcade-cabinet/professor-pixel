@@ -4,14 +4,14 @@ export const shootingComponent: PygameSystemSpec = {
   id: 'shooting',
   name: 'Shooting System',
   category: 'combat',
-  
+
   assetSlots: {
     character: 'platformer/characters/player.png',
     projectile: 'platformer/items/projectile.png',
     sound: 'audio/sfx/shoot.ogg',
-    effect: 'effects/muzzle_flash.png'
+    effect: 'effects/muzzle_flash.png',
   },
-  
+
   variants: {
     A: {
       name: 'Rapid Fire',
@@ -90,7 +90,7 @@ class ShootingSystem:
                 pass
             else:
                 pygame.draw.circle(screen, (255, 255, 0), 
-                                 (int(projectile['x']), int(projectile['y'])), 5)`
+                                 (int(projectile['x']), int(projectile['y'])), 5)`,
     },
     B: {
       name: 'Charge Shot',
@@ -205,10 +205,10 @@ class ShootingSystem:
                 
             pygame.draw.circle(screen, color,
                              (int(projectile['x']), int(projectile['y'])),
-                             projectile.get('size', 5))`
-    }
+                             projectile.get('size', 5))`,
+    },
   },
-  
+
   parameters: {
     fire_rate: 5,
     projectile_speed: 300,
@@ -216,6 +216,6 @@ class ShootingSystem:
     max_projectiles: 10,
     projectile_lifetime: 3,
     max_charge: 2,
-    min_charge: 0.3
-  }
+    min_charge: 0.3,
+  },
 };

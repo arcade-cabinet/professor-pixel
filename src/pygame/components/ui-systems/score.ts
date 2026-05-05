@@ -4,12 +4,12 @@ export const scoreComponent: PygameSystemSpec = {
   id: 'score',
   name: 'Score System',
   category: 'ui',
-  
+
   assetSlots: {
     sound: 'audio/sfx/coin.ogg',
-    effect: 'ui/stars.png'
+    effect: 'ui/stars.png',
   },
-  
+
   variants: {
     A: {
       name: 'Point Collector',
@@ -146,7 +146,7 @@ class ScoreSystem:
             color = (255, 255, 0) if not popup['combo'] else (255, 100, 0)
             text = popup_font.render(f"+{popup['value']}", True, color)
             text.set_alpha(alpha)
-            screen.blit(text, (popup['x'], popup['y']))`
+            screen.blit(text, (popup['x'], popup['y']))`,
     },
     B: {
       name: 'Wave Survival',
@@ -296,15 +296,15 @@ class ScoreSystem:
             text = event_font.render(event['text'], True, color)
             text.set_alpha(alpha)
             text_rect = text.get_rect(center=(event['x'], event['y']))
-            screen.blit(text, text_rect)`
-    }
+            screen.blit(text, text_rect)`,
+    },
   },
-  
+
   parameters: {
     high_score: 0,
     combo_duration: 3,
     max_multiplier: 5,
     time_bonus_interval: 10,
-    wave_bonus: 100
-  }
+    wave_bonus: 100,
+  },
 };

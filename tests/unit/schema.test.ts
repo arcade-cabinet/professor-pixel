@@ -1,18 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import {
-  LessonSchema,
-  ProjectSchema,
-  UserProgressSchema,
-  UserSchema,
-} from '@lib/types/schema';
+import { LessonSchema, ProjectSchema, UserProgressSchema, UserSchema } from '@lib/types/schema';
 
 describe('Zod schemas', () => {
   it('validates a well-formed user', () => {
-    expect(() =>
-      UserSchema.parse({ id: 'u1', username: 'pixel-fan' }),
-    ).not.toThrow();
+    expect(() => UserSchema.parse({ id: 'u1', username: 'pixel-fan' })).not.toThrow();
   });
 
   it('rejects users missing required fields with field-path detail', () => {
@@ -88,19 +81,14 @@ describe('Zod schemas', () => {
   });
 
   it('parses the shipped public/api/static/lessons.json', () => {
-    const path = resolve(
-      __dirname,
-      '..',
-      '..',
-      'public/api/static/lessons.json',
-    );
+    const path = resolve(__dirname, '..', '..', 'public/api/static/lessons.json');
     const raw = JSON.parse(readFileSync(path, 'utf8')) as unknown;
     const parsed = LessonSchema.array().safeParse(raw);
     if (!parsed.success) {
       // surface the first error so the test failure is actionable
       const first = parsed.error.issues[0];
       throw new Error(
-        `lessons.json failed validation at ${first.path.join('.')}: ${first.message}`,
+        `lessons.json failed validation at ${first.path.join('.')}: ${first.message}`
       );
     }
     expect(parsed.data.length).toBeGreaterThan(0);

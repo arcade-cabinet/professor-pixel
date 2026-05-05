@@ -37,7 +37,7 @@ class RenderingSurface {
     this.height = height;
     this.size = [width, height];
     this.isMainSurface = isMainSurface;
-    
+
     // Create image data for surface
     if (typeof OffscreenCanvas !== 'undefined') {
       try {
@@ -52,33 +52,45 @@ class RenderingSurface {
     }
   }
 
-  get_width() { return this.width; }
-  get_height() { return this.height; }
-  get_size() { return this.size; }
+  get_width() {
+    return this.width;
+  }
+  get_height() {
+    return this.height;
+  }
+  get_size() {
+    return this.size;
+  }
   get_rect() {
     return new PygameRect(0, 0, this.width, this.height);
   }
-  convert() { return this; }
-  convert_alpha() { return this; }
-  
+  convert() {
+    return this;
+  }
+  convert_alpha() {
+    return this;
+  }
+
   // Implement fill method for surface clearing
   fill(color: [number, number, number] | [number, number, number, number]) {
     if (this.isMainSurface && canvasContext) {
-      const rgbColor = Array.isArray(color) && color.length >= 3 ? 
-        `rgb(${color[0]}, ${color[1]}, ${color[2]})` : 'rgb(0, 0, 0)';
+      const rgbColor =
+        Array.isArray(color) && color.length >= 3
+          ? `rgb(${color[0]}, ${color[1]}, ${color[2]})`
+          : 'rgb(0, 0, 0)';
       frameBuffer.push({ type: 'fill', args: [rgbColor] });
     }
     return null;
   }
-  
+
   // Implement blit method for drawing surfaces onto other surfaces
   blit(source: RenderingSurface, dest: [number, number] | PygameRect) {
     if (this.isMainSurface && canvasContext) {
       const x = Array.isArray(dest) ? dest[0] : dest.x;
       const y = Array.isArray(dest) ? dest[1] : dest.y;
-      frameBuffer.push({ 
-        type: 'blit', 
-        args: [source.width, source.height, x, y] 
+      frameBuffer.push({
+        type: 'blit',
+        args: [source.width, source.height, x, y],
       });
     }
     return null;
@@ -115,10 +127,12 @@ class PygameRect {
 
   // Collision detection methods
   colliderect(other: PygameRect): boolean {
-    return !(this.right <= other.left || 
-             this.left >= other.right || 
-             this.bottom <= other.top || 
-             this.top >= other.bottom);
+    return !(
+      this.right <= other.left ||
+      this.left >= other.right ||
+      this.bottom <= other.top ||
+      this.top >= other.bottom
+    );
   }
 
   contains(point: [number, number] | PygameRect): boolean {
@@ -126,8 +140,12 @@ class PygameRect {
       const [px, py] = point;
       return px >= this.left && px < this.right && py >= this.top && py < this.bottom;
     } else {
-      return point.left >= this.left && point.right <= this.right &&
-             point.top >= this.top && point.bottom <= this.bottom;
+      return (
+        point.left >= this.left &&
+        point.right <= this.right &&
+        point.top >= this.top &&
+        point.bottom <= this.bottom
+      );
     }
   }
 
@@ -136,10 +154,7 @@ class PygameRect {
   }
 
   inflate(x: number, y: number): PygameRect {
-    return new PygameRect(
-      this.x - x/2, this.y - y/2, 
-      this.width + x, this.height + y
-    );
+    return new PygameRect(this.x - x / 2, this.y - y / 2, this.width + x, this.height + y);
   }
 }
 
@@ -152,16 +167,18 @@ class PygameSound {
     this.filename = filename;
   }
 
-  play() { 
+  play() {
     console.log(`🔊 Playing sound: ${this.filename} (volume: ${this.volume})`);
   }
-  stop() { 
+  stop() {
     console.log(`🔇 Stopping sound: ${this.filename}`);
   }
-  set_volume(vol: number) { 
+  set_volume(vol: number) {
     this.volume = Math.max(0, Math.min(1, vol));
   }
-  get_volume() { return this.volume; }
+  get_volume() {
+    return this.volume;
+  }
 }
 
 // Clock class for frame timing
@@ -174,10 +191,10 @@ class PygameClock {
     const now = performance.now();
     const deltaTime = now - this.lastTick;
     this.lastTick = now;
-    
+
     // Update global FPS tracking
     currentFPS = Math.round(1000 / Math.max(deltaTime, 1));
-    
+
     // Return milliseconds since last tick
     return deltaTime;
   }
@@ -201,24 +218,28 @@ class PygameFont {
     this.fontFamily = fontname || 'Arial, sans-serif';
   }
 
-  render(text: string, antialias: boolean = true, color: [number, number, number] = [255, 255, 255]): RenderingSurface {
+  render(
+    text: string,
+    antialias: boolean = true,
+    color: [number, number, number] = [255, 255, 255]
+  ): RenderingSurface {
     // Calculate approximate text dimensions
     const avgCharWidth = this.size * 0.6; // Rough approximation
     const textWidth = Math.ceil(text.length * avgCharWidth);
     const textHeight = Math.ceil(this.size * 1.2);
-    
+
     const surface = new RenderingSurface(textWidth, textHeight);
-    
+
     // If rendering to main surface, add to frame buffer
     if (canvasContext) {
       const rgbColor = `rgb(${color[0]}, ${color[1]}, ${color[2]})`;
       // Store text rendering command in frame buffer for later execution
-      frameBuffer.push({ 
-        type: 'text' as any, 
-        args: [text, 0, 0, rgbColor, `${this.size}px ${this.fontFamily}`] 
+      frameBuffer.push({
+        type: 'text' as any,
+        args: [text, 0, 0, rgbColor, `${this.size}px ${this.fontFamily}`],
       });
     }
-    
+
     return surface;
   }
 
@@ -269,56 +290,91 @@ export function createPygameEnvironment() {
         flushFrameBuffer();
         frameBuffer = [];
       },
-      set_caption: (title: string) => console.log(`🏷️ Window caption: ${title}`)
+      set_caption: (title: string) => console.log(`🏷️ Window caption: ${title}`),
     },
     draw: {
-      circle: (surface: RenderingSurface, color: [number, number, number], center: [number, number], radius: number) => {
+      circle: (
+        surface: RenderingSurface,
+        color: [number, number, number],
+        center: [number, number],
+        radius: number
+      ) => {
         if (surface.isMainSurface && canvasContext) {
           const rgbColor = `rgb(${color[0]}, ${color[1]}, ${color[2]})`;
           frameBuffer.push({ type: 'circle', args: [rgbColor, center[0], center[1], radius] });
         }
         return null;
       },
-      rect: (surface: RenderingSurface, color: [number, number, number], rect: [number, number, number, number] | PygameRect) => {
+      rect: (
+        surface: RenderingSurface,
+        color: [number, number, number],
+        rect: [number, number, number, number] | PygameRect
+      ) => {
         if (surface.isMainSurface && canvasContext) {
           const rgbColor = `rgb(${color[0]}, ${color[1]}, ${color[2]})`;
           if (Array.isArray(rect)) {
-            frameBuffer.push({ type: 'rect', args: [rgbColor, rect[0], rect[1], rect[2], rect[3]] });
+            frameBuffer.push({
+              type: 'rect',
+              args: [rgbColor, rect[0], rect[1], rect[2], rect[3]],
+            });
           } else {
-            frameBuffer.push({ type: 'rect', args: [rgbColor, rect.x, rect.y, rect.width, rect.height] });
+            frameBuffer.push({
+              type: 'rect',
+              args: [rgbColor, rect.x, rect.y, rect.width, rect.height],
+            });
           }
         }
         return null;
       },
-      line: (surface: RenderingSurface, color: [number, number, number], start: [number, number], end: [number, number], width: number = 1) => {
+      line: (
+        surface: RenderingSurface,
+        color: [number, number, number],
+        start: [number, number],
+        end: [number, number],
+        width: number = 1
+      ) => {
         if (surface.isMainSurface && canvasContext) {
           const rgbColor = `rgb(${color[0]}, ${color[1]}, ${color[2]})`;
-          frameBuffer.push({ type: 'line', args: [rgbColor, start[0], start[1], end[0], end[1], width] });
+          frameBuffer.push({
+            type: 'line',
+            args: [rgbColor, start[0], start[1], end[0], end[1], width],
+          });
         }
         return null;
       },
-      polygon: (surface: RenderingSurface, color: [number, number, number], points: [number, number][]) => {
+      polygon: (
+        surface: RenderingSurface,
+        color: [number, number, number],
+        points: [number, number][]
+      ) => {
         if (surface.isMainSurface && canvasContext) {
           const rgbColor = `rgb(${color[0]}, ${color[1]}, ${color[2]})`;
           frameBuffer.push({ type: 'polygon' as any, args: [rgbColor, points] });
         }
         return null;
       },
-      ellipse: (surface: RenderingSurface, color: [number, number, number], rect: [number, number, number, number]) => {
+      ellipse: (
+        surface: RenderingSurface,
+        color: [number, number, number],
+        rect: [number, number, number, number]
+      ) => {
         if (surface.isMainSurface && canvasContext) {
           const rgbColor = `rgb(${color[0]}, ${color[1]}, ${color[2]})`;
-          frameBuffer.push({ type: 'ellipse' as any, args: [rgbColor, rect[0], rect[1], rect[2], rect[3]] });
+          frameBuffer.push({
+            type: 'ellipse' as any,
+            args: [rgbColor, rect[0], rect[1], rect[2], rect[3]],
+          });
         }
         return null;
-      }
+      },
     },
     font: {
       Font: PygameFont,
-      SysFont: (name: string | null, size: number) => new PygameFont(name, size)
+      SysFont: (name: string | null, size: number) => new PygameFont(name, size),
     },
     time: {
       Clock: PygameClock,
-      get_ticks: () => performance.now()
+      get_ticks: () => performance.now(),
     },
     mixer: {
       init: () => console.log('🔊 Mixer initialized'),
@@ -328,22 +384,27 @@ export function createPygameEnvironment() {
         load: (file: string) => console.log(`🎵 Loading music: ${file}`),
         play: (loops: number = -1) => console.log('🎵 Playing music'),
         stop: () => console.log('🎵 Music stopped'),
-        set_volume: (vol: number) => console.log(`🎵 Music volume: ${vol}`)
-      }
+        set_volume: (vol: number) => console.log(`🎵 Music volume: ${vol}`),
+      },
     },
     event: {
       get: () => [],
       poll: () => null,
-      Event: (type: number, dict: any = {}) => ({ type, ...dict })
+      Event: (type: number, dict: any = {}) => ({ type, ...dict }),
     },
     key: {
       get_pressed: () => new Array(512).fill(false),
-      name: (key: number) => `Key${key}`
+      name: (key: number) => `Key${key}`,
     },
     mouse: {
       get_pos: () => [0, 0],
       get_pressed: () => [false, false, false],
-      set_cursor: (size: [number, number], hotspot: [number, number], xormasks: any, andmasks: any) => null
+      set_cursor: (
+        size: [number, number],
+        hotspot: [number, number],
+        xormasks: any,
+        andmasks: any
+      ) => null,
     },
     Surface: RenderingSurface,
     Rect: PygameRect,
@@ -355,14 +416,14 @@ export function createPygameEnvironment() {
       },
       save: (surface: RenderingSurface, filename: string) => {
         console.log(`💾 Saving image: ${filename}`);
-      }
+      },
     },
     transform: {
       scale: (surface: RenderingSurface, size: [number, number]) => {
         return new RenderingSurface(size[0], size[1]);
       },
       rotate: (surface: RenderingSurface, angle: number) => surface,
-      flip: (surface: RenderingSurface, xbool: boolean, ybool: boolean) => surface
+      flip: (surface: RenderingSurface, xbool: boolean, ybool: boolean) => surface,
     },
     sprite: {
       Sprite: class {
@@ -373,21 +434,27 @@ export function createPygameEnvironment() {
       },
       Group: class {
         sprites: any[] = [];
-        add(sprite: any) { this.sprites.push(sprite); }
-        remove(sprite: any) { 
+        add(sprite: any) {
+          this.sprites.push(sprite);
+        }
+        remove(sprite: any) {
           const idx = this.sprites.indexOf(sprite);
           if (idx > -1) this.sprites.splice(idx, 1);
         }
-        empty() { this.sprites = []; }
-        update() { this.sprites.forEach(s => s.update()); }
+        empty() {
+          this.sprites = [];
+        }
+        update() {
+          this.sprites.forEach((s) => s.update());
+        }
         draw(surface: RenderingSurface) {
-          this.sprites.forEach(s => {
+          this.sprites.forEach((s) => {
             if (s.image && s.rect) {
               surface.blit(s.image, [s.rect.x, s.rect.y]);
             }
           });
         }
-      }
+      },
     },
     locals: {
       QUIT: 12,
@@ -409,7 +476,7 @@ export function createPygameEnvironment() {
       K_s: 115,
       K_x: 120,
       K_LSHIFT: 304,
-      K_RSHIFT: 303
+      K_RSHIFT: 303,
     },
     math: Math,
     random: {
@@ -422,13 +489,13 @@ export function createPygameEnvironment() {
           [arr[i], arr[j]] = [arr[j], arr[i]];
         }
         return arr;
-      }
-    }
+      },
+    },
   };
-  
+
   // Add pygame.locals shortcuts
   Object.assign(pygame, pygame.locals);
-  
+
   return pygame;
 }
 
@@ -444,13 +511,13 @@ export function flushFrameBuffer() {
         case 'clear':
           canvasContext.clearRect(0, 0, canvasContext.canvas.width, canvasContext.canvas.height);
           break;
-          
+
         case 'fill':
           const [fillColor] = command.args;
           canvasContext.fillStyle = fillColor;
           canvasContext.fillRect(0, 0, canvasContext.canvas.width, canvasContext.canvas.height);
           break;
-          
+
         case 'circle':
           const [circleColor, centerX, centerY, radius] = command.args;
           canvasContext.fillStyle = circleColor;
@@ -458,13 +525,13 @@ export function flushFrameBuffer() {
           canvasContext.arc(centerX, centerY, radius, 0, 2 * Math.PI);
           canvasContext.fill();
           break;
-          
+
         case 'rect':
           const [rectColor, rectX, rectY, rectWidth, rectHeight] = command.args;
           canvasContext.fillStyle = rectColor;
           canvasContext.fillRect(rectX, rectY, rectWidth, rectHeight);
           break;
-          
+
         case 'line':
           const [lineColor, startX, startY, endX, endY, lineWidth] = command.args;
           canvasContext.strokeStyle = lineColor;
@@ -474,7 +541,7 @@ export function flushFrameBuffer() {
           canvasContext.lineTo(endX, endY);
           canvasContext.stroke();
           break;
-          
+
         case 'polygon' as any:
           const [polyColor, points] = command.args;
           if (points && points.length > 0) {
@@ -488,7 +555,7 @@ export function flushFrameBuffer() {
             canvasContext.fill();
           }
           break;
-          
+
         case 'ellipse' as any:
           const [ellipseColor, ellipseX, ellipseY, ellipseWidth, ellipseHeight] = command.args;
           canvasContext.fillStyle = ellipseColor;
@@ -498,18 +565,20 @@ export function flushFrameBuffer() {
             ellipseY + ellipseHeight / 2,
             ellipseWidth / 2,
             ellipseHeight / 2,
-            0, 0, 2 * Math.PI
+            0,
+            0,
+            2 * Math.PI
           );
           canvasContext.fill();
           break;
-          
+
         case 'text':
           const [text, textX, textY, textColor, font] = command.args;
           canvasContext.fillStyle = textColor;
           canvasContext.font = font;
           canvasContext.fillText(text, textX, textY);
           break;
-          
+
         case 'blit':
           // For now, just draw a placeholder rectangle for blits
           const [blitWidth, blitHeight, blitX, blitY] = command.args;
@@ -543,13 +612,15 @@ function parseColor(color: any): string {
 // Enhanced pygame shim object with real rendering
 export const pygameShim = {
   // Core pygame functions
-  init() { return true; },
-  quit() { 
+  init() {
+    return true;
+  },
+  quit() {
     isRenderingActive = false;
     canvasContext = null;
     frameBuffer = [];
   },
-  
+
   // Time module with Clock
   time: {
     Clock() {
@@ -561,20 +632,22 @@ export const pygameShim = {
     wait(milliseconds: number) {
       // Non-blocking simulation of wait
       console.log(`⏱️ Pygame wait: ${milliseconds}ms (simulated)`);
-    }
+    },
   },
-  
+
   // Font module
   font: {
-    init() { return true; },
+    init() {
+      return true;
+    },
     Font(fontname: string | null = null, size: number = 36) {
       return new PygameFont(fontname, size);
     },
     get_default_font() {
       return 'Arial';
-    }
+    },
   },
-  
+
   // Display module with real surface creation
   display: {
     set_mode(size: [number, number] = [800, 600]) {
@@ -599,7 +672,7 @@ export const pygameShim = {
     },
     get_surface() {
       return new RenderingSurface(800, 600, true);
-    }
+    },
   },
 
   // Image module
@@ -607,13 +680,17 @@ export const pygameShim = {
     load(filename: string) {
       console.log(`🖼️ Loading image: ${filename} (placeholder surface created)`);
       return new RenderingSurface(64, 64);
-    }
+    },
   },
 
   // Enhanced mixer module
   mixer: {
-    init() { return true; },
-    quit() { console.log('🔇 Audio mixer stopped'); },
+    init() {
+      return true;
+    },
+    quit() {
+      console.log('🔇 Audio mixer stopped');
+    },
     Sound(file: string) {
       return new PygameSound(file);
     },
@@ -629,8 +706,8 @@ export const pygameShim = {
       },
       set_volume(volume: number) {
         console.log(`🔊 Music volume: ${volume}`);
-      }
-    }
+      },
+    },
   },
 
   // Enhanced draw module with real rendering
@@ -638,9 +715,9 @@ export const pygameShim = {
     circle(surface: RenderingSurface, color: any, pos: [number, number], radius: number) {
       if (surface.isMainSurface && isRenderingActive) {
         const cssColor = parseColor(color);
-        frameBuffer.push({ 
-          type: 'circle', 
-          args: [cssColor, pos[0], pos[1], radius] 
+        frameBuffer.push({
+          type: 'circle',
+          args: [cssColor, pos[0], pos[1], radius],
         });
       }
     },
@@ -648,7 +725,7 @@ export const pygameShim = {
       if (surface.isMainSurface && isRenderingActive) {
         const cssColor = parseColor(color);
         let x, y, width, height;
-        
+
         if (Array.isArray(rect) && rect.length >= 4) {
           [x, y, width, height] = rect;
         } else if (rect && typeof rect === 'object') {
@@ -657,21 +734,28 @@ export const pygameShim = {
           width = rect.width || rect.w || 50;
           height = rect.height || rect.h || 50;
         } else {
-          x = y = 0; width = height = 50;
+          x = y = 0;
+          width = height = 50;
         }
-        
-        frameBuffer.push({ 
-          type: 'rect', 
-          args: [cssColor, x, y, width, height] 
+
+        frameBuffer.push({
+          type: 'rect',
+          args: [cssColor, x, y, width, height],
         });
       }
     },
-    line(surface: RenderingSurface, color: any, start: [number, number], end: [number, number], width: number = 1) {
+    line(
+      surface: RenderingSurface,
+      color: any,
+      start: [number, number],
+      end: [number, number],
+      width: number = 1
+    ) {
       if (surface.isMainSurface && isRenderingActive) {
         const cssColor = parseColor(color);
-        frameBuffer.push({ 
-          type: 'line', 
-          args: [cssColor, start[0], start[1], end[0], end[1], width] 
+        frameBuffer.push({
+          type: 'line',
+          args: [cssColor, start[0], start[1], end[0], end[1], width],
         });
       }
     },
@@ -682,37 +766,39 @@ export const pygameShim = {
         for (let i = 0; i < points.length; i++) {
           const start = points[i];
           const end = points[(i + 1) % points.length];
-          frameBuffer.push({ 
-            type: 'line', 
-            args: [cssColor, start[0], start[1], end[0], end[1], 1] 
+          frameBuffer.push({
+            type: 'line',
+            args: [cssColor, start[0], start[1], end[0], end[1], 1],
           });
         }
       }
-    }
+    },
   },
 
   // Event module with basic event simulation
   event: {
-    get() { 
+    get() {
       // Return empty events list - real event handling would need browser integration
-      return []; 
+      return [];
     },
-    pump() { /* Process events - no-op for simulation */ },
+    pump() {
+      /* Process events - no-op for simulation */
+    },
     Event(type: number, dict: any = {}) {
       return { type, ...dict };
-    }
+    },
   },
 
   // Key module
   key: {
-    get_pressed() { 
+    get_pressed() {
       // Return array of 512 False values to simulate no keys pressed
       // This prevents IndexError when accessing key indices like pygame.K_LEFT (276)
       return new Array(512).fill(false);
     },
     get_focused() {
       return true; // Assume window has focus
-    }
+    },
   },
 
   // Transform module
@@ -729,7 +815,7 @@ export const pygameShim = {
       // Return same surface for now
       console.log(`🔄 Flipping surface (x:${xbool}, y:${ybool}) (placeholder)`);
       return surface;
-    }
+    },
   },
 
   // Common color constants and utilities
@@ -741,13 +827,13 @@ export const pygameShim = {
     BLACK: [0, 0, 0],
     YELLOW: [255, 255, 0],
     CYAN: [0, 255, 255],
-    MAGENTA: [255, 0, 255]
+    MAGENTA: [255, 0, 255],
   },
-  
+
   // Rect constructor
   Rect(x: number = 0, y: number = 0, width: number = 0, height: number = 0) {
     return new PygameRect(x, y, width, height);
-  }
+  },
 };
 
 // Function to register pygame shim in Pyodide
@@ -795,9 +881,9 @@ except Exception as e:
 
 json.dumps(verification)
 `);
-    
+
     const result = JSON.parse(verificationResult);
-    
+
     if (result.pygame_available && result.basic_functionality) {
       console.log('✅ Pygame shim verification successful');
       return true;
@@ -811,9 +897,9 @@ json.dumps(verification)
   }
 }
 
-export function getPygameStatus(pyodide: any): { 
-  isAvailable: boolean; 
-  modules: string[]; 
+export function getPygameStatus(pyodide: any): {
+  isAvailable: boolean;
+  modules: string[];
   errors: string[];
   capabilities: string[];
   renderingBridge: boolean;
@@ -823,7 +909,7 @@ export function getPygameStatus(pyodide: any): {
     modules: [] as string[],
     errors: [] as string[],
     capabilities: [] as string[],
-    renderingBridge: false
+    renderingBridge: false,
   };
 
   if (!pyodide) {
@@ -910,7 +996,7 @@ except Exception as e:
 
 json.dumps(status)
 `);
-    
+
     return JSON.parse(statusResult);
   } catch (error) {
     defaultStatus.errors.push(`Error during comprehensive pygame status check: ${error}`);
@@ -921,42 +1007,49 @@ json.dumps(status)
 export function registerPygameShim(pyodide: any) {
   try {
     console.log('Registering enhanced pygame shim with real rendering...');
-    
+
     // Set up JavaScript bridge functions for real rendering
     const drawCircleJS = (color: string, x: number, y: number, radius: number) => {
       if (canvasContext) {
         frameBuffer.push({ type: 'circle', args: [color, x, y, radius] });
       }
     };
-    
+
     const drawRectJS = (color: string, x: number, y: number, width: number, height: number) => {
       if (canvasContext) {
         frameBuffer.push({ type: 'rect', args: [color, x, y, width, height] });
       }
     };
-    
-    const drawLineJS = (color: string, startX: number, startY: number, endX: number, endY: number, width: number) => {
+
+    const drawLineJS = (
+      color: string,
+      startX: number,
+      startY: number,
+      endX: number,
+      endY: number,
+      width: number
+    ) => {
       if (canvasContext) {
         frameBuffer.push({ type: 'line', args: [color, startX, startY, endX, endY, width] });
       }
     };
-    
+
     const fillSurfaceJS = (color: string) => {
       if (canvasContext) {
         frameBuffer.push({ type: 'fill', args: [color] });
       }
     };
-    
+
     const clearSurfaceJS = () => {
       if (canvasContext) {
         frameBuffer.push({ type: 'clear', args: [] });
       }
     };
-    
+
     const flushFrameJS = () => {
       flushFrameBuffer();
     };
-    
+
     // Expose JavaScript functions to Python through pyodide
     pyodide.globals.set('js_draw_circle', drawCircleJS);
     pyodide.globals.set('js_draw_rect', drawRectJS);
@@ -964,7 +1057,7 @@ export function registerPygameShim(pyodide: any) {
     pyodide.globals.set('js_fill_surface', fillSurfaceJS);
     pyodide.globals.set('js_clear_surface', clearSurfaceJS);
     pyodide.globals.set('js_flush_frame', flushFrameJS);
-    
+
     // Create enhanced pygame module with real rendering capabilities
     pyodide.runPython(`
 import sys
@@ -1334,19 +1427,19 @@ sys.modules['pygame'] = pygame
 
 print("✅ Enhanced pygame shim with rendering bridge ready")
 `);
-    
+
     // Verify the enhanced shim was properly registered
     const verification = verifyPygameShimReady(pyodide);
-    
+
     if (verification) {
-      console.log("✅ Enhanced pygame shim registered and verified successfully");
+      console.log('✅ Enhanced pygame shim registered and verified successfully');
       return true;
     } else {
-      console.warn("⚠️ Enhanced pygame shim registered but verification failed");
+      console.warn('⚠️ Enhanced pygame shim registered but verification failed');
       return false;
     }
   } catch (error) {
-    console.error("❌ Failed to register enhanced pygame shim:", error);
+    console.error('❌ Failed to register enhanced pygame shim:', error);
     return false;
   }
 }
@@ -1354,7 +1447,7 @@ print("✅ Enhanced pygame shim with rendering bridge ready")
 export function simulatePygame(code: string): SimulationResult {
   const result: SimulationResult = {
     fps: 60,
-    objects: []
+    objects: [],
   };
 
   // Safety guard: Validate input
@@ -1366,30 +1459,32 @@ export function simulatePygame(code: string): SimulationResult {
   // Simple simulation based on code analysis with enhanced safety
   try {
     console.log('simulatePygame: Analyzing code for pygame drawing commands');
-    
+
     // Extract basic pygame drawing commands from code
     const lines = code.split('\n');
     let drawingCommandsFound = 0;
-    
+
     for (const line of lines) {
       const trimmed = line.trim();
-      
+
       // Look for circle drawing with enhanced safety
       if (trimmed.includes('pygame.draw.circle') || trimmed.includes('draw.circle')) {
         drawingCommandsFound++;
         try {
-          const match = trimmed.match(/circle\([^,]+,\s*([^,]+),\s*\(([^,]+),\s*([^)]+)\),\s*([^)]+)/);
+          const match = trimmed.match(
+            /circle\([^,]+,\s*([^,]+),\s*\(([^,]+),\s*([^)]+)\),\s*([^)]+)/
+          );
           if (match) {
             const x = Math.max(0, Math.min(800, parseFloat(match[2]) || 400));
             const y = Math.max(0, Math.min(600, parseFloat(match[3]) || 300));
             const radius = Math.max(1, Math.min(100, parseFloat(match[4]) || 25));
-            
+
             result.objects.push({
               type: 'circle',
               x: x,
               y: y,
               color: getColorFromCode(line, '#0066FF'),
-              size: radius
+              size: radius,
             });
           } else {
             // Default circle if we can't parse exactly
@@ -1398,7 +1493,7 @@ export function simulatePygame(code: string): SimulationResult {
               x: 400,
               y: 300,
               color: '#0066FF',
-              size: 25
+              size: 25,
             });
           }
         } catch (circleError) {
@@ -1409,28 +1504,30 @@ export function simulatePygame(code: string): SimulationResult {
             x: 400,
             y: 300,
             color: '#0066FF',
-            size: 25
+            size: 25,
           });
         }
       }
-      
+
       // Look for rectangle drawing with enhanced safety
       if (trimmed.includes('pygame.draw.rect') || trimmed.includes('draw.rect')) {
         drawingCommandsFound++;
         try {
           // Try to parse rect coordinates if possible
-          const rectMatch = trimmed.match(/rect\([^,]+,\s*([^,]+),\s*\(([^,]+),\s*([^,]+),\s*([^,]+),\s*([^)]+)\)/);
+          const rectMatch = trimmed.match(
+            /rect\([^,]+,\s*([^,]+),\s*\(([^,]+),\s*([^,]+),\s*([^,]+),\s*([^)]+)\)/
+          );
           if (rectMatch) {
             const x = Math.max(0, Math.min(800, parseFloat(rectMatch[2]) || 300));
             const y = Math.max(0, Math.min(600, parseFloat(rectMatch[3]) || 200));
             const width = Math.max(1, Math.min(200, parseFloat(rectMatch[4]) || 50));
-            
+
             result.objects.push({
               type: 'rect',
               x: x,
               y: y,
               color: getColorFromCode(line, '#FF0000'),
-              size: width
+              size: width,
             });
           } else {
             // Default rect
@@ -1439,7 +1536,7 @@ export function simulatePygame(code: string): SimulationResult {
               x: 300,
               y: 200,
               color: '#FF0000',
-              size: 50
+              size: 50,
             });
           }
         } catch (rectError) {
@@ -1450,35 +1547,38 @@ export function simulatePygame(code: string): SimulationResult {
             x: 300,
             y: 200,
             color: '#FF0000',
-            size: 50
+            size: 50,
           });
         }
       }
     }
-    
+
     // If movement variables are present, simulate animation
     if (code.includes('speed') || code.includes('velocity')) {
-      result.objects = result.objects.map(obj => ({
+      result.objects = result.objects.map((obj) => ({
         ...obj,
-        x: obj.x + (Math.sin(Date.now() / 1000) * 50),
-        y: obj.y + (Math.cos(Date.now() / 1000) * 30)
+        x: obj.x + Math.sin(Date.now() / 1000) * 50,
+        y: obj.y + Math.cos(Date.now() / 1000) * 30,
       }));
     }
 
-    console.log(`simulatePygame: Found ${drawingCommandsFound} drawing commands, generated ${result.objects.length} objects`);
-    
+    console.log(
+      `simulatePygame: Found ${drawingCommandsFound} drawing commands, generated ${result.objects.length} objects`
+    );
+
     // If no drawing commands found but pygame is imported, add a placeholder
     if (drawingCommandsFound === 0 && (code.includes('import pygame') || code.includes('pygame'))) {
-      console.log('simulatePygame: Pygame project detected but no drawing commands found, adding placeholder');
+      console.log(
+        'simulatePygame: Pygame project detected but no drawing commands found, adding placeholder'
+      );
       result.objects.push({
         type: 'circle',
         x: 400,
         y: 300,
         color: '#888888',
-        size: 30
+        size: 30,
       });
     }
-    
   } catch (error) {
     console.error('Error simulating pygame code:', error);
     // Add error indicator object
@@ -1487,7 +1587,7 @@ export function simulatePygame(code: string): SimulationResult {
       x: 400,
       y: 300,
       color: '#FF0000',
-      size: 20
+      size: 20,
     });
   }
 
@@ -1502,14 +1602,14 @@ function getColorFromCode(line: string, defaultColor: string): string {
   if (line.includes('WHITE') || line.includes('(255, 255, 255)')) return '#FFFFFF';
   if (line.includes('BLACK') || line.includes('(0, 0, 0)')) return '#000000';
   if (line.includes('YELLOW') || line.includes('(255, 255, 0)')) return '#FFFF00';
-  
+
   return defaultColor;
 }
 
 // Enhanced pygame error handler for better user experience
 export function handlePygameError(error: Error, context: string): string {
   const errorMessage = error.message.toLowerCase();
-  
+
   if (errorMessage.includes('pygame')) {
     if (errorMessage.includes('display')) {
       return `🎮 Display Error: ${error.message}\n\n💡 This pygame project tried to create a display window. In the browser, graphics are simulated for preview purposes.`;
@@ -1523,11 +1623,11 @@ export function handlePygameError(error: Error, context: string): string {
     if (errorMessage.includes('event')) {
       return `⌨️ Input Error: ${error.message}\n\n💡 Keyboard and mouse events are simulated in browser preview. The game logic should still execute.`;
     }
-    
+
     // Generic pygame error
     return `🎮 Pygame Error in ${context}: ${error.message}\n\n💡 This is a pygame-specific issue. The game may work differently when run locally with full pygame support.`;
   }
-  
+
   // Non-pygame error
   return `⚠️ Error in ${context}: ${error.message}`;
 }
@@ -1541,7 +1641,7 @@ export function createPygameDiagnostics(pyodide: any): {
   return {
     fullReport: () => {
       if (!pyodide) return 'Pyodide not available';
-      
+
       try {
         const report = pyodide.runPython(`
 import sys
@@ -1583,7 +1683,7 @@ json.dumps(report, indent=2)
         return `Diagnostics error: ${error}`;
       }
     },
-    
+
     quickCheck: () => {
       if (!pyodide) return false;
       try {
@@ -1600,7 +1700,7 @@ except:
         return false;
       }
     },
-    
+
     moduleStatus: () => {
       if (!pyodide) return {};
       try {
@@ -1623,6 +1723,6 @@ json.dumps(status)
       } catch {
         return { error: 'Failed to check module status' };
       }
-    }
+    },
   };
 }

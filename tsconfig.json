@@ -1,5 +1,12 @@
 {
-  "include": ["app/**/*", "src/**/*", "tests/**/*", "vite.config.ts", "vitest.config.ts", "playwright.config.ts"],
+  "include": [
+    "app/**/*",
+    "src/**/*",
+    "tests/**/*",
+    "vite.config.ts",
+    "vitest.config.ts",
+    "playwright.config.ts"
+  ],
   "exclude": ["node_modules", "build", "dist", "coverage"],
   "compilerOptions": {
     "incremental": true,

@@ -64,15 +64,27 @@ export class AssetCatalog {
     this.assetsByType.set('3d-model', new Set());
     this.assetsByType.set('ui-element', new Set());
     this.assetsByType.set('audio', new Set());
-    
+
     // Initialize content categories
     const categories = [
-      'platformer', 'rpg', 'racing', 'puzzle', 'space',
-      'nature', 'buildings', 'vehicles', 'characters',
-      'enemies', 'items', 'tiles', 'ui', 'music', 'sfx'
+      'platformer',
+      'rpg',
+      'racing',
+      'puzzle',
+      'space',
+      'nature',
+      'buildings',
+      'vehicles',
+      'characters',
+      'enemies',
+      'items',
+      'tiles',
+      'ui',
+      'music',
+      'sfx',
     ];
-    
-    categories.forEach(cat => {
+
+    categories.forEach((cat) => {
       this.assetsByCategory.set(cat, new Set());
     });
   }
@@ -82,7 +94,7 @@ export class AssetCatalog {
     try {
       const response = await fetch(manifestPath);
       const manifest = await response.json();
-      
+
       for (const asset of manifest.assets) {
         this.registerAsset(asset);
       }
@@ -105,13 +117,13 @@ export class AssetCatalog {
 
     // Add to main catalog
     this.assets.set(asset.id, asset);
-    
+
     // Index by type
     const typeSet = this.assetsByType.get(asset.type);
     if (typeSet) {
       typeSet.add(asset.id);
     }
-    
+
     // Index by category
     const catSet = this.assetsByCategory.get(asset.category);
     if (catSet) {
@@ -122,14 +134,14 @@ export class AssetCatalog {
   // Load an asset
   async loadAsset(assetId: string): Promise<AssetLoadResult> {
     const startTime = performance.now();
-    
+
     try {
       const metadata = this.assets.get(assetId);
       if (!metadata) {
         return {
           success: false,
           error: `Asset not found: ${assetId}`,
-          loadTime: performance.now() - startTime
+          loadTime: performance.now() - startTime,
         };
       }
 
@@ -140,7 +152,7 @@ export class AssetCatalog {
           return {
             success: true,
             asset: metadata,
-            loadTime: performance.now() - startTime
+            loadTime: performance.now() - startTime,
           };
         }
       }
@@ -152,31 +164,31 @@ export class AssetCatalog {
 
       // Simulate asset loading (in real implementation, this would load actual files)
       const assetData = await this.simulateAssetLoad(metadata);
-      
+
       // Update metadata
       metadata.preloaded = true;
       metadata.loadTime = performance.now() - startTime;
       metadata.memoryUsage = this.estimateMemoryUsage(metadata);
-      
+
       // Cache the asset
       this.preloadedAssets.set(assetId, assetData);
       this.assetCache.set(assetId, {
         data: assetData,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       });
-      
+
       this.memoryUsage += metadata.memoryUsage;
-      
+
       return {
         success: true,
         asset: metadata,
-        loadTime: metadata.loadTime
+        loadTime: metadata.loadTime,
       };
     } catch (error) {
       return {
         success: false,
         error: `Failed to load asset: ${error}`,
-        loadTime: performance.now() - startTime
+        loadTime: performance.now() - startTime,
       };
     }
   }
@@ -184,55 +196,54 @@ export class AssetCatalog {
   // Preload multiple assets
   async preloadAssets(assetIds: string[]): Promise<Map<string, AssetLoadResult>> {
     const results = new Map<string, AssetLoadResult>();
-    
+
     // Load in batches to avoid overwhelming the system
     const batchSize = 10;
     for (let i = 0; i < assetIds.length; i += batchSize) {
       const batch = assetIds.slice(i, i + batchSize);
-      const batchPromises = batch.map(id => 
-        this.loadAsset(id).then(result => ({ id, result }))
+      const batchPromises = batch.map((id) =>
+        this.loadAsset(id).then((result) => ({ id, result }))
       );
-      
+
       const batchResults = await Promise.all(batchPromises);
       batchResults.forEach(({ id, result }) => {
         results.set(id, result);
       });
     }
-    
+
     return results;
   }
 
   // Search and filter assets
   searchAssets(options: AssetSearchOptions): AssetMetadata[] {
     let results = Array.from(this.assets.values());
-    
+
     // Filter by type
     if (options.type) {
-      results = results.filter(a => a.type === options.type);
+      results = results.filter((a) => a.type === options.type);
     }
-    
+
     // Filter by category
     if (options.category) {
-      results = results.filter(a => a.category === options.category);
+      results = results.filter((a) => a.category === options.category);
     }
-    
+
     // Filter by tags
     if (options.tags && options.tags.length > 0) {
-      results = results.filter(a => 
-        options.tags!.some(tag => a.tags.includes(tag))
-      );
+      results = results.filter((a) => options.tags!.some((tag) => a.tags.includes(tag)));
     }
-    
+
     // Search by term
     if (options.searchTerm) {
       const term = options.searchTerm.toLowerCase();
-      results = results.filter(a => 
-        a.name.toLowerCase().includes(term) ||
-        a.tags.some(tag => tag.toLowerCase().includes(term)) ||
-        a.category.toLowerCase().includes(term)
+      results = results.filter(
+        (a) =>
+          a.name.toLowerCase().includes(term) ||
+          a.tags.some((tag) => tag.toLowerCase().includes(term)) ||
+          a.category.toLowerCase().includes(term)
       );
     }
-    
+
     // Sort results
     if (options.sortBy) {
       results.sort((a, b) => {
@@ -254,14 +265,14 @@ export class AssetCatalog {
         return options.sortOrder === 'desc' ? -compareValue : compareValue;
       });
     }
-    
+
     // Apply pagination
     if (options.offset !== undefined || options.limit !== undefined) {
       const start = options.offset || 0;
       const end = options.limit ? start + options.limit : results.length;
       results = results.slice(start, end);
     }
-    
+
     return results;
   }
 
@@ -269,16 +280,16 @@ export class AssetCatalog {
   resolvePath(assetId: string): string | null {
     const asset = this.assets.get(assetId);
     if (!asset) return null;
-    
+
     // Handle different path formats
     if (asset.path.startsWith('http://') || asset.path.startsWith('https://')) {
       return asset.path;
     }
-    
+
     if (asset.path.startsWith('/')) {
       return asset.path;
     }
-    
+
     // Construct relative path based on asset type
     const basePath = this.getBasePath(asset.type);
     return `${basePath}/${asset.path}`;
@@ -286,11 +297,16 @@ export class AssetCatalog {
 
   private getBasePath(type: string): string {
     switch (type) {
-      case '2d-sprite': return 'assets/2d';
-      case '3d-model': return 'assets/3d/models';
-      case 'ui-element': return 'assets/ui';
-      case 'audio': return 'assets/audio';
-      default: return 'assets';
+      case '2d-sprite':
+        return 'assets/2d';
+      case '3d-model':
+        return 'assets/3d/models';
+      case 'ui-element':
+        return 'assets/ui';
+      case 'audio':
+        return 'assets/audio';
+      default:
+        return 'assets';
     }
   }
 
@@ -299,28 +315,28 @@ export class AssetCatalog {
     if (!this.hotSwapEnabled) {
       return false;
     }
-    
+
     const asset = this.assets.get(assetId);
     if (!asset) {
       return false;
     }
-    
+
     // Store old path for rollback
     const oldPath = asset.path;
-    
+
     try {
       // Update path
       asset.path = newPath;
-      
+
       // Reload if already loaded
       if (asset.preloaded) {
         this.preloadedAssets.delete(assetId);
         await this.loadAsset(assetId);
       }
-      
+
       // Clear cache
       this.assetCache.delete(assetId);
-      
+
       return true;
     } catch (error) {
       // Rollback on failure
@@ -349,9 +365,9 @@ export class AssetCatalog {
   getAssetsByType(type: string): AssetMetadata[] {
     const assetIds = this.assetsByType.get(type);
     if (!assetIds) return [];
-    
+
     return Array.from(assetIds)
-      .map(id => this.assets.get(id))
+      .map((id) => this.assets.get(id))
       .filter(Boolean) as AssetMetadata[];
   }
 
@@ -359,9 +375,9 @@ export class AssetCatalog {
   getAssetsByCategory(category: string): AssetMetadata[] {
     const assetIds = this.assetsByCategory.get(category);
     if (!assetIds) return [];
-    
+
     return Array.from(assetIds)
-      .map(id => this.assets.get(id))
+      .map((id) => this.assets.get(id))
       .filter(Boolean) as AssetMetadata[];
   }
 
@@ -372,14 +388,14 @@ export class AssetCatalog {
 
   private evictLRUAssets(requiredSpace: number): void {
     const sortedAssets = Array.from(this.preloadedAssets.keys())
-      .map(id => this.assets.get(id))
+      .map((id) => this.assets.get(id))
       .filter(Boolean)
       .sort((a, b) => (a!.loadTime || 0) - (b!.loadTime || 0));
-    
+
     let freedSpace = 0;
     for (const asset of sortedAssets) {
       if (freedSpace >= requiredSpace) break;
-      
+
       this.unloadAsset(asset!.id);
       freedSpace += asset!.memoryUsage || 0;
     }
@@ -415,8 +431,8 @@ export class AssetCatalog {
 
   private async simulateAssetLoad(metadata: AssetMetadata): Promise<any> {
     // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, Math.random() * 100));
-    
+    await new Promise((resolve) => setTimeout(resolve, Math.random() * 100));
+
     // Return mock data based on type
     switch (metadata.type) {
       case '2d-sprite':
@@ -445,7 +461,7 @@ export class AssetCatalog {
       preloadedAssets: this.preloadedAssets.size,
       memoryUsage: this.memoryUsage,
       maxMemoryUsage: this.maxMemoryUsage,
-      cacheSize: this.assetCache.size
+      cacheSize: this.assetCache.size,
     };
   }
 
@@ -453,8 +469,8 @@ export class AssetCatalog {
   clearCatalog(): void {
     this.assets.clear();
     this.preloadedAssets.clear();
-    this.assetsByType.forEach(set => set.clear());
-    this.assetsByCategory.forEach(set => set.clear());
+    this.assetsByType.forEach((set) => set.clear());
+    this.assetsByCategory.forEach((set) => set.clear());
     this.assetCache.clear();
     this.memoryUsage = 0;
   }
@@ -464,7 +480,7 @@ export class AssetCatalog {
     const catalog = {
       assets: Array.from(this.assets.values()),
       statistics: this.getStatistics(),
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
     return JSON.stringify(catalog, null, 2);
   }
@@ -474,7 +490,7 @@ export class AssetCatalog {
     try {
       const catalog = JSON.parse(jsonData);
       this.clearCatalog();
-      
+
       if (catalog.assets) {
         catalog.assets.forEach((asset: AssetMetadata) => {
           this.registerAsset(asset);

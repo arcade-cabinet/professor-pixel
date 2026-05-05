@@ -1,8 +1,8 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState, useCallback } from "react";
-import { retryMechanism, type RetryOptions } from "@lib/net/retry";
-import { trackNetworkError } from "@lib/errors/global-handler";
-import { logger } from "@lib/monitoring/console-logger";
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useState, useCallback } from 'react';
+import { retryMechanism, type RetryOptions } from '@lib/net/retry';
+import { trackNetworkError } from '@lib/errors/global-handler';
+import { logger } from '@lib/monitoring/console-logger';
 
 /**
  * Enhanced useQuery with retry mechanisms and better error handling
@@ -29,7 +29,7 @@ export function useRetryQuery<T>(
     queryKey,
     queryFn: async () => {
       logger.network.info(`Starting query: ${queryKey.join('/')}`);
-      
+
       try {
         const result = await retryMechanism.withRetry(queryFn, {
           maxAttempts: 3,
@@ -37,14 +37,20 @@ export function useRetryQuery<T>(
           ...retryOptions,
           onRetry: (error, attempt) => {
             setRetryCount(attempt);
-            logger.network.warn(`Query retry attempt ${attempt}`, { queryKey, error: error.message });
+            logger.network.warn(`Query retry attempt ${attempt}`, {
+              queryKey,
+              error: error.message,
+            });
             retryOptions?.onRetry?.(error, attempt);
           },
           onFinalFailure: (error, attempts) => {
             trackNetworkError(error, `Query failed: ${queryKey.join('/')}`);
-            logger.network.error(`Query failed after ${attempts} attempts`, { queryKey, error: error.message });
+            logger.network.error(`Query failed after ${attempts} attempts`, {
+              queryKey,
+              error: error.message,
+            });
             retryOptions?.onFinalFailure?.(error, attempts);
-          }
+          },
         });
 
         if (result.success) {
@@ -83,7 +89,7 @@ export function useRetryQuery<T>(
     isManualRetrying,
     manualRetry,
     canRetry: !query.isLoading && !isManualRetrying,
-    hasRetryableError: query.error && isRetryableError(query.error)
+    hasRetryableError: query.error && isRetryableError(query.error),
   };
 }
 
@@ -112,7 +118,7 @@ export function useRetryMutation<T, TVariables>(
   const mutation = useMutation({
     mutationFn: async (variables: TVariables) => {
       logger.network.info('Starting mutation', { variables });
-      
+
       try {
         const result = await retryMechanism.withRetry(() => mutationFn(variables), {
           maxAttempts: 3,
@@ -120,27 +126,33 @@ export function useRetryMutation<T, TVariables>(
           ...retryOptions,
           onRetry: (error, attempt) => {
             setRetryCount(attempt);
-            logger.network.warn(`Mutation retry attempt ${attempt}`, { variables, error: error.message });
+            logger.network.warn(`Mutation retry attempt ${attempt}`, {
+              variables,
+              error: error.message,
+            });
             retryOptions?.onRetry?.(error, attempt);
           },
           onFinalFailure: (error, attempts) => {
             trackNetworkError(error, 'Mutation failed');
-            logger.network.error(`Mutation failed after ${attempts} attempts`, { variables, error: error.message });
+            logger.network.error(`Mutation failed after ${attempts} attempts`, {
+              variables,
+              error: error.message,
+            });
             retryOptions?.onFinalFailure?.(error, attempts);
-          }
+          },
         });
 
         if (result.success) {
           setRetryCount(0);
           logger.network.success('Mutation completed successfully', { variables });
-          
+
           // Invalidate specified queries
           if (retryOptions?.invalidateQueries) {
-            retryOptions.invalidateQueries.forEach(queryKey => {
+            retryOptions.invalidateQueries.forEach((queryKey) => {
               queryClient.invalidateQueries({ queryKey });
             });
           }
-          
+
           return result.data;
         } else {
           throw result.error;
@@ -153,14 +165,14 @@ export function useRetryMutation<T, TVariables>(
         }
         throw error;
       }
-    }
+    },
   });
 
   return {
     ...mutation,
     retryCount,
     canRetry: !mutation.isPending,
-    hasRetryableError: mutation.error && isRetryableError(mutation.error)
+    hasRetryableError: mutation.error && isRetryableError(mutation.error),
   };
 }
 
@@ -169,9 +181,11 @@ export function useRetryMutation<T, TVariables>(
  */
 function isRetryableError(error: any): boolean {
   // Network errors
-  if (error?.name === 'NetworkError' || 
-      error?.message?.includes('Failed to fetch') ||
-      error?.message?.includes('ERR_NETWORK')) {
+  if (
+    error?.name === 'NetworkError' ||
+    error?.message?.includes('Failed to fetch') ||
+    error?.message?.includes('ERR_NETWORK')
+  ) {
     return true;
   }
 
@@ -186,8 +200,7 @@ function isRetryableError(error: any): boolean {
   }
 
   // Timeout errors
-  if (error?.name === 'TimeoutError' || 
-      error?.message?.includes('timeout')) {
+  if (error?.name === 'TimeoutError' || error?.message?.includes('timeout')) {
     return true;
   }
 
@@ -198,7 +211,7 @@ function isRetryableError(error: any): boolean {
  * Get user-friendly error message
  */
 function getFriendlyErrorMessage(
-  error: any, 
+  error: any,
   customMessages?: {
     network?: string;
     server?: string;
@@ -207,18 +220,20 @@ function getFriendlyErrorMessage(
   }
 ): string {
   const defaults = {
-    network: "Connection problem detected. Please check your internet and try again.",
-    server: "Server is temporarily unavailable. Please try again in a moment.",
-    timeout: "Request took too long. Please try again.",
-    generic: "Something went wrong. Please try again."
+    network: 'Connection problem detected. Please check your internet and try again.',
+    server: 'Server is temporarily unavailable. Please try again in a moment.',
+    timeout: 'Request took too long. Please try again.',
+    generic: 'Something went wrong. Please try again.',
   };
 
   const messages = { ...defaults, ...customMessages };
 
   // Network errors
-  if (error?.name === 'NetworkError' || 
-      error?.message?.includes('Failed to fetch') ||
-      error?.message?.includes('ERR_NETWORK')) {
+  if (
+    error?.name === 'NetworkError' ||
+    error?.message?.includes('Failed to fetch') ||
+    error?.message?.includes('ERR_NETWORK')
+  ) {
     return messages.network;
   }
 
@@ -228,19 +243,18 @@ function getFriendlyErrorMessage(
   }
 
   // Timeout errors
-  if (error?.name === 'TimeoutError' || 
-      error?.message?.includes('timeout')) {
+  if (error?.name === 'TimeoutError' || error?.message?.includes('timeout')) {
     return messages.timeout;
   }
 
   // Rate limiting
   if (error?.status === 429) {
-    return "Too many requests. Please wait a moment and try again.";
+    return 'Too many requests. Please wait a moment and try again.';
   }
 
   // Authentication errors
   if (error?.status === 401) {
-    return "Please log in to continue.";
+    return 'Please log in to continue.';
   }
 
   if (error?.status === 403) {
@@ -249,7 +263,7 @@ function getFriendlyErrorMessage(
 
   // Not found
   if (error?.status === 404) {
-    return "The requested item was not found.";
+    return 'The requested item was not found.';
   }
 
   // Generic error
@@ -279,7 +293,7 @@ export function useOptimisticMutation<T, TVariables>(
       try {
         const result = await retryMechanism.withRetry(() => mutationFn(variables), {
           maxAttempts: 3,
-          ...options.retryOptions
+          ...options.retryOptions,
         });
 
         if (result.success) {
@@ -296,7 +310,7 @@ export function useOptimisticMutation<T, TVariables>(
     onSuccess: () => {
       // Refetch to ensure data consistency
       queryClient.invalidateQueries({ queryKey: options.queryKey });
-    }
+    },
   });
 }
 
@@ -313,7 +327,7 @@ export function useRetryInfiniteQuery<T>(
     queryFn: async () => {
       const result = await retryMechanism.withRetry(() => queryFn({ pageParam: 0 }), {
         maxAttempts: 3,
-        ...retryOptions
+        ...retryOptions,
       });
 
       if (result.success) {
@@ -322,6 +336,6 @@ export function useRetryInfiniteQuery<T>(
         throw result.error;
       }
     },
-    retry: false
+    retry: false,
   });
 }

@@ -1,21 +1,21 @@
-import { Component, ReactNode, ErrorInfo } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { 
-  RefreshCw, 
-  Home, 
-  Bug, 
-  BookOpen, 
-  AlertTriangle, 
+import { Component, ReactNode, ErrorInfo } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import {
+  RefreshCw,
+  Home,
+  Bug,
+  BookOpen,
+  AlertTriangle,
   Code2,
   MessageCircle,
   Shield,
-  Lightbulb
-} from "lucide-react";
-import { motion } from "framer-motion";
+  Lightbulb,
+} from 'lucide-react';
+import { motion } from 'framer-motion';
 
 interface Props {
   children: ReactNode;
@@ -41,25 +41,25 @@ export class ErrorBoundary extends Component<Props, State> {
       hasError: false,
       error: null,
       errorInfo: null,
-      errorId: ''
+      errorId: '',
     };
   }
 
   static getDerivedStateFromError(error: Error): Partial<State> {
     // Generate unique error ID for tracking
     const errorId = `error-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    
+
     return {
       hasError: true,
       error,
-      errorId
+      errorId,
     };
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     this.setState({
       error,
-      errorInfo
+      errorInfo,
     });
 
     // Log error details for debugging
@@ -79,7 +79,7 @@ export class ErrorBoundary extends Component<Props, State> {
         context: this.props.context,
         level: this.props.level,
         errorId: this.state.errorId,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
     }
   }
@@ -91,7 +91,7 @@ export class ErrorBoundary extends Component<Props, State> {
         hasError: false,
         error: null,
         errorInfo: null,
-        errorId: ''
+        errorId: '',
       });
     } else {
       // Max retries reached, reload page
@@ -105,56 +105,60 @@ export class ErrorBoundary extends Component<Props, State> {
 
   getEducationalMessage = (error: Error) => {
     const errorMessage = error.message.toLowerCase();
-    
+
     if (errorMessage.includes('chunk load failed') || errorMessage.includes('loading chunk')) {
       return {
-        title: "Loading Issue",
-        explanation: "It looks like some parts of the app didn't load properly. This can happen when your internet connection is slow or when the app is updating.",
+        title: 'Loading Issue',
+        explanation:
+          "It looks like some parts of the app didn't load properly. This can happen when your internet connection is slow or when the app is updating.",
         suggestions: [
-          "Try refreshing the page",
-          "Check your internet connection",
-          "Clear your browser cache if the problem persists"
+          'Try refreshing the page',
+          'Check your internet connection',
+          'Clear your browser cache if the problem persists',
         ],
-        severity: "warning" as const
+        severity: 'warning' as const,
       };
     }
 
     if (errorMessage.includes('network') || errorMessage.includes('fetch')) {
       return {
-        title: "Connection Problem",
-        explanation: "The app is having trouble connecting to our servers. This might be a temporary network issue.",
+        title: 'Connection Problem',
+        explanation:
+          'The app is having trouble connecting to our servers. This might be a temporary network issue.',
         suggestions: [
-          "Check your internet connection",
-          "Try again in a few seconds",
-          "Contact support if the problem continues"
+          'Check your internet connection',
+          'Try again in a few seconds',
+          'Contact support if the problem continues',
         ],
-        severity: "error" as const
+        severity: 'error' as const,
       };
     }
 
     if (errorMessage.includes('permission') || errorMessage.includes('access')) {
       return {
-        title: "Access Issue",
-        explanation: "The app doesn't have permission to access something it needs. This is usually a browser security feature.",
+        title: 'Access Issue',
+        explanation:
+          "The app doesn't have permission to access something it needs. This is usually a browser security feature.",
         suggestions: [
-          "Try refreshing the page",
-          "Check if your browser is blocking any features",
-          "Make sure you're logged in properly"
+          'Try refreshing the page',
+          'Check if your browser is blocking any features',
+          "Make sure you're logged in properly",
         ],
-        severity: "warning" as const
+        severity: 'warning' as const,
       };
     }
 
     // Generic error
     return {
-      title: "Something Unexpected Happened",
-      explanation: "Don't worry! This is a technical issue with the app, not with your code. Our team works hard to prevent these errors, but sometimes they slip through.",
+      title: 'Something Unexpected Happened',
+      explanation:
+        "Don't worry! This is a technical issue with the app, not with your code. Our team works hard to prevent these errors, but sometimes they slip through.",
       suggestions: [
-        "Try refreshing the page - this often fixes the problem",
-        "Go back to the home page and try again",
-        "If this keeps happening, let us know so we can fix it"
+        'Try refreshing the page - this often fixes the problem',
+        'Go back to the home page and try again',
+        'If this keeps happening, let us know so we can fix it',
       ],
-      severity: "error" as const
+      severity: 'error' as const,
     };
   };
 
@@ -212,7 +216,7 @@ export class ErrorBoundary extends Component<Props, State> {
 
                 {/* Action buttons */}
                 <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                  <Button 
+                  <Button
                     onClick={this.handleRetry}
                     className="bg-blue-600 hover:bg-blue-700 text-white"
                     data-testid="button-retry-error"
@@ -220,10 +224,10 @@ export class ErrorBoundary extends Component<Props, State> {
                     <RefreshCw className="h-4 w-4 mr-2" />
                     Try Again {this.retryCount > 0 && `(${this.maxRetries - this.retryCount} left)`}
                   </Button>
-                  
+
                   {isAppLevel && (
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       onClick={this.handleGoHome}
                       data-testid="button-home-error"
                     >
@@ -244,7 +248,9 @@ export class ErrorBoundary extends Component<Props, State> {
                   <div className="mt-3 p-4 bg-gray-100 dark:bg-gray-800 rounded-lg text-sm font-mono">
                     <div className="space-y-2">
                       <div>
-                        <Badge variant="outline" className="mb-2">Error ID: {this.state.errorId}</Badge>
+                        <Badge variant="outline" className="mb-2">
+                          Error ID: {this.state.errorId}
+                        </Badge>
                       </div>
                       <div>
                         <strong>Error:</strong> {this.state.error.message}
@@ -259,7 +265,9 @@ export class ErrorBoundary extends Component<Props, State> {
                       </div>
                       {import.meta.env.DEV && this.state.error.stack && (
                         <details className="mt-2">
-                          <summary className="cursor-pointer text-gray-600 dark:text-gray-400">Stack Trace</summary>
+                          <summary className="cursor-pointer text-gray-600 dark:text-gray-400">
+                            Stack Trace
+                          </summary>
                           <pre className="mt-2 text-xs overflow-auto max-h-40 bg-gray-200 dark:bg-gray-900 p-2 rounded">
                             {this.state.error.stack}
                           </pre>
@@ -288,12 +296,12 @@ export class ErrorBoundary extends Component<Props, State> {
 }
 
 // Component-level error boundary for smaller errors
-export function ComponentErrorBoundary({ 
-  children, 
+export function ComponentErrorBoundary({
+  children,
   fallback,
-  context 
-}: { 
-  children: ReactNode; 
+  context,
+}: {
+  children: ReactNode;
   fallback?: ReactNode;
   context?: string;
 }) {
@@ -302,27 +310,25 @@ export function ComponentErrorBoundary({
       <AlertTriangle className="h-4 w-4 text-red-600 dark:text-red-400" />
       <AlertDescription className="text-red-800 dark:text-red-200">
         <div className="font-medium mb-1">Something went wrong with this component</div>
-        <div className="text-sm">Please try refreshing the page or contact support if the problem persists.</div>
+        <div className="text-sm">
+          Please try refreshing the page or contact support if the problem persists.
+        </div>
       </AlertDescription>
     </Alert>
   );
 
   return (
-    <ErrorBoundary 
-      level="component" 
-      context={context}
-      fallback={fallback || defaultFallback}
-    >
+    <ErrorBoundary level="component" context={context} fallback={fallback || defaultFallback}>
       {children}
     </ErrorBoundary>
   );
 }
 
 // Enhanced error boundary for pages
-export function PageErrorBoundary({ 
-  children, 
-  context 
-}: { 
+export function PageErrorBoundary({
+  children,
+  context,
+}: {
   children: ReactNode;
   context?: string;
 }) {

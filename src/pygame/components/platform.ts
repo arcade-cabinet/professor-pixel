@@ -17,7 +17,8 @@ export const platformComponent: PyGameComponent = {
   id: 'platform',
   name: 'Platform',
   description: 'A solid surface for platformer games',
-  wizardDescription: 'This is a solid ground or platform that characters can stand on! Perfect for jumping games where you need floors, walls, or floating platforms.',
+  wizardDescription:
+    'This is a solid ground or platform that characters can stand on! Perfect for jumping games where you need floors, walls, or floating platforms.',
   properties: {} as Record<string, any>,
   defaultProperties: {
     x: 50,
@@ -27,7 +28,7 @@ export const platformComponent: PyGameComponent = {
     color: '#10B981',
     isMoving: false,
     moveSpeed: 2,
-    moveRange: 100
+    moveRange: 100,
   },
   preview: (ctx: CanvasRenderingContext2D, props: PlatformProperties) => {
     ctx.fillStyle = props.color;
@@ -64,5 +65,5 @@ class Platform:
             self.rect.x = self.x
     
     def draw(self, screen):
-        pygame.draw.rect(screen, self.color, self.rect)`
+        pygame.draw.rect(screen, self.color, self.rect)`,
 };

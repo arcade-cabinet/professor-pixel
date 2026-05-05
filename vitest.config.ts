@@ -18,11 +18,7 @@ const alias = {
   '@assets': path.resolve(repoRoot, 'app/assets'),
 };
 
-const sharedExclude = [
-  '**/node_modules/**',
-  '**/dist/**',
-  '**/tests/e2e/**',
-];
+const sharedExclude = ['**/node_modules/**', '**/dist/**', '**/tests/e2e/**'];
 
 export default defineConfig({
   plugins: [react()],
@@ -80,11 +76,7 @@ export default defineConfig({
       reporter: ['text', 'html', 'lcov'],
       reportsDirectory: './coverage',
       include: ['app/**/*.{ts,tsx}', 'src/**/*.{ts,tsx}'],
-      exclude: [
-        '**/index.ts',
-        '**/*.d.ts',
-        'app/**/*.stories.tsx',
-      ],
+      exclude: ['**/index.ts', '**/*.d.ts', 'app/**/*.stories.tsx'],
     },
   },
 });

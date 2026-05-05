@@ -23,7 +23,7 @@ export default function PygameRunner({
   previewMode = 'full',
   className = '',
   onError,
-  onClose
+  onClose,
 }: PygameRunnerProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const pyodideRef = useRef<any>(null);
@@ -37,7 +37,7 @@ export default function PygameRunner({
   const initPyodide = useCallback(async () => {
     setIsLoading(true);
     setError(null);
-    
+
     try {
       pyodideRef.current = await getPyodide();
       await setupCanvasBridge();
@@ -53,10 +53,10 @@ export default function PygameRunner({
   // Setup bridge between Pyodide and canvas
   const setupCanvasBridge = async () => {
     if (!pyodideRef.current || !canvasRef.current) return;
-    
+
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
-    
+
     // Inject canvas functions into Python environment
     pyodideRef.current.runPython(`
 import sys
@@ -289,24 +289,23 @@ MockPygame.key.get_pressed = lambda: global_key_state
     if (!pyodideRef.current) {
       await initPyodide();
     }
-    
+
     if (!pyodideRef.current) {
       setError('Pyodide not initialized');
       return;
     }
-    
+
     setIsRunning(true);
     setError(null);
-    
+
     try {
       // Compile the game
       const pythonCode = compilePythonGame(selectedComponents, selectedAssets);
-      
+
       // Prepare the game code for browser execution
       // We don't modify the code directly - let the mock pygame handle it
-      const browserCode = pythonCode
-        .replace(/if __name__ == "__main__":/g, 'if True:');  // Always run in browser
-      
+      const browserCode = pythonCode.replace(/if __name__ == "__main__":/g, 'if True:'); // Always run in browser
+
       // Set up a simple auto-progression for demo (press SPACE after 3 seconds)
       setTimeout(() => {
         if (pyodideRef.current) {
@@ -321,10 +320,9 @@ if 'global_key_state' in globals():
           `);
         }
       }, 3000);
-      
+
       // Run the game with our pygame mock
       await pyodideRef.current.runPythonAsync(browserCode);
-      
     } catch (err) {
       const errorMsg = `Game execution error: ${err}`;
       setError(errorMsg);
@@ -340,7 +338,7 @@ if 'global_key_state' in globals():
     if (animationFrameRef.current) {
       cancelAnimationFrame(animationFrameRef.current);
     }
-    
+
     // Clear canvas
     const canvas = canvasRef.current;
     if (canvas) {
@@ -410,7 +408,7 @@ if 'global_key_state' in globals():
                 </>
               )}
             </Button>
-            
+
             <Button
               onClick={resetGame}
               disabled={isLoading || !isRunning}
@@ -421,41 +419,25 @@ if 'global_key_state' in globals():
               Reset
             </Button>
           </div>
-          
+
           <div className="flex items-center gap-2">
-            <Button
-              onClick={downloadGame}
-              variant="outline"
-              size="sm"
-            >
+            <Button onClick={downloadGame} variant="outline" size="sm">
               <Download className="w-4 h-4 mr-2" />
               Export
             </Button>
-            
-            <Button
-              onClick={toggleFullscreen}
-              variant="outline"
-              size="sm"
-            >
-              {isFullscreen ? (
-                <Minimize className="w-4 h-4" />
-              ) : (
-                <Maximize className="w-4 h-4" />
-              )}
+
+            <Button onClick={toggleFullscreen} variant="outline" size="sm">
+              {isFullscreen ? <Minimize className="w-4 h-4" /> : <Maximize className="w-4 h-4" />}
             </Button>
-            
+
             {onClose && (
-              <Button
-                onClick={onClose}
-                variant="ghost"
-                size="sm"
-              >
+              <Button onClick={onClose} variant="ghost" size="sm">
                 <X className="w-4 h-4" />
               </Button>
             )}
           </div>
         </div>
-        
+
         {/* Game Canvas */}
         <div className="flex-1 flex items-center justify-center bg-black p-4">
           {isLoading ? (
@@ -479,7 +461,7 @@ if 'global_key_state' in globals():
             />
           )}
         </div>
-        
+
         {/* Status */}
         {previewMode && (
           <div className="p-2 bg-gray-100 dark:bg-gray-900 text-center text-sm">
