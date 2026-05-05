@@ -29,6 +29,7 @@ import { strings } from '@lib/i18n';
 type State =
   | { kind: 'loading' }
   | { kind: 'not-found' }
+  | { kind: 'unfinished'; title: string } // mid-wizard save with no components yet
   | { kind: 'compile-error'; message: string }
   | { kind: 'ready'; pythonCode: string; title: string }
   | { kind: 'running'; pythonCode: string; title: string }
@@ -56,6 +57,15 @@ export default function PlayPage() {
       const sessionActions = snapshot.wizardState.sessionActions;
       const selectedComponents =
         (sessionActions?.selectedComponents as Record<string, string> | undefined) ?? {};
+      // A mid-wizard auto-save fires before the kid has chosen any
+      // components. compilePythonGame would emit a stub game that
+      // displays a black canvas and burns Pyodide cold-start time
+      // for nothing. Surface the unfinished state instead so the kid
+      // can route back into the wizard to keep building.
+      if (Object.keys(selectedComponents).length === 0) {
+        setState({ kind: 'unfinished', title: snapshot.name });
+        return;
+      }
       try {
         const pythonCode = compilePythonGame(selectedComponents, selectedAssets);
         setState({
@@ -132,6 +142,39 @@ export default function PlayPage() {
             {strings.play.backToLibrary ?? 'Back to My Games'}
           </Button>
         </Link>
+      </main>
+    );
+  }
+
+  // unfinished — mid-wizard save with no chosen components. Direct
+  // the kid back into the wizard to finish building.
+  if (state.kind === 'unfinished') {
+    return (
+      <main
+        className="flex min-h-screen flex-col items-center justify-center gap-4 bg-gray-50 p-8 dark:bg-gray-900"
+        data-testid="play-page-unfinished"
+      >
+        <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100">{state.title}</h1>
+        <p className="max-w-md text-center text-gray-600 dark:text-gray-400">
+          {strings.play.unfinishedBody}
+        </p>
+        <div className="flex gap-2">
+          <Link href="/">
+            <Button variant="outline" data-testid="button-back-to-library">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              {strings.play.backToLibrary}
+            </Button>
+          </Link>
+          <Link href={`/wizard?resume=${projectId}`}>
+            <Button
+              className="bg-purple-600 hover:bg-purple-700"
+              data-testid="button-edit-game"
+            >
+              <Pencil className="mr-2 h-4 w-4" />
+              {strings.play.keepBuilding}
+            </Button>
+          </Link>
+        </div>
       </main>
     );
   }

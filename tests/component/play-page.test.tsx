@@ -28,14 +28,23 @@ import {
 } from '@lib/storage/opfs-projects';
 import { __resetOpfsRoutingForTests } from '@lib/storage/projects';
 
+// Snapshot for the "ready" path — needs at least one selectedComponent
+// so the page doesn't fall through to the unfinished state.
 const SAMPLE_WIZARD_STATE = {
   version: '1.0.0',
   selectedAssetIds: [],
   gameType: 'platformer',
   updatedAt: new Date().toISOString(),
-  // sessionActions has selectedComponents that compilePythonGame reads.
-  // Empty record is enough for the compiler to emit a stub game.py;
-  // exercising the full component matrix is covered elsewhere.
+  sessionActions: {
+    selectedComponents: { hero: 'platformer-hero' },
+  },
+};
+// Snapshot for the "unfinished" path — empty selectedComponents.
+const UNFINISHED_WIZARD_STATE = {
+  version: '1.0.0',
+  selectedAssetIds: [],
+  gameType: 'platformer',
+  updatedAt: new Date().toISOString(),
   sessionActions: { selectedComponents: {} },
 };
 
@@ -87,6 +96,22 @@ describe('Launcher /play/:projectId page', () => {
       expect(screen.getByTestId('play-page-not-found')).toBeInTheDocument();
     });
     expect(screen.getByTestId('button-back-to-library')).toBeInTheDocument();
+  });
+
+  it('shows the unfinished state for a project with no selected components', async () => {
+    const meta = await saveOpfsProject({
+      name: 'Half-Built',
+      template: 'platformer',
+      wizardState: UNFINISHED_WIZARD_STATE,
+    });
+    renderAt(`/play/${meta.id}`);
+    await waitFor(() => {
+      expect(screen.getByTestId('play-page-unfinished')).toBeInTheDocument();
+    });
+    expect(screen.getByText('Half-Built')).toBeInTheDocument();
+    // Both escape hatches present: back to library, keep building.
+    expect(screen.getByTestId('button-back-to-library')).toBeInTheDocument();
+    expect(screen.getByTestId('button-edit-game')).toBeInTheDocument();
   });
 
   it('clicking Play transitions to running state and invokes Pyodide', async () => {

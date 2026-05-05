@@ -515,6 +515,12 @@ export const strings = {
     compileErrorTitle: "We couldn't build this game",
     runtimeErrorTitle: 'The game crashed',
     retry: 'Try again',
+    // Surfaced when a project was auto-saved mid-wizard but the kid
+    // hasn't picked any components yet — there's literally nothing to
+    // play, so we route them back to the wizard.
+    unfinishedBody:
+      "This game isn't finished yet — Pixel needs you to pick characters, enemies, and a backdrop before it can play.",
+    keepBuilding: 'Keep building',
   },
 
   /* ─── Help modal (help-modal.tsx — task-015) ───────────────────────── */
