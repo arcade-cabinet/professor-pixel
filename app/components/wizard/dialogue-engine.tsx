@@ -7,6 +7,7 @@ import {
   shouldShowContinue,
   updateSessionActionsForOption,
   loadWizardFlow,
+  getSingleNavigableTarget,
 } from '@lib/wizard/utils';
 import { WIZARD_FLOW_PATH, INITIAL_NODE_ID, STYLES, ANIMATIONS } from '@lib/wizard/constants';
 import {
@@ -436,17 +437,18 @@ export function useWizardDialogue({
       return;
     }
 
-    // End-of-multiStep OR plain node — when the layout collapsed a single
-    // "continue"-pattern option to ContinueButton (see shouldShowContinue
-    // / shouldShowOptions in src/wizard/utils.ts), Advance must actually
-    // navigate to that option's `next`. Otherwise the user clicks Continue
-    // and nothing happens. Closes playtest analysis F4.2.
-    if (currentNode.options && currentNode.options.length === 1) {
-      const only = currentNode.options[0];
-      if (!only.action && !only.setVariable && !only.updatePreview && only.next) {
-        navigateToNode(only.next);
-      }
-    }
+    // End-of-multiStep OR plain node — when the only forward affordance is a
+    // side-effect-free single option, Advance navigates to that option's
+    // `next`. Covers two callsites: ContinueButton (single-continue-text
+    // collapse, F4.2) and the asset-browser-close handler (F4.3 — advance
+    // after asset pick on nodes whose option text is "Pick a character" etc.,
+    // which is non-continue-text but still pure navigation).
+    //
+    // Uses `getSingleNavigableTarget` from utils.ts as the single source of
+    // truth for the side-effect-free triple-check (no action / setVariable /
+    // updatePreview), preventing predicate drift with `isSingleContinueOption`.
+    const target = getSingleNavigableTarget(currentNode);
+    if (target) navigateToNode(target);
   }, [dialogueState, navigateToNode]);
 
   return {

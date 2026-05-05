@@ -49,13 +49,23 @@ export const getGameTypeIcon = (optionText: string): LucideIcon | null => {
 // offering a real choice.
 const CONTINUE_PATTERN = /^\s*(continue|next|ok(?:ay)?|got it|let'?s go|sounds good|sure)\s*[!.?]*\s*$/i;
 
-const isSingleContinueOption = (currentNode: WizardNode | null): boolean => {
-  if (!currentNode?.options) return false;
-  if (currentNode.options.length !== 1) return false;
+// Returns the navigation target of a side-effect-free single-option node, or
+// null. "Side-effect-free" means the option has no `action`, `setVariable`,
+// or `updatePreview` — only a `next`. Used by `advance()` (any text) and as
+// the inner check for `isSingleContinueOption` (continue-pattern text only).
+// Single source of truth for the side-effect-free triple-check.
+export const getSingleNavigableTarget = (currentNode: WizardNode | null): string | null => {
+  if (!currentNode?.options) return null;
+  if (currentNode.options.length !== 1) return null;
   const only = currentNode.options[0];
-  // The option must lack side effects beyond navigation; if it sets a variable
-  // or triggers an action, we keep it as an explicit option.
-  if (only.action || only.setVariable || only.updatePreview) return false;
+  if (only.action || only.setVariable || only.updatePreview) return null;
+  return only.next ?? null;
+};
+
+const isSingleContinueOption = (currentNode: WizardNode | null): boolean => {
+  if (getSingleNavigableTarget(currentNode) === null) return false;
+  // Safe non-null: predicate above guaranteed options.length === 1.
+  const only = currentNode!.options![0];
   return CONTINUE_PATTERN.test(only.text);
 };
 

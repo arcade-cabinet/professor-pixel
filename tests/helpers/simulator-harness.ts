@@ -3,12 +3,23 @@ import { vi, type MockInstance } from 'vitest';
 /**
  * Deterministic harness for `src/pygame/runtime/simulator.ts`. Two pieces:
  *
- * 1. **`createFakeCanvasContext()`** — a stub that recordsevery rendering call
- *    into a ledger instead of touching the DOM. The simulator's
+ * 1. **`createFakeCanvasContext()`** — a stub that records every rendering
+ *    call into a ledger instead of touching the DOM. The simulator's
  *    `flushFrameBuffer()` plays draw commands through whatever
  *    `CanvasRenderingContext2D` it was handed via `setCanvasContext`; this
  *    fake captures the resulting fillRect/arc/fill/etc. calls so tests can
  *    assert the right primitives were issued in the right order.
+ *
+ *    **Limitation:** every method recording fn returns `undefined`. If the
+ *    renderer ever depends on a return value from a proxied method (e.g.
+ *    `ctx.measureText(...).width`, `ctx.getImageData(...)`,
+ *    `ctx.createLinearGradient(...)`), the test will receive `undefined` and
+ *    crash or silently misbehave. Today the simulator's only return-value
+ *    canvas call (`createImageData`) is on a separate OffscreenCanvas
+ *    context, not the proxied one, so this is safe — but if a renderer adds
+ *    `measureText`/`getImageData`/etc., extend this harness with a typed
+ *    return-value escape hatch rather than letting the silent-undefined
+ *    behavior propagate.
  *
  * 2. **`controlledTime()`** — installs a `vi.spyOn(performance, 'now')` that
  *    returns a programmable counter. The PygameClock implementation reads
