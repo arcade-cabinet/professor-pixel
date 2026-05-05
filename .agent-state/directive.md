@@ -1,6 +1,6 @@
 # Continuous Work Directive — professor-pixel
 
-**Status:** RELEASED
+**Status:** ACTIVE
 **Owner:** jbogaty
 
 ## What CONTINUOUS means
@@ -175,3 +175,30 @@ Cascade: pygame/components/registry now exports `AnyPyGameComponent` (preview/ge
 
 - [x] A10.1 STATE.md — any-cleanup PRQ moved Next → Done milestone row; Active flipped to `feat/any-cleanup-pillar` queued for review.
 - [x] A10.2 docs/pillars/01-frontend.md — "TypeScript discipline" subsection added with PyodideInstance, ErrorShape probe, PyGameComponent generic + AnyPyGameComponent erasure, renderer tuple-cast, validateAndMigrate, narrow Window cast, and `as unknown as T` + `// no-explicit-any:` escape hatch documented.
+
+## Batch — grader-followups-pillar (batch-20260505-021915)
+
+Source: docs/plans/grader-followups-pillar.prq.md (sha256: fbb8a10b2f70176aa66333a3448c088bebcae40a0ab277ba66dc375652098ee6)
+Branch: feat/grader-followups-pillar
+Started: 2026-05-04T21:19:15Z
+
+### G1 — Worker-side variableExists
+
+- [ ] G1.1 RunOptions.inspectGlobals?: string[] in worker-runner.ts; remote.runSnippet plumbing.
+- [ ] G1.2 WorkerRunner.runSnippet (worker.ts) reads inspectGlobals; returns RunResult.globals: Record<string, unknown>; PyProxy values converted via toJs.
+- [ ] G1.3 engine.ts collects inspectGlobals from variableExists across step tests; threads to runtime.
+- [ ] G1.4 runtime.ts validateRuntime accepts globals?: Record<string, unknown>; variableExists reads `name in globals` instead of pyodide.globals.get.
+- [ ] G1.5 Test: full worker path — inspectGlobals returns existing names + omits absent; validateRuntime produces correct pass/fail mix.
+
+### G2 — Dev HUD overlay
+
+- [ ] G2.1 app/components/dev-hud.tsx — fixed bottom-right panel reading __performanceMonitor + worker runner state.
+- [ ] G2.2 useDebugFlag() hook (localStorage.debug or ?debug=1); App-root mount.
+- [ ] G2.3 CSS-only collapse with localStorage.debug-hud-collapsed persistence.
+- [ ] G2.4 Component test: mounts when flag set; does not render otherwise.
+
+### Docs
+
+- [ ] D1 STATE.md — move grader-followups Next → Done.
+- [ ] D2 docs/pillars/04-grading.md — inspectGlobals plumbing note.
+- [ ] D3 docs/pillars/01-frontend.md — dev-hud reference.
