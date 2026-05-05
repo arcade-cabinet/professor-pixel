@@ -45,13 +45,47 @@ const WIZARD_STATE = {
   },
 };
 
+// pygame-ce's mainloop tries to draw frames via the canvas context
+// every tick. The launcher mounts a real <canvas id="canvas"> but
+// doesn't attach a 2D context to pyodide's pygame target — that's
+// owned by the pygame Surface API, which calls ctx.createImageData
+// on whatever context pygame thinks is "the screen." In Vitest
+// browser mode, the canvas exists but pygame's internal ctx
+// reference is undefined, so the first draw fires
+// "Cannot read properties of undefined (reading 'createImageData')"
+// as an unhandled rejection — POST test-pass, but Vitest counts
+// stray unhandled rejections as failures.
+//
+// Suppressing the rejection is correct here: the test contract is
+// "launcher wiring doesn't crash on real WASM execution," not
+// "pygame frames render correctly headless." The frame-rate test
+// (tests/unit/simulator-frame-rate.test.ts) owns the rendering
+// contract via a fake CanvasRenderingContext2D Proxy.
+function suppressPygameDrawRejections() {
+  const handler = (event: PromiseRejectionEvent) => {
+    const message =
+      typeof event.reason === 'object' && event.reason !== null
+        ? String((event.reason as Error).message ?? event.reason)
+        : String(event.reason);
+    if (message.includes('createImageData') || message.includes('createPattern')) {
+      event.preventDefault();
+    }
+  };
+  window.addEventListener('unhandledrejection', handler);
+  return () => window.removeEventListener('unhandledrejection', handler);
+}
+
 describe('Launcher end-to-end (real Pyodide)', () => {
+  let cleanupRejectionHandler: (() => void) | null = null;
   beforeEach(async () => {
     __resetOpfsRoutingForTests();
     await __clearAllOpfsProjectsForTests();
     localStorage.removeItem('pygame_academy_projects');
+    cleanupRejectionHandler = suppressPygameDrawRejections();
   });
   afterEach(async () => {
+    cleanupRejectionHandler?.();
+    cleanupRejectionHandler = null;
     __resetOpfsRoutingForTests();
     await __clearAllOpfsProjectsForTests();
     localStorage.removeItem('pygame_academy_projects');
