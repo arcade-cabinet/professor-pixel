@@ -803,12 +803,10 @@ export default function UniversalWizard({
             });
           break;
         case 'viewProgress':
-          // P8 will add the dedicated progress UI; until then, View Progress
-          // routes to the lesson list, which IS the progress surface kids
-          // already understand. SPA navigation via wouter — preserves the
-          // wizard's in-memory state (session, components, selected assets)
-          // so the kid can come right back without losing work.
-          setLocation('/lesson/lesson-1');
+          // P8 — dedicated lessons index page with overall + per-lesson
+          // progress. SPA navigation via wouter preserves the wizard's
+          // in-memory state so the kid can come right back.
+          setLocation('/lessons');
           break;
         case 'resetProgress':
           handleResetProgress();

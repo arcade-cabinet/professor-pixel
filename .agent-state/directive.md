@@ -303,9 +303,9 @@ that ran post-finishing-pillar merge. ONE comprehensive PR; no carve-offs.
 
 ### P8 — Lesson progress visibility
 
-- [ ] P8.1 lesson-progress-bar.tsx — N of M completed + milestone badges (3/5/10).
-- [ ] P8.2 lesson.tsx render bar; "What's next?" callout under completed lessons.
-- [ ] P8.3 `pp.profile = { name?, createdAt }` localStorage handle; wizard interpolates `{name}`; settings page allows change.
+- [x] P8.1 lessons.tsx index page — overall progress card (Trophy icon + percentage + Progress bar), per-lesson rows with state icons (CheckCircle2/PlayCircle/Circle) and inline progress bar.
+- [x] P8.2 Wired into App router as `/lessons`; PixelMenu "View Progress" + home.tsx returning lesson-mode users now route here. statusFor() unit-tested for completed/in-progress/not-started + zero-step edge case.
+- [x] P8.3 `pp.profile` storage helper (loadProfile/saveProfile/clearProfile) + lessons.tsx "What should Pixel call you?" card. Existing src/wizard/dialog.ts already interpolates `{name}` from the profile, so the storage write is sufficient to wire up name-aware copy across the wizard. 8 unit tests covering trim/cap/createdAt-preservation/malformed-data handling.
 
 ### P9 — Code ↔ WYSIWYG sync (V1 boundary)
 

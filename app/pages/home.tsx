@@ -65,7 +65,7 @@ export default function Home() {
       return;
     }
     if (lastPath === 'lessons') {
-      setLocation('/lesson/lesson-1');
+      setLocation('/lessons');
       return;
     }
     // First-visit micro-tutorial card
@@ -84,7 +84,7 @@ export default function Home() {
     if (path === 'wizard') {
       setSkipChooser(true);
     } else {
-      setLocation('/lesson/lesson-1');
+      setLocation('/lessons');
     }
   };
 

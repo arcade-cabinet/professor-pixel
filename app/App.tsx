@@ -9,6 +9,7 @@ import { globalErrorHandler } from '@lib/errors/global-handler';
 import NotFound from '@/pages/not-found';
 import Home from '@/pages/home';
 import LessonPage from '@/pages/lesson';
+import LessonsIndex from '@/pages/lessons';
 import PixelPresence from '@/components/pixel/presence';
 import UniversalWizard from '@/components/wizard/universal';
 import { DevHud } from '@/components/dev-hud';
@@ -24,6 +25,14 @@ function Router() {
         component={() => (
           <PageErrorBoundary context="Home Page">
             <Home />
+          </PageErrorBoundary>
+        )}
+      />
+      <Route
+        path="/lessons"
+        component={() => (
+          <PageErrorBoundary context="Lessons Index">
+            <LessonsIndex />
           </PageErrorBoundary>
         )}
       />
