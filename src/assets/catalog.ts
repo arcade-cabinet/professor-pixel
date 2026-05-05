@@ -30,7 +30,18 @@ interface AssetCatalog {
 
 let cached: Promise<AssetCatalog> | null = null;
 
-const CATALOG_URL = '/assets/catalog.json';
+// Honor Vite's --base flag so the catalog still resolves under
+// /<repo>/ on GitHub Pages. resolveCatalogUrl() reads BASE_URL at
+// import time (which is when Vite freezes the env) and prefixes the
+// relative path. Falls through to the root form when BASE_URL is
+// undefined (jsdom test contexts).
+function resolveCatalogUrl(): string {
+  const raw = (typeof import.meta !== 'undefined' && import.meta.env?.BASE_URL) || '/';
+  const base = raw.endsWith('/') ? raw : `${raw}/`;
+  return `${base}assets/catalog.json`;
+}
+
+const CATALOG_URL = resolveCatalogUrl();
 
 function toSprite(e: CatalogEntry): SpriteAsset {
   return {
