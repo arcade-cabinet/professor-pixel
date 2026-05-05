@@ -427,13 +427,27 @@ export function useWizardDialogue({
     const { currentNode, dialogueStep } = dialogueState;
     if (!currentNode) return;
 
+    // Mid-multiStep: bump the dialogue step; the ContinueButton is already showing.
     if (currentNode.multiStep && dialogueStep < currentNode.multiStep.length - 1) {
       setDialogueState((prev) => ({
         ...prev,
         dialogueStep: prev.dialogueStep + 1,
       }));
+      return;
     }
-  }, [dialogueState]);
+
+    // End-of-multiStep OR plain node — when the layout collapsed a single
+    // "continue"-pattern option to ContinueButton (see shouldShowContinue
+    // / shouldShowOptions in src/wizard/utils.ts), Advance must actually
+    // navigate to that option's `next`. Otherwise the user clicks Continue
+    // and nothing happens. Closes playtest analysis F4.2.
+    if (currentNode.options && currentNode.options.length === 1) {
+      const only = currentNode.options[0];
+      if (!only.action && !only.setVariable && !only.updatePreview && only.next) {
+        navigateToNode(only.next);
+      }
+    }
+  }, [dialogueState, navigateToNode]);
 
   return {
     wizardData,

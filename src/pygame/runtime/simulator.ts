@@ -18,7 +18,7 @@ interface SimulationResult {
 // it — Python's pygame is dynamic by nature, mirror that at the boundary
 // rather than forcing a discriminated union the renderer would have to
 // re-narrow at every call site anyway.
-interface DrawCommand {
+export interface DrawCommand {
   type:
     | 'circle'
     | 'rect'
@@ -301,6 +301,21 @@ export function resetPygameState() {
   isRenderingActive = false;
   currentFPS = 60;
   lastFrameTime = 0;
+}
+
+/**
+ * Test-friendly probe for the module-internal currentFPS counter. Production
+ * code reads it via `pygame.time.Clock().get_fps()` (see PygameClock); the
+ * harness uses this to assert the frame-rate band without instantiating a
+ * Clock.
+ */
+export function getCurrentFPS(): number {
+  return currentFPS;
+}
+
+/** Test-friendly probe for the module-internal frame buffer. */
+export function getFrameBuffer(): readonly DrawCommand[] {
+  return frameBuffer;
 }
 
 // Create complete pygame environment for Pyodide

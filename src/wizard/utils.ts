@@ -41,6 +41,24 @@ export const getGameTypeIcon = (optionText: string): LucideIcon | null => {
   return null;
 };
 
+// "Continue"-pattern matcher: a single option whose text reads as a generic
+// pacing affordance (Continue / Next / OK / Got it / Let's go / etc.) should
+// render as the ContinueButton, not a 1-item options list. The pattern is
+// case-insensitive and whitespace-trimmed; it matches the playtest analysis
+// finding that single-option "continue" pickers add cognitive load without
+// offering a real choice.
+const CONTINUE_PATTERN = /^\s*(continue|next|ok(?:ay)?|got it|let'?s go|sounds good|sure)\s*[!.?]*\s*$/i;
+
+const isSingleContinueOption = (currentNode: WizardNode | null): boolean => {
+  if (!currentNode?.options) return false;
+  if (currentNode.options.length !== 1) return false;
+  const only = currentNode.options[0];
+  // The option must lack side effects beyond navigation; if it sets a variable
+  // or triggers an action, we keep it as an explicit option.
+  if (only.action || only.setVariable || only.updatePreview) return false;
+  return CONTINUE_PATTERN.test(only.text);
+};
+
 // Check if should show options
 export const shouldShowOptions = (
   currentNode: WizardNode | null,
@@ -49,9 +67,12 @@ export const shouldShowOptions = (
   if (!currentNode) return false;
 
   if (currentNode.multiStep) {
-    return dialogueStep >= currentNode.multiStep.length - 1 && !!currentNode.options;
+    if (dialogueStep < currentNode.multiStep.length - 1) return false;
+    if (isSingleContinueOption(currentNode)) return false;
+    return !!currentNode.options;
   }
 
+  if (isSingleContinueOption(currentNode)) return false;
   return !!currentNode.options;
 };
 
@@ -63,10 +84,11 @@ export const shouldShowContinue = (
   if (!currentNode) return false;
 
   if (currentNode.multiStep) {
-    return dialogueStep < currentNode.multiStep.length - 1;
+    if (dialogueStep < currentNode.multiStep.length - 1) return true;
+    return isSingleContinueOption(currentNode);
   }
 
-  return false;
+  return isSingleContinueOption(currentNode);
 };
 
 // Get current dialogue text
