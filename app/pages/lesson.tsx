@@ -200,7 +200,12 @@ export default function LessonEnhanced() {
       });
 
       if (result.error) {
-        setError(result.error);
+        // result.error is raw stderr from the Pyodide worker — same kid-
+        // facing surface as the outer catch below. Route through the
+        // educational mapper so the editor doesn't render a verbatim
+        // SyntaxError / NameError header.
+        const friendly = getEducationalError(result.error);
+        setError(`${friendly.friendlyMessage} ${friendly.explanation}`);
         setPixelDialogue(getRandomDialogue(pixelDialogues.stepError));
         setPixelImage(pixelThinking);
 
@@ -254,8 +259,7 @@ export default function LessonEnhanced() {
           // undefined") confuse and scare kids. Route through the educational
           // mapper so we say "We couldn't check your code" with a real next-step
           // hint, not the JS error class name.
-          const raw =
-            gradingError instanceof Error ? gradingError.message : String(gradingError);
+          const raw = gradingError instanceof Error ? gradingError.message : String(gradingError);
           const friendly = getEducationalError(raw);
           setGradingResult({
             passed: false,
