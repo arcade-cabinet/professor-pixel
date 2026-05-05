@@ -51,6 +51,15 @@ export async function listWizardProjects(): Promise<Project[]> {
 /**
  * Persist a wizard snapshot. If the project already exists (matched by
  * `id`), update in place; otherwise create. Returns the saved project.
+ *
+ * Duplicate-name guard (P4.11): when no `existingId` is supplied AND a
+ * project already exists with the same `(name, template)` pair, treat it
+ * as an implicit overwrite rather than creating a second row. This makes
+ * the auto-save flow idempotent across "kid finishes the wizard, comes
+ * back, builds another with the same name" — without it, every revisit
+ * would silently spawn a duplicate. Same-template is part of the match
+ * key so a "Knight" platformer and a "Knight" shooter remain distinct
+ * games even though they share a name.
  */
 export async function saveWizardProject(
   snapshot: WizardProjectSnapshot,
@@ -62,8 +71,19 @@ export async function saveWizardProject(
     content: JSON.stringify(snapshot.wizardState),
   };
 
-  if (existingId) {
-    return storage.updateProject(existingId, {
+  let resolvedId = existingId;
+  if (!resolvedId) {
+    const existing = await storage.listProjects(ANON_USER_ID);
+    const match = existing.find(
+      (p) => p.name === snapshot.name && p.template === snapshot.template
+    );
+    if (match) {
+      resolvedId = match.id;
+    }
+  }
+
+  if (resolvedId) {
+    return storage.updateProject(resolvedId, {
       name: snapshot.name,
       template: snapshot.template,
       // Only include thumbnailDataUrl if the caller supplied one. Sending

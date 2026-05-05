@@ -270,12 +270,13 @@ export default function UniversalWizard({
         savedProjectIdRef.current = project.id;
         // P4.10 — brief "Saved" toast so the kid knows their work landed.
         // Dedupe by hashing the saved payload's identity slice: if the
-        // wizardState's currentNodeId + gameName + template are unchanged
-        // from the last toast'd save, this fire was a no-op (StrictMode
-        // double-invoke or a sessionActions re-derive with no real
-        // mutation) — silently absorb. Only a state-changing save
-        // surfaces UI noise.
-        const saveKey = `${draft.currentNodeId ?? ''}|${project.name}|${project.template}`;
+        // project id + name + template are unchanged from the last
+        // toast'd save, this fire was a no-op (StrictMode double-invoke
+        // or a sessionActions re-derive with no real mutation) —
+        // silently absorb. Only a state-changing save surfaces UI noise.
+        // Keying on project.id (not currentNodeId) avoids cross-project
+        // suppression when two distinct projects share name + template.
+        const saveKey = `${project.id}|${project.name}|${project.template}`;
         if (lastToastedSaveKeyRef.current !== saveKey) {
           lastToastedSaveKeyRef.current = saveKey;
           toast({
@@ -299,7 +300,7 @@ export default function UniversalWizard({
               thumbnailDataUrl: capturedThumbnail,
             });
             savedProjectIdRef.current = project.id;
-            const saveKey = `${draft.currentNodeId ?? ''}|${project.name}|${project.template}`;
+            const saveKey = `${project.id}|${project.name}|${project.template}`;
             if (lastToastedSaveKeyRef.current !== saveKey) {
               lastToastedSaveKeyRef.current = saveKey;
               toast({

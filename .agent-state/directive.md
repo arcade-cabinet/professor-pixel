@@ -375,7 +375,7 @@ Branch: feat/player-experience-pillar-4
 
 ### task-011 Block creating a duplicate-named project; offer overwrite
 
-- [ ] task-011 saveWizardProject duplicate-name guard; idempotent same-state save; rename/overwrite prompt for divergent state
+- [x] task-011 saveWizardProject duplicate-name guard; idempotent same-state save; rename/overwrite prompt for divergent state
 
 ### task-012 Live thumbnail of selected character/background while still on the picker step
 

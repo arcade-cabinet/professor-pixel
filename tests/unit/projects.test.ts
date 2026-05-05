@@ -162,4 +162,27 @@ describe('wizard projects (P5)', () => {
     // swallowing it would lose the kid's progress.
     await expect(saveWizardProject(baseSnapshot, 'definitely-not-a-real-id')).rejects.toThrow();
   });
+
+  it('does not duplicate when the same (name, template) is saved without existingId (P4.11)', async () => {
+    // A kid finishes the wizard, the savedProjectIdRef is cleared (component
+    // unmounts), they come back and rebuild the same kind of game — without
+    // the guard, this silently creates a second row with the same name. The
+    // guard treats it as an implicit overwrite so My Games stays clean.
+    const first = await saveWizardProject(baseSnapshot);
+    const second = await saveWizardProject(baseSnapshot);
+    expect(second.id).toBe(first.id);
+    const list = await listWizardProjects();
+    expect(list).toHaveLength(1);
+  });
+
+  it('keeps distinct rows when name matches but template differs (P4.11)', async () => {
+    // Same name across templates is intentional — a "Knight" platformer and
+    // a "Knight" shooter are different games. The guard scopes to the
+    // (name, template) pair so cross-template collisions don't merge.
+    const platformer = await saveWizardProject({ ...baseSnapshot, template: 'platformer' });
+    const shooter = await saveWizardProject({ ...baseSnapshot, template: 'shooter' });
+    expect(shooter.id).not.toBe(platformer.id);
+    const list = await listWizardProjects();
+    expect(list).toHaveLength(2);
+  });
 });
