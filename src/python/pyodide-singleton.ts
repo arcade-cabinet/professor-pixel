@@ -134,6 +134,13 @@ async function bootstrap(opts: BootstrapOptions): Promise<PyodideInstance> {
   try {
     const instance = await window.loadPyodide({
       indexURL,
+      // Serve package wheels (pygame-ce, etc.) from the same vendored
+      // /pyodide/ directory as the bootstrap assets instead of letting
+      // pyodide reach for cdn.jsdelivr.net at loadPackage() time. This
+      // is what makes the launcher work offline / inside Capacitor /
+      // behind a captive portal — without it, loadPackage('pygame-ce')
+      // would fail in any environment that blocks the default CDN.
+      packageBaseUrl: indexURL,
       stdout: opts.stdout,
       stderr: opts.stderr,
     });

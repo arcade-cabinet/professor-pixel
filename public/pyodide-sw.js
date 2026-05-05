@@ -86,7 +86,7 @@ self.addEventListener('fetch', (event) => {
 // a .html crash report or a directory listing — neither belongs in our
 // WASM/data cache. Defense in depth on top of the same-origin + flat-
 // path checks above.
-const ALLOWED_EXTENSIONS = new Set(['wasm', 'js', 'mjs', 'json', 'zip', 'data']);
+const ALLOWED_EXTENSIONS = new Set(['wasm', 'js', 'mjs', 'json', 'zip', 'data', 'whl']);
 
 function isAllowedFile(fileName) {
   // Reject empty, traversal, and nested paths up front.
