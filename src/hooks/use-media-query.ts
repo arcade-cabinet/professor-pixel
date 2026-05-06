@@ -5,11 +5,11 @@ export function useMediaQuery(query: string): boolean {
 
   useEffect(() => {
     const media = window.matchMedia(query);
-
-    // Check initial value
-    if (media.matches !== matches) {
-      setMatches(media.matches);
-    }
+    // setState is idempotent for identical values, so initializing
+    // unconditionally is cheaper than the prior `if (media.matches !==
+    // matches)` guard (which forced `matches` into the deps array and
+    // made every state flip re-bind the listener — wasted work).
+    setMatches(media.matches);
 
     const listener = () => setMatches(media.matches);
 
@@ -19,11 +19,9 @@ export function useMediaQuery(query: string): boolean {
       return () => media.removeEventListener('change', listener);
     }
     // Legacy browsers
-    else {
-      media.addListener(listener);
-      return () => media.removeListener(listener);
-    }
-  }, [matches, query]);
+    media.addListener(listener);
+    return () => media.removeListener(listener);
+  }, [query]);
 
   return matches;
 }
