@@ -85,8 +85,8 @@ export default defineConfig({
       // Vitest projects — unit + integration + component (browser). The
       // numbers below are the aggregate across all three.
       //
-      // Today's snapshot (2026-05-06, post-#69 + audio-sfx tests):
-      // statements 35.51%, branches 28.74%, functions 29.57%, lines 35.46%.
+      // Today's snapshot (2026-05-06, post-#69 + net-query-client tests):
+      // statements 35.11%, branches 28.34%, functions 29.36%, lines 35.07%.
       // The thresholds below sit a hair below those numbers (rounded down
       // to the nearest integer minus 1 for noise tolerance) so any
       // regression fails CI. Per the ratchet doctrine: any PR that moves
