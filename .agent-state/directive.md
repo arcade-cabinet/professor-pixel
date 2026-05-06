@@ -37,9 +37,9 @@ Branch: feat/post-30-consolidation
 
 ### S — State + plan-file cleanup
 
-- [ ] S1 update docs/STATE.md (PR #30 done, advance Active→Done, refresh Next, bump frontmatter)
-- [ ] S2 git mv 12 merged plan files to docs/plans/_archive/ + write _archive/README.md
-- [ ] S3 refresh .agent-state/cursor.md to point at this PRQ
+- [x] S1 update docs/STATE.md (PR #30 done, advance Active→Done, refresh Next, bump frontmatter)
+- [x] S2 git mv 12 merged plan files to docs/plans/_archive/ + write _archive/README.md
+- [x] S3 refresh .agent-state/cursor.md to point at this PRQ (no-op: hook auto-refreshes cursor on commit; cursor.md is gitignored cache)
 - [ ] S4 audit STATE.md → Next; tag every line with [PRQ:link] or [manual:user-action]
 
 ### R — Runbook closure (manual-action handoffs)
