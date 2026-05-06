@@ -549,7 +549,7 @@ Branch: TBD (after PR #30 squash-merge)
 
 ### E3 — Experience polish (the actual UI/UX gaps)
 
-- [ ] E3.1 Asset mounting in Pyodide FS — fetch each selected asset, write via `pyodide.FS.writeFile` before `runPython` in `/play` and live-preview, so pygame.image.load resolves; closes the magenta-placeholder regression that's been silent since the asset catalog landed
+- [ ] [WAIT-CI] E3.1 — pending CI green on fc4ceaa (new e2e-production-shape job needs first run on Ubuntu; macOS baselines may need regen). Once CI lands: Asset mounting in Pyodide FS — fetch each selected asset, write via `pyodide.FS.writeFile` before `runPython` in `/play` and live-preview, so pygame.image.load resolves; closes the magenta-placeholder regression that's been silent since the asset catalog landed
 - [ ] E3.2 Loading states + skeletons everywhere — launcher mount, asset catalog hydration, wizard transitions all currently flash blank then snap. Add transition placeholders + measured suspense boundaries
 - [ ] E3.3 Mobile/tablet drawer polish — drag handle visible, gesture-friendly resize, drawer persists across route changes inside the editor
 - [ ] E3.4 Audio: voiceschanged listener race fix on iOS Safari (Web Speech sometimes ships the voices array late); pre-warm mute toggle; SFX volume mixer
