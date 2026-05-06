@@ -102,7 +102,7 @@ export interface SessionAction {
   title: string;
   description?: string;
   timestamp: Date;
-  icon: ComponentType<{ className?: string; size?: number }>;
+  icon: ComponentType<{ className?: string; size?: number | string }>;
 }
 
 // Layout modes
