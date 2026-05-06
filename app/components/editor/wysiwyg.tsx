@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { cn } from '@lib/utils/cn';
 import { useViewport } from '@lib/hooks/use-viewport';
 import { useUndoableList } from '@lib/hooks/use-undoable-list';
+import { useEdgeSwipe } from '@lib/hooks/use-edge-swipe';
 
 import PygameEditorCanvas from './canvas';
 import TapToPlaceHint from './tap-to-place-hint';
@@ -118,6 +119,20 @@ export default function PygameWysiwygEditor({
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
   }, [paletteOpen, propertiesOpen]);
+
+  // E3.3 — edge-swipe gestures on touch-primary compact viewports.
+  // Swipe right from the left edge → open the palette drawer.
+  // Swipe left  from the right edge → open the properties drawer.
+  // Disabled on desktop and tablet wide-mode where the panels are
+  // permanently visible (the drawer state isn't even consulted there).
+  useEdgeSwipe({
+    enabled: isCompact && isTouchPrimary,
+    edgeThreshold: 30,
+    onEdgeSwipe: (edge) => {
+      if (edge === 'left') setPaletteOpen(true);
+      else if (edge === 'right') setPropertiesOpen(true);
+    },
+  });
 
   const selectedComponent = placedComponents.find((c) => c.id === selectedComponentId);
 
