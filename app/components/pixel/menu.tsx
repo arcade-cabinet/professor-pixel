@@ -42,7 +42,7 @@ interface SessionAction {
   title: string;
   description?: string;
   timestamp: Date;
-  icon: React.ComponentType<{ className?: string; size?: number }>;
+  icon: React.ComponentType<{ className?: string; size?: number | string }>;
 }
 
 interface PixelMenuProps {

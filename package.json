@@ -65,7 +65,7 @@
     "framer-motion": "^12.38.0",
     "input-otp": "^1.4.2",
     "jszip": "^3.10.1",
-    "lucide-react": "^0.453.0",
+    "lucide-react": "^1.14.0",
     "nanoid": "^5.1.11",
     "pyodide": "^0.29.3",
     "react": "^19.2.5",

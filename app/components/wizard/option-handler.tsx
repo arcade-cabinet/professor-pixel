@@ -163,7 +163,7 @@ export function OptionButton({
 
 interface OptionContentProps {
   text: string;
-  Icon: React.ComponentType<{ className?: string; size?: number }>;
+  Icon: React.ComponentType<{ className?: string; size?: number | string }>;
   isMobile: boolean;
   variant: 'default' | 'phone-portrait' | 'phone-landscape';
   optionCount: number;
