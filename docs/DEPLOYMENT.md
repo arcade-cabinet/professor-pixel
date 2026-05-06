@@ -175,9 +175,11 @@ The keystore should live in a password manager or a hardware security module —
 **After secret upload:**
 
 ```sh
-# Move the keystore to a password manager / HSM, then shred the local copy.
-# Without -u (unlink) the file lingers; without -z (final zero-pass) some FS journaling tools can recover.
-shred -u -z release.keystore
+# Move the keystore to a password manager / HSM, then overwrite + delete the local copy.
+# macOS (BSD): `rm -P` overwrites three times before unlinking. Modern SSDs may retain the data
+# in TRIM-pending blocks regardless — full-disk encryption (FileVault) is the actual defense.
+# Linux/coreutils: `shred -u -z release.keystore` for journaling-fs systems.
+rm -P release.keystore
 
 # Wipe the keytool + base64 + secret-paste invocations from history.
 history -c     # current session

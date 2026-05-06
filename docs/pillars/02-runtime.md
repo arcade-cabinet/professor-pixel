@@ -97,7 +97,7 @@ The singleton has a CDN fallback (`cdn.jsdelivr.net/pyodide/v0.29.3/full/`) used
 
 The first cold start downloads ~12MB of Pyodide assets. Subsequent loads should be effectively free — `public/pyodide-sw.js` intercepts every `/pyodide/*` request, mirrors the response into OPFS under `pyodide-cache-v<version>/`, and serves from cache on the next reload.
 
-The cache write goes through an allowlist (`Content-Type` match plus `.wasm`/`.js`/`.mjs`/`.json`/`.zip`/`.data` extension match) so a misrouted HTML response from a captive portal can't poison it. Activate-time eviction drops any `pyodide-cache-v*` directory that doesn't match the current `PYODIDE_VERSION` constant — version bumps clean up automatically.
+The cache write goes through an allowlist (`Content-Type` match plus `.wasm`/`.js`/`.mjs`/`.json`/`.zip`/`.data`/`.whl` extension match) so a misrouted HTML response from a captive portal can't poison it. Activate-time eviction drops any `pyodide-cache-v*` directory that doesn't match the current `PYODIDE_VERSION` constant — version bumps clean up automatically.
 
 **Capacitor short-circuit.** Inside the native shell (`location.protocol === 'capacitor:'`) the WASM ships in the APK, so the SW registration is skipped entirely. The same protocol guard lives at the registration site in `app/main.tsx`. Full layout + invariants in [Pillar 6 — Storage](./06-storage.md#pyodide-wasm-cache--service-worker--opfs).
 
