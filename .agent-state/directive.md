@@ -40,13 +40,13 @@ Branch: feat/post-30-consolidation
 - [x] S1 update docs/STATE.md (PR #30 done, advance Active→Done, refresh Next, bump frontmatter)
 - [x] S2 git mv 12 merged plan files to docs/plans/_archive/ + write _archive/README.md
 - [x] S3 refresh .agent-state/cursor.md to point at this PRQ (no-op: hook auto-refreshes cursor on commit; cursor.md is gitignored cache)
-- [ ] S4 audit STATE.md → Next; tag every line with [PRQ:link] or [manual:user-action]
+- [x] S4 audit STATE.md → Next; tag every line with [PRQ:link] or [manual:user-action]
 
 ### R — Runbook closure (manual-action handoffs)
 
-- [ ] R1 docs/DEPLOYMENT.md Play Store rollout runbook (keystore, secrets, cd-mobile dispatch, Play Console)
-- [ ] R2 docs/DEPLOYMENT.md iOS TestFlight runbook (Mac+Xcode, cap add ios, signing, Transporter)
-- [ ] R3 verify asset-mount documented in docs/pillars/06-storage.md (closes stale STATE.md → Next bullet)
+- [x] R1 docs/DEPLOYMENT.md Play Store rollout runbook (keystore, secrets, cd-mobile dispatch, Play Console)
+- [x] R2 docs/DEPLOYMENT.md iOS TestFlight runbook (Mac+Xcode, cap add ios, signing, Transporter)
+- [x] R3 verify asset-mount documented in docs/pillars/06-storage.md (closes stale STATE.md → Next bullet)
 
 ## Batch — foundations-pillar-completion (batch-20260504-140912)
 
