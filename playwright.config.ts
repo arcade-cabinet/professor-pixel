@@ -20,7 +20,7 @@ export default defineConfig({
     // Desktop Testing (1920x1080) - Standard desktop resolution
     {
       name: 'desktop-chromium',
-      testIgnore: /production-shape\.spec\.ts$/,
+      testIgnore: /production-shape(-visual)?\.spec\.ts$/,
       use: {
         ...devices['Desktop Chrome'],
         viewport: { width: 1920, height: 1080 },
@@ -29,7 +29,7 @@ export default defineConfig({
     },
     {
       name: 'desktop-firefox',
-      testIgnore: /production-shape\.spec\.ts$/,
+      testIgnore: /production-shape(-visual)?\.spec\.ts$/,
       use: {
         ...devices['Desktop Firefox'],
         viewport: { width: 1920, height: 1080 },
@@ -40,7 +40,7 @@ export default defineConfig({
     // Tablet Testing (768x1024) - Standard tablet resolution
     {
       name: 'tablet-portrait',
-      testIgnore: /production-shape\.spec\.ts$/,
+      testIgnore: /production-shape(-visual)?\.spec\.ts$/,
       use: {
         ...devices['iPad'],
         viewport: { width: 768, height: 1024 },
@@ -49,7 +49,7 @@ export default defineConfig({
     },
     {
       name: 'tablet-landscape',
-      testIgnore: /production-shape\.spec\.ts$/,
+      testIgnore: /production-shape(-visual)?\.spec\.ts$/,
       use: {
         ...devices['iPad'],
         viewport: { width: 1024, height: 768 },
@@ -60,7 +60,7 @@ export default defineConfig({
     // Mobile Portrait Testing (375x667) - iPhone 8 dimensions
     {
       name: 'mobile-portrait',
-      testIgnore: /production-shape\.spec\.ts$/,
+      testIgnore: /production-shape(-visual)?\.spec\.ts$/,
       use: {
         ...devices['iPhone 8'],
         viewport: { width: 375, height: 667 },
@@ -72,7 +72,7 @@ export default defineConfig({
     // Mobile Landscape Testing (667x375) - iPhone 8 landscape
     {
       name: 'mobile-landscape',
-      testIgnore: /production-shape\.spec\.ts$/,
+      testIgnore: /production-shape(-visual)?\.spec\.ts$/,
       use: {
         ...devices['iPhone 8'],
         viewport: { width: 667, height: 375 },
@@ -84,7 +84,7 @@ export default defineConfig({
     // Additional mobile testing for modern devices
     {
       name: 'mobile-modern',
-      testIgnore: /production-shape\.spec\.ts$/,
+      testIgnore: /production-shape(-visual)?\.spec\.ts$/,
       use: {
         ...devices['iPhone 12'],
         hasTouch: true,
@@ -101,7 +101,7 @@ export default defineConfig({
     // exercised at runtime via emulator media-query, no separate project.
     {
       name: 'production-shape-desktop',
-      testMatch: /production-shape\.spec\.ts$/,
+      testMatch: /production-shape(-visual)?\.spec\.ts$/,
       use: {
         ...devices['Desktop Chrome'],
         baseURL: 'http://localhost:4173',
@@ -110,7 +110,7 @@ export default defineConfig({
     },
     {
       name: 'production-shape-tablet',
-      testMatch: /production-shape\.spec\.ts$/,
+      testMatch: /production-shape(-visual)?\.spec\.ts$/,
       use: {
         ...devices['iPad'],
         baseURL: 'http://localhost:4173',
@@ -120,7 +120,7 @@ export default defineConfig({
     },
     {
       name: 'production-shape-mobile',
-      testMatch: /production-shape\.spec\.ts$/,
+      testMatch: /production-shape(-visual)?\.spec\.ts$/,
       use: {
         ...devices['iPhone 12'],
         baseURL: 'http://localhost:4173',

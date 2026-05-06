@@ -166,9 +166,12 @@ test.describe('Production-shape build (BASE_URL=/professor-pixel/)', () => {
     // handler (pyodide-singleton.ts:198), and in the same tick the
     // 'Pyodide cold-start XXXms' info log fires.
     await page.goto(`${BASE_PATH}/lesson/lesson-1`);
-    await page.waitForFunction(() => Boolean((window as unknown as { pyodide?: unknown }).pyodide), {
-      timeout: E2E_OUTER_BUDGET_MS,
-    });
+    await page.waitForFunction(
+      () => Boolean((window as unknown as { pyodide?: unknown }).pyodide),
+      {
+        timeout: E2E_OUTER_BUDGET_MS,
+      }
+    );
 
     const coldStartLog = consoleLogs.find((line) => /Pyodide cold-start \d+ms/.test(line));
     expect(coldStartLog, 'singleton must log cold-start duration on boot').toBeTruthy();
