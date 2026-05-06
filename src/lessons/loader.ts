@@ -1,4 +1,5 @@
 import { LessonSchema, type Lesson } from '@lib/types/schema';
+import { baseUrl } from '@lib/utils/base-url';
 
 let cached: Promise<Lesson[]> | null = null;
 
@@ -9,8 +10,7 @@ let cached: Promise<Lesson[]> | null = null;
 export function loadLessons(): Promise<Lesson[]> {
   if (cached) return cached;
   cached = (async () => {
-    const baseUrl = (import.meta.env.BASE_URL || '/').replace(/\/$/, '');
-    const response = await fetch(`${baseUrl}/api/static/lessons.json`);
+    const response = await fetch(`${baseUrl}api/static/lessons.json`);
     if (!response.ok) {
       throw new Error(`lessons.json fetch failed: HTTP ${response.status} ${response.statusText}`);
     }

@@ -11,6 +11,8 @@
  * that's a deploy bug, not a runtime fallback.
  */
 
+import { baseUrl } from '@lib/utils/base-url';
+
 export class PyodideLoadError extends Error {
   constructor(message: string, options?: { cause?: unknown }) {
     super(message, options);
@@ -45,13 +47,10 @@ interface BootstrapOptions {
   stderr?: (s: string) => void;
 }
 
-function resolveIndexURL(): string {
-  const baseUrl = (import.meta.env.BASE_URL || '/').replace(/\/$/, '');
-  // Vendored Pyodide lives under public/pyodide/ (committed to the repo).
-  // The OPFS service worker (pyodide-sw.js) caches these requests on first
-  // load so the 12MB payload is served from local storage thereafter.
-  return `${baseUrl}/pyodide/`;
-}
+// Vendored Pyodide lives under public/pyodide/ (committed to the repo).
+// The OPFS service worker (pyodide-sw.js) caches these requests on first
+// load so the 12MB payload is served from local storage thereafter.
+const PYODIDE_INDEX_URL = `${baseUrl}pyodide/`;
 
 async function loadPyodideScript(scriptSrc: string): Promise<void> {
   if (typeof window !== 'undefined' && window.loadPyodide) return;
@@ -115,7 +114,7 @@ async function bootstrap(opts: BootstrapOptions): Promise<PyodideInstance> {
     throw new PyodideLoadError('Pyodide cannot be loaded outside the browser');
   }
 
-  const indexURL = opts.indexURL ?? resolveIndexURL();
+  const indexURL = opts.indexURL ?? PYODIDE_INDEX_URL;
   const scriptSrc = `${indexURL}pyodide.js`;
 
   try {
