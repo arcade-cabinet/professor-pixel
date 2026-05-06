@@ -12,10 +12,14 @@ export async function apiRequest(
   url: string,
   data?: unknown | undefined
 ): Promise<Response> {
+  // `data !== undefined` rather than truthy check: '', 0, false, null
+  // are valid JSON payloads. The previous truthy-check silently dropped
+  // them, breaking endpoints that expect primitive bodies.
+  const hasBody = data !== undefined;
   const res = await fetch(url, {
     method,
-    headers: data ? { 'Content-Type': 'application/json' } : {},
-    body: data ? JSON.stringify(data) : undefined,
+    headers: hasBody ? { 'Content-Type': 'application/json' } : {},
+    body: hasBody ? JSON.stringify(data) : undefined,
     credentials: 'include',
   });
 
