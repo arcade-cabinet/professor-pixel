@@ -537,7 +537,7 @@ Branch: TBD (after PR #30 squash-merge)
 
 ### E1 — Real e2e on the production-shape build
 
-- [ ] E1.1 Playwright config runs against `pnpm preview --base=/professor-pixel/` (production-shape, not dev) so BASE_URL fixes are actually exercised; cover home → wizard → play → export golden path
+- [x] E1.1 Playwright config runs against `pnpm preview --base=/professor-pixel/` (production-shape, not dev) so BASE_URL fixes are actually exercised; cover home → wizard → play → export golden path — `tests/e2e/production-shape.spec.ts` with new `production-shape` Playwright project + dual webServer (vite build + preview at port 4173). 5 tests pass: home / lessons / wizard / asset-catalog (asserts URL includes `/professor-pixel/assets/catalog.json`) / not-found. Found and fixed 4th BASE_URL bug: `loadWizardFlow()` in `src/wizard/utils.ts` hardcoded the path; now wraps with `withBase`. Other legacy projects (desktop/tablet/mobile) testIgnore the new spec to avoid running it under the wrong baseURL.
 - [ ] E1.2 Multi-resolution suite (mobile/tablet/desktop/foldable) — assert no runtime errors via `page.on('pageerror')` + `page.on('console')` collectors; fail fast on uncaught
 - [ ] E1.3 Cold-start budget assertion in e2e (was: instrumentation only) — `time-to-pyodide-ready < 8s` on warmed-up CI runner; budget is the regression alarm
 
