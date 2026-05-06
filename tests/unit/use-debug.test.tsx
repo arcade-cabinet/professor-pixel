@@ -300,7 +300,9 @@ describe('useDebug — cleanup', () => {
     // The same listener function must be passed to removeEventListener
     // on cleanup — pin reference identity so a future bug that
     // accidentally creates a new closure on cleanup gets caught.
-    const removedListener = removeSpy.mock.calls.find((call: unknown[]) => call[0] === 'keydown')?.[1];
+    const removedListener = removeSpy.mock.calls.find(
+      (call: unknown[]) => call[0] === 'keydown'
+    )?.[1];
     expect(removedListener).toBe(addedListener);
   });
 
