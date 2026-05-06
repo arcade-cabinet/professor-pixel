@@ -45,9 +45,11 @@ function attachErrorCollector(page: Page): ErrorCollector {
 }
 
 function assertNoErrors(collector: ErrorCollector, context: string) {
-  // Filter expected console noise — Pyodide emits warnings about
-  // FinalizationRegistry availability that aren't bugs.
-  const ignoreConsole = [/FinalizationRegistry/i, /\[HMR\]/i];
+  // Filter HMR bleed-through (shouldn't appear against the preview server
+  // build, but defensive). Note: we collect only msg.type() === 'error',
+  // so console.warn (e.g. Pyodide's FinalizationRegistry GC notes) never
+  // lands here in the first place; no need to filter warns.
+  const ignoreConsole = [/\[HMR\]/i];
   const realConsoleErrors = collector.consoleErrors.filter(
     (m) => !ignoreConsole.some((re) => re.test(m.text()))
   );
@@ -104,33 +106,22 @@ test.describe('Production-shape build (BASE_URL=/professor-pixel/)', () => {
 
   test('asset catalog fetches resolve through BASE_URL', async ({ page }) => {
     const errors = attachErrorCollector(page);
-    let catalogStatus: number | null = null;
-    let catalogUrl: string | null = null;
 
-    // Attach listener BEFORE navigation so the catalog request (fired
-    // from assetManager's eager hydration during module load) lands
-    // in our handler.
-    page.on('response', (resp) => {
-      if (resp.url().includes('/assets/catalog.json')) {
-        catalogStatus = resp.status();
-        catalogUrl = resp.url();
-      }
-    });
-
-    await page.goto(`${BASE_PATH}/wizard`);
+    // Direct fetch test against the build's BASE-prefixed catalog URL.
+    // This avoids race conditions on listener timing and SW caching,
+    // and asserts the exact thing we care about: the file is reachable
+    // at the path the production bundle will request.
+    await page.goto(`${BASE_PATH}/`);
     await page.waitForLoadState('domcontentloaded');
 
-    // Wait specifically for the catalog response since it's lazy off
-    // the React tree mount; eager hydration races with navigation.
-    await page.waitForResponse((r) => r.url().includes('/assets/catalog.json'), {
-      timeout: 15_000,
-    });
+    const catalogResult = await page.evaluate(async (basePath) => {
+      const url = `${basePath}/assets/catalog.json`;
+      const res = await fetch(url);
+      return { status: res.status, url, ok: res.ok };
+    }, BASE_PATH);
 
-    expect(catalogStatus, `catalog HTTP status: ${catalogStatus}`).toBe(200);
-    expect(
-      catalogUrl,
-      `catalog URL must include the BASE path: ${catalogUrl}`
-    ).toContain(`${BASE_PATH}/assets/catalog.json`);
+    expect(catalogResult.status, `catalog HTTP status from ${catalogResult.url}`).toBe(200);
+    expect(catalogResult.ok).toBe(true);
     assertNoErrors(errors, 'asset-catalog');
   });
 

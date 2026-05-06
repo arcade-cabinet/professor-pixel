@@ -5,6 +5,7 @@ jspm_packages/
 # Build outputs
 dist/
 dist-ssr/
+dist-preview-pages/
 build/
 *.local
 server/public/

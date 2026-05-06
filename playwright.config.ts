@@ -95,13 +95,37 @@ export default defineConfig({
     // Production-shape build (BASE_URL=/professor-pixel/) — exercises the
     // exact bundle GitHub Pages serves. Runs only the focused
     // production-shape suite; legacy dev-mode specs use the dev server.
+    // Three viewports cover the layouts the responsive code paths gate on
+    // (mobile <768, tablet 768-1024, desktop >1024). The fold case is
+    // covered by the Viewport Segments API path in use-device-type.ts —
+    // exercised at runtime via emulator media-query, no separate project.
     {
-      name: 'production-shape',
+      name: 'production-shape-desktop',
       testMatch: /production-shape\.spec\.ts$/,
       use: {
         ...devices['Desktop Chrome'],
         baseURL: 'http://localhost:4173',
         viewport: { width: 1280, height: 800 },
+      },
+    },
+    {
+      name: 'production-shape-tablet',
+      testMatch: /production-shape\.spec\.ts$/,
+      use: {
+        ...devices['iPad'],
+        baseURL: 'http://localhost:4173',
+        viewport: { width: 768, height: 1024 },
+        hasTouch: true,
+      },
+    },
+    {
+      name: 'production-shape-mobile',
+      testMatch: /production-shape\.spec\.ts$/,
+      use: {
+        ...devices['iPhone 12'],
+        baseURL: 'http://localhost:4173',
+        hasTouch: true,
+        isMobile: true,
       },
     },
   ],
@@ -117,8 +141,13 @@ export default defineConfig({
       timeout: 120 * 1000,
     },
     {
+      // Build into a dedicated outDir (`dist-preview-pages/`) so a stale
+      // `dist/` from `pnpm build` (which uses base=/) can't silently get
+      // served when reuseExistingServer keeps :4173 alive. Re-running the
+      // suite always either rebuilds into the namespaced dir or reuses
+      // the still-correct existing server.
       command:
-        'pnpm exec vite build --base=/professor-pixel/ && pnpm exec vite preview --base=/professor-pixel/ --port 4173 --strictPort',
+        'pnpm exec vite build --base=/professor-pixel/ --outDir dist-preview-pages && pnpm exec vite preview --base=/professor-pixel/ --outDir dist-preview-pages --port 4173 --strictPort',
       url: 'http://localhost:4173/professor-pixel/',
       reuseExistingServer: !process.env.CI,
       timeout: 180 * 1000,
