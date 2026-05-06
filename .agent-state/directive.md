@@ -31,8 +31,8 @@ Branch: feat/post-30-consolidation
 
 - [x] D1 add docs/pillars/06-storage.md (OPFS, migration, asset-mount, write-then-rename)
 - [x] D2 add docs/pillars/07-deploy.md (Pages base, Capacitor APK, iOS, base-url helper, e2e production-shape, trusted-ref guard)
-- [ ] D3 update docs/pillars/02-runtime.md (OPFS WASM cache, Capacitor SW short-circuit, iOS voiceschanged race)
-- [ ] D4 update docs/pillars/01-frontend.md (wouter base wrap, edge-swipe hook, skeleton + aria-busy, audio toggle)
+- [x] D3 update docs/pillars/02-runtime.md (OPFS WASM cache, Capacitor SW short-circuit, iOS voiceschanged race)
+- [x] D4 update docs/pillars/01-frontend.md (wouter base wrap, edge-swipe hook, skeleton + aria-busy, audio toggle)
 - [ ] D5 update docs/README.md index for 7 pillars; verify cross-refs in STANDARDS.md + AGENTS.md
 
 ### S — State + plan-file cleanup
