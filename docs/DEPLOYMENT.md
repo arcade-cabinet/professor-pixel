@@ -1,6 +1,6 @@
 ---
 title: Deployment
-updated: 2026-05-05
+updated: 2026-05-06
 status: current
 domain: ops
 ---
@@ -144,46 +144,118 @@ npx cap sync android                      # mirror dist/ → android/app/src/mai
 adb install android/app/build/outputs/apk/debug/app-debug.apk
 ```
 
-For a Play Store release build:
+### Play Store rollout
+
+Operator-only flow. `cd-mobile.yml` already produces signed-release builds in CI behind the `android-release` GitHub environment; the human steps are keystore generation and Play Console upload.
+
+**1. Generate the release keystore (one-time, store securely OUT of git):**
 
 ```sh
-# Generate a keystore (one-time, store securely OUT of git)
-keytool -genkey -v -keystore android/app/keystore/release.keystore \
-  -alias professor-pixel -keyalg RSA -keysize 2048 -validity 10000
-
-# Create signing.properties (gitignored — see signing.properties.example)
-cat > android/app/signing.properties <<EOF
-storeFile=keystore/release.keystore
-storePassword=…
-keyAlias=professor-pixel
-keyPassword=…
-EOF
-
-(cd android && ./gradlew assembleRelease)
-# APK at android/app/build/outputs/apk/release/app-release.apk
-# Upload to https://play.google.com/console/
+# Interactive — keytool prompts for store + key passwords; no plaintext in shell history or `ps` output.
+keytool -genkeypair -v \
+  -keystore release.keystore \
+  -alias professor-pixel \
+  -keyalg RSA -keysize 2048 -validity 10000 \
+  -dname "CN=Professor Pixel, O=Arcade Cabinet, C=US"
 ```
 
-CI (`.github/workflows/cd-mobile.yml`) builds the **debug** APK on every push to `main` and uploads it as a workflow artifact. The signed Play Store build runs only on manual workflow dispatch from a trusted ref (`main` or a `refs/tags/*` ref — selecting an arbitrary feature branch from the workflow_dispatch UI is rejected by the job's `if:` guard) and consumes the `ANDROID_KEYSTORE_BASE64` + `ANDROID_KEYSTORE_PASSWORD` + `ANDROID_KEY_ALIAS` + `ANDROID_KEY_PASSWORD` repository secrets. Versioning: pass `VERSION_CODE` and `VERSION_NAME` as `-P` properties to gradle (or set them in `gradle.properties`) so the release build numbers can increment per Play Store upload without editing `android/app/build.gradle`.
+**Do NOT** pass `-storepass` / `-keypass` on the command line — those flags land in `~/.zsh_history` and are visible to any local user via `ps auxww`. Use the interactive prompt or `-storepass:env STORE_PW` after `read -s STORE_PW; export STORE_PW`.
 
-### iOS workflow
+The keystore should live in a password manager or a hardware security module — **never** in the repo, never in cloud storage without encryption.
 
-iOS provisioning + signing requires a physical Mac with Xcode 16+ and an active Apple Developer account ($99/yr). CI cannot fully sign builds (Apple's restrictions), so the iOS path is manual:
+**2. Add the four repository secrets** (Settings → Secrets and variables → Actions):
+
+| Secret | Value |
+|---|---|
+| `ANDROID_KEYSTORE_BASE64` | `base64 -i release.keystore \| pbcopy` then paste — keeps the encoded keystore off the terminal scrollback. The workflow's `base64 -d` handles wrapped or single-line input. |
+| `ANDROID_KEYSTORE_PASSWORD` | `<STORE_PW>` from step 1 |
+| `ANDROID_KEY_ALIAS` | `professor-pixel` |
+| `ANDROID_KEY_PASSWORD` | `<KEY_PW>` from step 1 |
+
+**After secret upload:**
 
 ```sh
-# One-time setup (per machine, Mac only)
+# Move the keystore to a password manager / HSM, then shred the local copy.
+# Without -u (unlink) the file lingers; without -z (final zero-pass) some FS journaling tools can recover.
+shred -u -z release.keystore
+
+# Wipe the keytool + base64 + secret-paste invocations from history.
+history -c     # current session
+# Edit ~/.zsh_history (or ~/.bash_history) and remove the lines manually for past sessions.
+
+# Verify the keystore never touched git.
+git log --all --full-history -- release.keystore   # expect: no output
+
+# Confirm no copy in iCloud Drive / Desktop sync / Downloads.
+mdfind -name release.keystore                       # macOS Spotlight scan
+```
+
+If any of those checks find a stray copy, treat the keystore as compromised — generate a new one and start over. (Play App Signing means a leaked **upload** key isn't catastrophic — Google can rotate it via the Play Console reset flow — but the rotation requires a new key + a 7–14 day waiting period during which you can't ship updates.)
+
+**3. Set up the `android-release` environment** (Settings → Environments → New environment). Add required reviewers if you want manual approval on every signed build. The four secrets above can live on the environment instead of the repository for tighter scoping.
+
+**4. Trigger the signed build** (Actions → CD-Mobile → Run workflow):
+
+- `inputs.release` = `true`
+- `Use workflow from` must be `main` or a tag ref (`refs/tags/v*`). Feature branches are rejected by the `if:` guard.
+- The reachability check (`git merge-base --is-ancestor "$GITHUB_SHA" origin/main`) ensures a tag points at a commit that's actually on main.
+
+The job builds, signs, uploads the **APK** as a workflow artifact, then shreds the on-disk keystore + `signing.properties` (`if: always()` so cleanup runs even on build failure).
+
+> **APK vs AAB.** The current workflow runs `./gradlew assembleRelease`, which produces an APK at `android/app/build/outputs/apk/release/app-release.apk`. Play Console **requires AAB** for new app submissions (since Aug 2021). To produce an AAB, switch the workflow's gradle invocation to `./gradlew bundleRelease` and update the artifact path to `android/app/build/outputs/bundle/release/app-release.aab`. Tracked as a separate engineering PR; the doc here will swap to AAB-only language once that ships.
+
+**5. Upload to Play Console**:
+
+1. Download the APK artifact from the workflow run (or the AAB once the workflow switches to `bundleRelease`).
+2. Play Console → Production (or Internal/Closed testing) → Create new release → upload AAB. (Existing-app updates may still accept APKs; new apps must use AAB.)
+3. Bump version per Play Store policy (each upload needs a strictly-higher `versionCode`). The CI passes `-PVERSION_CODE=N -PVERSION_NAME=X.Y.Z` — set these in the workflow dispatch inputs or via release-please.
+4. Submit for review (first release: 1–7 days; subsequent releases: usually <24h).
+
+### iOS TestFlight
+
+Operator-only flow. iOS provisioning + signing requires a physical Mac with Xcode 16+ and an active Apple Developer account ($99/yr). Apple's signing model doesn't fit GitHub-hosted runners cleanly, so there is no `cd-ios.yml` workflow — the iOS path is fully manual.
+
+**1. One-time setup (per machine):**
+
+```sh
 sudo xcode-select --install
 sudo gem install cocoapods
-
-# Each iteration
-pnpm build
-npx cap sync ios
-(cd ios/App && pod install)
-open ios/App/App.xcworkspace
-# In Xcode: select your team, set bundle ID, Product → Archive → upload to TestFlight
+npx cap add ios                          # one-time per repo, scaffolds ios/
 ```
 
-The TestFlight beta loop is the recommended distribution channel until App Store submission is needed.
+**2. Each release iteration:**
+
+```sh
+pnpm build                                # rebuild dist/
+npx cap sync ios                          # mirror dist/ → ios/App/App/public/
+(cd ios/App && pod install)               # refresh CocoaPods if Capacitor plugins changed
+open ios/App/App.xcworkspace
+```
+
+**3. In Xcode:**
+
+1. Select the project → Signing & Capabilities → set your Apple Developer Team and bundle ID (`com.arcadecabinet.professorpixel` to match Android).
+2. Bump the version (Build settings → Versioning → set `CURRENT_PROJECT_VERSION` and `MARKETING_VERSION`).
+3. Select **Any iOS Device (arm64)** as the run target (not a simulator).
+4. Product → Archive. Wait for the build to complete (~5–15 min depending on machine).
+
+**4. Upload to TestFlight:**
+
+The Organizer window opens automatically post-archive. Three paths, in order of recommended:
+
+1. **Distribute App → App Store Connect** (Xcode does the upload, prompts for credentials interactively, never echoes the password). **Recommended.**
+2. **Transporter.app** — drag-and-drop the exported `.ipa`; same credential safety as Xcode.
+3. **`xcrun altool` / `xcrun notarytool`** — only if scripting the upload. **Never** pass `-p <app-specific-pw>` literally on the command line (it lands in `~/.zsh_history` and `ps auxww`). Use one of:
+   - **Keychain reference**: one-time `xcrun altool --store-password-in-keychain-item AC_PASSWORD -u <apple-id> -p <pw>` then `xcrun altool --upload-app -f <ipa> -u <apple-id> -p "@keychain:AC_PASSWORD"`.
+   - **App Store Connect API key** (Apple's recommended path since 2023): `xcrun altool --upload-app -f <ipa> --apiKey <KEY_ID> --apiIssuer <ISSUER_ID>`. The API key is a downloaded `.p8` file in `~/.appstoreconnect/private_keys/` — file-based, not visible to other processes.
+
+**5. In App Store Connect:**
+
+1. Wait ~10–30 min for the build to process.
+2. TestFlight tab → add tester groups → submit for Beta App Review (required for external testers; internal testers — anyone with App Store Connect access — can install immediately).
+3. Once approved, testers receive an email with an install link.
+
+The TestFlight beta loop is the recommended distribution channel until App Store submission is ready.
 
 ## See also
 

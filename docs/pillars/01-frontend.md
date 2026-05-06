@@ -1,8 +1,9 @@
 ---
 title: Pillar 1 — Frontend
-updated: 2026-05-05
+updated: 2026-05-06
 status: current
-domain: technical
+domain: pillar
+pillar: 1
 ---
 
 # Pillar 1 — Frontend
@@ -46,6 +47,14 @@ public/                         Static assets, served as-is
   pyodide/                      Vendored Pyodide runtime (T2.3, gitignored)
   api/static/lessons.json       Lesson content (validated by Zod at fetch time)
 ```
+
+## Routing — wouter with base path
+
+`wouter` v3 ships a `<Router base>` API that prepends the base to every route match. `app/App.tsx` wraps the route tree with `<WouterRouter base={routerBase}>` (from `src/utils/base-url.ts`), so on a Pages subpath deploy (`/professor-pixel/`) the routes match without each `<Route>` needing to know.
+
+The base helper is the single source of truth across all 11 fetch sites; full architecture in [Pillar 7 — Deploy → BASE_URL](./07-deploy.md#base_url--single-source-of-truth).
+
+Hash routing intentionally not used — Pages serves `404.html` (a copy of `index.html`) so deep links resolve without the `#` prefix.
 
 ## Aliases
 
@@ -112,11 +121,26 @@ The aggregate today reflects the unit project only. Integration and component te
 - **TTS (`tts.ts`)** — `speak(text)` strips emoji via a `\p{Extended_Pictographic}` regex (covers ZWJ + Fitzpatrick + variation selectors), hands the cleaned text to `SpeechSynthesisUtterance`, and routes through `window.speechSynthesis`. A `voiceschanged` listener is installed on the first `speak()` call so Chrome's async voice catalog populates correctly. Voice selection prefers a child-friendly voice if one is available; otherwise the default voice ships.
 - **SFX (`sfx.ts`)** — procedural Web Audio tones for `playSuccess` (C5/E5/G5 chord), `playError`, and `playPop` (option-select feedback). No audio assets — the tones are oscillator-synthesized at play time, so they cost zero bundle weight.
 
-User-facing toggle lives in the Pixel menu (`app/components/pixel/menu.tsx`) as a `Voice On/Off` button (`role="button"` + `aria-label` that flips with state). The toggle persists to `localStorage.pp.audioEnabled` (key managed by `setAudioEnabled` / `isAudioEnabled` in `src/audio/tts.ts`); both `speak` and `playPop` no-op when off. The toggle defaults to **off** for new sessions — kids opt in via the menu so we never autoplay TTS without explicit consent.
+User-facing toggle has two surfaces:
+
+- **`app/components/audio-toggle.tsx`** — global chrome button (Volume2 / VolumeX icon). Drops into any toolbar (lesson Header, PixelPresence chrome, Profile page). `aria-pressed` reflects state; `onClick` calls `prewarmTTSVoices()` first so iOS Safari's voices array is populated before the next utterance, then `setAudioEnabled(!enabled)`. Subscribes via `subscribeAudioEnabled` so cross-tab toggles update instantly.
+- **`app/components/pixel/menu.tsx`** — `Voice On/Off` entry in the Pixel mascot menu. Same backing state.
+
+Both persist to `localStorage.pp.audioEnabled` (managed by `setAudioEnabled` / `isAudioEnabled` in `src/audio/tts.ts`); both `speak` and `playPop` no-op when off. Defaults **on** in the kid product — first-visit kids hear Pixel; classroom mute is one click in chrome.
 
 Cross-tab and same-tab reactivity flows through `subscribeAudioEnabled(listener)`. It dispatches a `pp:audio-changed` `CustomEvent` on every flip and also listens for the native `storage` event, so a flip in tab A propagates to tab B without a refresh and a flip in the same tab updates every subscriber on the next tick. Consumers (dialogue engine, Pixel menu) subscribe in a `useEffect` cleanup-tracked subscription rather than polling `isAudioEnabled()` per render.
 
 The dialogue engine (`app/components/wizard/dialogue-engine.tsx`) calls `speak()` once per node transition, gated on the reactive `audioEnabled` state from `subscribeAudioEnabled`. When the kid flips audio off mid-sentence the engine calls `cancelSpeech()` from its effect cleanup so playback halts immediately. The simulator and grader pillars do not import from `src/audio/` — only the wizard / option-handler / celebration surfaces do.
+
+## Loading states (skeleton + aria-busy)
+
+For first-paint after fetch (e.g. the home page reading the OPFS games list via `useQuery`), `isLoading` drives a skeleton strip in place of the empty state. Convention:
+
+- Wrap the skeleton container with `aria-busy="true"` and `data-testid="<surface>-skeleton"`.
+- Use Tailwind `animate-pulse` on placeholder cards.
+- Keep the skeleton structurally similar to the loaded UI (same number of cards, same card heights) so the layout doesn't jump on mount.
+
+Example: `app/pages/home.tsx` renders three pulsing cards with `data-testid="my-games-skeleton"` while `useQuery(['projects'])` is in `isLoading`.
 
 ## Accessibility surface
 
@@ -140,6 +164,8 @@ Layout breakpoints:
 - **`< lg`** — palette and properties collapse to absolute drawers (`translate-x-full` / `-translate-x-full` off-screen, slid in via toolbar buttons). Properties auto-opens when a component is selected. The toolbar buttons collapse from labeled to icon-only under `sm`.
 
 For touch-primary devices (where the HTML5 drag backend doesn't fire), `armedComponentId` provides a tap-to-arm-then-tap-to-place fallback: tap a palette tile to arm it (`aria-pressed=true`), tap the canvas to place at the click point. The same component re-tapped disarms.
+
+**Edge-swipe to open drawers.** `src/hooks/use-edge-swipe.ts` (built on `react-swipeable`) detects swipes that *originate* within `edgeThreshold` pixels of the screen edge — not just any swipe in that direction — so a normal scroll inside the canvas doesn't accidentally open the palette. WYSIWYG wires it up under `lg` on touch-primary devices: left-edge swipe opens the palette, right-edge swipe opens properties. `enabled: isCompact && isTouchPrimary` so desktop stays unaffected.
 
 Canvas coordinate scaling: the canvas drawing buffer is fixed at 800×600 internal pixels but rendered at `width: 100%` capped at 800px CSS-wide. Both the click handler and the DnD drop handler scale CSS-pixel offsets to internal coordinates via `(canvas.width / rect.width)` so the two placement paths agree on where a component lands.
 
@@ -206,4 +232,6 @@ If you genuinely need `as any` (MSW handler boundary types, third-party-lib gaps
 
 - [Pillar 2 — Runtime](02-runtime.md) — how Python execution plugs in
 - [Pillar 5 — Design system](05-design-system.md) — tokens, voice, components
+- [Pillar 6 — Storage](06-storage.md) — saved games + localStorage settings
+- [Pillar 7 — Deploy](07-deploy.md) — wouter base, base-url helper
 - [`../TESTING.md`](../TESTING.md) — frontend tests live in `tests/component/` (real Chromium)

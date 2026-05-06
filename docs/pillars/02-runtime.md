@@ -1,8 +1,9 @@
 ---
 title: Pillar 2 — Runtime
-updated: 2026-05-05
+updated: 2026-05-06
 status: current
-domain: technical
+domain: pillar
+pillar: 2
 ---
 
 # Pillar 2 — Runtime
@@ -92,6 +93,14 @@ Source of truth: `package.json`'s `pyodide` dep (currently `^0.29.3`). `scripts/
 
 The singleton has a CDN fallback (`cdn.jsdelivr.net/pyodide/v0.29.3/full/`) used only when the local copy is missing. Production builds always have the local copy because `prebuild` runs first.
 
+## OPFS WASM cache (service worker)
+
+The first cold start downloads ~12MB of Pyodide assets. Subsequent loads should be effectively free — `public/pyodide-sw.js` intercepts every `/pyodide/*` request, mirrors the response into OPFS under `pyodide-cache-v<version>/`, and serves from cache on the next reload.
+
+The cache write goes through an allowlist (`Content-Type` match plus `.wasm`/`.js`/`.mjs`/`.json`/`.zip`/`.data` extension match) so a misrouted HTML response from a captive portal can't poison it. Activate-time eviction drops any `pyodide-cache-v*` directory that doesn't match the current `PYODIDE_VERSION` constant — version bumps clean up automatically.
+
+**Capacitor short-circuit.** Inside the native shell (`location.protocol === 'capacitor:'`) the WASM ships in the APK, so the SW registration is skipped entirely. The same protocol guard lives at the registration site in `app/main.tsx`. Full layout + invariants in [Pillar 6 — Storage](./06-storage.md#pyodide-wasm-cache--service-worker--opfs).
+
 ## Resource caps
 
 The grading engine (Pillar 4) collects per-test caps from the lesson schema and passes them through:
@@ -156,10 +165,34 @@ The simulator surface is documented in `src/pygame/runtime/simulator.ts` itself;
 
 A lesson's `import pygame` resolves to the simulator because the simulator is registered in `sys.modules` before the user code runs.
 
+## Asset mounting (Pyodide Emscripten FS)
+
+Generated games contain `pygame.image.load('/assets/<path>.png')` calls. Pyodide's Emscripten FS doesn't have `/assets/*` mounted by default, so without intervention every selected sprite falls through to the compiler's try/except magenta placeholder.
+
+`src/python/asset-mount.ts` exports `mountAssetsForGame(pyodide, assets)` — fetches each asset through `withBase()` (so Pages subpath deploys resolve), mkdirs cumulative parents, writes via `pyodide.FS.writeFile`. Used by both `app/pages/play.tsx` (launcher) and the live-preview path. Idempotent.
+
+Full data-flow in [Pillar 6 — Storage → Asset mounting](./06-storage.md#asset-mounting--pyodide-emscripten-fs).
+
+## Web Speech API (TTS)
+
+`src/audio/tts.ts` wraps `window.speechSynthesis` for Pixel mascot narration. Master mute toggle gates both TTS and SFX via `pp.audioEnabled` localStorage key (defaults ON; classroom mute is one click in chrome).
+
+**iOS Safari voiceschanged race.** On the first `speechSynthesis.getVoices()` after page load, iOS Safari returns an empty array and only populates voices after the `voiceschanged` event fires. The fix:
+
+1. `speak(text)` checks `getVoices().length`. If empty, stash `{text, opts}` in `pendingFirstSpeak` and return without calling `speechSynthesis.speak`.
+2. A one-time `voiceschanged` listener flushes the pending utterance via a recursive `speak()` call.
+3. `prewarmTTSVoices()` exported and called from `AudioToggle.onClick` so the user gesture kicks the voices fetch before Pixel's first line.
+
+Test isolation: tests that exercise the deferred-speak path use `vi.resetModules()` to reset the module-level `pendingFirstSpeak` and `voicesChangedListenerInstalled` state. See `tests/unit/audio.test.ts`.
+
 ## See also
 
 - [Pillar 4 — Grading](04-grading.md) — how rules consume the runtime output
+- [Pillar 6 — Storage](06-storage.md) — OPFS WASM cache + asset mounting
+- [Pillar 7 — Deploy](07-deploy.md) — base-url helper, Capacitor SW short-circuit
 - [`../ARCHITECTURE.md`](../ARCHITECTURE.md) — cross-pillar boundaries
 - `src/python/pyodide-singleton.ts` — main-thread bootstrap (canonical source)
 - `src/python/worker.ts` — worker bootstrap (canonical source)
+- `src/python/asset-mount.ts` — Emscripten FS mount helper
+- `src/audio/tts.ts` — TTS + voiceschanged race fix
 - `src/pygame/runtime/simulator.ts` — simulator implementation
