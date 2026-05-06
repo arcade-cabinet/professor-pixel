@@ -25,6 +25,10 @@ on:
     # 04:17 UTC every Monday — well outside any deploy / release-please
     # cron windows so it doesn't fight for the runner queue.
     - cron: '17 4 * * 1'
+  # Manual dispatch lets us run scans against branches that already
+  # exist behind the Enterprise PRs ruleset (where the rule rejects
+  # the push that would otherwise trigger the scan — chicken-and-egg).
+  workflow_dispatch:
 
 # Only the most recent run per ref needs to be live; stale-cancel
 # everything else so the queue stays unclogged when a feature branch
@@ -68,4 +72,4 @@ jobs:
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
         with:
-          category: "/language:${{ matrix.language }}"
+          category: '/language:${{ matrix.language }}'
