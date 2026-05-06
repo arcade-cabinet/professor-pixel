@@ -91,7 +91,10 @@ export default function Home() {
   // P5 — My Games. ListWizardProjects reads from ClientStorage; if the wizard
   // hasn't yet persisted any project (P5.3 work), the list is empty and we
   // render an inviting placeholder rather than nothing.
-  const { data: projects } = useQuery({
+  // E3.2 — `isLoading` distinguishes the cold-mount blank from a confirmed-
+  // empty list. Without it, we'd render `null` for both states and the My
+  // Games strip would flash blank → snap into place when OPFS resolves.
+  const { data: projects, isLoading: projectsLoading } = useQuery({
     queryKey: ['wizard-projects'],
     queryFn: () => listWizardProjects(),
   });
@@ -281,6 +284,37 @@ export default function Home() {
           </h1>
           <p className="mt-3 text-lg text-gray-700 dark:text-gray-300">{strings.home.tagline}</p>
         </header>
+
+        {projectsLoading && (
+          // E3.2 — placeholder strip while OPFS hydrates the project list.
+          // Three card-shaped skeletons match the typical post-load layout
+          // (1-3 saved games for a kid mid-playtest) so the page doesn't
+          // jump when results come in.
+          <section
+            aria-label={strings.home.sections.mySavedGamesLabel}
+            aria-busy="true"
+            className="mb-12 w-full"
+            data-testid="my-games-skeleton"
+          >
+            <h2 className="mb-4 text-2xl font-bold text-purple-700 dark:text-purple-300">
+              {strings.home.sections.myGames}
+            </h2>
+            <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3">
+              {[0, 1, 2].map((i) => (
+                <li
+                  key={i}
+                  className="overflow-hidden rounded-xl bg-white shadow-md dark:bg-gray-800"
+                >
+                  <div className="aspect-video w-full animate-pulse bg-gradient-to-br from-purple-200 via-pink-200 to-blue-200 dark:from-purple-800 dark:via-pink-800 dark:to-blue-800" />
+                  <div className="p-3">
+                    <div className="h-5 w-3/4 animate-pulse rounded bg-gray-200 dark:bg-gray-700" />
+                    <div className="mt-2 h-3 w-1/2 animate-pulse rounded bg-gray-200 dark:bg-gray-700" />
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
 
         {projects && projects.length > 0 && (
           <section
