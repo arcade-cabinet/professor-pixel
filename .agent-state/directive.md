@@ -21,6 +21,33 @@ while queue has [ ] items: implement → verify → commit → dispatch reviewer
 "deferred" | "v2+" | "out of scope" | "future work" | "tracked separately" | "follow-up"
 "TODO" | "FIXME" | "stub" | "placeholder" | "mock for now"
 
+## Batch — post-30-consolidation (batch-20260506-050000)
+
+Source: docs/plans/post-30-consolidation.prq.md (sha256: 2a27006a491afff8ac6c9a3e0b799ba1cf3c34d1830befc7bd9dc4c1f24de75d)
+Started: 2026-05-06T05:00:00Z
+Branch: feat/post-30-consolidation
+
+### D — Docs structure (frontmatter-headed pillars)
+
+- [ ] D1 add docs/pillars/06-storage.md (OPFS, migration, asset-mount, write-then-rename)
+- [ ] D2 add docs/pillars/07-deploy.md (Pages base, Capacitor APK, iOS, base-url helper, e2e production-shape, trusted-ref guard)
+- [ ] D3 update docs/pillars/02-runtime.md (OPFS WASM cache, Capacitor SW short-circuit, iOS voiceschanged race)
+- [ ] D4 update docs/pillars/01-frontend.md (wouter base wrap, edge-swipe hook, skeleton + aria-busy, audio toggle)
+- [ ] D5 update docs/README.md index for 7 pillars; verify cross-refs in STANDARDS.md + AGENTS.md
+
+### S — State + plan-file cleanup
+
+- [ ] S1 update docs/STATE.md (PR #30 done, advance Active→Done, refresh Next, bump frontmatter)
+- [ ] S2 git mv 12 merged plan files to docs/plans/_archive/ + write _archive/README.md
+- [ ] S3 refresh .agent-state/cursor.md to point at this PRQ
+- [ ] S4 audit STATE.md → Next; tag every line with [PRQ:link] or [manual:user-action]
+
+### R — Runbook closure (manual-action handoffs)
+
+- [ ] R1 docs/DEPLOYMENT.md Play Store rollout runbook (keystore, secrets, cd-mobile dispatch, Play Console)
+- [ ] R2 docs/DEPLOYMENT.md iOS TestFlight runbook (Mac+Xcode, cap add ios, signing, Transporter)
+- [ ] R3 verify asset-mount documented in docs/pillars/06-storage.md (closes stale STATE.md → Next bullet)
+
 ## Batch — foundations-pillar-completion (batch-20260504-140912)
 
 Source: docs/plans/foundations-pillar-completion.prq.md (sha256: c012ff1af2987625749b13e2a5d40e88f5fde4109f45d00cd75ca65ccadd2e84)
