@@ -98,7 +98,6 @@ describe('useToast — updating toasts', () => {
       // overriding the changed field is identical in observable
       // behavior, with no `as any` cast.
       const current = result.current.toasts[0];
-      // biome-ignore lint/style/noNonNullAssertion: handle is asserted defined above
       handle!.update({ ...current, title: 'after' });
     });
 
