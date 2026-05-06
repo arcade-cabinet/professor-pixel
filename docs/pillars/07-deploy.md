@@ -16,7 +16,7 @@ Three target shapes for the same browser app: GitHub Pages (subpath), Capacitor 
 |---|---|---|---|
 | GitHub Pages | `https://<user>.github.io/professor-pixel/` | `.github/workflows/cd.yml` | Subpath — Vite `--base=/professor-pixel/` |
 | Android APK (debug) | 14-day workflow artifact | `.github/workflows/cd-mobile.yml` (push:main) | Unsigned, for QA download |
-| Android AAB (signed release) | Play Store via Play Console | `cd-mobile.yml` (workflow_dispatch + `inputs.release=true`) | Behind `android-release` GitHub environment |
+| Android APK (signed release) | Play Store via Play Console | `cd-mobile.yml` (workflow_dispatch + `inputs.release=true`) | Behind `android-release` GitHub environment. Workflow currently produces APK; switch to AAB tracked as separate engineering PR (see [DEPLOYMENT.md → Play Store rollout](../DEPLOYMENT.md#play-store-rollout)) |
 | iOS IPA (TestFlight) | TestFlight | Manual Mac+Xcode | No CI — see [docs/DEPLOYMENT.md](../DEPLOYMENT.md) |
 
 ## BASE_URL — single source of truth
@@ -98,7 +98,7 @@ A regular dev server runs at `BASE_URL=/`. Pages serves at `/professor-pixel/`. 
 
 - `tests/e2e/production-shape.spec.ts` — 6 functional tests: home, lessons, wizard, asset catalog (in-page fetch), not-found, cold-start budget.
 - `tests/e2e/production-shape-visual.spec.ts` — 9 visual baselines (3 routes × 3 viewports). darwin-only — skipped in CI via `--grep-invert "production-shape-visual"`.
-- `playwright.config.ts` — `webServer` array runs both `pnpm dev` and `vite build --base=/professor-pixel/ --outDir dist-preview-pages && vite preview --port 4173`. Namespaced `dist-preview-pages/` so `reuseExistingServer` doesn't pick up stale dev artifacts.
+- `playwright.config.ts` — `webServer` array runs both `pnpm dev` and `vite build --base=/professor-pixel/ --outDir dist-preview-pages && vite preview --outDir dist-preview-pages --port 4173`. Namespaced `dist-preview-pages/` so `reuseExistingServer` doesn't pick up stale dev artifacts.
 - CI: `e2e-production-shape` job in `ci.yml` uploads `test-results/` + `playwright-report/` on failure as 14-day artifact.
 
 ## Cold-start budget
