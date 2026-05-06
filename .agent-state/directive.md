@@ -528,3 +528,31 @@ Branch: feat/post-launcher-consolidation (after PR #30 squash-merges)
 - [x] C4.3 Folded into ARCHITECTURE.md "Storage + Pyodide cache" section; no separate pyodide.md needed
 - [x] C4.4 docs/DEPLOYMENT.md Targets table extended to PWA / Android (Capacitor) / iOS (Capacitor); new Mobile (Capacitor) section covers WebView differences, per-iteration Android workflow, keystore generation, signed-release CI flow, manual iOS Mac+Xcode TestFlight loop
 - [x] C4.5 No flip needed — modernization-pillar.prq.md M2.2 and M4.2 are already [x] (M4.2 satisfied via the omnibus-cleanup PRQ task-004 frame-rate test; M2.2 satisfied via finishing pillar's coverage ratchet, then re-ratcheted in C1.2). foundations-pillar-completion.prq.md status check deferred — separate sweep when those PRQs are next touched
+
+## Batch — experience-polish (batch-20260505-220000)
+
+Source: ad-hoc (user directive: "pivot to actual e2e, screenshot capture, and experience polish")
+Started: 2026-05-05T22:00:00Z
+Branch: TBD (after PR #30 squash-merge)
+
+### E1 — Real e2e on the production-shape build
+
+- [ ] E1.1 Playwright config runs against `pnpm preview --base=/professor-pixel/` (production-shape, not dev) so BASE_URL fixes are actually exercised; cover home → wizard → play → export golden path
+- [ ] E1.2 Multi-resolution suite (mobile/tablet/desktop/foldable) — assert no runtime errors via `page.on('pageerror')` + `page.on('console')` collectors; fail fast on uncaught
+- [ ] E1.3 Cold-start budget assertion in e2e (was: instrumentation only) — `time-to-pyodide-ready < 8s` on warmed-up CI runner; budget is the regression alarm
+
+### E2 — Screenshot capture + visual baselines
+
+- [ ] E2.1 Per-route screenshot capture (home, lessons, lesson-detail, wizard×7-templates, editor, play, profile, not-found) at 3 viewports — committed under `tests/visual/__baselines__/`
+- [ ] E2.2 Pixel-diff threshold tuned for animated mascot (mask the mascot canvas region) so wizard frames don't trip on celebration animations
+- [ ] E2.3 Update CI to upload screenshot diffs as artifacts on visual-regression failure
+
+### E3 — Experience polish (the actual UI/UX gaps)
+
+- [ ] E3.1 Asset mounting in Pyodide FS — fetch each selected asset, write via `pyodide.FS.writeFile` before `runPython` in `/play` and live-preview, so pygame.image.load resolves; closes the magenta-placeholder regression that's been silent since the asset catalog landed
+- [ ] E3.2 Loading states + skeletons everywhere — launcher mount, asset catalog hydration, wizard transitions all currently flash blank then snap. Add transition placeholders + measured suspense boundaries
+- [ ] E3.3 Mobile/tablet drawer polish — drag handle visible, gesture-friendly resize, drawer persists across route changes inside the editor
+- [ ] E3.4 Audio: voiceschanged listener race fix on iOS Safari (Web Speech sometimes ships the voices array late); pre-warm mute toggle; SFX volume mixer
+- [ ] E3.5 Pixel mascot bundle bloat — 9× 1-1.6MB PNGs are statically imported, blowing the main JS chunk to 1.12MB. Move to `<img>` tags with `loading="lazy"` or sprite-sheet them
+- [ ] E3.6 CSP meta tag in index.html (security review LOW finding) — `default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; ...` — Pyodide compatibility needs verification
+
