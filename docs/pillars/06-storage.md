@@ -64,7 +64,7 @@ Every OPFS read goes through `persistedWizardStateSchema.safeParse()` before any
 
 The first cold start downloads ~12MB of Pyodide assets. Subsequent loads should be instant — service worker `public/pyodide-sw.js` intercepts `/pyodide/*` requests, mirrors them into OPFS under `pyodide-cache-v<version>/`, and serves from cache on the next reload.
 
-**Cache-write allowlist.** Only responses with the right `Content-Type` AND a matching extension (`.wasm`, `.js`, `.mjs`, `.json`, `.zip`, `.data`) get persisted. This is defense against captive-portal HTML or CDN misroutes poisoning the cache.
+**Cache-write allowlist.** Only responses with the right `Content-Type` AND a matching extension (`.wasm`, `.js`, `.mjs`, `.json`, `.zip`, `.data`, `.whl`) get persisted. The `.whl` entry covers Pyodide's Python wheel downloads (e.g. the pre-fetched `pygame-ce` wheel). This is defense against captive-portal HTML or CDN misroutes poisoning the cache.
 
 **Version-keyed eviction.** Cache directory name embeds the Pyodide version (`pyodide-cache-v0.29.3`). On `activate`, the SW deletes any `pyodide-cache-v*` directory whose version doesn't match the current `PYODIDE_VERSION` constant. Version bumps drop the old WASM automatically.
 

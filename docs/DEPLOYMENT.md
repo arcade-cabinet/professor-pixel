@@ -151,13 +151,15 @@ Operator-only flow. `cd-mobile.yml` already produces signed-release builds in CI
 **1. Generate the release keystore (one-time, store securely OUT of git):**
 
 ```sh
+# Interactive — keytool prompts for store + key passwords; no plaintext in shell history or `ps` output.
 keytool -genkeypair -v \
   -keystore release.keystore \
   -alias professor-pixel \
   -keyalg RSA -keysize 2048 -validity 10000 \
-  -storepass <STORE_PW> -keypass <KEY_PW> \
   -dname "CN=Professor Pixel, O=Arcade Cabinet, C=US"
 ```
+
+**Do NOT** pass `-storepass` / `-keypass` on the command line — those flags land in `~/.zsh_history` and are visible to any local user via `ps auxww`. Use the interactive prompt or `-storepass:env STORE_PW` after `read -s STORE_PW; export STORE_PW`.
 
 The keystore should live in a password manager or a hardware security module — **never** in the repo, never in cloud storage without encryption.
 
@@ -165,10 +167,30 @@ The keystore should live in a password manager or a hardware security module —
 
 | Secret | Value |
 |---|---|
-| `ANDROID_KEYSTORE_BASE64` | `base64 -i release.keystore` output (single line) |
+| `ANDROID_KEYSTORE_BASE64` | `base64 -i release.keystore \| pbcopy` then paste — keeps the encoded keystore off the terminal scrollback. The workflow's `base64 -d` handles wrapped or single-line input. |
 | `ANDROID_KEYSTORE_PASSWORD` | `<STORE_PW>` from step 1 |
 | `ANDROID_KEY_ALIAS` | `professor-pixel` |
 | `ANDROID_KEY_PASSWORD` | `<KEY_PW>` from step 1 |
+
+**After secret upload:**
+
+```sh
+# Move the keystore to a password manager / HSM, then shred the local copy.
+# Without -u (unlink) the file lingers; without -z (final zero-pass) some FS journaling tools can recover.
+shred -u -z release.keystore
+
+# Wipe the keytool + base64 + secret-paste invocations from history.
+history -c     # current session
+# Edit ~/.zsh_history (or ~/.bash_history) and remove the lines manually for past sessions.
+
+# Verify the keystore never touched git.
+git log --all --full-history -- release.keystore   # expect: no output
+
+# Confirm no copy in iCloud Drive / Desktop sync / Downloads.
+mdfind -name release.keystore                       # macOS Spotlight scan
+```
+
+If any of those checks find a stray copy, treat the keystore as compromised — generate a new one and start over. (Play App Signing means a leaked **upload** key isn't catastrophic — Google can rotate it via the Play Console reset flow — but the rotation requires a new key + a 7–14 day waiting period during which you can't ship updates.)
 
 **3. Set up the `android-release` environment** (Settings → Environments → New environment). Add required reviewers if you want manual approval on every signed build. The four secrets above can live on the environment instead of the repository for tighter scoping.
 
@@ -178,12 +200,14 @@ The keystore should live in a password manager or a hardware security module —
 - `Use workflow from` must be `main` or a tag ref (`refs/tags/v*`). Feature branches are rejected by the `if:` guard.
 - The reachability check (`git merge-base --is-ancestor "$GITHUB_SHA" origin/main`) ensures a tag points at a commit that's actually on main.
 
-The job builds, signs, uploads the AAB as a workflow artifact, then shreds the on-disk keystore + `signing.properties` (`if: always()` so cleanup runs even on build failure).
+The job builds, signs, uploads the **APK** as a workflow artifact, then shreds the on-disk keystore + `signing.properties` (`if: always()` so cleanup runs even on build failure).
+
+> **APK vs AAB.** The current workflow runs `./gradlew assembleRelease`, which produces an APK at `android/app/build/outputs/apk/release/app-release.apk`. Play Console **requires AAB** for new app submissions (since Aug 2021). To produce an AAB, switch the workflow's gradle invocation to `./gradlew bundleRelease` and update the artifact path to `android/app/build/outputs/bundle/release/app-release.aab`. Tracked as a separate engineering PR; the doc here will swap to AAB-only language once that ships.
 
 **5. Upload to Play Console**:
 
-1. Download the AAB artifact from the workflow run.
-2. Play Console → Production (or Internal/Closed testing) → Create new release → upload AAB.
+1. Download the APK artifact from the workflow run (or the AAB once the workflow switches to `bundleRelease`).
+2. Play Console → Production (or Internal/Closed testing) → Create new release → upload AAB. (Existing-app updates may still accept APKs; new apps must use AAB.)
 3. Bump version per Play Store policy (each upload needs a strictly-higher `versionCode`). The CI passes `-PVERSION_CODE=N -PVERSION_NAME=X.Y.Z` — set these in the workflow dispatch inputs or via release-please.
 4. Submit for review (first release: 1–7 days; subsequent releases: usually <24h).
 
@@ -217,10 +241,13 @@ open ios/App/App.xcworkspace
 
 **4. Upload to TestFlight:**
 
-The Organizer window opens automatically post-archive. Two paths:
+The Organizer window opens automatically post-archive. Three paths, in order of recommended:
 
-- **Distribute App → App Store Connect** (Xcode does the upload). Recommended for first release; Xcode handles the validation step.
-- **Distribute App → Export** then `xcrun altool --upload-app -f <ipa> -u <apple-id> -p <app-specific-pw>` or open Transporter.app.
+1. **Distribute App → App Store Connect** (Xcode does the upload, prompts for credentials interactively, never echoes the password). **Recommended.**
+2. **Transporter.app** — drag-and-drop the exported `.ipa`; same credential safety as Xcode.
+3. **`xcrun altool` / `xcrun notarytool`** — only if scripting the upload. **Never** pass `-p <app-specific-pw>` literally on the command line (it lands in `~/.zsh_history` and `ps auxww`). Use one of:
+   - **Keychain reference**: one-time `xcrun altool --store-password-in-keychain-item AC_PASSWORD -u <apple-id> -p <pw>` then `xcrun altool --upload-app -f <ipa> -u <apple-id> -p "@keychain:AC_PASSWORD"`.
+   - **App Store Connect API key** (Apple's recommended path since 2023): `xcrun altool --upload-app -f <ipa> --apiKey <KEY_ID> --apiIssuer <ISSUER_ID>`. The API key is a downloaded `.p8` file in `~/.appstoreconnect/private_keys/` — file-based, not visible to other processes.
 
 **5. In App Store Connect:**
 
