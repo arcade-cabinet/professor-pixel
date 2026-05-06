@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
-import pixelImage from '@assets/pixel/Pixel_happy_excited_expression_22a41625.png';
+import { pixelImages } from '@lib/assets/pixel-images';
+const pixelImage = pixelImages.happy;
 import { ANIMATIONS, AVATAR_SIZES, STYLES } from '@lib/wizard/constants';
 
 interface WizardAvatarProps {

@@ -4,6 +4,7 @@
 // Replaces the hand-curated _kenney-*.ts and _curated-*.ts registries.
 
 import type { SpriteAsset, SoundAsset, BackgroundAsset } from './types';
+import { baseUrl } from '@lib/utils/base-url';
 
 interface CatalogEntry {
   kind: 'sprite' | 'sound' | 'background';
@@ -30,7 +31,7 @@ interface AssetCatalog {
 
 let cached: Promise<AssetCatalog> | null = null;
 
-const CATALOG_URL = '/assets/catalog.json';
+const CATALOG_URL = `${baseUrl}assets/catalog.json`;
 
 function toSprite(e: CatalogEntry): SpriteAsset {
   return {

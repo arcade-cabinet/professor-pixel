@@ -29,7 +29,8 @@ import { getClientStorage } from '@lib/storage/mode';
 import { loadLessons } from '@lib/lessons';
 import type { Lesson, UserProgress } from '@lib/types/schema';
 import SafeImage from '@/components/ui/safe-image';
-import pixelHappy from '@assets/pixel/Pixel_happy_excited_expression_22a41625.png';
+import { pixelImages } from '@lib/assets/pixel-images';
+const pixelHappy = pixelImages.happy;
 import { strings } from '@lib/i18n';
 
 const ONBOARDING_KEY = 'pp.onboardingComplete';

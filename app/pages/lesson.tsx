@@ -30,13 +30,15 @@ import { gradeCode, type GradingContext } from '@lib/grading';
 import { getEducationalError } from '@lib/errors/educational';
 import { strings } from '@lib/i18n';
 
-// Import Pixel images
-import pixelHappy from '@assets/pixel/Pixel_happy_excited_expression_22a41625.png';
-import pixelThinking from '@assets/pixel/Pixel_thinking_pondering_expression_0ffffedb.png';
-import pixelCelebrating from '@assets/pixel/Pixel_celebrating_victory_expression_24b7a377.png';
-import pixelEncouraging from '@assets/pixel/Pixel_encouraging_supportive_expression_cf958090.png';
-import pixelTeaching from '@assets/pixel/Pixel_teaching_explaining_expression_27e09763.png';
-import pixelCoding from '@assets/pixel/Pixel_coding_programming_expression_56de8ca0.png';
+// Pixel images served as static URLs (public/pixel/) instead of bundled
+// imports — see src/assets/pixel-images.ts for rationale.
+import { pixelImages } from '@lib/assets/pixel-images';
+const pixelHappy = pixelImages.happy;
+const pixelThinking = pixelImages.thinking;
+const pixelCelebrating = pixelImages.celebrating;
+const pixelEncouraging = pixelImages.encouraging;
+const pixelTeaching = pixelImages.teaching;
+const pixelCoding = pixelImages.coding;
 
 // Pixel's conversational dialogues live in the i18n catalog
 // (strings.lesson.pixelDialogues). Local alias keeps the call sites tidy.
@@ -750,9 +752,9 @@ export default function LessonEnhanced() {
               </Button>
 
               <div className="flex items-center gap-2">
-                {lesson.content.steps.map((_, index) => (
+                {lesson.content.steps.map((step, index) => (
                   <div
-                    key={index}
+                    key={step.id ?? `step-${index}`}
                     className={`w-2 h-2 rounded-full transition-all ${
                       index === currentStepIndex
                         ? 'w-8 bg-purple-500'

@@ -231,7 +231,7 @@ export default function FloatingFeedback({
                     <div className="space-y-3">
                       {step.hints.map((hint, index) => (
                         <motion.div
-                          key={index}
+                          key={hint}
                           initial={{ opacity: 0, x: -20 }}
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ delay: index * 0.1 }}

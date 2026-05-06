@@ -10,13 +10,13 @@
  */
 
 import * as Comlink from 'comlink';
+import { baseUrl } from '@lib/utils/base-url';
 
 // Pyodide ships an ESM variant at `pyodide.mjs` exposing `loadPyodide`.
 // We dynamic-import it so the worker stays an ESM module (which Vite's
 // `?worker` produces by default; classic workers can't use ES imports for
 // the rest of our code).
-
-const PYODIDE_BASE = '/pyodide/';
+const PYODIDE_BASE = `${baseUrl}pyodide/`;
 
 export interface RunResult {
   output: string;

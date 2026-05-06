@@ -1,0 +1,19 @@
+# Capacitor Android release-signing config — TEMPLATE
+#
+# Copy this file to `signing.properties` (gitignored) and fill in real values.
+# DO NOT commit `signing.properties` or the keystore itself.
+#
+# Generate the keystore once per app, store securely (1Password, encrypted
+# backup, etc):
+#
+#   keytool -genkey -v -keystore android/app/keystore/release.keystore \
+#     -alias professor-pixel -keyalg RSA -keysize 2048 -validity 10000
+#
+# CI consumes these via repository secrets (ANDROID_KEYSTORE_BASE64,
+# ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS, ANDROID_KEY_PASSWORD) —
+# see .github/workflows/cd-mobile.yml.
+
+storeFile=keystore/release.keystore
+storePassword=REPLACE_WITH_KEYSTORE_PASSWORD
+keyAlias=professor-pixel
+keyPassword=REPLACE_WITH_KEY_PASSWORD

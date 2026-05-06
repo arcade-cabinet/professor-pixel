@@ -454,6 +454,7 @@ export function useWizardDialogue({
   // different flow (loadedFlowPath changes) those IDs no longer exist
   // in the new wizardData — pressing Back would route to a missing
   // node and crash the renderer. Reset on flow change.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentionally re-runs on flow swap; setters are stable
   useEffect(() => {
     historyRef.current = [];
     setHistoryDepth(0);

@@ -1,4 +1,4 @@
-import { Switch, Route, useLocation } from 'wouter';
+import { Switch, Route, Router as WouterRouter, useLocation } from 'wouter';
 import { useEffect } from 'react';
 import { queryClient } from '@lib/net/query-client';
 import { QueryClientProvider } from '@tanstack/react-query';
@@ -11,6 +11,7 @@ import NotFound from '@/pages/not-found';
 import Home from '@/pages/home';
 import LessonPage from '@/pages/lesson';
 import LessonsIndex from '@/pages/lessons';
+import PlayPage from '@/pages/play';
 import Profile from '@/pages/profile';
 import PixelPresence from '@/components/pixel/presence';
 import UniversalWizard from '@/components/wizard/universal';
@@ -18,6 +19,7 @@ import { DevHud } from '@/components/dev-hud';
 import AssetLibraryTest from '@/pages/_dev/asset-library';
 import PygamePreviewTest from '@/pages/_dev/pygame-preview';
 import PersistenceTest from '@/pages/_dev/persistence';
+import { routerBase } from '@lib/utils/base-url';
 
 function Router() {
   // _dev/ pages (asset-test, pygame-preview-test, persistence-test) only mount
@@ -65,6 +67,14 @@ function Router() {
         component={() => (
           <PageErrorBoundary context="Game Development Wizard">
             <UniversalWizard flowType="game-dev" />
+          </PageErrorBoundary>
+        )}
+      />
+      <Route
+        path="/play/:projectId"
+        component={() => (
+          <PageErrorBoundary context="Play Page">
+            <PlayPage />
           </PageErrorBoundary>
         )}
       />
@@ -117,12 +127,22 @@ function Router() {
   );
 }
 
-function App() {
+function AppShell() {
   const [location, setLocation] = useLocation();
 
+  return (
+    <>
+      <Toaster />
+      <Router />
+      <PixelPresence onNavigate={setLocation} currentPath={location} />
+      <DevHud />
+    </>
+  );
+}
+
+function App() {
   // Initialize global error handling
   useEffect(() => {
-    // Ensure global error handler is initialized
     globalErrorHandler.initialize();
   }, []);
 
@@ -130,12 +150,9 @@ function App() {
     <AppErrorBoundary>
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
-          <>
-            <Toaster />
-            <Router />
-            <PixelPresence onNavigate={setLocation} currentPath={location} />
-            <DevHud />
-          </>
+          <WouterRouter base={routerBase}>
+            <AppShell />
+          </WouterRouter>
         </TooltipProvider>
       </QueryClientProvider>
     </AppErrorBoundary>

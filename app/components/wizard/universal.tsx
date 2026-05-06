@@ -60,7 +60,6 @@ export default function UniversalWizard({
 }: ExtendedWizardProps) {
   // Core dialogue state management using custom hook
   const {
-    wizardData,
     dialogueState,
     sessionActions,
     isLoading,
@@ -317,7 +316,7 @@ export default function UniversalWizard({
         }
         console.warn('Failed to save project to My Games:', err);
       });
-  }, [sessionActions.gameAssembled, sessionActions.gameName, sessionActions.gameType]);
+  }, [sessionActions.gameAssembled, sessionActions.gameName, sessionActions.gameType, toast]);
 
   // Rehydrate selectedAssets from persisted IDs on mount. The wizard stores
   // asset IDs (not full GameAsset objects) so the asset catalog stays the
@@ -834,7 +833,7 @@ export default function UniversalWizard({
       // Note: handleOptionSelect(option) is called at the beginning of this function
       // to ensure dialogue flow transitions work properly before UI actions
     },
-    [handleOptionSelect, setSessionActions, sessionActions, selectedAssets]
+    [handleOptionSelect, setSessionActions, sessionActions, selectedAssets, toast]
   );
 
   // P1.2 — Launch the user's game when the wizard reaches its terminal node
@@ -1037,6 +1036,7 @@ export default function UniversalWizard({
       sessionActions,
       selectedAssets,
       setLocation,
+      toast,
     ]
   );
 

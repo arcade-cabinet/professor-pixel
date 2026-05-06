@@ -7,14 +7,14 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import SafeImage from '@/components/ui/safe-image';
 import { strings } from '@lib/i18n';
-import pixelConfused from '@assets/pixel/Pixel_confused_puzzled_expression_843c04f4.png';
+import { pixelImages } from '@lib/assets/pixel-images';
 
 export default function NotFound() {
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-purple-50 to-pink-50 dark:from-gray-900 dark:to-purple-950 px-4">
       <Card className="w-full max-w-md p-8 bg-white/90 dark:bg-gray-800/90 backdrop-blur text-center">
         <SafeImage
-          src={pixelConfused}
+          src={pixelImages.confused}
           alt={strings.notFound.pixelAlt}
           fallbackEmoji="🤔"
           className="w-24 h-24 mx-auto mb-4"

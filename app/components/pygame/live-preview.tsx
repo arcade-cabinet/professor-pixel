@@ -631,6 +631,7 @@ export default function PygameLivePreview({
             <AnimatePresence mode="wait">
               {pixelComments.map((comment, index) => (
                 <motion.div
+                  // biome-ignore lint/suspicious/noArrayIndexKey: comments are append-only and may repeat; index is the only unique identity
                   key={`${comment}-${index}`}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -654,7 +655,8 @@ export default function PygameLivePreview({
               </h4>
               <div className="flex flex-wrap gap-1">
                 {state.interactions.map((interaction, index) => (
-                  <Badge key={index} variant="secondary" className="text-xs">
+                  // biome-ignore lint/suspicious/noArrayIndexKey: interactions are append-only badges with possibly-repeating values
+                  <Badge key={`${interaction}-${index}`} variant="secondary" className="text-xs">
                     {interaction}
                   </Badge>
                 ))}

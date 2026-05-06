@@ -24,42 +24,18 @@ export function useEdgeSwipe({
     const screenWidth = window.innerWidth;
     const screenHeight = window.innerHeight;
 
-    // Debug logging
-    console.log('Edge swipe check:', {
-      direction,
-      startX,
-      startY,
-      screenWidth,
-      screenHeight,
-      edgeThreshold,
-    });
-
-    // Check which edge the swipe started from
     switch (direction) {
       case 'down':
-        // Swipe down from top edge
-        if (startY < edgeThreshold) {
-          onEdgeSwipe('top');
-        }
+        if (startY < edgeThreshold) onEdgeSwipe('top');
         break;
       case 'up':
-        // Swipe up from bottom edge
-        if (startY > screenHeight - edgeThreshold) {
-          onEdgeSwipe('bottom');
-        }
+        if (startY > screenHeight - edgeThreshold) onEdgeSwipe('bottom');
         break;
       case 'right':
-        // Swipe right from left edge
-        if (startX < edgeThreshold) {
-          console.log('Left edge swipe detected!');
-          onEdgeSwipe('left');
-        }
+        if (startX < edgeThreshold) onEdgeSwipe('left');
         break;
       case 'left':
-        // Swipe left from right edge
-        if (startX > screenWidth - edgeThreshold) {
-          onEdgeSwipe('right');
-        }
+        if (startX > screenWidth - edgeThreshold) onEdgeSwipe('right');
         break;
     }
   };
@@ -84,26 +60,19 @@ export function useEdgeSwipe({
       isSwipingRef.current = false;
     },
     preventScrollOnSwipe: false,
-    trackMouse: true, // Enable for testing
+    trackMouse: false,
     trackTouch: true,
-    delta: 10, // Min distance to be considered a swipe
-    swipeDuration: 500, // Max time for swipe
+    delta: 10,
+    swipeDuration: 500,
   });
 
-  // Attach handlers to the document body for global edge swipe detection
+  // Attach handlers to document.body for global edge-swipe detection.
+  // react-swipeable's `ref` callback wires its internal listeners; we
+  // pass body so a swipe anywhere on the page can be matched against
+  // the edge threshold.
   useEffect(() => {
     if (!enabled) return;
-
-    const element = document.body;
-    const refPassthrough = (el: HTMLElement) => {
-      handlers.ref(el);
-    };
-
-    refPassthrough(element);
-
-    return () => {
-      // Clean up if needed
-    };
+    handlers.ref(document.body);
   }, [enabled, handlers]);
 
   return {

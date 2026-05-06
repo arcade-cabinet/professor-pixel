@@ -370,8 +370,8 @@ print("Pygame environment setup complete")
                       'Error handling with fallbacks',
                       'Code generation from choices',
                       'Before/after comparisons',
-                    ].map((feature, index) => (
-                      <div key={index} className="flex items-center gap-2">
+                    ].map((feature) => (
+                      <div key={feature} className="flex items-center gap-2">
                         <CheckCircle className="h-4 w-4 text-green-600" />
                         <span className="text-sm">{feature}</span>
                       </div>

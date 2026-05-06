@@ -5,19 +5,101 @@
 // project list so a kid can have multiple games on the same browser without
 // silent overwrites.
 //
-// Schema reuse: Project from src/types/schema.ts already has `id`, `name`,
-// `template`, `files`, `assets`. We cram the wizard snapshot into a single
-// `files: [{ path: 'wizard-state.json', content: JSON.stringify(snapshot) }]`
-// entry — no schema change required, and a future "real file" project shape
-// can sit alongside without migration.
+// Storage backend: OPFS first (via src/storage/opfs-projects.ts), localStorage
+// as a one-release fallback for browsers without OPFS support and for read
+// resilience while the migration sentinel still has stragglers. The
+// localStorage path is identical to the original P5 implementation; the OPFS
+// path translates the same WizardProjectSnapshot contract through the
+// launcher store. Both paths emit the same `projects.changed` events so
+// /home updates regardless of which backend won.
 
 import type { Project } from '@lib/types/schema';
 import { getClientStorage } from '@lib/storage/mode';
 import { type PersistedWizardState, persistedWizardStateSchema } from '@lib/storage/persistence';
 import { publishStorageEvent } from '@lib/storage/broadcast';
+import {
+  deleteOpfsProject,
+  isOpfsProjectsAvailable,
+  listOpfsProjects,
+  loadOpfsProject,
+  saveOpfsProject,
+} from '@lib/storage/opfs-projects';
+import { compilePythonGame } from '@lib/pygame/runtime/compiler';
+import { assetManager } from '@lib/assets/manager';
+import type { GameAsset } from '@lib/assets/types';
 
 const ANON_USER_ID = 'anonymous-user';
 const SNAPSHOT_FILE = 'wizard-state.json';
+
+// Cache the OPFS-availability probe so the storage path resolves
+// synchronously after the first hit. The probe itself touches
+// navigator.storage.getDirectory() which is cheap but async.
+let opfsAvailableCache: boolean | null = null;
+async function shouldUseOpfs(): Promise<boolean> {
+  if (opfsAvailableCache !== null) return opfsAvailableCache;
+  opfsAvailableCache = await isOpfsProjectsAvailable();
+  return opfsAvailableCache;
+}
+
+/** Test-only: drop the cached availability probe. */
+export function __resetOpfsRoutingForTests(): void {
+  opfsAvailableCache = null;
+}
+
+async function dataUrlToBlob(dataUrl: string): Promise<Blob> {
+  const res = await fetch(dataUrl);
+  return res.blob();
+}
+
+async function blobToDataUrl(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result));
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(blob);
+  });
+}
+
+/**
+ * Adapt an OPFS list item into the legacy `Project` shape consumed by
+ * /home. Thumbnail is fetched from the OPFS object URL and converted to
+ * a data URL because the existing UI binds <img src> to a data URL
+ * (object URLs would leak across the React Query cache without
+ * URL.revokeObjectURL discipline that the UI doesn't enforce).
+ */
+async function opfsItemToProject(item: {
+  id: string;
+  name: string;
+  template: string;
+  createdAt: Date;
+  updatedAt: Date;
+  thumbnailUrl: string | null;
+}): Promise<Project> {
+  let thumbnailDataUrl: string | undefined;
+  if (item.thumbnailUrl) {
+    try {
+      const res = await fetch(item.thumbnailUrl);
+      const blob = await res.blob();
+      thumbnailDataUrl = await blobToDataUrl(blob);
+    } catch {
+      // Thumbnail unreadable — drop it; the row falls back to gradient.
+    } finally {
+      URL.revokeObjectURL(item.thumbnailUrl);
+    }
+  }
+  return {
+    id: item.id,
+    userId: ANON_USER_ID,
+    name: item.name,
+    template: item.template,
+    description: undefined,
+    published: false,
+    thumbnailDataUrl,
+    files: [], // not surfaced from list view; load via loadWizardProject for full state
+    assets: [],
+    createdAt: item.createdAt,
+  } as Project;
+}
 
 export interface WizardProjectSnapshot {
   /** Wizard state at the moment of save — exact shape stored under `wizard.state.v1`. */
@@ -36,9 +118,24 @@ export interface WizardProjectSnapshot {
    * gradient placeholder.
    */
   thumbnailDataUrl?: string;
+  /**
+   * Optional pre-compiled Python source (compilePythonGame output)
+   * persisted at save time so the launcher's /play route doesn't
+   * recompile on every load. Backwards-compatible: older projects
+   * predate this field, and /play falls back to compile-on-the-fly
+   * when it's absent. Mid-wizard saves with no chosen components
+   * persist no gamePy — the launcher renders the unfinished state
+   * for those.
+   */
+  gamePy?: string;
 }
 
 export async function listWizardProjects(): Promise<Project[]> {
+  if (await shouldUseOpfs()) {
+    const items = await listOpfsProjects();
+    // listOpfsProjects already returns newest-update-first; preserve.
+    return Promise.all(items.map(opfsItemToProject));
+  }
   const storage = getClientStorage();
   const projects = await storage.listProjects(ANON_USER_ID);
   // Sort newest first — `createdAt` is a Date or a parseable date string.
@@ -63,6 +160,110 @@ export async function listWizardProjects(): Promise<Project[]> {
  * games even though they share a name.
  */
 export async function saveWizardProject(
+  snapshot: WizardProjectSnapshot,
+  existingId?: string
+): Promise<Project> {
+  if (await shouldUseOpfs()) {
+    return saveWizardProjectOpfs(snapshot, existingId);
+  }
+  return saveWizardProjectLocalStorage(snapshot, existingId);
+}
+
+async function saveWizardProjectOpfs(
+  snapshot: WizardProjectSnapshot,
+  existingId?: string
+): Promise<Project> {
+  let resolvedId = existingId;
+  if (!resolvedId) {
+    // Same name+template dedup contract as localStorage path.
+    const targetName = snapshot.name.trim().toLowerCase();
+    const existing = await listOpfsProjects();
+    const match = existing.find(
+      (p) => p.name.trim().toLowerCase() === targetName && p.template === snapshot.template
+    );
+    if (match) {
+      resolvedId = match.id;
+    }
+    // Every URL from listOpfsProjects() must be revoked here — the
+    // save path doesn't return any of them to the caller, so nothing
+    // downstream owns the lifetime. Even the matched id's URL is
+    // discarded: saveOpfsProject below writes a fresh thumbnail.png
+    // (or leaves the existing one untouched), and the next list/load
+    // call mints its own object URL. Skipping the matched id leaks
+    // ~one URL per save.
+    for (const item of existing) {
+      if (item.thumbnailUrl) URL.revokeObjectURL(item.thumbnailUrl);
+    }
+  }
+
+  // Convert data URL → blob if a new thumbnail was supplied. Mid-wizard
+  // saves with no thumbnailDataUrl preserve the existing one (the
+  // launcher store keeps the old thumbnail.png on update if no new
+  // blob is passed in).
+  let thumbnailBlob: Blob | undefined;
+  if (snapshot.thumbnailDataUrl) {
+    try {
+      thumbnailBlob = await dataUrlToBlob(snapshot.thumbnailDataUrl);
+    } catch (err) {
+      console.warn('[projects] failed to decode thumbnail data URL on save', err);
+    }
+  }
+
+  // Compile + persist game.py at save time so /play doesn't have to
+  // recompile on every load. Side benefit: a kid's broken-shape choice
+  // map fails loudly here instead of silently saving a snapshot that
+  // crashes /play. Only compile when there are components — mid-wizard
+  // saves are stored without game.py and surface as "unfinished" on /play.
+  const sessionActions = (snapshot.wizardState as { sessionActions?: unknown }).sessionActions as
+    | { selectedComponents?: Record<string, string> }
+    | undefined;
+  const selectedComponents = sessionActions?.selectedComponents ?? {};
+  const assetIds = (snapshot.wizardState as { selectedAssetIds?: string[] }).selectedAssetIds ?? [];
+  let gamePy: string | undefined;
+  if (Object.keys(selectedComponents).length > 0) {
+    const selectedAssets = assetIds
+      .map((id) => assetManager.getAssetById(id))
+      .filter((a): a is GameAsset => Boolean(a));
+    try {
+      gamePy = compilePythonGame(selectedComponents, selectedAssets);
+    } catch (err) {
+      // Compile failure is a real bug — surface it loudly. Don't fall
+      // back to "save without game.py" because that hides regressions
+      // in the compiler. The wizard's auto-save path swallows this in
+      // its catch handler so the kid sees a save toast either way.
+      console.warn('[projects] compilePythonGame failed at save time', err);
+    }
+  }
+
+  const meta = await saveOpfsProject({
+    id: resolvedId,
+    name: snapshot.name,
+    template: snapshot.template,
+    wizardState: snapshot.wizardState,
+    gamePy,
+    thumbnailBlob,
+  });
+  publishStorageEvent({
+    type: 'projects.changed',
+    reason: resolvedId ? 'update' : 'create',
+  });
+
+  // Mirror the legacy createProject / updateProject return shape.
+  return {
+    id: meta.id,
+    userId: ANON_USER_ID,
+    name: meta.name,
+    template: meta.template,
+    description: undefined,
+    published: false,
+    thumbnailDataUrl: snapshot.thumbnailDataUrl,
+    files: [{ path: SNAPSHOT_FILE, content: JSON.stringify(snapshot.wizardState) }],
+    assets: [],
+    createdAt: new Date(meta.created_at),
+  } as Project;
+}
+
+async function saveWizardProjectLocalStorage(
   snapshot: WizardProjectSnapshot,
   existingId?: string
 ): Promise<Project> {
@@ -120,6 +321,48 @@ export async function saveWizardProject(
 }
 
 export async function loadWizardProject(id: string): Promise<WizardProjectSnapshot | null> {
+  if (await shouldUseOpfs()) {
+    const loaded = await loadOpfsProject(id);
+    if (!loaded) {
+      // OPFS doesn't have it; fall through to localStorage in case the
+      // migration sentinel was written before the kid's project row
+      // got copied (rare partial-migration recovery path).
+    } else {
+      // Validate the OPFS-loaded wizardState through the same Zod
+      // schema the localStorage path uses below. Without this, a
+      // schema-drifted or corrupted OPFS snapshot would reach /play
+      // and the wizard while localStorage rejected it — backend
+      // parity matters because OPFS will become the only path once
+      // the migration sentinel seals.
+      const wizardResult = persistedWizardStateSchema.safeParse(loaded.wizardState);
+      if (!wizardResult.success) {
+        console.warn(
+          '[projects] OPFS wizard snapshot failed schema validation',
+          wizardResult.error.issues
+        );
+        if (loaded.thumbnailUrl) URL.revokeObjectURL(loaded.thumbnailUrl);
+        return null;
+      }
+      let thumbnailDataUrl: string | undefined;
+      if (loaded.thumbnailUrl) {
+        try {
+          const res = await fetch(loaded.thumbnailUrl);
+          thumbnailDataUrl = await blobToDataUrl(await res.blob());
+        } catch {
+          // Drop on failure — caller renders gradient.
+        } finally {
+          URL.revokeObjectURL(loaded.thumbnailUrl);
+        }
+      }
+      return {
+        wizardState: wizardResult.data as PersistedWizardState,
+        name: loaded.meta.name,
+        template: loaded.meta.template,
+        thumbnailDataUrl,
+        gamePy: loaded.gamePy ?? undefined,
+      };
+    }
+  }
   const storage = getClientStorage();
   const project = await storage.getProject(id);
   if (!project) return null;
@@ -148,6 +391,11 @@ export async function loadWizardProject(id: string): Promise<WizardProjectSnapsh
 }
 
 export async function deleteWizardProject(id: string): Promise<void> {
+  if (await shouldUseOpfs()) {
+    await deleteOpfsProject(id);
+    publishStorageEvent({ type: 'projects.changed', reason: 'delete' });
+    return;
+  }
   const storage = getClientStorage();
   await storage.deleteProject(id);
   publishStorageEvent({ type: 'projects.changed', reason: 'delete' });
@@ -166,6 +414,65 @@ export async function deleteWizardProject(id: string): Promise<void> {
  * that was deleted from another tab).
  */
 export async function cloneWizardProject(sourceId: string): Promise<Project> {
+  if (await shouldUseOpfs()) {
+    const loaded = await loadOpfsProject(sourceId);
+    if (!loaded) {
+      throw new Error(`Project ${sourceId} not found`);
+    }
+    const all = await listOpfsProjects();
+    const baseName = loaded.meta.name.replace(/ — Remix \d+$/, '');
+    let n = 1;
+    while (all.some((p) => p.name === `${baseName} — Remix ${n}`)) {
+      n += 1;
+    }
+    const cloneName = `${baseName} — Remix ${n}`;
+
+    let thumbnailBlob: Blob | undefined;
+    if (loaded.thumbnailUrl) {
+      try {
+        const res = await fetch(loaded.thumbnailUrl);
+        thumbnailBlob = await res.blob();
+      } catch {
+        // No thumbnail on the clone — fine.
+      } finally {
+        URL.revokeObjectURL(loaded.thumbnailUrl);
+      }
+    }
+    // Revoke the URLs from the list scan we don't end up using.
+    for (const item of all) {
+      if (item.thumbnailUrl) URL.revokeObjectURL(item.thumbnailUrl);
+    }
+
+    const meta = await saveOpfsProject({
+      // No id ⇒ new project.
+      name: cloneName,
+      template: loaded.meta.template,
+      wizardState: loaded.wizardState,
+      gamePy: loaded.gamePy ?? undefined,
+      thumbnailBlob,
+    });
+    publishStorageEvent({ type: 'projects.changed', reason: 'clone' });
+    let thumbnailDataUrl: string | undefined;
+    if (thumbnailBlob) {
+      try {
+        thumbnailDataUrl = await blobToDataUrl(thumbnailBlob);
+      } catch {
+        // Drop.
+      }
+    }
+    return {
+      id: meta.id,
+      userId: ANON_USER_ID,
+      name: meta.name,
+      template: meta.template,
+      description: undefined,
+      published: false,
+      thumbnailDataUrl,
+      files: [{ path: SNAPSHOT_FILE, content: JSON.stringify(loaded.wizardState) }],
+      assets: [],
+      createdAt: new Date(meta.created_at),
+    } as Project;
+  }
   const storage = getClientStorage();
   const source = await storage.getProject(sourceId);
   if (!source) {
@@ -206,6 +513,49 @@ export async function renameWizardProject(id: string, newName: string): Promise<
   const trimmed = newName.trim();
   if (trimmed.length === 0) {
     throw new Error('Project name cannot be empty');
+  }
+  if (await shouldUseOpfs()) {
+    const loaded = await loadOpfsProject(id);
+    if (!loaded) {
+      throw new Error(`Project ${id} not found`);
+    }
+    // Materialize the existing thumbnail as a data URL BEFORE we
+    // revoke the object URL. Optimistic listings that consume this
+    // returned Project (e.g. project-card pre-refetch) would
+    // otherwise blank the tile until the next list-projects fetch.
+    let thumbnailDataUrl: string | undefined;
+    if (loaded.thumbnailUrl) {
+      try {
+        const res = await fetch(loaded.thumbnailUrl);
+        thumbnailDataUrl = await blobToDataUrl(await res.blob());
+      } catch {
+        // Tile renders gradient on failure.
+      } finally {
+        URL.revokeObjectURL(loaded.thumbnailUrl);
+      }
+    }
+    const meta = await saveOpfsProject({
+      id,
+      name: trimmed,
+      template: loaded.meta.template,
+      wizardState: loaded.wizardState,
+      gamePy: loaded.gamePy ?? undefined,
+      // No thumbnailBlob — the launcher store keeps the existing
+      // thumbnail.png on update if no new blob is supplied.
+    });
+    publishStorageEvent({ type: 'projects.changed', reason: 'rename' });
+    return {
+      id: meta.id,
+      userId: ANON_USER_ID,
+      name: meta.name,
+      template: meta.template,
+      description: undefined,
+      published: false,
+      thumbnailDataUrl,
+      files: [{ path: SNAPSHOT_FILE, content: JSON.stringify(loaded.wizardState) }],
+      assets: [],
+      createdAt: new Date(meta.created_at),
+    } as Project;
   }
   const storage = getClientStorage();
   const updated = await storage.updateProject(id, { name: trimmed });

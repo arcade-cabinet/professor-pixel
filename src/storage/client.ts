@@ -7,6 +7,7 @@ import {
   LessonSchema,
 } from '@lib/types/schema';
 import { isQuotaExceeded } from '@lib/storage/persistence';
+import { baseUrl } from '@lib/utils/base-url';
 
 // Client-side storage adapter for GitHub Pages compatibility
 // Uses static JSON files for lessons and LocalStorage for user data
@@ -120,7 +121,6 @@ export class ClientStorage {
 
   // Lesson methods - load from static JSON files
   async getLessons(): Promise<Lesson[]> {
-    const baseUrl = import.meta.env.BASE_URL || '/';
     let response: Response;
     try {
       response = await fetch(`${baseUrl}api/static/lessons.json`);

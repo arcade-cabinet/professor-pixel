@@ -37,17 +37,23 @@ function installVisualViewportStub(initial: { height: number; offsetTop?: number
 // the real editor in this test — we only care about the viewport effect on
 // the wrapper. Stubbing window.require to no-op prevents the loader from
 // firing during render.
+//
+// Global ambients declare window.require/monaco as required at the type
+// level; for tests we want the "not yet loaded" state to be the
+// deterministic default. Cast through a writable record so the assignment
+// is structural (no `any`).
+type WritableShim = Record<'require' | 'monaco' | 'visualViewport', unknown>;
+
 beforeEach(() => {
-  // biome-ignore lint/suspicious/noExplicitAny: test-only window shim
-  (window as any).require = undefined;
-  // biome-ignore lint/suspicious/noExplicitAny: test-only window shim
-  (window as any).monaco = undefined;
+  const w = window as unknown as WritableShim;
+  w.require = undefined;
+  w.monaco = undefined;
 });
 
 afterEach(() => {
   vi.restoreAllMocks();
-  // biome-ignore lint/suspicious/noExplicitAny: test cleanup
-  delete (window as any).visualViewport;
+  const w = window as unknown as Partial<WritableShim>;
+  delete w.visualViewport;
 });
 
 describe('CodeEditor — visualViewport keyboard inset (P4.6)', () => {
@@ -142,8 +148,7 @@ describe('CodeEditor — visualViewport keyboard inset (P4.6)', () => {
   });
 
   it('renders without throwing when visualViewport is undefined (older browsers)', async () => {
-    // biome-ignore lint/suspicious/noExplicitAny: test-only override
-    delete (window as any).visualViewport;
+    delete (window as unknown as Partial<WritableShim>).visualViewport;
 
     const { container } = render(
       <CodeEditor

@@ -19,14 +19,6 @@ export interface GlobalError {
   handled?: boolean;
 }
 
-export interface ErrorTracker {
-  track: (error: GlobalError) => void;
-  getErrors: () => GlobalError[];
-  clearErrors: () => void;
-  getErrorsForType: (type: string) => GlobalError[];
-  getRecentErrors: (limit?: number) => GlobalError[];
-}
-
 class GlobalErrorHandler {
   private errors: GlobalError[] = [];
   private maxErrors = 100;
@@ -224,10 +216,6 @@ class GlobalErrorHandler {
   }
 
   // Public API
-  getErrors(): GlobalError[] {
-    return [...this.errors];
-  }
-
   clearErrors() {
     this.errors = [];
     localStorage.removeItem('pygame-errors');
@@ -237,16 +225,8 @@ class GlobalErrorHandler {
     }
   }
 
-  getErrorsForType(type: string): GlobalError[] {
-    return this.errors.filter((error) => error.type === type);
-  }
-
   getRecentErrors(limit = 10): GlobalError[] {
     return this.errors.slice(0, limit);
-  }
-
-  getCriticalErrors(): GlobalError[] {
-    return this.errors.filter((error) => error.level === 'error');
   }
 
   subscribe(listener: (error: GlobalError) => void): () => void {
@@ -325,15 +305,6 @@ export const globalErrorHandler = new GlobalErrorHandler();
 if (typeof window !== 'undefined') {
   globalErrorHandler.initialize();
 }
-
-// Export error tracker interface for components
-export const errorTracker: ErrorTracker = {
-  track: (error: GlobalError) => globalErrorHandler.track(error),
-  getErrors: () => globalErrorHandler.getErrors(),
-  clearErrors: () => globalErrorHandler.clearErrors(),
-  getErrorsForType: (type: string) => globalErrorHandler.getErrorsForType(type),
-  getRecentErrors: (limit?: number) => globalErrorHandler.getRecentErrors(limit),
-};
 
 // Utility functions for common error patterns
 export function trackNetworkError(error: Error, context: string) {

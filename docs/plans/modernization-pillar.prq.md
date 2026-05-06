@@ -23,38 +23,38 @@ The commits land in dependency order — toolchain first (everything else is bui
 
 ### M1 — Toolchain modernization (5 commits, dependency-ordered)
 
-- [ ] M1.1 — pnpm 10.x replaces npm. `package.json` adds `packageManager`, `npm i` → `pnpm install`, GitHub Actions matrix updated, `corepack enable` step added, `package-lock.json` deleted, `pnpm-lock.yaml` committed.
-- [ ] M1.2 — TypeScript 6.x bump. Address any new strict-mode regressions, drop deprecated compiler options, verify the Pyodide ambient (`src/types/pyodide.d.ts`) still resolves.
-- [ ] M1.3 — Vite 8 + Vitest 4 + `@vitest/browser` 4 (single coordinated bump). Worker `?worker` syntax may have shifted; verify `pyodide.mjs` dynamic import still resolves; verify `coverage` v8 reporter still works; verify component-project browser bootstrap.
-- [ ] M1.4 — React 19. Concurrent rendering, the new error boundaries, `use()` hook, deprecated APIs removed. Audit `app/` for `forwardRef` usages that now need adjustment, and any `legacy` ReactDOM render APIs.
-- [ ] M1.5 — Biome 2.4.x replaces ESLint + Prettier. `npx biome init`, port the existing `.eslintrc` rules into `biome.json`, drop ESLint+Prettier devDeps, replace the CI lint step. The Biome migration also subsumes the `no-explicit-any: error` flip — Biome's equivalent rule (`noExplicitAny`) goes to `error`.
+- [x] M1.1 — pnpm 10.x replaces npm. `package.json` adds `packageManager`, `npm i` → `pnpm install`, GitHub Actions matrix updated, `corepack enable` step added, `package-lock.json` deleted, `pnpm-lock.yaml` committed.
+- [x] M1.2 — TypeScript 6.x bump. Address any new strict-mode regressions, drop deprecated compiler options, verify the Pyodide ambient (`src/types/pyodide.d.ts`) still resolves.
+- [x] M1.3 — Vite 8 + Vitest 4 + `@vitest/browser` 4 (single coordinated bump). Worker `?worker` syntax may have shifted; verify `pyodide.mjs` dynamic import still resolves; verify `coverage` v8 reporter still works; verify component-project browser bootstrap.
+- [x] M1.4 — React 19. Concurrent rendering, the new error boundaries, `use()` hook, deprecated APIs removed. Audit `app/` for `forwardRef` usages that now need adjustment, and any `legacy` ReactDOM render APIs.
+- [x] M1.5 — Biome 2.4.x replaces ESLint + Prettier. `npx biome init`, port the existing `.eslintrc` rules into `biome.json`, drop ESLint+Prettier devDeps, replace the CI lint step. The Biome migration also subsumes the `no-explicit-any: error` flip — Biome's equivalent rule (`noExplicitAny`) goes to `error`.
 
 ### M2 — Type / schema / test config cleanup (3 commits)
 
-- [ ] M2.1 — Fix the 209-ish `any`s. After M1.5 (Biome) lands, the lint config goes to `error`. The actual fixes happen in this commit: replace `any` with `unknown` + type guards, or with the right inferred type. Net deletions, no new types.
-- [ ] M2.2 — Re-enable Vitest coverage thresholds. `vitest.config.ts` adds `coverage.thresholds: {lines: 90, branches: 85, functions: 90, statements: 90}`. Add lcov reporter for CI artifact upload.
-- [ ] M2.3 — Wizard-dialogue integration tests refresh. The currently-quarantined `tests/integration/wizard-dialogue-engine.test.tsx` is rewritten against the actual persistence shape; remove the `exclude` in `vitest.config.ts`. If the rewrite is too large, delete the file and replace with focused tests for whichever wizard-flow paths still need integration coverage.
+- [x] M2.1 — Fix the 209-ish `any`s. After M1.5 (Biome) lands, the lint config goes to `error`. The actual fixes happen in this commit: replace `any` with `unknown` + type guards, or with the right inferred type. Net deletions, no new types.
+- [x] M2.2 — Re-enable Vitest coverage thresholds. `vitest.config.ts` adds `coverage.thresholds: {lines: 90, branches: 85, functions: 90, statements: 90}`. Add lcov reporter for CI artifact upload.
+- [x] M2.3 — Wizard-dialogue integration tests refresh. The currently-quarantined `tests/integration/wizard-dialogue-engine.test.tsx` is rewritten against the actual persistence shape; remove the `exclude` in `vitest.config.ts`. If the rewrite is too large, delete the file and replace with focused tests for whichever wizard-flow paths still need integration coverage.
 
 ### M3 — Visual + accessibility baseline (2 commits)
 
-- [ ] M3.1 — Playwright visual-regression baseline. `tests/e2e/visual.spec.ts` captures golden screenshots per game-type / per viewport; CI updates the screenshot artifact when the diff exceeds a threshold; per-PR review can eyeball the diff.
-- [ ] M3.2 — `@axe-core/playwright` checks in the e2e suite. New `tests/e2e/a11y.spec.ts` runs axe on each major route and asserts zero violations of WCAG 2.2 AA rules.
+- [x] M3.1 — Playwright visual-regression baseline. `tests/e2e/visual.spec.ts` captures golden screenshots per game-type / per viewport; CI updates the screenshot artifact when the diff exceeds a threshold; per-PR review can eyeball the diff.
+- [x] M3.2 — `@axe-core/playwright` checks in the e2e suite. New `tests/e2e/a11y.spec.ts` runs axe on each major route and asserts zero violations of WCAG 2.2 AA rules.
 
 ### M4 — Pyodide / PyGame correctness (3 commits)
 
-- [ ] M4.1 — Cold-start budget. Wire a perf timer around `getPyodide()` boot; surface in `console.info` and (in dev) on a HUD overlay. Set a budget in `docs/pillars/02-runtime.md` (target: <3s on first load on a mid-tier laptop, <8s on a Chromebook).
+- [x] M4.1 — Cold-start budget. Wire a perf timer around `getPyodide()` boot; surface in `console.info` and (in dev) on a HUD overlay. Set a budget in `docs/pillars/02-runtime.md` (target: <3s on first load on a mid-tier laptop, <8s on a Chromebook).
 - [x] M4.2 — Frame-rate test for the simulator. Lands in `tests/unit/simulator-frame-rate.test.ts` (omnibus task-004). Approach swapped from real-rAF wall-clock to CPU-time over 120 synthesized frames with the spec'd 6-sprite + 2-platform + particle-burst load — same regression-detection target (per-frame dispatch cost crossing 16.67ms) at ~1s CI cost vs the original 30s budget. Fake-canvas ledger length used as the lower-bound assertion (timing-based lower bounds floor to 0 in jsdom and don't catch short-circuit refactors). Companion fix: `frameBuffer` declared `const` and drained in-place via `.length = 0` so `getFrameBuffer()`'s exported reference stays identity-stable across flushes.
-- [ ] M4.3 — Worker-side stdout truncation. Move `maxStdout` enforcement into the worker's stdout buffer (truncate during `pyodide.runPython` callback), eliminating the megabytes-across-Comlink case STATE.md flagged. Update the `clipResult` in `worker-runner.ts` to verify the cap, not enforce it.
+- [x] M4.3 — Worker-side stdout truncation. Move `maxStdout` enforcement into the worker's stdout buffer (truncate during `pyodide.runPython` callback), eliminating the megabytes-across-Comlink case STATE.md flagged. Update the `clipResult` in `worker-runner.ts` to verify the cap, not enforce it.
 
 ### M5 — Grader instrumentation (2 commits)
 
-- [ ] M5.1 — Real `functionCalled` instrumentation. Worker exposes a `runWithCallTracking(code, names)` API that monkey-patches each named function before exec, increments a counter on call, and returns the counts. Engine's runtime validator uses real counts instead of the stdout/globals approximation.
-- [ ] M5.2 — Real `acceptsUserInput` instrumentation. Worker tracks `input()` invocations (already monkey-patched in `worker.ts` — extend the patch to count). Engine asserts `count > 0` instead of "test provided non-empty input".
+- [x] M5.1 — Real `functionCalled` instrumentation. Worker exposes a `runWithCallTracking(code, names)` API that monkey-patches each named function before exec, increments a counter on call, and returns the counts. Engine's runtime validator uses real counts instead of the stdout/globals approximation.
+- [x] M5.2 — Real `acceptsUserInput` instrumentation. Worker tracks `input()` invocations (already monkey-patched in `worker.ts` — extend the patch to count). Engine asserts `count > 0` instead of "test provided non-empty input".
 
 ### M6 — Content track (1 commit, then ongoing)
 
-- [ ] M6.1 — Three more lessons covering data structures (lists), files (read/write text files via Pyodide's virtual FS), and classes (`__init__`, methods, inheritance). Each lesson has 2–3 steps with full AST + runtime rules. `tests/unit/lessons-content.test.ts` invariants pass.
-- [ ] M6.2 — STATE.md cleanup. Move all stabilized M-tasks from Active → Done. Trim Next of everything that landed here. Add a new Next section for the per-game-type playtest follow-ups (one item per `docs/playtests/` file with a one-liner of the most-blocking tune).
+- [x] M6.1 — Three more lessons covering data structures (lists), files (read/write text files via Pyodide's virtual FS), and classes (`__init__`, methods, inheritance). Each lesson has 2–3 steps with full AST + runtime rules. `tests/unit/lessons-content.test.ts` invariants pass.
+- [x] M6.2 — STATE.md cleanup. Move all stabilized M-tasks from Active → Done. Trim Next of everything that landed here. Add a new Next section for the per-game-type playtest follow-ups (one item per `docs/playtests/` file with a one-liner of the most-blocking tune).
 
 ## Dependencies
 

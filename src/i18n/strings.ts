@@ -102,6 +102,10 @@ export const strings = {
         "There's not much room left for new games. Try deleting one you don't play anymore.",
     },
     project: {
+      // task-65 — primary CTA on each My Games row. Goes to
+      // /play/:projectId, which runs the saved game in the launcher
+      // without dropping the kid back into the wizard editor.
+      play: '▶ Play',
       open: 'Open',
       delete: 'Delete',
       keep: 'Keep',
@@ -496,6 +500,27 @@ export const strings = {
       cancel: 'Keep my code',
       confirm: 'Reset',
     },
+  },
+
+  /* ─── Launcher /play/:projectId page (task-65) ─────────────────────── */
+  play: {
+    loading: 'Loading your game…',
+    notFoundTitle: "We couldn't find that game",
+    notFoundBody:
+      "It might have been deleted, or this link doesn't match a project in your library.",
+    backToLibrary: 'Back to My Games',
+    edit: 'Edit',
+    play: 'Play',
+    running: 'Loading Python and pygame…',
+    compileErrorTitle: "We couldn't build this game",
+    runtimeErrorTitle: 'The game crashed',
+    retry: 'Try again',
+    // Surfaced when a project was auto-saved mid-wizard but the kid
+    // hasn't picked any components yet — there's literally nothing to
+    // play, so we route them back to the wizard.
+    unfinishedBody:
+      "This game isn't finished yet — Pixel needs you to pick characters, enemies, and a backdrop before it can play.",
+    keepBuilding: 'Keep building',
   },
 
   /* ─── Help modal (help-modal.tsx — task-015) ───────────────────────── */

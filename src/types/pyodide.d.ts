@@ -19,6 +19,9 @@ declare global {
 
   interface PyodideLoadOptions {
     indexURL?: string;
+    /** Base URL for package wheels. Defaults to jsdelivr CDN; set to the
+     * vendored /pyodide/ directory to keep loadPackage() offline. */
+    packageBaseUrl?: string;
     fullStdLib?: boolean;
     stdout?: (s: string) => void;
     stderr?: (s: string) => void;

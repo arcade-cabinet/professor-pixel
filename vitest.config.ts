@@ -85,16 +85,18 @@ export default defineConfig({
       // Vitest projects — unit + integration + component (browser). The
       // numbers below are the aggregate across all three.
       //
-      // Today's snapshot: statements 12.05%, branches 9.36%, functions
-      // 8.85%, lines 11.65%. The thresholds below sit just below those
-      // numbers so any regression fails CI; the work to actually push the
-      // percentages up is per-domain (wizard, pygame simulator, app
-      // components) and lives in subsequent PRQs.
+      // Today's snapshot (2026-05-05, post-launcher PR #30 + opfs-projects
+      // + play-page + opfs-migration + projects-opfs-routing tests):
+      // statements 27.71%, branches 22.42%, functions 22.28%, lines 27.71%.
+      // The thresholds below sit a hair below those numbers (rounded down
+      // to the nearest integer minus 1 for noise tolerance) so any
+      // regression fails CI. Per the ratchet doctrine: any PR that moves
+      // these numbers UP raises the matching threshold in the same PR.
       thresholds: {
-        statements: 12,
-        branches: 9,
-        functions: 8,
-        lines: 11,
+        statements: 26,
+        branches: 21,
+        functions: 21,
+        lines: 26,
       },
     },
   },

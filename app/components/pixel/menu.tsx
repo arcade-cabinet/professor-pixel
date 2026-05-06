@@ -24,10 +24,12 @@ import HelpModal from '@/components/help-modal';
 import { isAudioEnabled, setAudioEnabled, subscribeAudioEnabled } from '@lib/audio';
 import { strings } from '@lib/i18n';
 
-// Import Pixel images
-import pixelExcited from '@assets/pixel/Pixel_celebrating_victory_expression_24b7a377.png';
-import pixelHappy from '@assets/pixel/Pixel_happy_excited_expression_22a41625.png';
-import pixelThinking from '@assets/pixel/Pixel_thinking_pondering_expression_0ffffedb.png';
+// Pixel images served as static URLs (public/pixel/) instead of bundled
+// imports — see src/assets/pixel-images.ts for rationale.
+import { pixelImages } from '@lib/assets/pixel-images';
+const pixelExcited = pixelImages.celebrating;
+const pixelHappy = pixelImages.happy;
+const pixelThinking = pixelImages.thinking;
 
 interface SessionAction {
   id: string;

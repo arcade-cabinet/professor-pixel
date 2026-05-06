@@ -32,6 +32,14 @@ export function isTTSAvailable(): boolean {
 
 let preferredVoice: SpeechSynthesisVoice | null = null;
 let voicesChangedListenerInstalled = false;
+// E3.4 — iOS Safari sometimes ships an empty voices array when speak()
+// is first called, then populates it via voiceschanged minutes (or
+// seconds) later. Without this queue, the very first Pixel utterance
+// of the session uses the system default voice (a sterile "Alex" on
+// macOS, "Samantha" on iOS) instead of a child-friendly en-US voice.
+// Defer the first speak() if voices aren't ready yet; the listener
+// flushes on voiceschanged.
+let pendingFirstSpeak: { text: string; opts: SpeakOptions } | null = null;
 
 function ensureVoicesChangedListener(): void {
   if (voicesChangedListenerInstalled) return;
@@ -43,9 +51,30 @@ function ensureVoicesChangedListener(): void {
   if (typeof synth.addEventListener === 'function') {
     synth.addEventListener('voiceschanged', () => {
       preferredVoice = null;
+      // Flush any speak queued before voices were ready (iOS first-shot path).
+      if (pendingFirstSpeak) {
+        const { text, opts } = pendingFirstSpeak;
+        pendingFirstSpeak = null;
+        speak(text, opts);
+      }
     });
     voicesChangedListenerInstalled = true;
   }
+}
+
+/**
+ * Pre-warm the voices list. Call from a user-gesture handler (audio
+ * toggle click, first dialogue advance) so iOS Safari kicks off the
+ * voices fetch ahead of the first real speak(). No-op on browsers that
+ * already have voices ready. Safe to call multiple times.
+ */
+export function prewarmTTSVoices(): void {
+  if (!isTTSAvailable()) return;
+  ensureVoicesChangedListener();
+  // getVoices() with an empty result is what nudges iOS to populate;
+  // the result itself is discarded — pickVoice() will re-fetch when
+  // speak() actually runs.
+  void window.speechSynthesis.getVoices();
 }
 
 function pickVoice(): SpeechSynthesisVoice | null {
@@ -77,11 +106,23 @@ export function speak(text: string, opts: SpeakOptions = {}): void {
   if (!cleaned) return;
 
   const synth = window.speechSynthesis;
+  ensureVoicesChangedListener();
+
+  // E3.4 — iOS Safari first-utterance race. If voices aren't ready yet
+  // AND we don't already have a deferred utterance, queue this one and
+  // bail. The voiceschanged listener will replay it. We only queue ONE
+  // (the latest) — if the user advances dialogue rapidly before voices
+  // arrive, only the last text gets read, which is the correct UX.
+  const voice = pickVoice();
+  if (!voice && synth.getVoices().length === 0) {
+    pendingFirstSpeak = { text, opts };
+    return;
+  }
+
   // Idempotent cancel — replace any pending utterance.
   synth.cancel();
 
   const utter = new SpeechSynthesisUtterance(cleaned);
-  const voice = pickVoice();
   if (voice) utter.voice = voice;
   utter.rate = opts.rate ?? 1;
   utter.pitch = opts.pitch ?? 1;

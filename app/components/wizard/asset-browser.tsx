@@ -98,6 +98,7 @@ export default function AssetBrowserWizard({
   // an asset that's no longer in the visible grid — confusing and
   // inconsistent with "first tap previews the thing you can see". The
   // empty-deps regression on the page reset is also fixed here.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentionally re-runs on filter inputs (P4.12 contract: search/tab/category/type changes clear the preview banner and reset to page 1)
   useEffect(() => {
     setCurrentPage(1);
     setPreviewAsset(null);

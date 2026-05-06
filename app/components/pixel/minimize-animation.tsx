@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles } from 'lucide-react';
-import pixelImage from '@assets/pixel/Pixel_happy_excited_expression_22a41625.png';
+import { pixelImages } from '@lib/assets/pixel-images';
+const pixelImage = pixelImages.happy;
 
 interface PixelMinimizeAnimationProps {
   message?: string;
@@ -138,10 +139,12 @@ export default function PixelMinimizeAnimation({
                   transition={{ duration: 1.2 }}
                 />
 
-                {/* Trail sparkles */}
+                {/* Trail sparkles — fixed-length decorative array, items
+                    cannot reorder, no stable identity beyond position. */}
                 {[...Array(5)].map((_, i) => (
                   <motion.div
-                    key={i}
+                    // biome-ignore lint/suspicious/noArrayIndexKey: fixed-length decorative array
+                    key={`trail-${i}`}
                     className="absolute top-1/2 left-1/2"
                     initial={{ x: 0, y: 0, opacity: 0 }}
                     animate={{
@@ -165,7 +168,8 @@ export default function PixelMinimizeAnimation({
             <div className="absolute inset-0 overflow-hidden">
               {[...Array(20)].map((_, i) => (
                 <motion.div
-                  key={i}
+                  // biome-ignore lint/suspicious/noArrayIndexKey: fixed-length decorative particle array
+                  key={`particle-${i}`}
                   className="absolute"
                   initial={{
                     x: window.innerWidth / 2,

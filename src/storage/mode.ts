@@ -1,14 +1,10 @@
 import { ClientStorage } from '@lib/storage/client';
 import type { UserProgress, Project, InsertProject } from '@lib/types/schema';
 
-// Environment detection for storage mode
-export const isStaticMode = (): boolean => {
-  // Detect if we're in GitHub Pages static mode
-  return (
-    import.meta.env.VITE_STATIC_MODE === 'true' ||
-    (typeof window !== 'undefined' && window.location.hostname.includes('github.io'))
-  );
-};
+// Pure browser app — no backend exists. Every storage op routes
+// to ClientStorage (localStorage / OPFS). The old `isStaticMode()`
+// gate was a stub that broke on Capacitor (hostname `localhost`
+// would mean "use the backend that doesn't exist").
 
 // Singleton client storage instance
 let clientStorageInstance: ClientStorage | null = null;

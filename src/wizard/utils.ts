@@ -1,6 +1,7 @@
 import { WizardNode, DeviceState, LayoutMode, SessionActions } from './types';
 import type { LucideIcon } from 'lucide-react';
 import { BREAKPOINTS, GAME_TYPE_ICONS } from './constants';
+import { withBase } from '@lib/utils/base-url';
 
 // Device detection utilities
 export const detectDevice = (): DeviceState => {
@@ -214,10 +215,16 @@ export const updateSessionActionsForOption = (
   return updatedActions;
 };
 
-// Load wizard flow data
+// Load wizard flow data. The `path` arg is root-relative (e.g.
+// `/wizard-flow.json`); withBase prefixes Vite's BASE_URL so it
+// resolves against the Pages subpath instead of 404-ing on
+// `https://<org>.github.io/wizard-flow.json`.
 export const loadWizardFlow = async (path: string): Promise<Record<string, WizardNode>> => {
   try {
-    const response = await fetch(path);
+    const response = await fetch(withBase(path));
+    if (!response.ok) {
+      throw new Error(`flow fetch failed: HTTP ${response.status} ${response.statusText}`);
+    }
     const data = await response.json();
     // Support both nested and flat structure
     return data.nodes || data;

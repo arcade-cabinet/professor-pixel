@@ -92,3 +92,64 @@ jobs:
 
       - name: Run component tests (Vitest browser)
         run: pnpm test:component
+
+  e2e-production-shape:
+    # E1 + E2 of the experience-polish pillar — real e2e against a
+    # production-shape build (vite build --base=/professor-pixel/ +
+    # vite preview), not the dev server. Catches deploy-chain BASE_URL
+    # bugs, asserts cold-start budget, and runs the visual baseline
+    # diff for home / lessons / not-found across desktop/tablet/mobile.
+    name: Playwright (production-shape build)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright Chromium + WebKit
+        run: pnpm exec playwright install --with-deps chromium webkit
+
+      - name: Build asset catalog
+        run: pnpm catalog
+
+      # Run only functional production-shape specs in CI. Visual
+       # baselines are committed darwin-rendered (the dev workstation);
+       # Ubuntu CI rendering doesn't match font hinting / antialiasing.
+       # The baselines are still useful for local pre-push regression
+       # detection on the same workstation; running them in CI without
+       # per-platform suffixes would just be noise. To regen baselines
+       # for CI, add a manual workflow_dispatch job that runs with
+       # `--update-snapshots` and commits the .linux.png siblings.
+      - name: Run production-shape functional Playwright suite
+        run: |
+          pnpm exec playwright test \
+            --project=production-shape-desktop \
+            --project=production-shape-tablet \
+            --project=production-shape-mobile \
+            --grep-invert "production-shape-visual"
+
+      # E2.3 — Upload visual diffs + traces on failure so reviewers can
+      # see what changed. Successful runs skip this (artifacts only on
+      # failure keeps storage costs bounded).
+      - name: Upload Playwright artifacts on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-production-shape-${{ github.sha }}
+          path: |
+            test-results/
+            playwright-report/
+          retention-days: 14
+          if-no-files-found: ignore

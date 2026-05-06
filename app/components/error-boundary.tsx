@@ -16,6 +16,7 @@ import {
   Lightbulb,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { baseUrl } from '@lib/utils/base-url';
 
 interface Props {
   children: ReactNode;
@@ -100,7 +101,7 @@ export class ErrorBoundary extends Component<Props, State> {
   };
 
   handleGoHome = () => {
-    window.location.href = '/';
+    window.location.href = baseUrl;
   };
 
   getEducationalMessage = (error: Error) => {
@@ -203,8 +204,8 @@ export class ErrorBoundary extends Component<Props, State> {
                   <AlertDescription className="text-blue-800 dark:text-blue-200">
                     <div className="font-medium mb-2">What you can try:</div>
                     <ul className="space-y-1">
-                      {educationalMessage.suggestions.map((suggestion, index) => (
-                        <li key={index} className="flex items-start gap-2">
+                      {educationalMessage.suggestions.map((suggestion) => (
+                        <li key={suggestion} className="flex items-start gap-2">
                           <span className="text-blue-600 dark:text-blue-400 font-bold">•</span>
                           <span>{suggestion}</span>
                         </li>

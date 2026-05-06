@@ -2,5 +2,3 @@
 // Edit by hand only to add `export type { ... }` aliases or rename collisions.
 
 export * from './console-logger';
-export * from './health';
-export * from './performance';

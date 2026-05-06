@@ -15,15 +15,17 @@ import {
 import { sessionHistory } from '@lib/storage/session-history';
 import { useIsMobile } from '@lib/hooks/use-media-query';
 
-// Import Pixel images
-import pixelHappy from '@assets/pixel/Pixel_happy_excited_expression_22a41625.png';
-import pixelThinking from '@assets/pixel/Pixel_thinking_pondering_expression_0ffffedb.png';
-import pixelCelebrating from '@assets/pixel/Pixel_celebrating_victory_expression_24b7a377.png';
-import pixelEncouraging from '@assets/pixel/Pixel_encouraging_supportive_expression_cf958090.png';
-import pixelTeaching from '@assets/pixel/Pixel_teaching_explaining_expression_27e09763.png';
-import pixelGaming from '@assets/pixel/Pixel_gaming_focused_expression_6f3fdfab.png';
-import pixelWelcoming from '@assets/pixel/Pixel_welcoming_waving_expression_279ffdd2.png';
-import pixelCoding from '@assets/pixel/Pixel_coding_programming_expression_56de8ca0.png';
+// Pixel images served as static URLs (public/pixel/) instead of bundled
+// imports — see src/assets/pixel-images.ts for rationale.
+import { pixelImages } from '@lib/assets/pixel-images';
+const pixelHappy = pixelImages.happy;
+const pixelThinking = pixelImages.thinking;
+const pixelCelebrating = pixelImages.celebrating;
+const pixelEncouraging = pixelImages.encouraging;
+const pixelTeaching = pixelImages.teaching;
+const pixelGaming = pixelImages.gaming;
+const pixelWelcoming = pixelImages.welcoming;
+const pixelCoding = pixelImages.coding;
 
 type PresenceState = 'center-stage' | 'waiting-corner' | 'expanded-corner';
 

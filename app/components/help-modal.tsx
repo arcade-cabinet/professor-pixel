@@ -41,7 +41,7 @@ export default function HelpModal({ open, onOpenChange }: HelpModalProps) {
         <ul className="space-y-4 mt-4">
           {entries.map((entry, idx) => (
             <li
-              key={idx}
+              key={entry.q}
               data-testid={`help-entry-${idx}`}
               className="rounded-md border border-purple-200 bg-purple-50/50 p-4 dark:border-purple-800 dark:bg-purple-950/30"
             >
