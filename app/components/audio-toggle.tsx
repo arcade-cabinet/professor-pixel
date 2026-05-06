@@ -11,7 +11,12 @@
 import { useEffect, useState } from 'react';
 import { Volume2, VolumeX } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { isAudioEnabled, setAudioEnabled, subscribeAudioEnabled } from '@lib/audio/tts';
+import {
+  isAudioEnabled,
+  prewarmTTSVoices,
+  setAudioEnabled,
+  subscribeAudioEnabled,
+} from '@lib/audio/tts';
 import { cn } from '@lib/utils/cn';
 import { strings } from '@lib/i18n';
 
@@ -43,6 +48,11 @@ export default function AudioToggle({
   }, []);
 
   const onClick = () => {
+    // E3.4 — kick off iOS Safari's voices fetch on user gesture so the
+    // first Pixel utterance after this click can pick up an en-US voice
+    // instead of the system default. No-op on browsers where voices
+    // are already populated.
+    prewarmTTSVoices();
     setAudioEnabled(!enabled);
   };
 

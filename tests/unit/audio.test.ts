@@ -89,10 +89,14 @@ describe('audio/tts — speak() routes to speechSynthesis', () => {
     // can silence Pixel mid-sentence. Tests that exercise the speech
     // path must enable audio first.
     setAudioEnabled(true);
+    // Provide a non-empty voice list so speak() doesn't take the
+    // E3.4 iOS-defer path. The defer behavior has its own test below.
+    const fakeVoice = { lang: 'en-US', name: 'Test', default: true } as SpeechSynthesisVoice;
     vi.stubGlobal('speechSynthesis', {
       speak: speakSpy,
       cancel: cancelSpy,
-      getVoices: () => [],
+      getVoices: () => [fakeVoice],
+      addEventListener: vi.fn(),
     });
     // jsdom doesn't ship SpeechSynthesisUtterance; provide a minimal shim so
     // `new SpeechSynthesisUtterance(text)` records what was passed.
@@ -132,5 +136,78 @@ describe('audio/tts — speak() routes to speechSynthesis', () => {
   it('cancelSpeech() forwards to speechSynthesis.cancel', () => {
     cancelSpeech();
     expect(cancelSpy).toHaveBeenCalled();
+  });
+});
+
+describe('audio/tts — E3.4 iOS Safari voices race', () => {
+  let speakSpy: ReturnType<typeof vi.fn>;
+  let voicesChangedHandler: (() => void) | null = null;
+  let currentVoices: SpeechSynthesisVoice[] = [];
+  // Re-imported per test so module-level state (preferredVoice cache,
+  // voicesChangedListenerInstalled, pendingFirstSpeak) starts fresh.
+  // Otherwise the prior describe's setup would leak into our defer
+  // assertions: voicesChangedListenerInstalled=true means the module
+  // skips re-attaching, so our handler-capture spy never runs.
+  let ttsModule: typeof import('@lib/audio/tts');
+
+  beforeEach(async () => {
+    vi.resetModules();
+    speakSpy = vi.fn();
+    voicesChangedHandler = null;
+    currentVoices = [];
+    vi.stubGlobal('speechSynthesis', {
+      speak: speakSpy,
+      cancel: vi.fn(),
+      getVoices: () => currentVoices,
+      addEventListener: (event: string, handler: () => void) => {
+        if (event === 'voiceschanged') voicesChangedHandler = handler;
+      },
+    });
+    class FakeUtter {
+      text: string;
+      voice: SpeechSynthesisVoice | null = null;
+      rate = 1;
+      pitch = 1;
+      constructor(text: string) {
+        this.text = text;
+      }
+    }
+    vi.stubGlobal('SpeechSynthesisUtterance', FakeUtter);
+    ttsModule = await import('@lib/audio/tts');
+    ttsModule.setAudioEnabled(true);
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('defers the first speak() if voices array is empty (iOS first-shot)', () => {
+    ttsModule.speak('Hi from Pixel!');
+    expect(speakSpy).not.toHaveBeenCalled();
+  });
+
+  it('flushes the deferred utterance when voiceschanged fires', () => {
+    ttsModule.speak('queued utterance');
+    expect(speakSpy).not.toHaveBeenCalled();
+    expect(voicesChangedHandler).not.toBeNull();
+
+    currentVoices = [{ lang: 'en-US', name: 'Test', default: true } as SpeechSynthesisVoice];
+    voicesChangedHandler?.();
+
+    expect(speakSpy).toHaveBeenCalledTimes(1);
+    const utter = speakSpy.mock.calls[0][0] as SpeechSynthesisUtterance;
+    expect(utter.text).toBe('queued utterance');
+  });
+
+  it('prewarmTTSVoices() pokes getVoices to nudge the iOS voices fetch', () => {
+    const getVoicesSpy = vi.fn(() => currentVoices);
+    vi.stubGlobal('speechSynthesis', {
+      speak: speakSpy,
+      cancel: vi.fn(),
+      getVoices: getVoicesSpy,
+      addEventListener: vi.fn(),
+    });
+    ttsModule.prewarmTTSVoices();
+    expect(getVoicesSpy).toHaveBeenCalled();
   });
 });
