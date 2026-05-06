@@ -102,7 +102,7 @@ The following require explicit human approval each time, even for AI agents oper
 
 ## When in doubt
 
-1. Read [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for cross-pillar contracts, then the relevant pillar in [`docs/pillars/`](docs/pillars/) — frontend, runtime, lesson engine, grading, design system.
+1. Read [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for cross-pillar contracts, then the relevant pillar in [`docs/pillars/`](docs/pillars/) — frontend, runtime, lesson engine, grading, design system, storage, deploy.
 2. Read [`docs/DESIGN.md`](docs/DESIGN.md) for product vision and Pixel's voice.
 3. Check [`docs/STATE.md`](docs/STATE.md) for active work.
 3. Search the codebase — there's likely an existing pattern.
