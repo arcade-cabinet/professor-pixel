@@ -136,4 +136,49 @@ test.describe('Production-shape build (BASE_URL=/professor-pixel/)', () => {
     await expect(page.getByTestId('not-found-home')).toBeVisible();
     assertNoErrors(errors, 'not-found');
   });
+
+  test('Pyodide cold-start finishes within budget', async ({ page }) => {
+    // E1.3 — regression alarm. The COLD_START_BUDGET_MS constant in
+    // src/python/pyodide-singleton.ts is 8000ms. We don't enforce that
+    // exact ceiling at the e2e layer (CI runners are noisy and Pyodide
+    // can spike), but we do enforce a generous outer bound so a runaway
+    // regression that doubles the budget surfaces here. The singleton
+    // already logs `console.info('Pyodide cold-start XXXms')` on every
+    // boot — we parse that from the console stream.
+    const E2E_OUTER_BUDGET_MS = 30_000;
+
+    const consoleLogs: string[] = [];
+    page.on('console', (msg) => {
+      consoleLogs.push(msg.text());
+    });
+
+    await page.goto(`${BASE_PATH}/`);
+    await page.waitForLoadState('domcontentloaded');
+
+    // Trigger Pyodide via the singleton from the page context. The
+    // singleton is in the main bundle; importing it via dynamic
+    // window.dispatchEvent isn't available here, so we rely on the
+    // runtime starting via a real route: /lesson/python-1 (the
+    // first-lesson slug from lessons.json) loads the Run/Check
+    // surface which calls getPyodide() on mount.
+    //
+    // Boot completion signal: window.pyodide gets set in the .then
+    // handler (pyodide-singleton.ts:198), and in the same tick the
+    // 'Pyodide cold-start XXXms' info log fires.
+    await page.goto(`${BASE_PATH}/lesson/lesson-1`);
+    await page.waitForFunction(() => Boolean((window as unknown as { pyodide?: unknown }).pyodide), {
+      timeout: E2E_OUTER_BUDGET_MS,
+    });
+
+    const coldStartLog = consoleLogs.find((line) => /Pyodide cold-start \d+ms/.test(line));
+    expect(coldStartLog, 'singleton must log cold-start duration on boot').toBeTruthy();
+
+    const match = coldStartLog?.match(/(\d+)ms/);
+    const observedMs = match ? Number(match[1]) : NaN;
+    expect(observedMs, `parsed cold-start ms from "${coldStartLog}"`).toBeGreaterThan(0);
+    expect(
+      observedMs,
+      `cold-start ${observedMs}ms exceeds e2e outer budget ${E2E_OUTER_BUDGET_MS}ms`
+    ).toBeLessThan(E2E_OUTER_BUDGET_MS);
+  });
 });
