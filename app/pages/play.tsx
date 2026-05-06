@@ -24,6 +24,7 @@ import { compilePythonGame } from '@lib/pygame/runtime/compiler';
 import { assetManager } from '@lib/assets/manager';
 import type { GameAsset } from '@lib/assets/types';
 import { getPyodide, recoverPyodide } from '@lib/python/pyodide-singleton';
+import { mountAssetsForGame } from '@lib/python/asset-mount';
 import { strings } from '@lib/i18n';
 
 type State =
@@ -31,9 +32,15 @@ type State =
   | { kind: 'not-found' }
   | { kind: 'unfinished'; title: string } // mid-wizard save with no components yet
   | { kind: 'compile-error'; message: string }
-  | { kind: 'ready'; pythonCode: string; title: string }
-  | { kind: 'running'; pythonCode: string; title: string }
-  | { kind: 'runtime-error'; pythonCode: string; title: string; message: string };
+  | { kind: 'ready'; pythonCode: string; title: string; assets: GameAsset[] }
+  | { kind: 'running'; pythonCode: string; title: string; assets: GameAsset[] }
+  | {
+      kind: 'runtime-error';
+      pythonCode: string;
+      title: string;
+      assets: GameAsset[];
+      message: string;
+    };
 
 export default function PlayPage() {
   const params = useParams<{ projectId: string }>();
@@ -91,20 +98,24 @@ export default function PlayPage() {
       // .ready() lookups on cold loads, slowing every /play visit by
       // one round-trip even when the recompile wasn't needed.
       try {
-        let pythonCode: string;
-        if (snapshot.gamePy) {
-          pythonCode = snapshot.gamePy;
-        } else {
-          const assetIds = snapshot.wizardState.selectedAssetIds ?? [];
-          const selectedAssets = assetIds
-            .map((id) => assetManager.getAssetById(id))
-            .filter((a): a is GameAsset => Boolean(a));
-          pythonCode = compilePythonGame(selectedComponents, selectedAssets);
-        }
+        // Resolve selectedAssets in BOTH branches now — the persisted-
+        // gamePy fast path used to skip this lookup, but we need the
+        // asset list at runtime to mount each file into Pyodide's
+        // emscripten FS before runPythonAsync. assetManager.ready()
+        // is called by getAssetById at hydration time and is cached.
+        await assetManager.ready();
+        const assetIds = snapshot.wizardState.selectedAssetIds ?? [];
+        const selectedAssets = assetIds
+          .map((id) => assetManager.getAssetById(id))
+          .filter((a): a is GameAsset => Boolean(a));
+        const pythonCode = snapshot.gamePy
+          ? snapshot.gamePy
+          : compilePythonGame(selectedComponents, selectedAssets);
         setState({
           kind: 'ready',
           pythonCode,
           title: snapshot.name,
+          assets: selectedAssets,
         });
       } catch (err) {
         setState({
@@ -130,10 +141,23 @@ export default function PlayPage() {
     if (state.kind === 'runtime-error') {
       recoverPyodide();
     }
-    setState({ kind: 'running', pythonCode: state.pythonCode, title: state.title });
+    setState({
+      kind: 'running',
+      pythonCode: state.pythonCode,
+      title: state.title,
+      assets: state.assets,
+    });
     try {
       const pyodide = await getPyodide();
       await pyodide.loadPackage(['pygame-ce']);
+      // Mount selected assets into Pyodide's emscripten FS at the same
+      // root-relative paths compiler.ts emits via pygame.image.load(...).
+      // Without this, every selected sprite falls through to the
+      // try/except's magenta placeholder because emscripten doesn't have
+      // those URL-relative paths mounted by default. Fetch each asset
+      // through the build's BASE_URL (so it resolves on Pages subpath
+      // deploys) and writeFile it to FS.
+      await mountAssetsForGame(pyodide, state.assets);
       // Mount the canvas onto Pyodide's pygame target. PygameLive
       // preview uses setCanvasContext for the same purpose; using
       // runPythonAsync directly lets the saved game.py run as-written
@@ -146,6 +170,7 @@ export default function PlayPage() {
         kind: 'runtime-error',
         pythonCode: state.pythonCode,
         title: state.title,
+        assets: state.assets,
         message: (err as Error).message ?? 'Game crashed',
       });
     }
