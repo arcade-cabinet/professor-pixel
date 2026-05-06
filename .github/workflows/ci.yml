@@ -124,12 +124,21 @@ jobs:
       - name: Build asset catalog
         run: pnpm catalog
 
-      - name: Run production-shape Playwright suite
+      # Run only functional production-shape specs in CI. Visual
+       # baselines are committed darwin-rendered (the dev workstation);
+       # Ubuntu CI rendering doesn't match font hinting / antialiasing.
+       # The baselines are still useful for local pre-push regression
+       # detection on the same workstation; running them in CI without
+       # per-platform suffixes would just be noise. To regen baselines
+       # for CI, add a manual workflow_dispatch job that runs with
+       # `--update-snapshots` and commits the .linux.png siblings.
+      - name: Run production-shape functional Playwright suite
         run: |
           pnpm exec playwright test \
             --project=production-shape-desktop \
             --project=production-shape-tablet \
-            --project=production-shape-mobile
+            --project=production-shape-mobile \
+            --grep-invert "production-shape-visual"
 
       # E2.3 — Upload visual diffs + traces on failure so reviewers can
       # see what changed. Successful runs skip this (artifacts only on
