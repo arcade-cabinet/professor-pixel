@@ -59,11 +59,22 @@ describe('useMediaQuery — initial state', () => {
     expect(result.current).toBe(false);
   });
 
-  it('returns true after first effect when the query matches', () => {
+  it('returns true synchronously on first render when the query matches (no flash)', () => {
+    // useSyncExternalStore reads getSnapshot during render, so a query
+    // that matches on mount renders `true` on the very first render
+    // — no useEffect-corrected flicker. The previous useState+useEffect
+    // implementation rendered `false` first and corrected on effect.
     setMatch('(min-width: 600px)', true);
     stubMatchMedia();
-    const { result } = renderHook(() => useMediaQuery('(min-width: 600px)'));
+    let renderCount = 0;
+    const { result } = renderHook(() => {
+      renderCount += 1;
+      return useMediaQuery('(min-width: 600px)');
+    });
     expect(result.current).toBe(true);
+    // useSyncExternalStore + a stable getSnapshot identity means a
+    // single render — not the two-render dance of the legacy approach.
+    expect(renderCount).toBe(1);
   });
 });
 
@@ -83,10 +94,11 @@ describe('useMediaQuery — reactive updates', () => {
   });
 
   it('does NOT re-bind the listener when match state flips', () => {
-    // Pins the [query]-only useEffect deps. If `matches` re-enters the dep
-    // array, every state flip removes + re-adds the listener — wasted work
-    // and a subtle bug surface (listener identity changes underneath any
-    // caller that captured it).
+    // useSyncExternalStore + useMemo([query]) means the (subscribe,
+    // getSnapshot) tuple is stable across notify cycles — the listener
+    // is registered once on mount and stays registered. Pins this
+    // invariant: any future refactor that breaks store identity
+    // stability would tear down + re-add on every state change.
     setMatch('(min-width: 600px)', false);
     stubMatchMedia();
     const { result } = renderHook(() => useMediaQuery('(min-width: 600px)'));
