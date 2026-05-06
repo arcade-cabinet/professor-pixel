@@ -5,4 +5,5 @@ export * from './catalog';
 export * from './curated-themes';
 export * from './downloader';
 export * from './manager';
+export * from './pixel-images';
 export * from './types';

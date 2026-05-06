@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles } from 'lucide-react';
-import pixelImage from '@assets/pixel/Pixel_happy_excited_expression_22a41625.png';
+import { pixelImages } from '@lib/assets/pixel-images';
+const pixelImage = pixelImages.happy;
 
 interface PixelMinimizeAnimationProps {
   message?: string;

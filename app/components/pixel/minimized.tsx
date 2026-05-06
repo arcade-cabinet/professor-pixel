@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, Trophy, Sparkles, MessageCircle, Target, Star } from 'lucide-react';
-import pixelImage from '@assets/pixel/Pixel_happy_excited_expression_22a41625.png';
+import { pixelImages } from '@lib/assets/pixel-images';
+const pixelImage = pixelImages.happy;
 import { SessionActions } from '@lib/wizard/types';
 
 interface PixelMinimizedProps {
