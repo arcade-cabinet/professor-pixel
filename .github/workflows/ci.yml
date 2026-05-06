@@ -93,6 +93,14 @@ jobs:
       - name: Run component tests (Vitest browser)
         run: pnpm test:component
 
+      - name: Coverage gate (all projects)
+        # Re-runs the unit + integration + component projects with v8
+        # coverage instrumentation and enforces the floor declared in
+        # vitest.config.ts → coverage.thresholds. Floor is the ratchet:
+        # any PR raising coverage bumps the threshold in the same change;
+        # any PR dropping coverage fails this step.
+        run: pnpm test:coverage
+
   e2e-production-shape:
     # E1 + E2 of the experience-polish pillar — real e2e against a
     # production-shape build (vite build --base=/professor-pixel/ +
