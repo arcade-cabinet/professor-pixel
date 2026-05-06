@@ -98,7 +98,7 @@ A regular dev server runs at `BASE_URL=/`. Pages serves at `/professor-pixel/`. 
 
 - `tests/e2e/production-shape.spec.ts` — 6 functional tests: home, lessons, wizard, asset catalog (in-page fetch), not-found, cold-start budget.
 - `tests/e2e/production-shape-visual.spec.ts` — 9 visual baselines (3 routes × 3 viewports). darwin-only — skipped in CI via `--grep-invert "production-shape-visual"`.
-- `playwright.config.ts` — `webServer` array runs both `pnpm dev` and `vite build --base=/professor-pixel/ --outDir dist-preview-pages && vite preview --outDir dist-preview-pages --port 4173`. Namespaced `dist-preview-pages/` so `reuseExistingServer` doesn't pick up stale dev artifacts.
+- `playwright.config.ts` — `webServer` array runs both `pnpm dev` and `vite build --base=/professor-pixel/ --outDir dist-preview-pages && vite preview --base=/professor-pixel/ --outDir dist-preview-pages --port 4173 --strictPort`. Namespaced `dist-preview-pages/` so `reuseExistingServer` doesn't pick up stale dev artifacts; `--strictPort` fails fast if 4173 is taken instead of silently shifting.
 - CI: `e2e-production-shape` job in `ci.yml` uploads `test-results/` + `playwright-report/` on failure as 14-day artifact.
 
 ## Cold-start budget
