@@ -5,6 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
     <title>Pixel's PyGame Palace - Learn Python Through Game Development</title>
     <meta name="description" content="Welcome to Pixel's PyGame Palace! Learn Python programming through interactive game development with our fun, accessible learning platform." />
+    <!-- Content Security Policy.
+         Pyodide needs `WebAssembly.compile` (covered by 'wasm-unsafe-eval').
+         'unsafe-eval' is intentionally NOT included; if a future Pyodide
+         version requires it, surface that as an explicit decision rather
+         than silently widen. style-src includes 'unsafe-inline' for Tailwind
+         generated styles + framer-motion's inline transforms. img-src
+         covers data: (wizard preview thumbnails) and blob: (OPFS thumbnail
+         materialization). connect-src 'self': all fetches resolve through
+         BASE_URL on the same origin; no third-party APIs.
+         Note: frame-ancestors and X-Frame-Options must be HTTP headers; they
+         can't ship via &lt;meta&gt;. GitHub Pages doesn't let us set arbitrary
+         response headers, so clickjacking defense is left as a deploy-side
+         concern (Capacitor APK is unaffected — no iframe embed possible). -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self'; worker-src 'self' blob:; manifest-src 'self'; base-uri 'self'" />
     <!-- PWA install on Android (Chrome/Edge install prompt) and iOS
          (Add to Home Screen → standalone-mode launch). Both gate install
          behind https; works in production where the platform is hosted
