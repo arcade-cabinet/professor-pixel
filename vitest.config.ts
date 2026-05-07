@@ -85,14 +85,15 @@ export default defineConfig({
       // Vitest projects — unit + integration + component (browser). The
       // numbers below are the aggregate across all three.
       //
-      // Today's snapshot (2026-05-07, post-error-handler tests):
-      // statements 44.50%, branches 37.15%, functions 39.80%, lines 44.47%.
+      // Today's snapshot (2026-05-07, post-error-handler v2 + factory):
+      // statements 44.70%, branches 37.40%, functions 40.01%, lines 44.69%.
       // The thresholds below sit a hair below those numbers (rounded down
       // to the nearest integer minus 1 for noise tolerance) so any
       // regression fails CI. Per the ratchet doctrine: any PR that moves
       // these numbers UP raises the matching threshold in the same PR.
       //
       // Earlier snapshots:
+      //   2026-05-07 post-error-handler v2: 44.70/37.40/40.01/44.69 → floor 43/36/39/43
       //   2026-05-07 post-error-handler: 44.50/37.15/39.80/44.47 → floor 43/35/38/43
       //   2026-05-07 post-#128+cache:   44.45/37.08/39.80/44.42 → floor 43/35/38/43
       //   2026-05-07 post-#127+adapter: 44.32/36.96/39.69/44.33 → floor 43/35/38/43
@@ -121,8 +122,8 @@ export default defineConfig({
       //   2026-05-05 post-#30: 27.71/22.42/22.28/27.71 → floor 26/21/21/26
       thresholds: {
         statements: 43,
-        branches: 35,
-        functions: 38,
+        branches: 36,
+        functions: 39,
         lines: 43,
       },
     },
