@@ -239,10 +239,10 @@ describe('createEnhancedErrorCapture — pre-pyodide guards', () => {
   beforeEach(() => {
     // Clear any leaked pyodide singletons from prior tests in the same run.
     // jsdom carries `window` between tests, so explicit cleanup is needed.
-    // biome-ignore lint/suspicious/noExplicitAny: test-time global poke
-    delete (globalThis as any).pyodideInstance;
-    // biome-ignore lint/suspicious/noExplicitAny: test-time global poke
-    if (typeof window !== 'undefined') delete (window as any).pyodideInstance;
+    Reflect.deleteProperty(globalThis, 'pyodideInstance');
+    if (typeof window !== 'undefined') {
+      Reflect.deleteProperty(window, 'pyodideInstance');
+    }
   });
 
   it('setupErrorCapture returns false when no pyodide is on the global', () => {
