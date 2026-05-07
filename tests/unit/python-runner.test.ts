@@ -12,9 +12,16 @@ import {
 // orchestration logic (enhanced-vs-basic dispatch, file write, input
 // routing, error normalization, stream restore).
 
+// vi.fn() returns Mock<T> which doesn't structurally match a plain
+// function signature, so we type the mock fields with MockedFunction
+// against the exact signatures from PyodideInterface. This keeps the
+// mock assignable wherever the SUT expects PyodideInterface.
+type RunPythonMock = ReturnType<typeof vi.fn<(code: string) => unknown>>;
+type GlobalsGetMock = ReturnType<typeof vi.fn<(name: string) => unknown>>;
+
 interface MockPyodide extends PyodideInterface {
-  runPython: ReturnType<typeof vi.fn>;
-  globals: { get: ReturnType<typeof vi.fn> };
+  runPython: RunPythonMock;
+  globals: { get: GlobalsGetMock };
   __stdout: string;
   __stderr: string;
 }
