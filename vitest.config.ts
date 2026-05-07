@@ -85,14 +85,15 @@ export default defineConfig({
       // Vitest projects — unit + integration + component (browser). The
       // numbers below are the aggregate across all three.
       //
-      // Today's snapshot (2026-05-07, post-#121 + i18n/lessons hooks tests):
-      // statements 43.42%, branches 36.60%, functions 37.96%, lines 43.44%.
+      // Today's snapshot (2026-05-07, post-#123 + lessons-loader tests):
+      // statements 43.61%, branches 36.71%, functions 38.22%, lines 43.63%.
       // The thresholds below sit a hair below those numbers (rounded down
       // to the nearest integer minus 1 for noise tolerance) so any
       // regression fails CI. Per the ratchet doctrine: any PR that moves
       // these numbers UP raises the matching threshold in the same PR.
       //
       // Earlier snapshots:
+      //   2026-05-07 post-#123+loader:   43.61/36.71/38.22/43.63 → floor 42/35/36/42
       //   2026-05-07 post-#121+hooks:    43.42/36.60/37.96/43.44 → floor 42/35/36/42
       //   2026-05-07 post-#119+templates: 43.36/36.47/37.75/43.37 → floor 42/35/36/42
       //   2026-05-07 post-#116+components: 43.17/36.58/37.23/43.18 → floor 42/35/36/42
