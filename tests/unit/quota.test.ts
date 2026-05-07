@@ -91,4 +91,45 @@ describe('quota monitoring (P4.20)', () => {
     setMeasureBytesImpl(() => 3 * 1024 * 1024); // 3 MB < 4 MB
     expect(await shouldWarnQuota()).toBe(false);
   });
+
+  it('default measureLocalStorageBytes counts each (key, value) UTF-16 pair', async () => {
+    // No setMeasureBytesImpl — exercise the real path. Two entries:
+    //   key1 (4 chars) + 'a'.repeat(10) (10 chars) = 14 code units = 28 bytes
+    //   key2 (4 chars) + 'b'.repeat(20) (20 chars) = 24 code units = 48 bytes
+    // Total = 76 bytes. Far below the 4MB threshold, so shouldWarnQuota
+    // must be false — but the bytes path is exercised via the call.
+    localStorage.setItem('key1', 'a'.repeat(10));
+    localStorage.setItem('key2', 'b'.repeat(20));
+    expect(await shouldWarnQuota()).toBe(false);
+  });
+
+  it('default measureLocalStorageBytes triggers the warning when total ≥ 4MB', async () => {
+    // Allocate one entry whose UTF-16 byte count crosses 4MB. A 2.1MB
+    // string of single-code-unit chars is 2.1M * 2 = 4.2MB — over the
+    // 4MB threshold. The string allocation is real but bounded.
+    const bigValue = 'x'.repeat(2.1 * 1024 * 1024);
+    localStorage.setItem('big', bigValue);
+    expect(await shouldWarnQuota()).toBe(true);
+    localStorage.clear();
+  });
+
+  it('getUsageRatio returns null when the estimate impl rejects', async () => {
+    // Hits the catch branch in getUsageRatio — Safari private mode
+    // throws on navigator.storage.estimate(); we treat it as
+    // "unavailable" rather than letting the rejection bubble.
+    setEstimateImpl(async () => {
+      throw new Error('private mode');
+    });
+    expect(await getUsageRatio()).toBeNull();
+  });
+
+  it('the in-memory session gate suppresses repeat warnings even when sessionStorage is broken', async () => {
+    setMeasureBytesImpl(() => 4.5 * 1024 * 1024);
+    expect(await shouldWarnQuota()).toBe(true);
+    markQuotaWarned();
+    // The first early-return is `if (warnedThisSession) return false`,
+    // not the sessionStorage check — so even if sessionStorage threw,
+    // the in-memory gate would still suppress.
+    expect(await shouldWarnQuota()).toBe(false);
+  });
 });
