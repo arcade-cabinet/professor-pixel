@@ -85,14 +85,15 @@ export default defineConfig({
       // Vitest projects — unit + integration + component (browser). The
       // numbers below are the aggregate across all three.
       //
-      // Today's snapshot (2026-05-07, post-i18n-strings):
-      // statements 50.45%, branches 40.08%, functions 46.61%, lines 50.55%.
+      // Today's snapshot (2026-05-07, post-compiler):
+      // statements 50.64%, branches 40.35%, functions 46.67%, lines 50.76%.
       // The thresholds below sit a hair below those numbers (rounded down
       // to the nearest integer minus 1 for noise tolerance) so any
       // regression fails CI. Per the ratchet doctrine: any PR that moves
       // these numbers UP raises the matching threshold in the same PR.
       //
       // Earlier snapshots:
+      //   2026-05-07 post-compiler: 50.64/40.35/46.67/50.76 → floor 49/39/45/49
       //   2026-05-07 post-i18n-strings: 50.45/40.08/46.61/50.55 → floor 49/39/45/49
       //   2026-05-07 post-assets-manager: 50.23/40.10/45.62/50.32 → floor 49/39/44/49
       //   2026-05-07 post-pygame-systems: 49.34/39.19/44.46/49.41 → floor 48/38/43/48
