@@ -184,3 +184,66 @@ describe('generateTestScene — preview snippet', () => {
     expect(generateTestScene()).toBe(generateTestScene());
   });
 });
+
+describe('generatePygameScene — determineComponentCategory branches', () => {
+  // Each render type routes to one of 4 system buckets:
+  //   movement → sprite, ball, paddle
+  //   combat   → enemy
+  //   world    → platform, collectible, background
+  //   ui       → scoreText, button, particleEffect, timer, healthBar
+  // The header comment appears in the emitted Python only when that
+  // bucket has ≥1 contribution (template uses `bucket.length > 0`).
+  // Pin the routing by component-type → header.
+  it.each([
+    ['sprite', '# Movement Systems'],
+    ['ball', '# Movement Systems'],
+    ['paddle', '# Movement Systems'],
+    ['enemy', '# Combat Systems'],
+    ['platform', '# World Systems'],
+    ['collectible', '# World Systems'],
+    ['background', '# World Systems'],
+    ['scoreText', '# UI Systems'],
+    ['button', '# UI Systems'],
+    ['particleEffect', '# UI Systems'],
+    ['timer', '# UI Systems'],
+    ['healthBar', '# UI Systems'],
+  ] as const)('%s routes to %s', (id, header) => {
+    const code = generatePygameScene(
+      makeOptions([{ componentId: id, variant: 'default', assets: {}, parameters: {} }])
+    );
+    expect(code).toContain(header);
+  });
+});
+
+describe('generatePygameScene — latent gameplay-system init/update/draw bug', () => {
+  // The init / update / draw blocks each hold a switch over component.id
+  // for the gameplay-system entries (jump, walk, shooting, melee, health,
+  // score, gravity, collision). HOWEVER, those switch arms are
+  // unreachable today: getComponentById() looks up the RENDER component
+  // registry (sprite/ball/paddle/...) rather than the systems-index
+  // registry (jump/walk/.../shooting). Passing 'jump' as a componentId
+  // returns undefined, so the switch never runs.
+  //
+  // This is the same latent bug pinned in tests/unit/compiler.test.ts:
+  // both `scene-generator` and `compiler` resolve gameplay-system ids
+  // against the wrong registry. Pin the current behavior so the fix is
+  // a deliberate change.
+  it('passing a system id (jump/walk/etc) is silently ignored — emits base shell', () => {
+    const base = generatePygameScene(makeOptions());
+    for (const sysId of [
+      'jump',
+      'walk',
+      'shooting',
+      'melee',
+      'health',
+      'score',
+      'gravity',
+      'collision',
+    ]) {
+      const code = generatePygameScene(
+        makeOptions([{ componentId: sysId, variant: 'A', assets: {}, parameters: {} }])
+      );
+      expect(code).toBe(base);
+    }
+  });
+});
