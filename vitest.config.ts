@@ -85,14 +85,15 @@ export default defineConfig({
       // Vitest projects — unit + integration + component (browser). The
       // numbers below are the aggregate across all three.
       //
-      // Today's snapshot (2026-05-07, post-#111 + dialog tests):
-      // statements 41.95%, branches 35.61%, functions 36.28%, lines 41.92%.
+      // Today's snapshot (2026-05-07, post-#115 + templates-registry tests):
+      // statements 42.24%, branches 35.63%, functions 36.91%, lines 42.21%.
       // The thresholds below sit a hair below those numbers (rounded down
       // to the nearest integer minus 1 for noise tolerance) so any
       // regression fails CI. Per the ratchet doctrine: any PR that moves
       // these numbers UP raises the matching threshold in the same PR.
       //
       // Earlier snapshots:
+      //   2026-05-07 post-#115+templates: 42.24/35.63/36.91/42.21 → floor 41/34/35/41
       //   2026-05-07 post-#111+dialog: 41.95/35.61/36.28/41.92 → floor 40/34/35/40
       //   2026-05-07 post-#108+utils:  41.47/35.08/35.86/41.41 → floor 40/34/34/40
       //   2026-05-07 post-#104+codegen: 40.79/33.65/35.44/40.78 → floor 39/32/34/39
@@ -111,10 +112,10 @@ export default defineConfig({
       //   2026-05-06 post-#39: 31.68/25.20/25.26/31.66 → floor 30/24/24/30
       //   2026-05-05 post-#30: 27.71/22.42/22.28/27.71 → floor 26/21/21/26
       thresholds: {
-        statements: 40,
+        statements: 41,
         branches: 34,
         functions: 35,
-        lines: 40,
+        lines: 41,
       },
     },
   },
