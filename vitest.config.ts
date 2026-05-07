@@ -85,19 +85,19 @@ export default defineConfig({
       // Vitest projects — unit + integration + component (browser). The
       // numbers below are the aggregate across all three.
       //
-      // Today's snapshot (2026-05-07, post-#93 + global-error-handler tests):
-      // statements 39.84%, branches 32.79%, functions 34.08%, lines 39.82%.
+      // Today's snapshot (2026-05-07, post-#97 + scene-generator tests):
+      // statements 40.34%, branches 33.31%, functions 34.92%, lines 40.28%.
       // The thresholds below sit a hair below those numbers (rounded down
       // to the nearest integer minus 1 for noise tolerance) so any
       // regression fails CI. Per the ratchet doctrine: any PR that moves
       // these numbers UP raises the matching threshold in the same PR.
       //
       // Earlier snapshots:
-      //   2026-05-07 post-#93+gh:    39.84/32.79/34.08/39.82 → floor 38/31/33/38
-      //   2026-05-07 post-#90+gh:    38.52/31.21/32.98/38.54 → floor 37/30/31/37
-      //   2026-05-06 post-#86+gh:    37.62/30.87/31.46/37.68 → floor 36/29/30/36
-      //   2026-05-06 post-#83+gh:    36.61/29.52/31.04/36.60 → floor 35/28/30/35
-      //   2026-05-06 post-#76+gh:    36.45/29.29/30.83/36.43 → floor 35/28/29/35
+      //   2026-05-07 post-#97+scene: 40.34/33.31/34.92/40.28 → floor 39/32/33/39
+      //   2026-05-07 post-#93+scene: 39.24/32.66/33.61/39.14 → floor 38/31/32/38
+      //   2026-05-07 post-#90+scene: 37.92/31.02/32.40/37.89 → floor 36/30/31/36
+      //   2026-05-06 post-#86+sess:  37.43/30.49/31.56/37.43 → floor 36/29/30/36
+      //   2026-05-06 post-#83+sess:  36.47/29.21/31.20/36.40 → floor 35/28/30/35
       //   2026-05-06 post-#76:       35.51/28.74/29.57/35.46 → floor 34/27/28/34
       //   2026-05-06 post-#69: 34.83/27.99/29.05/34.78 → floor 33/26/28/33
       //   2026-05-06 post-#66: 34.54/27.69/28.52/34.5  → floor 33/26/27/33
@@ -108,10 +108,10 @@ export default defineConfig({
       //   2026-05-06 post-#39: 31.68/25.20/25.26/31.66 → floor 30/24/24/30
       //   2026-05-05 post-#30: 27.71/22.42/22.28/27.71 → floor 26/21/21/26
       thresholds: {
-        statements: 38,
-        branches: 31,
+        statements: 39,
+        branches: 32,
         functions: 33,
-        lines: 38,
+        lines: 39,
       },
     },
   },
