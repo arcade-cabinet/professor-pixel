@@ -106,14 +106,15 @@ export default defineConfig({
       // Vitest projects — unit + integration + component (browser). The
       // numbers below are the aggregate across all three.
       //
-      // Today's snapshot (2026-05-07, post-net-retry-convenience):
-      // statements 59.40%, branches 46.08%, functions 55.16%, lines 60.00%.
+      // Today's snapshot (2026-05-07, post-pyodide-singleton-residuals):
+      // statements 59.43%, branches 46.10%, functions 55.16%, lines 60.03%.
       // The thresholds below sit a hair below those numbers (rounded down
       // to the nearest integer minus 1 for noise tolerance) so any
       // regression fails CI. Per the ratchet doctrine: any PR that moves
       // these numbers UP raises the matching threshold in the same PR.
       //
       // Earlier snapshots:
+      //   2026-05-07 post-pyodide-singleton-residuals: 59.43/46.10/55.16/60.03 → floor 57/44/54/59
       //   2026-05-07 post-net-retry-convenience: 59.40/46.08/55.16/60.00 → floor 57/44/54/59
       //   2026-05-07 post-collectible-branches: 59.34/46.08/54.92/59.94 → floor 57/44/53/58
       //   2026-05-07 post-curated-themes-delete: 59.21/45.89/54.92/59.80 → floor 57/44/53/58
