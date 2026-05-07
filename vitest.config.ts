@@ -83,6 +83,17 @@ export default defineConfig({
         // production users. Excluding them from coverage matches their
         // role: they're tooling, not product surface.
         'app/pages/_dev/**',
+        // app/main.tsx is the createRoot bootstrap; coverage there
+        // means an integration test, not a unit test. The render call
+        // is exercised by the Playwright e2e suite.
+        'app/main.tsx',
+        // app/components/ui/* are shadcn/ui + Radix primitives — vendored
+        // wrappers that exist to give us a consistent design system on
+        // top of upstream libraries. The project doesn't author business
+        // logic here; the upstream libs already test their internals.
+        // Excluding these matches the same convention applied to
+        // ui-design-system tokens elsewhere in the ecosystem.
+        'app/components/ui/**',
       ],
       // Coverage floor — a regression guard, NOT a goal.
       //
@@ -95,14 +106,15 @@ export default defineConfig({
       // Vitest projects — unit + integration + component (browser). The
       // numbers below are the aggregate across all three.
       //
-      // Today's snapshot (2026-05-07, post-_dev-exclude):
-      // statements 56.58%, branches 44.80%, functions 52.31%, lines 56.93%.
+      // Today's snapshot (2026-05-07, post-shadcn-bootstrap-exclude):
+      // statements 58.75%, branches 45.61%, functions 54.45%, lines 59.34%.
       // The thresholds below sit a hair below those numbers (rounded down
       // to the nearest integer minus 1 for noise tolerance) so any
       // regression fails CI. Per the ratchet doctrine: any PR that moves
       // these numbers UP raises the matching threshold in the same PR.
       //
       // Earlier snapshots:
+      //   2026-05-07 post-shadcn-bootstrap-exclude: 58.75/45.61/54.45/59.34 → floor 57/44/53/58
       //   2026-05-07 post-_dev-exclude: 56.58/44.80/52.31/56.93 → floor 55/42/51/55
       //   2026-05-07 post-opfs-migration-unit: 55.87/44.46/51.48/56.16 → floor 54/42/50/55
       //   2026-05-07 post-use-debug: 55.80/44.37/51.48/56.11 → floor 54/42/50/55
@@ -151,10 +163,10 @@ export default defineConfig({
       //   2026-05-06 post-#39: 31.68/25.20/25.26/31.66 → floor 30/24/24/30
       //   2026-05-05 post-#30: 27.71/22.42/22.28/27.71 → floor 26/21/21/26
       thresholds: {
-        statements: 55,
-        branches: 42,
-        functions: 51,
-        lines: 55,
+        statements: 57,
+        branches: 44,
+        functions: 53,
+        lines: 58,
       },
     },
   },
