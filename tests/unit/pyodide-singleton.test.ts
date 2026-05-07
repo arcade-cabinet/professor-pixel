@@ -151,4 +151,82 @@ describe('pyodide-singleton', () => {
     warnSpy.mockRestore();
     now.mockRestore();
   });
+
+  it('throws when window.loadPyodide is missing after the script loads', async () => {
+    // Simulate a script that "loads" successfully but fails to install
+    // window.loadPyodide (CDN cache hit on a partial deploy, vendored
+    // copy of pyodide.js corrupted, etc.).
+    appendChildSpy.mockRestore();
+    appendChildSpy = spyAppendChild().mockImplementation(<T extends Node>(node: T): T => {
+      queueMicrotask(() => {
+        // Intentionally do NOT set window.loadPyodide before firing onload.
+        const script = node as unknown as HTMLScriptElement;
+        script.onload?.(new Event('load'));
+      });
+      return node;
+    });
+
+    await expect(getPyodide()).rejects.toBeInstanceOf(PyodideLoadError);
+  });
+
+  it('wraps a window.loadPyodide rejection in a PyodideLoadError', async () => {
+    appendChildSpy.mockRestore();
+    appendChildSpy = spyAppendChild().mockImplementation(<T extends Node>(node: T): T => {
+      queueMicrotask(() => {
+        const script = node as unknown as HTMLScriptElement;
+        // loadPyodide is set, but it rejects — pyodide internal init failure.
+        (window as unknown as TestWindow).loadPyodide = vi
+          .fn()
+          .mockRejectedValue(new Error('init failed'));
+        script.onload?.(new Event('load'));
+      });
+      return node;
+    });
+
+    await expect(getPyodide()).rejects.toBeInstanceOf(PyodideLoadError);
+  });
+
+  it('reuses an existing script tag whose loadPyodide is already on window', async () => {
+    // Pre-insert a script tag matching the expected src AND set
+    // window.loadPyodide. The bootstrap should short-circuit the
+    // "no existing tag" branch of loadPyodideScript and resolve
+    // without ever calling appendChild.
+    const indexUrl = '/pyodide/';
+    const scriptSrc = `${indexUrl}pyodide.js`;
+    const tag = document.createElement('script');
+    tag.src = scriptSrc;
+    document.head.appendChild(tag);
+    (window as unknown as TestWindow).loadPyodide = vi.fn().mockResolvedValue(fakePyodide);
+
+    // Reset appendChild count so we can assert no NEW append happened.
+    appendChildSpy.mockRestore();
+    appendChildSpy = spyAppendChild();
+
+    const result = await getPyodide();
+    expect(result).toBe(fakePyodide);
+    // The class-detection short-circuit means we should NOT have appended
+    // a fresh script tag.
+    expect(appendChildSpy).not.toHaveBeenCalled();
+
+    tag.remove();
+  });
+
+  it('replaces a dead script tag (status=loaded but no window.loadPyodide)', async () => {
+    // Pre-insert a "dead" tag — load already fired, but loadPyodide
+    // never got installed. The bootstrap detects this and removes
+    // the tag, then creates a fresh one.
+    const indexUrl = '/pyodide/';
+    const scriptSrc = `${indexUrl}pyodide.js`;
+    const deadTag = document.createElement('script');
+    deadTag.src = scriptSrc;
+    deadTag.dataset.pyodideStatus = 'loaded';
+    document.head.appendChild(deadTag);
+
+    // Default beforeEach mock will install loadPyodide on the new
+    // append, so this should succeed.
+    const result = await getPyodide();
+    expect(result).toBe(fakePyodide);
+    // The dead tag was replaced — there is now a fresh tag in the DOM.
+    expect(document.head.contains(deadTag)).toBe(false);
+  });
 });
