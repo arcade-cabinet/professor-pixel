@@ -83,3 +83,93 @@ describe('broadcast.ts (P4.26)', () => {
     unsubscribe();
   });
 });
+
+describe('broadcast.ts — feature-detection + defensive paths', () => {
+  it('publishStorageEvent is a no-op when BroadcastChannel is undefined', () => {
+    const original = globalThis.BroadcastChannel;
+    // @ts-expect-error — simulating a browser without BroadcastChannel.
+    delete globalThis.BroadcastChannel;
+    try {
+      // No throw, no listener required — pure no-op.
+      expect(() =>
+        publishStorageEvent({ type: 'projects.changed', reason: 'create' })
+      ).not.toThrow();
+    } finally {
+      globalThis.BroadcastChannel = original;
+      _resetChannelForTests();
+    }
+  });
+
+  it('subscribeStorageEvents returns a no-op unsubscribe when BroadcastChannel is undefined', () => {
+    const original = globalThis.BroadcastChannel;
+    // @ts-expect-error — simulating a browser without BroadcastChannel.
+    delete globalThis.BroadcastChannel;
+    try {
+      const handler = vi.fn();
+      const unsubscribe = subscribeStorageEvents(handler);
+      expect(typeof unsubscribe).toBe('function');
+      // Calling the no-op shouldn't throw.
+      expect(() => unsubscribe()).not.toThrow();
+    } finally {
+      globalThis.BroadcastChannel = original;
+      _resetChannelForTests();
+    }
+  });
+
+  it('publishStorageEvent swallows postMessage failures', async () => {
+    // Subscribe so the singleton channel exists, then stub postMessage
+    // to throw on the next call. The publish wrapper must catch.
+    const unsubscribe = subscribeStorageEvents(() => {});
+    const ChClass = globalThis.BroadcastChannel;
+    const protoSpy = vi.spyOn(ChClass.prototype, 'postMessage').mockImplementation(() => {
+      throw new Error('channel closed');
+    });
+
+    expect(() => publishStorageEvent({ type: 'projects.changed', reason: 'rename' })).not.toThrow();
+
+    protoSpy.mockRestore();
+    unsubscribe();
+  });
+
+  it('getChannel returns null + caches when BroadcastChannel constructor throws', () => {
+    // Some Safari private modes throw on `new BroadcastChannel()`.
+    // We simulate by replacing the constructor with one that throws on
+    // construction. publishStorageEvent should observe getChannel()
+    // returning null and short-circuit without surfacing an error.
+    const original = globalThis.BroadcastChannel;
+    class ThrowingChannel {
+      constructor() {
+        throw new Error('private mode rejects channels');
+      }
+    }
+    // @ts-expect-error — test stub
+    globalThis.BroadcastChannel = ThrowingChannel;
+    try {
+      expect(() =>
+        publishStorageEvent({ type: 'projects.changed', reason: 'delete' })
+      ).not.toThrow();
+    } finally {
+      globalThis.BroadcastChannel = original;
+      _resetChannelForTests();
+    }
+  });
+
+  it('_resetChannelForTests swallows errors from removeEventListener and close', () => {
+    // Subscribe so the cached channel exists.
+    const unsubscribe = subscribeStorageEvents(() => {});
+
+    const ChClass = globalThis.BroadcastChannel;
+    const removeSpy = vi.spyOn(ChClass.prototype, 'removeEventListener').mockImplementation(() => {
+      throw new Error('detach failed');
+    });
+    const closeSpy = vi.spyOn(ChClass.prototype, 'close').mockImplementation(() => {
+      throw new Error('close failed');
+    });
+
+    expect(() => _resetChannelForTests()).not.toThrow();
+
+    removeSpy.mockRestore();
+    closeSpy.mockRestore();
+    unsubscribe();
+  });
+});
