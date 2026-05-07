@@ -242,9 +242,10 @@ export function getPyodideState(): PyodideState {
   return 'uninitialized';
 }
 
-/** Test-only: drop the cached promise so the next call re-bootstraps. */
+/** Test-only: drop all module state so the next call re-bootstraps cleanly. */
 export function __resetPyodideForTests(): void {
   bootstrapPromise = null;
+  coldStartMs = null;
   if (typeof window !== 'undefined') {
     delete (window as Window).pyodide;
   }
