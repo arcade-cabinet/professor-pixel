@@ -41,7 +41,7 @@ vi.mock('@lib/errors/global-handler', () => ({
 
 // Hook import MUST come after vi.mock. Vitest hoists mocks but TS
 // still resolves imports top-to-bottom in source order.
-import { useDebug } from '@lib/hooks/use-debug';
+import { useComponentDebug, useDebug, usePerformanceMonitor } from '@lib/hooks/use-debug';
 
 // Spies on the real jsdom window for the cleanup-assertion tests.
 // Reset per test via afterEach. NOT stubGlobal — that would replace
@@ -312,5 +312,176 @@ describe('useDebug — cleanup', () => {
 
     unmount();
     expect(handlerState.listeners.length).toBe(0);
+  });
+});
+
+describe('usePerformanceMonitor', () => {
+  it('starts with zeroed metrics', () => {
+    const { result } = renderHook(() => usePerformanceMonitor());
+    expect(result.current.metrics.renderCount).toBe(0);
+    expect(result.current.metrics.lastRenderTime).toBe(0);
+    expect(result.current.metrics.averageRenderTime).toBe(0);
+  });
+
+  it('startRenderMeasure returns a numeric timestamp', () => {
+    const { result } = renderHook(() => usePerformanceMonitor());
+    const t = result.current.startRenderMeasure();
+    expect(typeof t).toBe('number');
+    expect(t).toBeGreaterThanOrEqual(0);
+  });
+
+  it('endRenderMeasure increments renderCount and updates lastRenderTime', () => {
+    const { result } = renderHook(() => usePerformanceMonitor());
+    let renderTime = 0;
+    act(() => {
+      const t = result.current.startRenderMeasure();
+      renderTime = result.current.endRenderMeasure(t, 'TestComponent');
+    });
+    expect(typeof renderTime).toBe('number');
+    expect(result.current.metrics.renderCount).toBe(1);
+    expect(result.current.metrics.lastRenderTime).toBeGreaterThanOrEqual(0);
+  });
+
+  it('averageRenderTime tracks across multiple measurements', () => {
+    const { result } = renderHook(() => usePerformanceMonitor());
+    act(() => {
+      result.current.endRenderMeasure(performance.now() - 10);
+    });
+    act(() => {
+      result.current.endRenderMeasure(performance.now() - 20);
+    });
+    expect(result.current.metrics.renderCount).toBe(2);
+    expect(result.current.metrics.averageRenderTime).toBeGreaterThanOrEqual(0);
+  });
+
+  it('logs a slow-render warning when debug mode + renderTime > 100ms', () => {
+    handlerState.debugMode = true;
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const { result } = renderHook(() => usePerformanceMonitor());
+
+    act(() => {
+      // Fake 200ms slow render: pass startTime 200ms in the past.
+      result.current.endRenderMeasure(performance.now() - 200, 'SlowComponent');
+    });
+
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.stringMatching(/Slow render detected.*SlowComponent/)
+    );
+    warnSpy.mockRestore();
+  });
+
+  it('does NOT warn for slow renders when debug mode is off', () => {
+    handlerState.debugMode = false;
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const { result } = renderHook(() => usePerformanceMonitor());
+
+    act(() => {
+      result.current.endRenderMeasure(performance.now() - 200, 'SlowComponent');
+    });
+
+    expect(warnSpy).not.toHaveBeenCalled();
+    warnSpy.mockRestore();
+  });
+
+  describe('measureAsync', () => {
+    it('returns the result of the async function on success', async () => {
+      const { result } = renderHook(() => usePerformanceMonitor());
+      const value = await result.current.measureAsync(async () => 42, 'compute');
+      expect(value).toBe(42);
+    });
+
+    it('rethrows the error from the async function on failure', async () => {
+      const { result } = renderHook(() => usePerformanceMonitor());
+      await expect(
+        result.current.measureAsync(async () => {
+          throw new Error('boom');
+        }, 'crash')
+      ).rejects.toThrow('boom');
+    });
+
+    it('logs duration when debug mode is on (success path)', async () => {
+      handlerState.debugMode = true;
+      const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+      const { result } = renderHook(() => usePerformanceMonitor());
+
+      await result.current.measureAsync(async () => 1, 'op');
+      expect(logSpy).toHaveBeenCalledWith(expect.stringMatching(/op completed in/));
+      logSpy.mockRestore();
+    });
+
+    it('logs error message when debug mode is on (failure path)', async () => {
+      handlerState.debugMode = true;
+      const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const { result } = renderHook(() => usePerformanceMonitor());
+
+      await expect(
+        result.current.measureAsync(async () => {
+          throw new Error('x');
+        }, 'op')
+      ).rejects.toThrow();
+      expect(errorSpy).toHaveBeenCalledWith(
+        expect.stringMatching(/op failed after/),
+        expect.any(Error)
+      );
+      errorSpy.mockRestore();
+    });
+  });
+});
+
+describe('useComponentDebug', () => {
+  it('exposes logProps / logState / logEffect / isDebugMode', () => {
+    const { result } = renderHook(() => useComponentDebug('TestComponent'));
+    expect(typeof result.current.logProps).toBe('function');
+    expect(typeof result.current.logState).toBe('function');
+    expect(typeof result.current.logEffect).toBe('function');
+    expect(result.current.isDebugMode).toBe(false);
+  });
+
+  it('logProps emits a console.group when debug mode is on', () => {
+    handlerState.debugMode = true;
+    const groupSpy = vi.spyOn(console, 'group').mockImplementation(() => {});
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    vi.spyOn(console, 'groupEnd').mockImplementation(() => {});
+
+    const { result } = renderHook(() => useComponentDebug('Btn'));
+    act(() => {
+      result.current.logProps({ a: 1 });
+    });
+
+    expect(groupSpy).toHaveBeenCalledWith(expect.stringMatching(/Btn Props/));
+    expect(logSpy).toHaveBeenCalledWith({ a: 1 });
+    vi.restoreAllMocks();
+  });
+
+  it('logProps does NOT emit when debug mode is off', () => {
+    handlerState.debugMode = false;
+    const groupSpy = vi.spyOn(console, 'group').mockImplementation(() => {});
+
+    const { result } = renderHook(() => useComponentDebug('Btn'));
+    act(() => {
+      result.current.logProps({ a: 1 });
+    });
+
+    expect(groupSpy).not.toHaveBeenCalled();
+    groupSpy.mockRestore();
+  });
+
+  it('logState + logEffect both group under the component name', () => {
+    handlerState.debugMode = true;
+    const groupSpy = vi.spyOn(console, 'group').mockImplementation(() => {});
+    vi.spyOn(console, 'log').mockImplementation(() => {});
+    vi.spyOn(console, 'groupEnd').mockImplementation(() => {});
+
+    const { result } = renderHook(() => useComponentDebug('Foo'));
+    act(() => {
+      result.current.logState({ count: 1 });
+    });
+    act(() => {
+      result.current.logEffect('mounted', ['dep1']);
+    });
+
+    expect(groupSpy).toHaveBeenCalledWith(expect.stringMatching(/Foo State/));
+    expect(groupSpy).toHaveBeenCalledWith(expect.stringMatching(/Foo Effect: mounted/));
+    vi.restoreAllMocks();
   });
 });
