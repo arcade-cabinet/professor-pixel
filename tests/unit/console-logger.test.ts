@@ -77,7 +77,9 @@ describe('console-logger singleton', () => {
     ])('level %s embeds its icon', (level, iconRe) => {
       logger.log(level, 'system', 'msg');
       const target = level === 'warn' ? warnSpy : level === 'error' ? errorSpy : logSpy;
-      const found = target.mock.calls.some(([first]) => iconRe.test(String(first)));
+      const found = target.mock.calls.some(
+        ([first]: unknown[]) => typeof first === 'string' && iconRe.test(first)
+      );
       expect(found).toBe(true);
     });
 
@@ -91,7 +93,9 @@ describe('console-logger singleton', () => {
       ['ui', /🎨/],
     ])('category %s embeds its icon', (cat, iconRe) => {
       logger.info(cat, 'hi');
-      const found = logSpy.mock.calls.some(([first]) => iconRe.test(String(first)));
+      const found = logSpy.mock.calls.some(
+        ([first]: unknown[]) => typeof first === 'string' && iconRe.test(first)
+      );
       expect(found).toBe(true);
     });
   });
@@ -124,7 +128,7 @@ describe('console-logger singleton', () => {
     it('passes data as a second console arg when provided', () => {
       const payload = { x: 1 };
       logger.info('system', 'with-data', payload);
-      const callWithPayload = logSpy.mock.calls.find(([, second]) => second === payload);
+      const callWithPayload = logSpy.mock.calls.find(([, second]: unknown[]) => second === payload);
       expect(callWithPayload).toBeDefined();
     });
 
