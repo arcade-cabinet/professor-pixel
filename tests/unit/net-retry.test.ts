@@ -1,12 +1,14 @@
+import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
-  retryMechanism,
-  withRetry,
-  fetchWithRetry,
   apiCallWithRetry,
-  pythonExecutionWithRetry,
-  fileOperationWithRetry,
   educationalRetry,
+  fetchWithRetry,
+  fileOperationWithRetry,
+  pythonExecutionWithRetry,
+  retryMechanism,
+  useRetry,
+  withRetry,
 } from '@lib/net/retry';
 
 // retry.ts uses real timers via setTimeout for backoff. We pin
@@ -529,5 +531,111 @@ describe('convenience exports', () => {
     const result = await promise;
     expect(result.success).toBe(true);
     expect(result.data).toBe('via-export');
+  });
+});
+
+describe('useRetry hook', () => {
+  // useRetry wraps retryMechanism.withRetry and tracks attempt-count +
+  // error state in React state so components can render retry UI.
+  // We exercise the hook with renderHook and act() — fake timers are
+  // already configured in the suite-level beforeEach.
+
+  it('initial state is idle (not retrying, count 0, canRetry true)', () => {
+    const { result } = renderHook(() => useRetry(3));
+    expect(result.current.isRetrying).toBe(false);
+    expect(result.current.retryCount).toBe(0);
+    expect(result.current.lastError).toBeNull();
+    expect(result.current.canRetry).toBe(true);
+  });
+
+  it('returns the operation result on first-try success and resets state', async () => {
+    const { result } = renderHook(() => useRetry(3));
+    const op = vi.fn().mockResolvedValue('ok');
+
+    let resolved!: string;
+    let pending!: Promise<string>;
+    act(() => {
+      pending = result.current.retry(op);
+    });
+    await vi.runAllTimersAsync();
+    await act(async () => {
+      resolved = await pending;
+    });
+
+    expect(resolved).toBe('ok');
+    expect(result.current.isRetrying).toBe(false);
+    expect(result.current.retryCount).toBe(0);
+    expect(result.current.lastError).toBeNull();
+    expect(result.current.canRetry).toBe(true);
+  });
+
+  it('retries until success and resets state when it lands', async () => {
+    const { result } = renderHook(() => useRetry(3));
+    const op = vi
+      .fn()
+      .mockRejectedValueOnce(new Error('NetworkError: down'))
+      .mockResolvedValueOnce('eventually');
+
+    let resolved!: string;
+    let pending!: Promise<string>;
+    act(() => {
+      pending = result.current.retry(op);
+    });
+    await vi.runAllTimersAsync();
+    await act(async () => {
+      resolved = await pending;
+    });
+
+    expect(resolved).toBe('eventually');
+    expect(op).toHaveBeenCalledTimes(2);
+    // After success, the retry resets state to idle.
+    expect(result.current.retryCount).toBe(0);
+  });
+
+  it('throws + records final-failure state when retries exhaust', async () => {
+    const { result } = renderHook(() => useRetry(2));
+    const op = vi.fn().mockRejectedValue(new Error('NetworkError: persistent'));
+
+    let pending!: Promise<unknown>;
+    act(() => {
+      // Catch on the promise chain itself so we never have an unhandled
+      // rejection — even if act/timer ordering changes between vitest
+      // versions, the catch handler will still own the error.
+      pending = result.current.retry(op).catch((e) => e);
+    });
+    await vi.runAllTimersAsync();
+    let caught: unknown;
+    await act(async () => {
+      caught = await pending;
+    });
+
+    expect(caught).toBeInstanceOf(Error);
+    expect((caught as Error).message).toMatch(/persistent/);
+    expect(result.current.isRetrying).toBe(false);
+    expect(result.current.canRetry).toBe(false);
+    expect(result.current.lastError).toBe(caught);
+  });
+
+  it('reset() clears state back to idle', async () => {
+    const { result } = renderHook(() => useRetry(1));
+    const op = vi.fn().mockRejectedValue(new Error('NetworkError: fail'));
+
+    let pending!: Promise<unknown>;
+    act(() => {
+      pending = result.current.retry(op).catch((e) => e);
+    });
+    await vi.runAllTimersAsync();
+    await act(async () => {
+      await pending;
+    });
+    expect(result.current.canRetry).toBe(false);
+
+    act(() => {
+      result.current.reset();
+    });
+    expect(result.current.isRetrying).toBe(false);
+    expect(result.current.retryCount).toBe(0);
+    expect(result.current.lastError).toBeNull();
+    expect(result.current.canRetry).toBe(true);
   });
 });
