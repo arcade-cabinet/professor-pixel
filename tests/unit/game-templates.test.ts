@@ -41,13 +41,28 @@ describe('gameTemplates registry — shape invariants', () => {
     // The custom-components template carries an empty main.py because the
     // body is generated at runtime from user-selected blocks. Every other
     // template must ship a complete starter.
+    //
+    // We use `=== true` (NOT `!t.useComponents`) so the guard fires only on
+    // explicitly-component templates. A template that omits `useComponents`
+    // and accidentally ships an empty file would still fail the assertion —
+    // that's the invariant we want to protect.
     for (const t of gameTemplates) {
       expect(t.files.length).toBeGreaterThan(0);
-      if (!t.useComponents) {
-        // Non-component templates ship real code in every file.
+      if (t.useComponents !== true) {
         for (const f of t.files) {
           expect(f.content.length).toBeGreaterThan(0);
         }
+      }
+    }
+  });
+
+  it('useComponents, when present, is strictly boolean', () => {
+    // Catches the "copy-paste shipped a string" mistake; without this,
+    // `useComponents: "true"` would silently bypass the empty-content
+    // check above (string "true" is truthy and `!== true` is true).
+    for (const t of gameTemplates) {
+      if (t.useComponents !== undefined) {
+        expect(typeof t.useComponents).toBe('boolean');
       }
     }
   });
@@ -73,7 +88,11 @@ describe('getTemplateById', () => {
     expect(getTemplateById('does-not-exist-xyz')).toBeUndefined();
   });
 
-  it('returns undefined for an empty string id', () => {
+  it('returns undefined for an empty-string id (no template with id="")', () => {
+    // Pins the data invariant — no template in the registry has an empty
+    // id — by way of the lookup contract. There is no special-case empty
+    // handling in getTemplateById; this is behavior-pinning of the
+    // registry, not the function.
     expect(getTemplateById('')).toBeUndefined();
   });
 });
@@ -87,12 +106,19 @@ describe('getTemplateOptions', () => {
     }
   });
 
-  it('strips files/useComponents — only id/name/description/difficulty', () => {
-    const opts = getTemplateOptions();
-    const sample = opts[0]!;
-    expect(Object.keys(sample).sort()).toEqual(['description', 'difficulty', 'id', 'name'].sort());
-    // No files leak into the picker payload.
-    expect((sample as Partial<GameTemplate>).files).toBeUndefined();
+  it('strips files + useComponents from EVERY option entry', () => {
+    // Tighter than spot-checking the first entry: assert across the whole
+    // table. The reviewer's note: an Object.keys check on a single hand-
+    // built object literal is tautological — the keys are guaranteed by
+    // the construction site. This loop catches any future refactor that
+    // changes getTemplateOptions to use `{ ...template }` (spread) and
+    // accidentally leaks files/useComponents.
+    for (const opt of getTemplateOptions()) {
+      const keys = Object.keys(opt).sort();
+      expect(keys).toEqual(['description', 'difficulty', 'id', 'name']);
+      expect((opt as Partial<GameTemplate>).files).toBeUndefined();
+      expect((opt as Partial<GameTemplate>).useComponents).toBeUndefined();
+    }
   });
 
   it('every difficulty value passed through is one of the allowed three', () => {
