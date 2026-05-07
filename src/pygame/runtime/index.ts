@@ -3,5 +3,3 @@
 
 export * from './compiler';
 export * from './simulator';
-export * from './test-components';
-export * from './three-d-support';

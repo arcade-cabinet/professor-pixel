@@ -10,6 +10,5 @@ export * from './use-input-bridge';
 export * from './use-media-query';
 export * from './use-online-status';
 export * from './use-orientation';
-export * from './use-retry-query';
 export * from './use-toast';
 export * from './use-viewport';
