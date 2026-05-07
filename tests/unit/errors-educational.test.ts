@@ -16,51 +16,48 @@ beforeEach(() => {
 });
 
 describe('transformError — pattern coverage', () => {
+  // Each row pins THREE behavioral facts for a given input:
+  //   1. relatedConcepts contains a specific concept tag
+  //   2. friendlyMessage matches a specific user-facing pattern
+  //   3. learningTips + nextSteps are populated
+  // The msgPattern column is asserted (it's NOT decorative) so a regression
+  // in friendlyMessage wording fails this table loudly.
   it.each([
-    ['SyntaxError: invalid syntax (script.py, line 5)', /line 5/, 'Python Syntax'],
-    ['IndentationError: expected an indented block on line 3', /line 3/, 'Python Indentation'],
-    ["NameError: name 'foo' is not defined", /foo/, 'Variables'],
-    ["TypeError: 'int' object is not callable", /int/, 'Functions'],
-    ['pygame.error: display mode not set', /pygame\.init/i, 'Pygame Setup'],
-    ["pygame.error: No such file or directory: 'sprite.png'", /sprite\.png/, 'File Paths'],
+    ['SyntaxError: invalid syntax (script.py, line 5)', /syntax error on line 5/, 'Python Syntax'],
+    [
+      'IndentationError: expected an indented block on line 3',
+      /indented code after line 3/,
+      'Python Indentation',
+    ],
+    ["NameError: name 'foo' is not defined", /'foo'/, 'Variables'],
+    ["TypeError: 'int' object is not callable", /'int'/, 'Functions'],
+    ['pygame.error: display mode not set', /game window/i, 'Pygame Setup'],
+    ["pygame.error: No such file or directory: 'sprite.png'", /'sprite\.png'/, 'File Paths'],
     [
       "AttributeError: 'pygame.Surface' object has no attribute 'setpixel'",
-      /setpixel/,
+      /'setpixel'/,
       'Pygame Surfaces',
     ],
-    ['Failed to fetch resource', /internet/i, 'Network Connectivity'],
-    ['TimeoutError: Request timeout', /timing out/i, 'Network Performance'],
-    ['ReferenceError: bar is not defined', /bar/, 'Platform Issues'],
-    ['ChunkLoadError: Loading chunk 5 failed', /load/i, 'Website Loading'],
-  ])('matches the %#-th pattern (%s)', (input, _msgPattern, conceptHint) => {
+    ['Failed to fetch resource', /internet|server/i, 'Network Connectivity'],
+    ['TimeoutError: Request timeout', /timed out/i, 'Network Performance'],
+    ['ReferenceError: bar is not defined', /'bar'/, 'Platform Issues'],
+    ['ChunkLoadError: Loading chunk 5 failed', /loading|update/i, 'Website Loading'],
+  ])('matches the %#-th pattern (%s)', (input, msgPattern, conceptHint) => {
     const result = transformError(input);
     expect(result, `pattern should match: ${input}`).toBeTruthy();
     expect(result?.originalError).toBe(input);
     expect(result?.relatedConcepts ?? []).toContain(conceptHint);
+    expect(result?.friendlyMessage).toMatch(msgPattern);
+    expect(result?.learningTips.length ?? 0).toBeGreaterThan(0);
+    expect(result?.nextSteps.length ?? 0).toBeGreaterThan(0);
   });
 
   it('returns null when nothing matches', () => {
     expect(transformError('totally novel error message with no pattern')).toBeNull();
   });
-
-  it('attaches a non-empty learningTips + nextSteps array on every match', () => {
-    const result = transformError("NameError: name 'x' is not defined");
-    expect(result?.learningTips.length).toBeGreaterThan(0);
-    expect(result?.nextSteps.length).toBeGreaterThan(0);
-  });
-
-  it('embeds the captured group(s) into friendlyMessage when present', () => {
-    const r = transformError("NameError: name 'undefined_var' is not defined");
-    expect(r?.friendlyMessage).toMatch(/undefined_var/);
-  });
 });
 
 describe('getEducationalError — pattern miss falls back to generic', () => {
-  it('returns the matched educational error when a pattern hits', () => {
-    const r = getEducationalError("NameError: name 'x' is not defined");
-    expect(r.relatedConcepts).toContain('Variables');
-  });
-
   it('returns the generic educational shape when nothing matches', () => {
     const r = getEducationalError('Some unprecedented error string');
     expect(r.originalError).toBe('Some unprecedented error string');
@@ -91,8 +88,9 @@ describe('getSyntaxHelp / getPygameHelp / getDebuggingTips', () => {
 describe('getContextualHelp', () => {
   it('returns pygame tips when codeContent mentions pygame', () => {
     const tips = getContextualHelp({ codeContent: 'import pygame\npygame.init()' });
-    // Should include something from pygame help.
-    expect(tips.some((t) => /pygame/i.test(t))).toBe(true);
+    // Pin the actual content: a tip from getPygameHelp() must be present.
+    const pygameTips = getPygameHelp();
+    expect(tips.some((t) => pygameTips.includes(t))).toBe(true);
   });
 
   it('returns indent + colon tips when code has if/for', () => {
@@ -106,31 +104,57 @@ describe('getContextualHelp', () => {
     expect(tips.some((t) => /Function definitions/.test(t))).toBe(true);
   });
 
-  it('returns syntax help when lessonId includes "basic"', () => {
+  it('returns the first two syntax tips when lessonId includes "basic"', () => {
     const tips = getContextualHelp({ lessonId: 'basics-1' });
-    expect(tips.length).toBeGreaterThan(0);
+    // Pin actual content from getSyntaxHelp() — the lessonId branch must
+    // produce real syntax tips, NOT silently fall through to the
+    // debugging-tips fallback.
+    const syntaxTips = getSyntaxHelp();
+    expect(tips.some((t) => syntaxTips.includes(t))).toBe(true);
   });
 
   it('returns pygame help when projectType is "game"', () => {
     const tips = getContextualHelp({ projectType: 'game' });
-    expect(tips.some((t) => /pygame/i.test(t))).toBe(true);
+    const pygameTips = getPygameHelp();
+    expect(tips.some((t) => pygameTips.includes(t))).toBe(true);
+  });
+
+  it('combines tips when multiple branches fire (codeContent has pygame + def)', () => {
+    const tips = getContextualHelp({
+      codeContent: 'import pygame\ndef setup(): pygame.init()',
+    });
+    // Both the pygame branch AND the def branch should contribute. The
+    // accumulator is additive — combining contexts must NOT short-circuit
+    // after the first match.
+    const pygameTips = getPygameHelp();
+    expect(tips.some((t) => pygameTips.includes(t))).toBe(true);
+    expect(tips.some((t) => /Function definitions/.test(t))).toBe(true);
   });
 
   it('falls back to debugging tips when nothing matches', () => {
     const tips = getContextualHelp({});
     expect(tips.length).toBeGreaterThan(0);
-    // The debugging tips contain "error messages" or "line numbers" as
-    // anchors — pin one of the canonical lines.
     expect(tips.some((t) => /error messages|line numbers|print\(\)/i.test(t))).toBe(true);
   });
 });
 
-describe('module-level convenience exports', () => {
-  it('expose the same transformer instance', () => {
-    // Sanity: the convenience wrappers use the singleton transformer, so a
-    // direct call and a wrapper call match for the same input.
-    const direct = educationalErrorTransformer.transformError("NameError: name 'a' is not defined");
-    const indirect = transformError("NameError: name 'a' is not defined");
+describe('module-level convenience wrappers', () => {
+  // Honest description: the wrappers route through the same singleton
+  // transformer, so wrapper output equals direct output for any input.
+  // This is value-parity, not referential identity (calls produce fresh
+  // objects), but it's the right invariant — if the wrapper ever started
+  // routing through a separate transformer instance with diverging state,
+  // this test would fail.
+  it('return equivalent output to direct singleton calls', () => {
+    const input = "NameError: name 'a' is not defined";
+    const direct = educationalErrorTransformer.transformError(input);
+    const indirect = transformError(input);
     expect(direct?.relatedConcepts).toEqual(indirect?.relatedConcepts);
+    expect(direct?.friendlyMessage).toEqual(indirect?.friendlyMessage);
+    expect(direct?.learningTips).toEqual(indirect?.learningTips);
+    // getEducationalError parity for the fallback path: a non-matching
+    // input goes through the same generic shape regardless of caller.
+    const fallback = getEducationalError('truly novel error');
+    expect(fallback.relatedConcepts).toContain('Debugging');
   });
 });
