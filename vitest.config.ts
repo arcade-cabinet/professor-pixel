@@ -85,14 +85,15 @@ export default defineConfig({
       // Vitest projects — unit + integration + component (browser). The
       // numbers below are the aggregate across all three.
       //
-      // Today's snapshot (2026-05-07, post-#128 + pyodide-cache tests):
-      // statements 44.45%, branches 37.08%, functions 39.80%, lines 44.42%.
+      // Today's snapshot (2026-05-07, post-error-handler tests):
+      // statements 44.50%, branches 37.15%, functions 39.80%, lines 44.47%.
       // The thresholds below sit a hair below those numbers (rounded down
       // to the nearest integer minus 1 for noise tolerance) so any
       // regression fails CI. Per the ratchet doctrine: any PR that moves
       // these numbers UP raises the matching threshold in the same PR.
       //
       // Earlier snapshots:
+      //   2026-05-07 post-error-handler: 44.50/37.15/39.80/44.47 → floor 43/35/38/43
       //   2026-05-07 post-#128+cache:   44.45/37.08/39.80/44.42 → floor 43/35/38/43
       //   2026-05-07 post-#127+adapter: 44.32/36.96/39.69/44.33 → floor 43/35/38/43
       //   2026-05-07 post-#124+client:  44.17/36.85/39.06/44.17 → floor 43/35/38/43
