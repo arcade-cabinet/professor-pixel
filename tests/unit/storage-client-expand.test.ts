@@ -301,3 +301,57 @@ describe('ClientStorage — gallery / publish flow', () => {
     expect(published[0]!.id).toBe(a.id);
   });
 });
+
+describe('ClientStorage — defensive paths', () => {
+  it('treats corrupt JSON as empty (does not throw to the caller)', async () => {
+    // Tampered/truncated localStorage entry — JSON.parse blows up.
+    // The wrapper catches and returns {} so the wizard surface stays
+    // alive instead of punting to the React error boundary.
+    localStorage.setItem('pygame_academy_users', '{ this is not json');
+    const storage = new ClientStorage();
+    // getUser pulls through getFromLocalStorage<USERS>; corrupt → {} → undefined.
+    await expect(storage.getUser('whatever')).resolves.toBeUndefined();
+  });
+
+  it('saveToLocalStorage swallows QuotaExceeded errors instead of bubbling', async () => {
+    // Override setItem to throw — mid-wizard quota exhaustion must not
+    // crash the React tree. The class catches and routes to
+    // handleStorageError (which logs).
+    const storage = new ClientStorage();
+    const setItemSpy = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      const err = new Error('QuotaExceededError');
+      err.name = 'QuotaExceededError';
+      throw err;
+    });
+    // createAnonymousUser hits saveToLocalStorage. With the mock throwing,
+    // the call must complete (not throw to the caller). Some paths log
+    // via console.error/warn — those spies are already installed in the
+    // outer beforeEach.
+    await expect(storage.createAnonymousUser('alice')).resolves.toBeDefined();
+    setItemSpy.mockRestore();
+  });
+
+  it('generateId falls back to the manual UUID pattern when crypto.randomUUID is missing', async () => {
+    // Simulate older browsers (or some embedded webviews) where
+    // crypto.randomUUID isn't available. Stub the global so the class's
+    // internal feature-check sees the fallback path.
+    const originalCrypto = globalThis.crypto;
+    Object.defineProperty(globalThis, 'crypto', {
+      configurable: true,
+      value: { ...originalCrypto, randomUUID: undefined },
+    });
+    try {
+      const storage = new ClientStorage();
+      const user = await storage.createAnonymousUser('fallback-test');
+      // The fallback emits a UUID-shape string.
+      expect(user.id).toMatch(
+        /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/
+      );
+    } finally {
+      Object.defineProperty(globalThis, 'crypto', {
+        configurable: true,
+        value: originalCrypto,
+      });
+    }
+  });
+});
