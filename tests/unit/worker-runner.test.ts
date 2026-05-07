@@ -124,4 +124,66 @@ describe('WorkerPythonRunner', () => {
     const b = getWorkerRunner();
     expect(a).toBe(b);
   });
+
+  it('re-throws non-timeout errors without terminating the worker', async () => {
+    // Path: error from runSnippet that is NOT a PythonTimeoutError.
+    // The catch must rethrow but NOT call this.terminate(). After the
+    // throw, the singleton state is intact and a follow-up call reuses
+    // the SAME worker (no fresh bootstrap, fakeReady call count
+    // unchanged).
+    const boom = new Error('worker code path crashed');
+    fakeRunSnippet.mockRejectedValueOnce(boom);
+
+    const runner = new WorkerPythonRunner();
+    await expect(runner.runSnippet({ code: 'oops' })).rejects.toBe(boom);
+    expect(fakeReady).toHaveBeenCalledTimes(1);
+
+    // Reuse path: next call doesn't re-bootstrap.
+    fakeRunSnippet.mockResolvedValueOnce({
+      output: 'recovered',
+      error: null,
+      inputCalls: 0,
+      functionCalls: {},
+      globals: {},
+    });
+    const result = await runner.runSnippet({ code: "print('ok')" });
+    expect(result.output).toBe('recovered');
+    expect(fakeReady).toHaveBeenCalledTimes(1); // still 1 — no respawn
+  });
+
+  it('clears bootstrap state when ready() rejects, allowing a retry on next call', async () => {
+    // Path: ensure()'s catch (lines 108-112) — worker construction +
+    // wrapping succeeded but ready() rejected. The catch must:
+    //   (a) terminate the half-built worker
+    //   (b) null out worker/remote/bootstrap so the next call retries
+    //
+    // We make ready() reject once, then succeed on the retry. The
+    // first call's runSnippet must reject; the second must succeed
+    // and bootstrap fresh (fakeReady called twice total).
+    fakeReady.mockRejectedValueOnce(new Error('ready failed'));
+
+    const runner = new WorkerPythonRunner();
+    await expect(runner.runSnippet({ code: 'whatever' })).rejects.toThrow(/ready failed/);
+
+    // Retry: fresh bootstrap kicks off, ready() resolves on the default
+    // mock implementation (returns undefined → success).
+    fakeReady.mockResolvedValueOnce(undefined);
+    fakeRunSnippet.mockResolvedValueOnce({
+      output: 'second-try',
+      error: null,
+      inputCalls: 0,
+      functionCalls: {},
+      globals: {},
+    });
+    const result = await runner.runSnippet({ code: 'whatever' });
+    expect(result.output).toBe('second-try');
+    expect(fakeReady).toHaveBeenCalledTimes(2);
+  });
+
+  it('terminate() is idempotent — second call is a no-op', () => {
+    const runner = new WorkerPythonRunner();
+    // No worker yet; terminate should be safe.
+    expect(() => runner.terminate()).not.toThrow();
+    expect(() => runner.terminate()).not.toThrow();
+  });
 });
