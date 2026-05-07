@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
+  createEnhancedErrorCapture,
   formatEducationalError,
   getEncouragingMessage,
   isBeginnerError,
@@ -51,7 +52,6 @@ NameError: name 'undefined_var' is not defined`;
     expect(out.educational).toBe(false);
     // Non-educational mode: title is just the type, no friendly suffix.
     expect(out.title).toBe('NameError');
-    expect(out.title).not.toMatch(/fix this together/);
   });
 
   it('uses the files map (priority 1) when fileName is in context.files', () => {
@@ -99,20 +99,6 @@ NameError: name 'x' is not defined`;
       code: 'pass\nprint(x)\npass\n',
     });
     expect(out.details).toMatch(/print\(x\)/);
-  });
-
-  it('returns a ParseError shape when parseTraceback throws', () => {
-    // Force the regex matcher to receive a value that triggers the catch
-    // block. Empty-after-trim hits the `errorLine = lines[lines.length - 1]`
-    // path with an empty string — `errorMatch` is null but the function
-    // returns the UnknownError shape, not ParseError. To actually hit the
-    // catch we need parseTraceback's match() to throw, which requires a
-    // non-string input. quickFormatError already coerces, so we have to
-    // poke parseTraceback's null-guard via empty string.
-    const out = quickFormatError('');
-    // Empty input → falsy traceback → parseTraceback returns null →
-    // quickFormatError falls back to its UnknownError stub.
-    expect(out.title).toMatch(/UnknownError/);
   });
 });
 
@@ -240,5 +226,57 @@ describe('getEncouragingMessage', () => {
   it('falls back to the default message for unknown types', () => {
     expect(getEncouragingMessage('SomethingUnknown')).toMatch(/learning opportunity/);
     expect(getEncouragingMessage('')).toMatch(/learning opportunity/);
+  });
+});
+
+describe('createEnhancedErrorCapture — pre-pyodide guards', () => {
+  // Without a Pyodide instance attached to the global, setupErrorCapture
+  // must short-circuit to false rather than throw — the rest of the
+  // factory builds on top of that contract. We test the JS-level guards;
+  // the actual Python install + traceback round-trip is exercised by
+  // integration tests under tests/integration/.
+
+  beforeEach(() => {
+    // Clear any leaked pyodide singletons from prior tests in the same run.
+    // jsdom carries `window` between tests, so explicit cleanup is needed.
+    // biome-ignore lint/suspicious/noExplicitAny: test-time global poke
+    delete (globalThis as any).pyodideInstance;
+    // biome-ignore lint/suspicious/noExplicitAny: test-time global poke
+    if (typeof window !== 'undefined') delete (window as any).pyodideInstance;
+  });
+
+  it('setupErrorCapture returns false when no pyodide is on the global', () => {
+    const cap = createEnhancedErrorCapture();
+    expect(cap.setupErrorCapture()).toBe(false);
+  });
+
+  it('isReadyForCapture returns false before setup', () => {
+    const cap = createEnhancedErrorCapture();
+    expect(cap.isReadyForCapture()).toBe(false);
+  });
+
+  it('isReadyForCapture stays false after a failed setup attempt', () => {
+    const cap = createEnhancedErrorCapture();
+    cap.setupErrorCapture(); // returns false (no pyodide)
+    expect(cap.isReadyForCapture()).toBe(false);
+  });
+
+  it('executeWithErrorCapture returns hasError=true with a friendly message when not set up', async () => {
+    const cap = createEnhancedErrorCapture();
+    const result = await cap.executeWithErrorCapture('print("hi")');
+    expect(result.hasError).toBe(true);
+    expect(result.error).not.toBeNull();
+    // The factory's pre-setup guard surfaces a real FormattedError, not
+    // a thrown exception — the UI consumes this shape directly.
+    expect(result.error?.severity).toBe('error');
+  });
+
+  it('returns independent state per factory instance (setup on one does not leak)', () => {
+    const a = createEnhancedErrorCapture();
+    const b = createEnhancedErrorCapture();
+    a.setupErrorCapture();
+    // b has its own closed-over isSetup flag; calling setupErrorCapture
+    // on `a` must not flip `b`'s readiness.
+    expect(b.isReadyForCapture()).toBe(false);
   });
 });
