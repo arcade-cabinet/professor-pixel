@@ -85,14 +85,15 @@ export default defineConfig({
       // Vitest projects — unit + integration + component (browser). The
       // numbers below are the aggregate across all three.
       //
-      // Today's snapshot (2026-05-07, post-pygame-components):
-      // statements 48.01%, branches 39.15%, functions 43.89%, lines 48.03%.
+      // Today's snapshot (2026-05-07, post-pygame-templates+components):
+      // statements 49.29%, branches 39.17%, functions 44.25%, lines 49.37%.
       // The thresholds below sit a hair below those numbers (rounded down
       // to the nearest integer minus 1 for noise tolerance) so any
       // regression fails CI. Per the ratchet doctrine: any PR that moves
       // these numbers UP raises the matching threshold in the same PR.
       //
       // Earlier snapshots:
+      //   2026-05-07 post-pygame-tem+comp: 49.29/39.17/44.25/49.37 → floor 48/38/43/48
       //   2026-05-07 post-pygame-components: 48.01/39.15/43.89/48.03 → floor 47/38/42/47
       //   2026-05-07 post-net-retry: 45.77/38.01/42.26/45.71 → floor 44/37/41/44
       //   2026-05-07 post-error-handler v3: 45.47/37.97/41.53/45.47 → floor 44/36/40/44
@@ -123,10 +124,10 @@ export default defineConfig({
       //   2026-05-06 post-#39: 31.68/25.20/25.26/31.66 → floor 30/24/24/30
       //   2026-05-05 post-#30: 27.71/22.42/22.28/27.71 → floor 26/21/21/26
       thresholds: {
-        statements: 47,
+        statements: 48,
         branches: 38,
-        functions: 42,
-        lines: 47,
+        functions: 43,
+        lines: 48,
       },
     },
   },
