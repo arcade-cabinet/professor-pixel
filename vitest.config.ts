@@ -106,14 +106,15 @@ export default defineConfig({
       // Vitest projects — unit + integration + component (browser). The
       // numbers below are the aggregate across all three.
       //
-      // Today's snapshot (2026-05-07, post-opfs-projects-unit):
-      // statements 58.99%, branches 45.75%, functions 54.69%, lines 59.61%.
+      // Today's snapshot (2026-05-07, post-curated-themes-delete):
+      // statements 59.21%, branches 45.89%, functions 54.92%, lines 59.80%.
       // The thresholds below sit a hair below those numbers (rounded down
       // to the nearest integer minus 1 for noise tolerance) so any
       // regression fails CI. Per the ratchet doctrine: any PR that moves
       // these numbers UP raises the matching threshold in the same PR.
       //
       // Earlier snapshots:
+      //   2026-05-07 post-curated-themes-delete: 59.21/45.89/54.92/59.80 → floor 57/44/53/58
       //   2026-05-07 post-opfs-projects-unit: 58.99/45.75/54.69/59.61 → floor 57/44/53/58
       //   2026-05-07 post-client-defensive: 58.92/45.75/54.57/59.53 → floor 57/44/53/58
       //   2026-05-07 post-shadcn-bootstrap-exclude: 58.75/45.61/54.45/59.34 → floor 57/44/53/58
