@@ -339,4 +339,15 @@ speed = 5
     const circle = result.objects.find((o) => o.type === 'circle');
     expect(circle?.color).toBe('#00FF00');
   });
+
+  it.each([
+    ['WHITE', '#FFFFFF'],
+    ['BLACK', '#000000'],
+    ['YELLOW', '#FFFF00'],
+  ])('detects %s color name', (name, hex) => {
+    const code = `pygame.draw.circle(screen, ${name}, (0, 0), 5)`;
+    const result = simulatePygame(code);
+    const circle = result.objects.find((o) => o.type === 'circle');
+    expect(circle?.color).toBe(hex);
+  });
 });
