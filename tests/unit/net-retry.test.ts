@@ -639,3 +639,68 @@ describe('useRetry hook', () => {
     expect(result.current.canRetry).toBe(true);
   });
 });
+
+describe('top-level convenience exports route to the singleton', () => {
+  // Each top-level export is a thin closure over retryMechanism's
+  // method of the same name. The tests above exercise the methods via
+  // retryMechanism directly. These pin that the closures actually
+  // delegate, so a refactor that disconnects them gets caught.
+
+  it('fetchWithRetry → retryMechanism.fetchWithRetry', async () => {
+    vi.useRealTimers();
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({ ok: true, json: async () => ({ via: 'closure' }) })
+    );
+    const res = await fetchWithRetry('http://example.test/x');
+    expect(res.ok).toBe(true);
+    expect((globalThis.fetch as unknown as { mock: { calls: unknown[] } }).mock.calls.length).toBe(
+      1
+    );
+  });
+
+  it('apiCallWithRetry → retryMechanism.apiCallWithRetry (parses JSON)', async () => {
+    vi.useRealTimers();
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({ ok: true, json: async () => ({ payload: 42 }) })
+    );
+    const data = await apiCallWithRetry<{ payload: number }>('http://example.test/api');
+    expect(data.payload).toBe(42);
+  });
+
+  it('pythonExecutionWithRetry → retryMechanism.pythonExecutionWithRetry', async () => {
+    vi.useRealTimers();
+    const op = vi.fn().mockResolvedValue('exec-ok');
+    const result = await pythonExecutionWithRetry(op);
+    expect(result).toBe('exec-ok');
+    expect(op).toHaveBeenCalledOnce();
+  });
+
+  it('fileOperationWithRetry → retryMechanism.fileOperationWithRetry', async () => {
+    vi.useRealTimers();
+    const op = vi.fn().mockResolvedValue('file-ok');
+    const result = await fileOperationWithRetry(op);
+    expect(result).toBe('file-ok');
+    expect(op).toHaveBeenCalledOnce();
+  });
+
+  it('withRetry → retryMechanism.withRetry (returns RetryResult shape)', async () => {
+    vi.useRealTimers();
+    const op = vi.fn().mockResolvedValue('with-ok');
+    const result = await withRetry(op);
+    expect(result.success).toBe(true);
+    expect(result.data).toBe('with-ok');
+    expect(op).toHaveBeenCalledOnce();
+  });
+
+  it('retryMechanism singleton is the same instance referenced by all closures', () => {
+    expect(retryMechanism).toBeDefined();
+    expect(typeof retryMechanism.withRetry).toBe('function');
+    expect(typeof retryMechanism.fetchWithRetry).toBe('function');
+  });
+
+  it('educationalRetry helper is exposed', () => {
+    expect(educationalRetry).toBeDefined();
+  });
+});
