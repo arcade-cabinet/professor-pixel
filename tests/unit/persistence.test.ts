@@ -516,4 +516,40 @@ describe('Persistence Library', () => {
       expect(loaded?.sessionActions?.unlockedEditor).toBe(true);
     });
   });
+
+  describe('loadUserPreferences — defensive catch path', () => {
+    it('returns defaults when dismissedTips cookie holds malformed JSON', () => {
+      // dismissedTipsStr ? JSON.parse(dismissedTipsStr) : [] — when the
+      // cookie is set to a non-JSON string, JSON.parse throws and the
+      // outer catch returns the canonical defaults instead of bubbling.
+      // CookieMock has no helper — write through document.cookie like
+      // production does.
+      document.cookie = 'tips_dismissed={ this is not json';
+      // Suppress the expected handleStorageError console noise.
+      const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+      const loaded = loadUserPreferences();
+      expect(loaded.theme).toBe('system');
+      expect(loaded.dismissedTips).toEqual([]);
+      expect(loaded.soundEnabled).toBe(true);
+      expect(loaded.autoSaveEnabled).toBe(true);
+      errSpy.mockRestore();
+    });
+  });
+
+  describe('migrateStorageIfNeeded — needsMigration error path', () => {
+    it('treats corrupted JSON as not-needing-migration (catches the SyntaxError)', () => {
+      // needsMigration() does JSON.parse(raw); when the wizard slot is
+      // a corrupted blob, the function catches and returns false so we
+      // don't crash boot. Run migrate; if the catch were missing, it
+      // would throw uncaught.
+      localStorageMock.setItem('pygame-academy-wizard-state', '{ this is not json');
+      const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+      expect(() => migrateStorageIfNeeded()).not.toThrow();
+      errSpy.mockRestore();
+      warnSpy.mockRestore();
+    });
+  });
 });
