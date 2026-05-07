@@ -106,18 +106,18 @@ export default defineConfig({
       // Vitest projects — unit + integration + component (browser). The
       // numbers below are the aggregate across all three.
       //
-      // Today's snapshot (2026-05-07, post-ssr-fallbacks):
-      // statements 74.39%, branches 64.98%, functions 70.31%, lines 75.22%.
+      // Today's snapshot (2026-05-07, post-canvas-drag):
+      // statements 74.79%, branches 65.23%, functions 70.43%, lines 75.63%.
       // The thresholds below sit a hair below those numbers (rounded down
       // to the nearest integer minus 1 for noise tolerance) so any
       // regression fails CI. Per the ratchet doctrine: any PR that moves
       // these numbers UP raises the matching threshold in the same PR.
       //
       // Earlier snapshots:
+      //   2026-05-07 post-ssr-fallbacks: 74.39/64.98/70.31/75.22 → floor 74/63/70/75
       //   2026-05-07 post-exporter-saved-project: 74.33/64.91/70.31/75.16 → floor 74/63/70/75
       //   2026-05-07 post-assets-catalog: 74.18/64.61/70.19/75.00 → floor 74/63/70/75
       //   2026-05-07 post-assets-downloader: 74.16/64.59/70.01/74.98 → floor 74/63/70/74
-      //   2026-05-07 post-runner-export-fullscreen: 74.11/64.59/70.01/74.94 → floor 74/63/70/74
       //   2026-05-07 post-floating-feedback-render: 73.95/64.49/69.89/74.76 → floor 73/63/69/74
       //   2026-05-07 post-live-preview-extras: 73.82/64.15/69.71/74.65 → floor 73/63/69/74
       //   2026-05-07 post-pixel-menu-extras: 73.67/63.87/69.53/74.51 → floor 73/62/69/74
@@ -206,7 +206,7 @@ export default defineConfig({
       //   2026-05-05 post-#30: 27.71/22.42/22.28/27.71 → floor 26/21/21/26
       thresholds: {
         statements: 74,
-        branches: 63,
+        branches: 64,
         functions: 70,
         lines: 75,
       },
