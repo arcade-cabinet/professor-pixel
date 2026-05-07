@@ -106,7 +106,7 @@ export default defineConfig({
       // Vitest projects — unit + integration + component (browser). The
       // numbers below are the aggregate across all three.
       //
-      // Today's snapshot (2026-05-07, post-broadcast-residuals):
+      // Today's snapshot (2026-05-07, post-private-mode-explicit):
       // statements 59.61%, branches 46.54%, functions 55.22%, lines 60.17%.
       // The thresholds below sit a hair below those numbers (rounded down
       // to the nearest integer minus 1 for noise tolerance) so any
