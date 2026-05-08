@@ -169,6 +169,52 @@ describe('PygameRunner — stopGame canvas clear', () => {
   });
 });
 
+describe('PygameRunner — stopGame ctx-null short-circuit (line 355 path 1 falsy)', () => {
+  it('stopGame skips the canvas paint when getContext returns null', async () => {
+    // The stopGame inner clear is gated by `if (ctx)`. Existing tests
+    // resolve getContext to ctxStub (truthy), only covering the truthy
+    // arm. Override getContext to return null so the falsy arm fires —
+    // stopGame still flips isRunning false but does NOT touch fillRect.
+    const ctxSpy = vi
+      .spyOn(HTMLCanvasElement.prototype, 'getContext')
+      .mockReturnValue(null as unknown as CanvasRenderingContext2D);
+    let resolveAsync: (() => void) | undefined;
+    runPythonAsync.mockImplementation(
+      () =>
+        new Promise<void>((resolve) => {
+          resolveAsync = resolve;
+        })
+    );
+    getPyodideMock.mockResolvedValue(fakePyodide);
+    try {
+      render(<PygameRunner />);
+      await waitFor(() => {
+        expect(screen.queryByTestId('runner-error-panel')).not.toBeInTheDocument();
+      });
+      const playBtn = screen
+        .getAllByRole('button')
+        .find((b) => /run game/i.test(b.textContent ?? ''));
+      fireEvent.click(playBtn!);
+      const stopBtn = await screen.findByRole(
+        'button',
+        { name: /stop/i },
+        { timeout: 2000 }
+      );
+      const fillRectCallsBefore = ctxStub.fillRect.mock.calls.length;
+      fireEvent.click(stopBtn);
+      // isRunning flips back; the stopBtn no longer renders.
+      await waitFor(() => {
+        expect(screen.queryByRole('button', { name: /stop/i })).not.toBeInTheDocument();
+      });
+      // ctx-null falsy arm: no additional fillRect call from stopGame.
+      expect(ctxStub.fillRect.mock.calls.length).toBe(fillRectCallsBefore);
+      resolveAsync?.();
+    } finally {
+      ctxSpy.mockRestore();
+    }
+  });
+});
+
 describe('PygameRunner — resetGame', () => {
   it('Reset button stops the run and re-invokes runGame', async () => {
     // Hold the first run open so isRunning stays true (the Reset button is
