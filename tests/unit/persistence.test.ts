@@ -537,6 +537,59 @@ describe('Persistence Library', () => {
     });
   });
 
+  describe('clearAllData — non-prefixed cookie skip (line 378)', () => {
+    it('preserves cookies that do not start with the wizard prefix (line 378 false arm)', () => {
+      // The CookieMock stores names verbatim; setCookie auto-prefixes,
+      // so we need to write a non-prefixed entry into the underlying
+      // store directly. clearAllData walks every cookie and only
+      // calls deleteCookie on the ones that startsWith() the prefix —
+      // the false arm (non-matching names) was uncovered.
+      saveWizardState({ currentNodeId: 'test' });
+      setCookie('theme', 'dark'); // becomes pygame-prefs-theme=dark
+      (cookieMock as unknown as { cookies: Record<string, string> }).cookies['analytics_id'] = 'abc123'; // non-prefixed
+      clearAllData();
+      // Wizard cookie is gone.
+      expect(getCookie('theme')).toBeNull();
+      // Non-prefixed cookie survived the false-arm fall-through.
+      expect((cookieMock as unknown as { cookies: Record<string, string> }).cookies['analytics_id']).toBe('abc123');
+    });
+  });
+
+  describe('migrateStorageIfNeeded — load returns null branches (lines 395, 403)', () => {
+    it('skips wizard re-save when needsMigration true but loadWizardState returns null (line 395 false arm)', () => {
+      // Payload that needsMigration sees as version-mismatched (a
+      // JSON-string primitive has parsed?.version === undefined !==
+      // current version → needsMigration returns true) BUT
+      // validateAndMigrate's z.object schema rejects the non-object →
+      // loadWizardState returns null. The `if (wizardState)` guard at
+      // line 395 takes the false arm; nothing gets re-saved.
+      localStorageMock.setItem('wizard.state.v1', JSON.stringify('not-an-object'));
+      const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+      expect(() => migrateStorageIfNeeded()).not.toThrow();
+      // Storage unchanged — the false arm did NOT enter the re-save block.
+      expect(localStorageMock.getItem('wizard.state.v1')).toBe(
+        JSON.stringify('not-an-object')
+      );
+      errSpy.mockRestore();
+      warnSpy.mockRestore();
+      logSpy.mockRestore();
+    });
+
+    it('skips session re-save when needsMigration true but loadSessionState returns null (line 403 false arm)', () => {
+      sessionStorageMock.setItem('wizard.session.v1', JSON.stringify(123));
+      const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+      expect(() => migrateStorageIfNeeded()).not.toThrow();
+      expect(sessionStorageMock.getItem('wizard.session.v1')).toBe(JSON.stringify(123));
+      errSpy.mockRestore();
+      warnSpy.mockRestore();
+      logSpy.mockRestore();
+    });
+  });
+
   describe('migrateStorageIfNeeded — needsMigration error path', () => {
     it('treats corrupted JSON as not-needing-migration (catches the SyntaxError)', () => {
       // needsMigration() does JSON.parse(raw); when the wizard slot is
