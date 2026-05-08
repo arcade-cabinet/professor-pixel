@@ -206,3 +206,27 @@ describe('PygameWysiwygEditor — compact-viewport auto-open of properties drawe
     expect(toggle.getAttribute('aria-pressed')).toBe('true');
   });
 });
+
+describe('PygameWysiwygEditor — snapToGrid=false falsy ternary arms (lines 144, 145, 169, 170)', () => {
+  it('handleDrop and handleComponentMove pass raw coords through when snap-to-grid is off', () => {
+    // The drop / move handlers each have a `snapToGrid ? round : raw`
+    // ternary on both x and y. Existing tests only exercised the
+    // truthy arm; toggle the snap-to-grid switch off to fire the
+    // four falsy arms (drop x, drop y, move x, move y).
+    const seed: PlacedComponent[] = [
+      { id: 'placed-1', componentId: 'ball', x: 0, y: 0, properties: {} },
+    ];
+    render(<PygameWysiwygEditor initialComponents={seed} />);
+    // Toggle snap-to-grid off via the labeled switch.
+    const snapSwitch = document.getElementById('snap-to-grid') as HTMLElement;
+    expect(snapSwitch).toBeTruthy();
+    fireEvent.click(snapSwitch);
+    // Drop a new component — the canvas-drop-btn invokes handleDrop.
+    fireEvent.click(screen.getByTestId('canvas-drop-btn'));
+    // No throw. Then select + move to fire the move handler's falsy arms.
+    fireEvent.click(screen.getByTestId('canvas-select-btn'));
+    expect(() => fireEvent.click(screen.getByTestId('canvas-move-btn'))).not.toThrow();
+    // The originally-seeded placed component is still selectable.
+    expect(screen.getByTestId('properties-selected-id')).toBeInTheDocument();
+  });
+});

@@ -106,10 +106,10 @@ export default defineConfig({
       // Vitest projects — unit + integration + component (browser). The
       // numbers below are the aggregate across all three.
       //
-      // Today's snapshot (2026-05-08, post-opfs-projects-ssr-no-navigator):
-      // statements 88.39%, branches 80.89%, functions 85.99%, lines 89.46%.
+      // Today's snapshot (2026-05-08, post-wysiwyg-snap-disabled-falsy-arms):
+      // statements 88.39%, branches 81.01%, functions 85.99%, lines 89.46%.
       // Branches floor 79 (ratcheted 78→79 in post-pixel-minimized-hover; floor
-      // sits 1.89pt under the aggregate run).
+      // sits 2.01pt under the aggregate run — branches first crossed 81% here).
       // Branches floor stays at 77 (established flap envelope dips below
       // 78.00, and 78 was reverted in post-use-debug-flag-catch-spy).
       // (Aggregate flaps ±0.1% per run due to browser-suite render-effect
@@ -121,6 +121,7 @@ export default defineConfig({
       // these numbers UP raises the matching threshold in the same PR.
       //
       // Earlier snapshots:
+      //   2026-05-08 post-opfs-projects-ssr-no-navigator: 88.39/80.89/85.99/89.46 → floor 87/79/85/88
       //   2026-05-08 post-use-device-type-msmax-undefined: 88.36/80.85/85.99/89.46 → floor 87/79/85/88
       //   2026-05-08 post-collectible-unknown-type-fallthrough: 88.37/80.89/86.05/89.46 → floor 87/79/85/88
       //   2026-05-08 post-code-generator-background-fallbacks: 88.36/80.80/85.99/89.46 → floor 87/79/85/88
