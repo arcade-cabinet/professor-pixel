@@ -4,7 +4,12 @@ import { enemyComponent } from '@lib/pygame/components/enemy';
 import { paddleComponent } from '@lib/pygame/components/paddle';
 import { platformComponent } from '@lib/pygame/components/platform';
 import { spriteComponent } from '@lib/pygame/components/sprite';
-import { scoreTextComponent } from '@lib/pygame/components/ui';
+import {
+  buttonComponent,
+  healthBarComponent,
+  scoreTextComponent,
+  timerComponent,
+} from '@lib/pygame/components/ui';
 
 // Each component's generateCode embeds default fallbacks via `||`:
 //   self.gravity = ${props.gravity || 0}
@@ -175,5 +180,85 @@ describe('scoreText.preview — fontFamily/alignment fallbacks', () => {
         alignment: undefined as unknown as 'left' | 'center' | 'right',
       })
     ).not.toThrow();
+  });
+});
+
+describe('scoreText.generateCode — isScore=false branch', () => {
+  it("emits self.is_score = False when isScore is false", () => {
+    // The default-properties object sets isScore=true so the "False"
+    // arm of `${props.isScore ? 'True' : 'False'}` (line 83) sat cold.
+    const out = scoreTextComponent.generateCode({
+      ...scoreTextComponent.defaultProperties,
+      isScore: false,
+    });
+    expect(out).toContain('self.is_score = False');
+  });
+});
+
+describe('button.generateCode — fontSize fallback', () => {
+  it('falls back to font_size = 18 when fontSize is undefined', () => {
+    // `${props.fontSize || 18}` (line 144) — defaults set 18 explicitly,
+    // so the falsy arm only fires when callers omit fontSize.
+    const out = buttonComponent.generateCode({
+      ...buttonComponent.defaultProperties,
+      fontSize: undefined as unknown as number,
+    });
+    expect(out).toContain('self.font_size = 18');
+  });
+});
+
+describe('timer — countDown=false branches (preview + generateCode)', () => {
+  it("preview shows '00:00' when countDown is false", () => {
+    // `props.countDown ? '60:00' : '00:00'` (line 191) — default is true,
+    // so the "00:00" arm needs an explicit override.
+    const ctx = fakeCtx();
+    expect(() =>
+      timerComponent.preview(ctx, {
+        ...timerComponent.defaultProperties,
+        countDown: false,
+      })
+    ).not.toThrow();
+  });
+
+  it('generateCode emits count_down=False + show_milliseconds=False when both false', () => {
+    // Lines 202 + 205: both ternaries default to True under defaults.
+    const out = timerComponent.generateCode({
+      ...timerComponent.defaultProperties,
+      countDown: false,
+      showMilliseconds: false,
+    });
+    expect(out).toContain('self.count_down = False');
+    expect(out).toContain('self.show_milliseconds = False');
+  });
+
+  it('generateCode emits show_milliseconds=True when explicitly enabled', () => {
+    // Pin the True arm of line 205 — defaults set it false so True is cold.
+    const out = timerComponent.generateCode({
+      ...timerComponent.defaultProperties,
+      showMilliseconds: true,
+    });
+    expect(out).toContain('self.show_milliseconds = True');
+  });
+});
+
+describe('healthBar — showText=false branches (preview + generateCode)', () => {
+  it('preview skips the text path when showText is false', () => {
+    // Line 286: `if (props.showText)` — defaults set true, falsy arm cold.
+    const ctx = fakeCtx();
+    expect(() =>
+      healthBarComponent.preview(ctx, {
+        ...healthBarComponent.defaultProperties,
+        showText: false,
+      })
+    ).not.toThrow();
+  });
+
+  it('generateCode emits self.show_text = False when showText is false', () => {
+    // Line 309: `${props.showText ? 'True' : 'False'}` — defaults true.
+    const out = healthBarComponent.generateCode({
+      ...healthBarComponent.defaultProperties,
+      showText: false,
+    });
+    expect(out).toContain('self.show_text = False');
   });
 });
