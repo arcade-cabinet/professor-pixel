@@ -205,6 +205,23 @@ describe('button.generateCode — fontSize fallback', () => {
     });
     expect(out).toContain('self.font_size = 18');
   });
+
+  it('preview falls back to 18px font when fontSize is undefined (line 129 || arm)', () => {
+    // The button preview also has `${props.fontSize || 18}px Arial`
+    // (line 129) — it sat cold even after the generateCode test
+    // covered the same fallback. Pin both arms to keep parity with
+    // the runtime-emitted fallback so the wizard preview matches the
+    // emitted Python.
+    const ctx = fakeCtx();
+    expect(() =>
+      buttonComponent.preview(ctx, {
+        ...buttonComponent.defaultProperties,
+        fontSize: undefined as unknown as number,
+      })
+    ).not.toThrow();
+    // ctx.font is set during preview — verify the actual fallback string.
+    expect(ctx.font).toContain('18px');
+  });
 });
 
 describe('timer — countDown=false branches (preview + generateCode)', () => {
