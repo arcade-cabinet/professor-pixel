@@ -15,6 +15,11 @@ vi.mock('@lib/python/pyodide-singleton', () => ({
   recoverPyodide: () => recoverPyodideMock(),
 }));
 
+const loadWizardStateMock = vi.fn();
+vi.mock('@lib/storage/persistence', () => ({
+  loadWizardState: () => loadWizardStateMock(),
+}));
+
 // Compiler isn't called until the kid hits Play; mount alone won't trigger
 // it. Stub for safety.
 vi.mock('@lib/pygame/runtime/compiler', () => ({
@@ -33,6 +38,7 @@ beforeAll(() => {
 beforeEach(() => {
   getPyodideMock.mockReset();
   recoverPyodideMock.mockReset();
+  loadWizardStateMock.mockReset().mockReturnValue(null);
 });
 
 afterEach(() => {
@@ -113,6 +119,37 @@ describe('PygameRunner — recovery-failed branch (P9.3)', () => {
       expect(panel.textContent).toMatch(/internet is off/i);
     } finally {
       onLineSpy.mockRestore();
+    }
+  });
+
+  it('primary recover button skips the empty-slot warn when wizard state survives (line 542 path 1 falsy)', async () => {
+    // The primary `Try again` recover button calls loadWizardState()
+    // and warns when the slot is empty. Existing tests don't seed
+    // wizard state, so the falsy arm (warn) covers itself but the
+    // truthy arm (savedState non-null → no warn) sat cold. Mock
+    // loadWizardState to return a snapshot — `if (!savedState)` is
+    // falsy → console.warn never fires.
+    getPyodideMock.mockRejectedValue(new Error('CDN down'));
+    loadWizardStateMock.mockReturnValue({
+      step: 'preview',
+      genre: 'platformer',
+      gameType: 'platformer',
+    });
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      render(<PygameRunner />);
+      await screen.findByTestId('runner-error-panel');
+      fireEvent.click(screen.getByTestId('runner-recover-button'));
+      // loadWizardState returned a non-null snapshot → no warn fires.
+      await waitFor(() => {
+        expect(loadWizardStateMock).toHaveBeenCalled();
+      });
+      const emptySlotWarns = warnSpy.mock.calls.filter(([msg]) =>
+        typeof msg === 'string' && msg.includes('wizard state slot is empty')
+      );
+      expect(emptySlotWarns).toHaveLength(0);
+    } finally {
+      warnSpy.mockRestore();
     }
   });
 
