@@ -106,6 +106,32 @@ describe('pyodide-singleton — loadPyodideScript existing-tag branches', () => 
     expect(appendSpy).toHaveBeenCalled();
   });
 
+  it('existing script with status="loading" is removed and replaced (line 82, status path 2)', async () => {
+    // Mid-load orphan: a previous attempt set the tag's status to
+    // 'loading' but recoverPyodide() ran or the bootstrap promise was
+    // discarded before the network request settled. The OR chain at
+    // line 82 catches 'loading' alongside 'loaded' / 'error' and
+    // replaces the dead tag.
+    const existing = document.createElement('script');
+    existing.setAttribute('src', '/pyodide/pyodide.js');
+    existing.dataset.pyodideStatus = 'loading';
+    document.head.appendChild(existing);
+
+    const appendSpy = vi
+      .spyOn(document.head, 'appendChild')
+      .mockImplementation(<T extends Node>(node: T): T => {
+        queueMicrotask(() => {
+          const script = node as unknown as HTMLScriptElement;
+          (window as unknown as TestWindow).loadPyodide = vi.fn().mockResolvedValue(fakePyodide);
+          script.onload?.(new Event('load'));
+        });
+        return node;
+      });
+
+    await getPyodide();
+    expect(appendSpy).toHaveBeenCalled();
+  });
+
   // The "existing script with NO status" branch (lines 86-92) requires
   // the listener-attach + dispatch-event timing to land cleanly, which is
   // fragile in jsdom. Skipping these two cases — the simpler 'loaded' /
