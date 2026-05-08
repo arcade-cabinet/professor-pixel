@@ -106,8 +106,9 @@ export default defineConfig({
       // Vitest projects — unit + integration + component (browser). The
       // numbers below are the aggregate across all three.
       //
-      // Today's snapshot (2026-05-08, post-compiler-variant-blocks):
-      // statements 87.61%, branches 77.93%, functions 85.69%, lines 89.01%.
+      // Today's snapshot (2026-05-08, post-use-toast-remove-all):
+      // statements 87.64%, branches 78.00%, functions 85.75%, lines 89.02%.
+      // Branches crossed 77→78 — ratcheted floor below.
       // (Aggregate flaps ±0.1% per run due to browser-suite render-effect
       // timing; the per-file targeted lines for each PR move into the
       // covered set deterministically.)
@@ -117,6 +118,7 @@ export default defineConfig({
       // these numbers UP raises the matching threshold in the same PR.
       //
       // Earlier snapshots:
+      //   2026-05-08 post-compiler-variant-blocks: 87.61/77.93/85.69/89.01 → floor 87/77/85/88
       //   2026-05-08 post-profile-rethrow: 87.57/77.86/85.69/88.96 → floor 87/77/85/88
       //   2026-05-08 post-lessons-refresh-and-rethrow: 87.54/77.77/85.69/88.93 → floor 87/77/85/88
       //   2026-05-08 post-home-rename-form-guard: 87.51/77.75/85.63/88.90 → floor 87/77/85/88
@@ -251,7 +253,7 @@ export default defineConfig({
       //   2026-05-05 post-#30: 27.71/22.42/22.28/27.71 → floor 26/21/21/26
       thresholds: {
         statements: 87,
-        branches: 77,
+        branches: 78,
         functions: 85,
         lines: 88,
       },
