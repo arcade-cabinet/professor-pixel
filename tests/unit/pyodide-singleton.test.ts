@@ -229,4 +229,34 @@ describe('pyodide-singleton', () => {
     // The dead tag was replaced — there is now a fresh tag in the DOM.
     expect(document.head.contains(deadTag)).toBe(false);
   });
+
+  it('skips relative-URL resolution when indexURL is absolute (line 142 falsy arm)', async () => {
+    // The default indexURL is `/pyodide/` (relative) — bootstrap then
+    // resolves it against window.location.href before passing to
+    // window.loadPyodide as packageBaseUrl. When the caller supplies an
+    // absolute URL (https://...), bootstrap must NOT touch it: the
+    // `if (!startsWith http(s))` guard's falsy arm short-circuits and
+    // packageBaseUrl is forwarded as-is. Pin that contract — a
+    // regression that always re-resolves against window.location.href
+    // would corrupt CDN-style absolute index URLs.
+    const absoluteURL = 'https://cdn.example.com/pyodide/';
+    const loadPyodideMock = vi.fn().mockResolvedValue(fakePyodide);
+    appendChildSpy.mockRestore();
+    appendChildSpy = spyAppendChild().mockImplementation(<T extends Node>(node: T): T => {
+      queueMicrotask(() => {
+        const script = node as unknown as HTMLScriptElement;
+        (window as unknown as TestWindow).loadPyodide = loadPyodideMock;
+        script.onload?.(new Event('load'));
+      });
+      return node;
+    });
+
+    await getPyodide({ indexURL: absoluteURL });
+    expect(loadPyodideMock).toHaveBeenCalledTimes(1);
+    const args = loadPyodideMock.mock.calls[0]![0] as { indexURL: string; packageBaseUrl: string };
+    expect(args.indexURL).toBe(absoluteURL);
+    // Critical: packageBaseUrl is the same absolute URL, NOT re-resolved
+    // against window.location.href.
+    expect(args.packageBaseUrl).toBe(absoluteURL);
+  });
 });

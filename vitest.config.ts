@@ -106,8 +106,8 @@ export default defineConfig({
       // Vitest projects — unit + integration + component (browser). The
       // numbers below are the aggregate across all three.
       //
-      // Today's snapshot (2026-05-08, post-use-viewport-matchmedia-edges):
-      // statements 88.14%, branches 79.90%, functions 85.81%, lines 89.38%.
+      // Today's snapshot (2026-05-08, post-pyodide-absolute-indexurl):
+      // statements 88.14%, branches 79.92%, functions 85.81%, lines 89.38%.
       // Branches floor 78 (ratcheted in post-persistence-cookie-and-migrate-null).
       // Branches floor stays at 77 (established flap envelope dips below
       // 78.00, and 78 was reverted in post-use-debug-flag-catch-spy).
@@ -120,6 +120,7 @@ export default defineConfig({
       // these numbers UP raises the matching threshold in the same PR.
       //
       // Earlier snapshots:
+      //   2026-05-08 post-use-viewport-matchmedia-edges: 88.14/79.90/85.81/89.38 → floor 87/78/85/88
       //   2026-05-08 post-tts-speak-pickvoice-paths: 88.10/79.78/85.75/89.38 → floor 87/78/85/88
       //   2026-05-08 post-ui-component-falsy-ternaries: 87.99/79.67/85.69/89.27 → floor 87/78/85/88
       //   2026-05-08 post-session-history-jump-then-add-truncates: 88.09/79.55/85.75/89.38 → floor 87/78/85/88
