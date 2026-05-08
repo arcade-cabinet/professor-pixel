@@ -107,6 +107,16 @@ describe('useDeviceType — desktop classification', () => {
     expect(result.current.deviceType).toBe('desktop');
     expect(result.current.isTablet).toBe(false);
   });
+
+  it('falls back to pixelRatio=1 when window.devicePixelRatio is 0 (line 42 falsy arm)', () => {
+    // The `window.devicePixelRatio || 1` chain returns 1 when DPR is
+    // falsy (0 / undefined). Existing tests always pass a truthy DPR
+    // (default 1, or 3 for retina). Setting it to 0 forces the
+    // right side of the OR to fire.
+    stubViewport({ width: 1280, height: 720, pixelRatio: 0 });
+    const { result } = renderHook(() => useDeviceType());
+    expect(result.current.pixelRatio).toBe(1);
+  });
 });
 
 describe('useDeviceType — mobile classification', () => {
