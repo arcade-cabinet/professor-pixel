@@ -52,4 +52,48 @@ describe('PygameComponentSelector variant cards (P4.23)', () => {
     fireEvent.click(b);
     expect(onSelect).toHaveBeenCalledWith(expect.any(String), 'B');
   });
+
+  it('looks up the component by id when componentId is supplied (line 28 truthy arm)', () => {
+    // The default tests pass `category` so the falsy arm of the
+    // `componentId ? findById : findByCategory` ternary fires. Pin
+    // the truthy arm by passing a real id from the systems registry —
+    // the selector should render that specific component's variants.
+    render(<PygameComponentSelector componentId="jump" onSelect={vi.fn()} onClose={vi.fn()} />);
+    // The `jump` system spec is in the registry; the heading reflects
+    // its name. Just verify the not-found path didn't fire.
+    expect(screen.queryByText(/Component not found/i)).not.toBeInTheDocument();
+    expect(findVariantA()).toBeInTheDocument();
+  });
+
+  it('renders the not-found fallback when componentId is unknown (lines 32-33 truthy arm)', () => {
+    // `if (!component)` guard returns the placeholder. Without this
+    // pin a typo'd id silently rendered a half-built selector.
+    render(
+      <PygameComponentSelector componentId="totally-fake-id" onSelect={vi.fn()} onClose={vi.fn()} />
+    );
+    expect(screen.getByText(/Component not found/i)).toBeInTheDocument();
+    // No variant buttons in the fallback UI.
+    expect(screen.queryByRole('button', { name: /Option A:/i })).not.toBeInTheDocument();
+  });
+
+  it('Confirm Selection is disabled until a variant is chosen and fires onSelect on click (line 154)', () => {
+    // The Confirm button's `selectedVariant && onSelect(...)` short-circuits
+    // both arms: with no selection it's disabled (the && short-circuits to
+    // false and onSelect isn't called); after selecting A, clicking Confirm
+    // fires the truthy arm and re-emits the (id, variant) tuple.
+    const onSelect = vi.fn();
+    render(<PygameComponentSelector category="movement" onSelect={onSelect} onClose={vi.fn()} />);
+    const confirm = screen.getByRole('button', { name: /Confirm Selection/i });
+    expect(confirm).toBeDisabled();
+
+    // Selecting A first re-emits (id, 'A') via handleVariantSelect — clear it
+    // so we can isolate the Confirm-button emit on its own.
+    fireEvent.click(findVariantA());
+    onSelect.mockClear();
+
+    expect(confirm).not.toBeDisabled();
+    fireEvent.click(confirm);
+    expect(onSelect).toHaveBeenCalledTimes(1);
+    expect(onSelect).toHaveBeenCalledWith(expect.any(String), 'A');
+  });
 });
