@@ -28,16 +28,7 @@ import { PythonRunner } from '@lib/python/runner';
 import { generatePygameCode } from '@lib/wizard/code-generator';
 import { strings } from '@lib/i18n';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-
-export interface GameChoice {
-  type: 'character' | 'enemy' | 'collectible' | 'background' | 'rule' | 'mechanic';
-  id: string;
-  name: string;
-  properties?: Record<string, unknown>;
-  sprite?: string;
-  behavior?: string;
-  code?: string;
-}
+import type { GameChoice } from '@lib/wizard/types';
 
 interface PygameLivePreviewProps {
   choices: GameChoice[];

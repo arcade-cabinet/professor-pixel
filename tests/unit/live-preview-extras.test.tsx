@@ -10,7 +10,8 @@ import type React from 'react';
 import { describe, expect, it, vi, beforeAll, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom/vitest';
-import PygameLivePreview, { type GameChoice } from '@/components/pygame/live-preview';
+import PygameLivePreview from '@/components/pygame/live-preview';
+import type { GameChoice } from '@lib/wizard/types';
 import { TooltipProvider } from '@/components/ui/tooltip';
 
 // The Compare button uses a Radix Tooltip; the rest of the live-preview

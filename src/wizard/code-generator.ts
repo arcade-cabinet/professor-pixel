@@ -1,4 +1,4 @@
-import { GameChoice } from '@/components/pygame/live-preview';
+import type { GameChoice } from './types';
 
 interface CodeTemplate {
   imports: string[];

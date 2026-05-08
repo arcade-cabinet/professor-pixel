@@ -29,7 +29,7 @@ vi.mock('@lib/pygame/runtime/simulator', async () => {
 });
 
 import PygameEditorCanvas from '@/components/editor/canvas';
-import type { PlacedComponent } from '@/components/editor/wysiwyg';
+import type { PlacedComponent } from '@lib/pygame/components/types';
 
 // Build a fake 2D context whose every drawing method is a vi.fn so we can
 // assert the exact call shape.

@@ -7,7 +7,8 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@lib/utils/cn';
 import { useToast } from '@lib/hooks/use-toast';
 import { useWizardDialogue, DialogueText, getDialogueHelpers } from './dialogue-engine';
-import PygameLivePreview, { GameChoice } from '@/components/pygame/live-preview';
+import PygameLivePreview from '@/components/pygame/live-preview';
+import type { GameChoice } from '@lib/wizard/types';
 import type { WizardOption, GameChoice as GameChoiceType } from '@lib/wizard/types';
 
 interface WizardWithPreviewProps {

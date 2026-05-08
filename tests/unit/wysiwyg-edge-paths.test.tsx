@@ -46,7 +46,8 @@ vi.mock('@lib/hooks/use-edge-swipe', () => ({
   },
 }));
 
-import PygameWysiwygEditor, { type PlacedComponent } from '@/components/editor/wysiwyg';
+import PygameWysiwygEditor from '@/components/editor/wysiwyg';
+import type { PlacedComponent } from '@lib/pygame/components/types';
 
 beforeEach(() => {
   viewportFlags = { isCompact: false, isTouchPrimary: false };

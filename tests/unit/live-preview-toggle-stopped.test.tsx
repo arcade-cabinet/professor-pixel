@@ -9,7 +9,8 @@
 import { describe, expect, it, vi, beforeAll, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom/vitest';
-import PygameLivePreview, { type GameChoice } from '@/components/pygame/live-preview';
+import PygameLivePreview from '@/components/pygame/live-preview';
+import type { GameChoice } from '@lib/wizard/types';
 
 vi.mock('@lib/pygame/runtime/simulator', () => ({
   setCanvasContext: vi.fn(),

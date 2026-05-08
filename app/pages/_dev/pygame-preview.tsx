@@ -14,7 +14,8 @@ import {
   Sparkles,
 } from 'lucide-react';
 import WizardWithPreview from '@/components/wizard/with-preview';
-import PygameLivePreview, { GameChoice } from '@/components/pygame/live-preview';
+import PygameLivePreview from '@/components/pygame/live-preview';
+import type { GameChoice } from '@lib/wizard/types';
 import { generateTestCode } from '@lib/wizard/code-generator';
 import { getPyodide } from '@lib/python/pyodide-singleton';
 

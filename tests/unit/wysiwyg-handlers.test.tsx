@@ -72,9 +72,8 @@ vi.mock('@/components/editor/properties', () => ({
   default: () => <div data-testid="properties-stub">properties</div>,
 }));
 
-import PygameWysiwygEditor, {
-  type PlacedComponent,
-} from '@/components/editor/wysiwyg';
+import PygameWysiwygEditor from '@/components/editor/wysiwyg';
+import type { PlacedComponent } from '@lib/pygame/components/types';
 
 beforeEach(() => {
   viewportFlags = { isCompact: false, isTouchPrimary: false };
