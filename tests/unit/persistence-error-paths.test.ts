@@ -18,6 +18,7 @@ import {
   deleteCookie,
   saveUserPreferences,
   loadUserPreferences,
+  clearAllData,
 } from '@lib/storage/persistence';
 
 beforeEach(() => {
@@ -44,6 +45,50 @@ function makeQuotaError() {
   err.name = 'QuotaExceededError';
   return err;
 }
+
+describe('persistence — clearAllData skips cookies with no `=` (line 376 path 1 falsy)', () => {
+  it('iterates a malformed cookie line without throwing or matching the prefix', () => {
+    // The clearAllData cookie loop guards `if (eqIndex > -1)` to skip
+    // cookie entries that have no `=`. Real document.cookie never emits
+    // such a line, so the falsy arm sat cold. Stub document.cookie's
+    // getter to return one malformed entry alongside a normal one.
+    const cookieGetter = vi.spyOn(document, 'cookie', 'get');
+    cookieGetter.mockReturnValue('malformed-no-equals; foo=bar');
+    try {
+      // No throw, no assertion failure — branch coverage of the falsy arm
+      // is the contract.
+      expect(() => clearAllData()).not.toThrow();
+    } finally {
+      cookieGetter.mockRestore();
+    }
+  });
+});
+
+describe('persistence — handleStorageError SSR no-window early-return (line 102 path 0 truthy)', () => {
+  it('returns early without touching window when typeof window === "undefined"', async () => {
+    // The handleStorageError function gates ALL window access behind a
+    // single typeof check. Existing tests run with jsdom (window present)
+    // → falsy arm (skip) is hot but truthy arm (SSR/Node early-return) is
+    // cold. Stub window=undefined, re-import the module so its closure
+    // sees the SSR shape, then trigger the catch path.
+    vi.resetModules();
+    vi.stubGlobal('window', undefined);
+    try {
+      const mod = await import('@lib/storage/persistence');
+      // Make localStorage.removeItem throw → clearWizardState's catch
+      // calls handleStorageError. With window undefined, the early-return
+      // at line 102 fires — no toast/trackError lookup, no throw.
+      vi.spyOn(Storage.prototype, 'removeItem').mockImplementation(() => {
+        throw new Error('storage offline');
+      });
+      // The function MUST NOT throw despite the inner storage failure.
+      expect(() => mod.clearWizardState()).not.toThrow();
+    } finally {
+      vi.unstubAllGlobals();
+      vi.resetModules();
+    }
+  });
+});
 
 describe('persistence — handleStorageError window.toast branch (line 107)', () => {
   it('quota-exceeded error fires window.toast when set', () => {
