@@ -41,6 +41,31 @@ describe('ClientStorage constructor — safeInit setItem throw (line 37)', () =>
   });
 });
 
+describe('ClientStorage handleStorageError — non-quota error skips toast (line 50 falsy arm)', () => {
+  it('non-quota error logs but does NOT invoke window.toast', async () => {
+    // The existing init-error test throws an Error with message
+    // "quota / corrupt write" which `isQuotaExceeded` matches via the
+    // /quota/i message regex → toast fires. To exercise line 50's
+    // falsy arm we need an error whose name AND code AND message
+    // contain no quota indication.
+    localStorage.clear();
+    const toastMock = vi.fn();
+    (window as Window & { toast?: (msg: unknown) => void }).toast = toastMock;
+    const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      // Plain Error — no QuotaExceededError name, no code, no 'quota' in msg.
+      throw new Error('storage tampered with');
+    });
+    const { ClientStorage } = await import('@lib/storage/client');
+    new ClientStorage();
+    // The catch fired but isQuotaExceeded returned false → toast skipped.
+    expect(toastMock).not.toHaveBeenCalled();
+    // The console.error path still ran.
+    expect(errSpy).toHaveBeenCalled();
+    errSpy.mockRestore();
+  });
+});
+
 describe('ClientStorage handleStorageError — window.toast branch (line 53)', () => {
   it('quota-exceeded constructor write surfaces a toast when window.toast is installed', async () => {
     localStorage.clear();
