@@ -235,6 +235,83 @@ describe('createEnhancedErrorCaptureWithPyodide — executeWithErrorCapture bran
     expect(result.error).not.toBeNull();
   });
 
+  it('falls back to JS-level executionError String() arm when exec throws a non-Error (line 936 path 1 falsy)', async () => {
+    // The WithPyodide variant's executionError branch uses
+    // `executionError instanceof Error ? .message : String(.)` at line 936.
+    // The existing executionError test throws an Error → only the truthy
+    // arm fires. Throw a plain string → falsy arm uses String().
+    const STRING_THROW = Symbol('string-throw');
+    let i = 0;
+    const responses: Array<RunPythonResponse | typeof STRING_THROW> = [
+      undefined as unknown as string, // clear
+      undefined as unknown as string, // io
+      STRING_THROW, // exec throws a plain string
+      '', // stdout
+      '', // stderr
+      { toJs: () => ({ traceback: '', type: '', message: '' }) },
+    ];
+    const pyodide = {
+      runPython: () => {
+        const next = responses[i++];
+        if (next === STRING_THROW) {
+          // eslint-disable-next-line no-throw-literal
+          throw 'plain-string-rejection';
+        }
+        return next ?? null;
+      },
+      runPythonAsync: () => {},
+    } as unknown as PyodideInstance;
+    const cap = createEnhancedErrorCaptureWithPyodide(pyodide);
+    const result = await cap.executeWithErrorCapture('whatever');
+    expect(result.hasError).toBe(true);
+    expect(result.error).not.toBeNull();
+  });
+
+  it('returns the success-literal output when stdout is empty (line 963 path 1 falsy)', async () => {
+    // The WithPyodide variant emits `stdout || 'Code executed successfully!'`
+    // on the no-error path. Existing test returns 'hello world\n' for stdout
+    // — non-empty truthy. Resolve stdout='' so the literal arm fires.
+    const { pyodide } = fakePyodide([
+      undefined as unknown as string,
+      undefined as unknown as string,
+      undefined as unknown as string,
+      '', // stdout (empty → falsy)
+      '',
+      { toJs: () => ({ traceback: '', type: '', message: '' }) },
+    ]);
+    const cap = createEnhancedErrorCaptureWithPyodide(pyodide);
+    const result = await cap.executeWithErrorCapture('pass');
+    expect(result.hasError).toBe(false);
+    expect(result.output).toBe('Code executed successfully!');
+  });
+
+  it('outer-catch String() fallback fires for non-Error throw (line 970 path 1 falsy)', async () => {
+    // The outer catch's `jsError instanceof Error ? .message : String(.)`
+    // pairs with the corresponding WithPyodide branch. Existing critical-
+    // error test throws Error → truthy arm. Throw a plain string for the
+    // falsy arm.
+    const STRING_THROW = Symbol('string-throw');
+    let i = 0;
+    const responses: Array<RunPythonResponse | typeof STRING_THROW> = [
+      STRING_THROW, // clear_enhanced_error throws a plain string
+    ];
+    const pyodide = {
+      runPython: () => {
+        const next = responses[i++];
+        if (next === STRING_THROW) {
+          // eslint-disable-next-line no-throw-literal
+          throw 'outer-catch-non-error';
+        }
+        return next ?? null;
+      },
+      runPythonAsync: () => {},
+    } as unknown as PyodideInstance;
+    const cap = createEnhancedErrorCaptureWithPyodide(pyodide);
+    const result = await cap.executeWithErrorCapture('whatever');
+    expect(result.hasError).toBe(true);
+    expect(result.error?.message).toMatch(/enhanced error handling/);
+  });
+
   it('catches a critical error in the error-handling pipeline itself', async () => {
     // Make clear_enhanced_error() throw — that fires before any try/catch
     // around exec, so the outer catch wraps it as a CriticalError.
