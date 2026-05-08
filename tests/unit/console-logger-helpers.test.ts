@@ -73,7 +73,7 @@ describe('logger.python / pygame / user / network / performance / ui surfaces', 
       key as string
     ];
     surface.info(`${key}-msg`);
-    const formatted = logSpy.mock.calls.map((c) => String(c[0])).join('\n');
+    const formatted = logSpy.mock.calls.map((c: unknown[]) => String(c[0])).join('\n');
     expect(formatted).toContain(icon);
     expect(formatted).toContain(`${key}-msg`);
     // Sanity: each surface exposes all five level methods.
@@ -96,7 +96,7 @@ describe('educationalLogger helpers', () => {
 
   it('codeExecution success path mentions the execution time when supplied', () => {
     educationalLogger.codeExecution(true, 42);
-    const allLog = logSpy.mock.calls.map((c) => String(c[0])).join('\n');
+    const allLog = logSpy.mock.calls.map((c: unknown[]) => String(c[0])).join('\n');
     expect(allLog).toMatch(/42ms/);
   });
 
@@ -105,7 +105,7 @@ describe('educationalLogger helpers', () => {
     // Without an execution time, the conditional's falsy arm fires —
     // the message has no "ms" suffix. Existing test always passes 42.
     educationalLogger.codeExecution(true);
-    const allLog = logSpy.mock.calls.map((c) => String(c[0])).join('\n');
+    const allLog = logSpy.mock.calls.map((c: unknown[]) => String(c[0])).join('\n');
     expect(allLog).toMatch(/Code executed successfully/);
     expect(allLog).not.toMatch(/ms/);
   });
@@ -117,14 +117,14 @@ describe('educationalLogger helpers', () => {
 
   it('gameInteraction logs to pygame info', () => {
     educationalLogger.gameInteraction('jump', { y: 100 });
-    const allLog = logSpy.mock.calls.map((c) => String(c[0])).join('\n');
+    const allLog = logSpy.mock.calls.map((c: unknown[]) => String(c[0])).join('\n');
     expect(allLog).toMatch(/jump/);
     expect(allLog).toContain('🎮');
   });
 
   it('learningMilestone logs success on user category', () => {
     educationalLogger.learningMilestone('finished-lesson-1');
-    const allLog = logSpy.mock.calls.map((c) => String(c[0])).join('\n');
+    const allLog = logSpy.mock.calls.map((c: unknown[]) => String(c[0])).join('\n');
     expect(allLog).toMatch(/finished-lesson-1/);
     expect(allLog).toContain('👤');
   });

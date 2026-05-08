@@ -21,7 +21,7 @@ describe('broadcast subscribeStorageEvents — self senderId skip (line 98)', ()
 
   beforeEach(() => {
     handler = vi.fn();
-    unsubscribe = subscribeStorageEvents(handler);
+    unsubscribe = subscribeStorageEvents(handler as unknown as Parameters<typeof subscribeStorageEvents>[0]);
     otherTab = new BroadcastChannel('pp.storage.v1');
   });
 

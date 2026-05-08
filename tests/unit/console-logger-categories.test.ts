@@ -162,7 +162,7 @@ describe('ConsoleLogger constructor — saved prefs hydration (lines 64-73)', ()
     logger.system.error('should-pass');
     expect(errorSpy).toHaveBeenCalled();
     // info doesn't reach console.log because the level is disabled.
-    const infoCall = logSpy.mock.calls.find((c) =>
+    const infoCall = logSpy.mock.calls.find((c: unknown[]) =>
       typeof c[0] === 'string' && c[0].includes('should-be-filtered')
     );
     expect(infoCall).toBeUndefined();
@@ -176,10 +176,10 @@ describe('ConsoleLogger constructor — saved prefs hydration (lines 64-73)', ()
     logger.system.info('system-should-be-filtered');
     logger.pygame.info('pygame-should-pass');
     // Only the pygame line reached console.log.
-    const systemCall = logSpy.mock.calls.find((c) =>
+    const systemCall = logSpy.mock.calls.find((c: unknown[]) =>
       typeof c[0] === 'string' && c[0].includes('system-should-be-filtered')
     );
-    const pygameCall = logSpy.mock.calls.find((c) =>
+    const pygameCall = logSpy.mock.calls.find((c: unknown[]) =>
       typeof c[0] === 'string' && c[0].includes('pygame-should-pass')
     );
     expect(systemCall).toBeUndefined();

@@ -124,12 +124,12 @@ vi.mock('@/components/ui/offline-pill', () => ({ default: () => null }));
 
 vi.mock('framer-motion', () => {
   const passthrough =
-    (Tag: keyof JSX.IntrinsicElements) =>
+    (Tag: keyof React.JSX.IntrinsicElements) =>
     (props: Record<string, unknown>) => <Tag {...(props as object)} />;
   return {
     motion: new Proxy(
       {},
-      { get: (_t, key: string) => passthrough(key as keyof JSX.IntrinsicElements) }
+      { get: (_t, key: string) => passthrough(key as keyof React.JSX.IntrinsicElements) }
     ) as unknown as Record<string, React.FC<Record<string, unknown>>>,
     AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,
   };

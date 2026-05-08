@@ -12,6 +12,7 @@
 // Same heavyweight mocks as lesson-page-smoke.test.tsx — the page itself
 // is the unit under test; downstream UI + storage are stubs.
 
+import type React from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom/vitest';
@@ -92,12 +93,12 @@ vi.mock('@/components/ui/offline-pill', () => ({
 }));
 vi.mock('framer-motion', () => {
   const passthrough =
-    (Tag: keyof JSX.IntrinsicElements) =>
+    (Tag: keyof React.JSX.IntrinsicElements) =>
     (props: Record<string, unknown>) => <Tag {...(props as object)} />;
   return {
     motion: new Proxy(
       {},
-      { get: (_t, key: string) => passthrough(key as keyof JSX.IntrinsicElements) }
+      { get: (_t, key: string) => passthrough(key as keyof React.JSX.IntrinsicElements) }
     ) as unknown as Record<string, React.FC<Record<string, unknown>>>,
     AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,
   };
