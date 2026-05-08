@@ -190,3 +190,63 @@ describe('AssetBrowserWizard — clear selection (line 488)', () => {
     expect(screen.queryByTestId('button-clear-selection')).not.toBeInTheDocument();
   });
 });
+
+describe('AssetBrowserWizard — non-image asset rendering (line 204 falsy + lines 212/220 fallback)', () => {
+  it('sound + music assets render the emoji fallback (no <img>) for type-vs-thumbnail gate', () => {
+    // The grid-view branch is `(type==='sprite' || type==='background') && asset.thumbnail`.
+    // A sound/music asset takes the falsy arm and renders 🔊 / 🎵 instead
+    // of <img>. The 25-asset fixture above only had sprites — pin the
+    // non-image arm with sound + music in the same render.
+    const mixedAssets = [
+      {
+        id: 'sound-blip',
+        name: 'Blip',
+        type: 'sound' as const,
+        description: 'pew',
+        // No thumbnail; the grid branch's && short-circuits regardless.
+        tags: [],
+        license: 'CC0',
+        category: 'effects',
+      },
+      {
+        id: 'music-loop',
+        name: 'Loop',
+        type: 'music' as const,
+        description: 'bgm',
+        tags: [],
+        license: 'CC0',
+        category: 'background',
+      },
+    ];
+    filterAssetsMock.mockReset().mockReturnValue(mixedAssets);
+    render(<AssetBrowserWizard onSelect={vi.fn()} embedded />);
+    // The grid card emits the type emoji in a div; sound = 🔊, music = 🎵.
+    const cards = screen.getAllByTestId(/^asset-card-/);
+    expect(cards.length).toBe(2);
+    expect(screen.getByText('🔊')).toBeInTheDocument();
+    expect(screen.getByText('🎵')).toBeInTheDocument();
+    // No <img> rendered for either — confirms the truthy arm of line
+    // 204 didn't fire.
+    expect(screen.queryByRole('img')).not.toBeInTheDocument();
+  });
+});
+
+describe('AssetBrowserWizard — Pixel-suggested player asset (line 152-156 isSuggested truthy)', () => {
+  it('renders the Sparkles indicator for a suggested player asset', () => {
+    // getSuggestedAssets returns { player: <asset> } and the renderer
+    // checks `suggestedAssets.player?.id === asset.id` — pin both the
+    // ring-yellow path (line 176 truthy) and the corner Sparkles
+    // (line 194 truthy) by making the FIRST asset the suggested player.
+    getSuggestedAssetsMock
+      .mockReset()
+      .mockReturnValue({ player: fakeAssets[0], enemy: null, item: null });
+    const { container } = render(
+      <AssetBrowserWizard onSelect={vi.fn()} embedded gameType="platformer" />
+    );
+    // The Sparkles glyph is a lucide icon — react renders it with
+    // class="lucide lucide-sparkles" (or just "lucide-sparkles" depending
+    // on lucide version). Find ANY element with that class to pin the
+    // suggested-indicator branch fired.
+    expect(container.querySelector('svg.lucide-sparkles')).toBeInTheDocument();
+  });
+});
