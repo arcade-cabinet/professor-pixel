@@ -284,6 +284,41 @@ describe('AssetManager — selection APIs', () => {
     expect(m.getSelection().music?.id).toBe('mus-1');
   });
 
+  // Cover the wrong-type guard arms in selection setters (manager.ts
+  // 240, 248, 256, 263, 270): `if (asset && asset.type === 'X')`. Each
+  // method is a no-op when an id resolves but the type doesn't match.
+  // selectPlayerSprite already has its symmetric test above; the rest
+  // were missing.
+  it('addEnemySprite is a no-op for non-sprite ids (wrong-type guard)', async () => {
+    const m = await makeManagerWithMix();
+    m.addEnemySprite('bg-1'); // background, not sprite
+    expect(m.getSelection().enemies).toEqual([]);
+  });
+
+  it('addItemSprite is a no-op for non-sprite ids (wrong-type guard)', async () => {
+    const m = await makeManagerWithMix();
+    m.addItemSprite('sfx-1'); // sound, not sprite
+    expect(m.getSelection().items).toEqual([]);
+  });
+
+  it('selectBackground is a no-op for non-background ids (wrong-type guard)', async () => {
+    const m = await makeManagerWithMix();
+    m.selectBackground('player-1'); // sprite, not background
+    expect(m.getSelection().background).toBeUndefined();
+  });
+
+  it('selectMusic is a no-op for non-sound/non-music ids (wrong-type guard)', async () => {
+    const m = await makeManagerWithMix();
+    m.selectMusic('bg-1'); // background, not sound/music
+    expect(m.getSelection().music).toBeUndefined();
+  });
+
+  it('addSound is a no-op for non-sound/non-music ids (wrong-type guard)', async () => {
+    const m = await makeManagerWithMix();
+    m.addSound('player-1'); // sprite, not sound/music
+    expect(m.getSelection().sounds).toEqual([]);
+  });
+
   it('clearSelection wipes everything', async () => {
     const m = await makeManagerWithMix();
     m.selectPlayerSprite('player-1');
