@@ -106,9 +106,10 @@ export default defineConfig({
       // Vitest projects — unit + integration + component (browser). The
       // numbers below are the aggregate across all three.
       //
-      // Today's snapshot (2026-05-08, post-component-selector-id-and-confirm):
-      // statements 88.17%, branches 79.99%, functions 85.87%, lines 89.43%.
-      // Branches floor 78 (ratcheted in post-persistence-cookie-and-migrate-null).
+      // Today's snapshot (2026-05-08, post-pixel-minimized-hover-tooltip-fires):
+      // statements 88.24%, branches 80.20%, functions 85.99%, lines 89.48%.
+      // Branches floor 79 (ratcheted 78→79; aggregate cleared 80% for the first
+      // time, conservative floor sits 1.20pt under the run).
       // Branches floor stays at 77 (established flap envelope dips below
       // 78.00, and 78 was reverted in post-use-debug-flag-catch-spy).
       // (Aggregate flaps ±0.1% per run due to browser-suite render-effect
@@ -120,6 +121,7 @@ export default defineConfig({
       // these numbers UP raises the matching threshold in the same PR.
       //
       // Earlier snapshots:
+      //   2026-05-08 post-component-selector-id-and-confirm: 88.17/79.99/85.87/89.43 → floor 87/78/85/88
       //   2026-05-08 post-pyodide-absolute-indexurl: 88.14/79.92/85.81/89.38 → floor 87/78/85/88
       //   2026-05-08 post-use-viewport-matchmedia-edges: 88.14/79.90/85.81/89.38 → floor 87/78/85/88
       //   2026-05-08 post-tts-speak-pickvoice-paths: 88.10/79.78/85.75/89.38 → floor 87/78/85/88
@@ -295,7 +297,7 @@ export default defineConfig({
       //   2026-05-05 post-#30: 27.71/22.42/22.28/27.71 → floor 26/21/21/26
       thresholds: {
         statements: 87,
-        branches: 78,
+        branches: 79,
         functions: 85,
         lines: 88,
       },

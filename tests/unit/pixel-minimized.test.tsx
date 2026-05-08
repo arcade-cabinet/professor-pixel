@@ -198,4 +198,48 @@ describe('PixelMinimized — hover tooltip timer', () => {
     // No crash — the cleanup timer cleared the pending setTimeout.
     expect(screen.getByAltText(/Pixel Assistant/i)).toBeInTheDocument();
   });
+
+  it('shows the desktop tooltip after a 500ms hold (line 122 truthy arm)', () => {
+    // The hover effect starts a 500ms timer; if isHovered is still true
+    // when it fires, setShowTooltip(true) renders the tip card. Without
+    // this hold the truthy arm of `if (isHovered) setShowTooltip(true)`
+    // stays cold — the existing leave-immediately test only covers the
+    // cleanup path.
+    const { container } = render(
+      <PixelMinimized
+        onRestore={vi.fn()}
+        sessionActions={baseSessionActions}
+        isMobile={false}
+      />
+    );
+    const wrapper = container.querySelector('.top-4.left-4') as HTMLElement;
+    fireEvent.mouseEnter(wrapper);
+    act(() => {
+      vi.advanceTimersByTime(500);
+    });
+    // Tooltip card is gated by `showTooltip && !isMobile` — once showTooltip
+    // flips, the "Pixel's Tip:" copy lands in the DOM.
+    expect(screen.getByText(/Pixel's Tip:/i)).toBeInTheDocument();
+    // The `Click me to return!` hint at the bottom of the card also pins
+    // that we hit the desktop tooltip render, not some other path.
+    expect(screen.getByText(/Click me to return/i)).toBeInTheDocument();
+  });
+
+  it('mobile hover surfaces the swipe-down chevron (lines 260+ truthy arm)', () => {
+    // `isMobile && isHovered` gates the ChevronDown indicator. Without
+    // this, the truthy arm only fires on a real device. fire mouseEnter
+    // on the mobile wrapper to flip isHovered while isMobile is true.
+    const { container } = render(
+      <PixelMinimized
+        onRestore={vi.fn()}
+        sessionActions={baseSessionActions}
+        isMobile={true}
+      />
+    );
+    const wrapper = container.querySelector('.top-2.right-2') as HTMLElement;
+    fireEvent.mouseEnter(wrapper);
+    // The chevron lives in `.absolute.-bottom-6` — a structural assertion is
+    // brittle, so check the SVG class added by lucide.
+    expect(container.querySelector('svg.lucide-chevron-down')).toBeInTheDocument();
+  });
 });
