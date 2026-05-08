@@ -106,14 +106,15 @@ export default defineConfig({
       // Vitest projects — unit + integration + component (browser). The
       // numbers below are the aggregate across all three.
       //
-      // Today's snapshot (2026-05-08, post-quota-default-estimate):
-      // statements 87.16%, branches 77.24%, functions 85.25%, lines 88.57%.
+      // Today's snapshot (2026-05-08, post-storage-client-init-error):
+      // statements 87.23%, branches 77.33%, functions 85.31%, lines 88.63%.
       // The thresholds below sit a hair below those numbers (rounded down
       // to the nearest integer minus 1 for noise tolerance) so any
       // regression fails CI. Per the ratchet doctrine: any PR that moves
       // these numbers UP raises the matching threshold in the same PR.
       //
       // Earlier snapshots:
+      //   2026-05-08 post-quota-default-estimate: 87.16/77.24/85.25/88.57 → floor 87/77/85/88
       //   2026-05-08 post-audio-sfx-ctx-throw: 87.14/77.24/85.25/88.55 → floor 87/77/85/88
       //   2026-05-08 post-dialogue-transition-no-next: 87.13/77.19/85.25/88.53 → floor 87/77/85/88
       //   2026-05-08 post-palette-collect-callback: 87.10/77.17/85.25/88.50 → floor 87/77/85/88
