@@ -105,6 +105,25 @@ describe('collectible.preview — type branches', () => {
     expect(c.arc).toBeGreaterThan(0);
     expect(c.fillText).toBeGreaterThan(0);
   });
+
+  it("unknown type falls through every branch — no draw calls (line 59 final falsy arm)", () => {
+    // The if/else-if chain ends at \`type === 'health'\`. A type that
+    // matches none (e.g. 'gem' from a future flow) silently emits no
+    // shape. Pin: \`fillStyle\` is still set from the unconditional
+    // assignment, but no draw primitive (arc/fillRect/fillText/fill)
+    // fires. A regression that adds a fall-through default would
+    // surface here as suddenly emitting a primitive.
+    const ctx = makeFakeCtx();
+    collectibleComponent.preview(ctx, {
+      ...collectibleComponent.defaultProperties,
+      type: 'gem' as unknown as 'coin',
+    });
+    const c = (ctx as unknown as { _calls: Record<string, number> })._calls;
+    expect(c.arc ?? 0).toBe(0);
+    expect(c.fillRect ?? 0).toBe(0);
+    expect(c.fillText ?? 0).toBe(0);
+    expect(c.fill ?? 0).toBe(0);
+  });
 });
 
 describe('collectible.generateCode — props propagate', () => {
