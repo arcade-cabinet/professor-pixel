@@ -32,11 +32,17 @@
               "mode": "rules",
               "astRules": {
                 "requiredConstructs": [
-                  { "type": "function_call", "name": "print", "minCount": 1 }
+                  {
+                    "type": "function_call",
+                    "name": "print",
+                    "minCount": 1
+                  }
                 ]
               },
               "runtimeRules": {
-                "outputContains": ["Hello"]
+                "outputContains": [
+                  "Hello"
+                ]
               }
             }
           ]
@@ -58,8 +64,16 @@
               "mode": "rules",
               "astRules": {
                 "requiredConstructs": [
-                  { "type": "variable_assignment", "name": "name", "minCount": 1 },
-                  { "type": "function_call", "name": "print", "minCount": 1 }
+                  {
+                    "type": "variable_assignment",
+                    "name": "name",
+                    "minCount": 1
+                  },
+                  {
+                    "type": "function_call",
+                    "name": "print",
+                    "minCount": 1
+                  }
                 ]
               }
             }
@@ -82,8 +96,15 @@
               "mode": "rules",
               "astRules": {
                 "requiredConstructs": [
-                  { "type": "function_call", "name": "print", "minCount": 1 },
-                  { "type": "string_literal", "minCount": 1 }
+                  {
+                    "type": "function_call",
+                    "name": "print",
+                    "minCount": 1
+                  },
+                  {
+                    "type": "string_literal",
+                    "minCount": 1
+                  }
                 ]
               }
             }
@@ -128,8 +149,15 @@
               "mode": "rules",
               "astRules": {
                 "requiredConstructs": [
-                  { "type": "variable_assignment", "minCount": 2 },
-                  { "type": "function_call", "name": "print", "minCount": 1 }
+                  {
+                    "type": "variable_assignment",
+                    "minCount": 2
+                  },
+                  {
+                    "type": "function_call",
+                    "name": "print",
+                    "minCount": 1
+                  }
                 ]
               }
             }
@@ -152,18 +180,26 @@
               "mode": "rules",
               "astRules": {
                 "requiredConstructs": [
-                  { "type": "function_call", "name": "print", "minCount": 1 }
+                  {
+                    "type": "function_call",
+                    "name": "print",
+                    "minCount": 1
+                  }
                 ]
               },
               "runtimeRules": {
-                "outputContains": ["15"]
+                "outputContains": [
+                  "15"
+                ]
               }
             }
           ]
         }
       ]
     },
-    "prerequisites": ["lesson-1"],
+    "prerequisites": [
+      "lesson-1"
+    ],
     "difficulty": "Beginner",
     "estimatedTime": 10
   },
@@ -200,11 +236,16 @@
               "mode": "rules",
               "astRules": {
                 "requiredConstructs": [
-                  { "type": "if_statement", "minCount": 1 }
+                  {
+                    "type": "if_statement",
+                    "minCount": 1
+                  }
                 ]
               },
               "runtimeRules": {
-                "outputContains": ["12"]
+                "outputContains": [
+                  "12"
+                ]
               }
             }
           ]
@@ -226,21 +267,31 @@
               "mode": "rules",
               "astRules": {
                 "requiredConstructs": [
-                  { "type": "if_statement", "minCount": 1 }
+                  {
+                    "type": "if_statement",
+                    "minCount": 1
+                  }
                 ],
                 "forbiddenConstructs": [
-                  { "type": "function_call", "name": "eval" }
+                  {
+                    "type": "function_call",
+                    "name": "eval"
+                  }
                 ]
               },
               "runtimeRules": {
-                "outputContains": ["even"]
+                "outputContains": [
+                  "even"
+                ]
               }
             }
           ]
         }
       ]
     },
-    "prerequisites": ["lesson-2"],
+    "prerequisites": [
+      "lesson-2"
+    ],
     "difficulty": "Beginner",
     "estimatedTime": 12
   },
@@ -277,12 +328,22 @@
               "mode": "rules",
               "astRules": {
                 "requiredConstructs": [
-                  { "type": "loop", "minCount": 1 },
-                  { "type": "function_call", "name": "range", "minCount": 1 }
+                  {
+                    "type": "loop",
+                    "minCount": 1
+                  },
+                  {
+                    "type": "function_call",
+                    "name": "range",
+                    "minCount": 1
+                  }
                 ]
               },
               "runtimeRules": {
-                "outputContains": ["1", "5"]
+                "outputContains": [
+                  "1",
+                  "5"
+                ]
               },
               "timeoutMs": 3000
             }
@@ -305,12 +366,20 @@
               "mode": "rules",
               "astRules": {
                 "requiredConstructs": [
-                  { "type": "loop", "minCount": 1 },
-                  { "type": "nesting_depth", "max": 3 }
+                  {
+                    "type": "loop",
+                    "minCount": 1
+                  },
+                  {
+                    "type": "nesting_depth",
+                    "max": 3
+                  }
                 ]
               },
               "runtimeRules": {
-                "outputContains": ["55"]
+                "outputContains": [
+                  "55"
+                ]
               },
               "timeoutMs": 3000
             }
@@ -318,7 +387,9 @@
         }
       ]
     },
-    "prerequisites": ["lesson-3"],
+    "prerequisites": [
+      "lesson-3"
+    ],
     "difficulty": "Beginner",
     "estimatedTime": 12
   },
@@ -354,14 +425,28 @@
               "expectedOutput": "Hello, Pixel",
               "mode": "rules",
               "astRules": {
-                "requiredFunctions": ["greet"],
+                "requiredFunctions": [
+                  "greet"
+                ],
                 "requiredConstructs": [
-                  { "type": "parameter_count", "function": "greet", "min": 1, "max": 1 },
-                  { "type": "function_call", "name": "greet", "minCount": 1 }
+                  {
+                    "type": "parameter_count",
+                    "function": "greet",
+                    "min": 1,
+                    "max": 1
+                  },
+                  {
+                    "type": "function_call",
+                    "name": "greet",
+                    "minCount": 1
+                  }
                 ]
               },
               "runtimeRules": {
-                "outputContains": ["Hello", "Pixel"]
+                "outputContains": [
+                  "Hello",
+                  "Pixel"
+                ]
               }
             }
           ]
@@ -382,21 +467,36 @@
               "expectedOutput": "12",
               "mode": "rules",
               "astRules": {
-                "requiredFunctions": ["add"],
+                "requiredFunctions": [
+                  "add"
+                ],
                 "requiredConstructs": [
-                  { "type": "parameter_count", "function": "add", "min": 2, "max": 2 },
-                  { "type": "function_call", "name": "add", "minCount": 1 }
+                  {
+                    "type": "parameter_count",
+                    "function": "add",
+                    "min": 2,
+                    "max": 2
+                  },
+                  {
+                    "type": "function_call",
+                    "name": "add",
+                    "minCount": 1
+                  }
                 ]
               },
               "runtimeRules": {
-                "outputContains": ["12"]
+                "outputContains": [
+                  "12"
+                ]
               }
             }
           ]
         }
       ]
     },
-    "prerequisites": ["lesson-4"],
+    "prerequisites": [
+      "lesson-4"
+    ],
     "difficulty": "Beginner",
     "estimatedTime": 15
   },
@@ -433,9 +533,23 @@
               "mode": "rules",
               "astRules": {
                 "requiredConstructs": [
-                  { "type": "imports_module", "name": "pygame", "minCount": 1 },
-                  { "type": "calls_method", "on": "pygame", "method": "init", "minCount": 1 },
-                  { "type": "calls_method", "on": "pygame.display", "method": "set_mode", "minCount": 1 }
+                  {
+                    "type": "imports_module",
+                    "name": "pygame",
+                    "minCount": 1
+                  },
+                  {
+                    "type": "calls_method",
+                    "on": "pygame",
+                    "method": "init",
+                    "minCount": 1
+                  },
+                  {
+                    "type": "calls_method",
+                    "on": "pygame.display",
+                    "method": "set_mode",
+                    "minCount": 1
+                  }
                 ]
               },
               "timeoutMs": 4000
@@ -459,9 +573,23 @@
               "mode": "rules",
               "astRules": {
                 "requiredConstructs": [
-                  { "type": "imports_module", "name": "pygame", "minCount": 1 },
-                  { "type": "calls_method", "on": "screen", "method": "fill", "minCount": 1 },
-                  { "type": "calls_method", "on": "pygame.draw", "method": "circle", "minCount": 1 }
+                  {
+                    "type": "imports_module",
+                    "name": "pygame",
+                    "minCount": 1
+                  },
+                  {
+                    "type": "calls_method",
+                    "on": "screen",
+                    "method": "fill",
+                    "minCount": 1
+                  },
+                  {
+                    "type": "calls_method",
+                    "on": "pygame.draw",
+                    "method": "circle",
+                    "minCount": 1
+                  }
                 ]
               },
               "timeoutMs": 4000
@@ -470,7 +598,9 @@
         }
       ]
     },
-    "prerequisites": ["lesson-5"],
+    "prerequisites": [
+      "lesson-5"
+    ],
     "difficulty": "Beginner",
     "estimatedTime": 18
   },
@@ -507,11 +637,19 @@
               "mode": "rules",
               "astRules": {
                 "requiredConstructs": [
-                  { "type": "variable_assignment", "name": "colors", "minCount": 1 }
+                  {
+                    "type": "variable_assignment",
+                    "name": "colors",
+                    "minCount": 1
+                  }
                 ]
               },
               "runtimeRules": {
-                "outputContains": ["red", "green", "blue"]
+                "outputContains": [
+                  "red",
+                  "green",
+                  "blue"
+                ]
               },
               "timeoutMs": 3000
             }
@@ -534,12 +672,23 @@
               "mode": "rules",
               "astRules": {
                 "requiredConstructs": [
-                  { "type": "loop", "minCount": 1 },
-                  { "type": "function_call", "name": "print", "minCount": 1 }
+                  {
+                    "type": "loop",
+                    "minCount": 1
+                  },
+                  {
+                    "type": "function_call",
+                    "name": "print",
+                    "minCount": 1
+                  }
                 ]
               },
               "runtimeRules": {
-                "outputContains": ["red", "green", "blue"]
+                "outputContains": [
+                  "red",
+                  "green",
+                  "blue"
+                ]
               },
               "timeoutMs": 3000
             }
@@ -562,12 +711,21 @@
               "mode": "rules",
               "astRules": {
                 "requiredConstructs": [
-                  { "type": "loop", "minCount": 1 },
-                  { "type": "function_call", "name": "len", "minCount": 1 }
+                  {
+                    "type": "loop",
+                    "minCount": 1
+                  },
+                  {
+                    "type": "function_call",
+                    "name": "len",
+                    "minCount": 1
+                  }
                 ]
               },
               "runtimeRules": {
-                "outputContains": ["3"]
+                "outputContains": [
+                  "3"
+                ]
               },
               "timeoutMs": 3000
             }
@@ -575,7 +733,9 @@
         }
       ]
     },
-    "prerequisites": ["lesson-5"],
+    "prerequisites": [
+      "lesson-5"
+    ],
     "difficulty": "Beginner",
     "estimatedTime": 15
   },
@@ -612,8 +772,17 @@
               "mode": "rules",
               "astRules": {
                 "requiredConstructs": [
-                  { "type": "function_call", "name": "open", "minCount": 1 },
-                  { "type": "calls_method", "on": "f", "method": "write", "minCount": 1 }
+                  {
+                    "type": "function_call",
+                    "name": "open",
+                    "minCount": 1
+                  },
+                  {
+                    "type": "calls_method",
+                    "on": "f",
+                    "method": "write",
+                    "minCount": 1
+                  }
                 ]
               },
               "timeoutMs": 3000
@@ -637,12 +806,23 @@
               "mode": "rules",
               "astRules": {
                 "requiredConstructs": [
-                  { "type": "function_call", "name": "open", "minCount": 2 },
-                  { "type": "calls_method", "on": "f", "method": "read", "minCount": 1 }
+                  {
+                    "type": "function_call",
+                    "name": "open",
+                    "minCount": 2
+                  },
+                  {
+                    "type": "calls_method",
+                    "on": "f",
+                    "method": "read",
+                    "minCount": 1
+                  }
                 ]
               },
               "runtimeRules": {
-                "outputContains": ["hello, file"]
+                "outputContains": [
+                  "hello, file"
+                ]
               },
               "timeoutMs": 3000
             }
@@ -650,7 +830,9 @@
         }
       ]
     },
-    "prerequisites": ["lesson-5"],
+    "prerequisites": [
+      "lesson-5"
+    ],
     "difficulty": "Beginner",
     "estimatedTime": 15
   },
@@ -687,7 +869,11 @@
               "mode": "rules",
               "astRules": {
                 "requiredConstructs": [
-                  { "type": "defines_class", "name": "Player", "minMethods": 1 }
+                  {
+                    "type": "defines_class",
+                    "name": "Player",
+                    "minMethods": 1
+                  }
                 ]
               },
               "timeoutMs": 3000
@@ -711,7 +897,11 @@
               "mode": "rules",
               "astRules": {
                 "requiredConstructs": [
-                  { "type": "defines_class", "name": "Player", "minMethods": 2 }
+                  {
+                    "type": "defines_class",
+                    "name": "Player",
+                    "minMethods": 2
+                  }
                 ]
               },
               "timeoutMs": 3000
@@ -735,12 +925,23 @@
               "mode": "rules",
               "astRules": {
                 "requiredConstructs": [
-                  { "type": "defines_class", "name": "Player", "minMethods": 2 },
-                  { "type": "calls_method", "on": "p", "method": "greet", "minCount": 1 }
+                  {
+                    "type": "defines_class",
+                    "name": "Player",
+                    "minMethods": 2
+                  },
+                  {
+                    "type": "calls_method",
+                    "on": "p",
+                    "method": "greet",
+                    "minCount": 1
+                  }
                 ]
               },
               "runtimeRules": {
-                "outputContains": ["Hi, I am Pixel"]
+                "outputContains": [
+                  "Hi, I am Pixel"
+                ]
               },
               "timeoutMs": 3000
             }
@@ -748,8 +949,152 @@
         }
       ]
     },
-    "prerequisites": ["lesson-5"],
+    "prerequisites": [
+      "lesson-5"
+    ],
     "difficulty": "Beginner",
     "estimatedTime": 20
+  },
+  {
+    "id": "lesson-10",
+    "title": "Dictionaries map keys to values",
+    "description": "Store and look up values by name using Python dictionaries",
+    "order": 10,
+    "intro": "Dictionaries pair a key with a value — like a tiny phone book. We'll build one, look up a value, and walk through all the entries.",
+    "learningObjectives": [
+      "Create a dictionary with {}",
+      "Look up a value by its key",
+      "Loop through .items() with a for loop"
+    ],
+    "goalDescription": "Build a player profile as a dict, read a value, then print every key/value pair.",
+    "previewCode": "player = {'name': 'Pixel', 'level': 5}\nprint(player['name'])\nfor key, value in player.items():\n    print(key, value)",
+    "content": {
+      "introduction": "Dictionaries are written with curly braces. Each entry is a key followed by a colon and a value. You read a value with player[key], and you can walk every entry with for key, value in player.items().",
+      "steps": [
+        {
+          "id": "lesson-10-step-1",
+          "title": "Make a dictionary",
+          "description": "Create a dictionary called `player` with two entries: 'name' set to 'Pixel' and 'level' set to 5. Then print the dictionary.",
+          "initialCode": "# Make a player dict with name and level, then print it\n",
+          "solution": "player = {'name': 'Pixel', 'level': 5}\nprint(player)",
+          "hints": [
+            "Use { and } to start and end the dictionary",
+            "Each entry looks like \"name\": \"Pixel\"",
+            "Strings need quotes; numbers do not"
+          ],
+          "tests": [
+            {
+              "expectedOutput": "",
+              "mode": "rules",
+              "astRules": {
+                "requiredConstructs": [
+                  {
+                    "type": "variable_assignment",
+                    "name": "player",
+                    "minCount": 1
+                  },
+                  {
+                    "type": "function_call",
+                    "name": "print",
+                    "minCount": 1
+                  }
+                ]
+              },
+              "runtimeRules": {
+                "outputContains": [
+                  "Pixel",
+                  "5"
+                ]
+              },
+              "timeoutMs": 3000
+            }
+          ]
+        },
+        {
+          "id": "lesson-10-step-2",
+          "title": "Look up a value",
+          "description": "Read the player's name from the dictionary and print just the name.",
+          "initialCode": "player = {'name': 'Pixel', 'level': 5}\n# Print just the name\n",
+          "solution": "player = {'name': 'Pixel', 'level': 5}\nprint(player['name'])",
+          "hints": [
+            "Use square brackets: player['name']",
+            "The key needs to match exactly, including capitalization",
+            "Wrap the lookup in print(...)"
+          ],
+          "tests": [
+            {
+              "expectedOutput": "Pixel",
+              "mode": "rules",
+              "astRules": {
+                "requiredConstructs": [
+                  {
+                    "type": "function_call",
+                    "name": "print",
+                    "minCount": 1
+                  }
+                ]
+              },
+              "runtimeRules": {
+                "outputContains": [
+                  "Pixel"
+                ]
+              },
+              "timeoutMs": 3000
+            }
+          ]
+        },
+        {
+          "id": "lesson-10-step-3",
+          "title": "Loop through every entry",
+          "description": "Walk every key/value pair in `player` with a for loop and print them on separate lines.",
+          "initialCode": "player = {'name': 'Pixel', 'level': 5}\n# Print each key and value\n",
+          "solution": "player = {'name': 'Pixel', 'level': 5}\nfor key, value in player.items():\n    print(key, value)",
+          "hints": [
+            "Use for key, value in player.items():",
+            "Indent the body of the loop with 4 spaces",
+            "print(key, value) shows them with a space between"
+          ],
+          "tests": [
+            {
+              "expectedOutput": "",
+              "mode": "rules",
+              "astRules": {
+                "requiredConstructs": [
+                  {
+                    "type": "loop",
+                    "minCount": 1
+                  },
+                  {
+                    "type": "calls_method",
+                    "on": "player",
+                    "method": "items",
+                    "minCount": 1
+                  },
+                  {
+                    "type": "function_call",
+                    "name": "print",
+                    "minCount": 1
+                  }
+                ]
+              },
+              "runtimeRules": {
+                "outputContains": [
+                  "name",
+                  "Pixel",
+                  "level",
+                  "5"
+                ]
+              },
+              "timeoutMs": 3000
+            }
+          ]
+        }
+      ]
+    },
+    "prerequisites": [
+      "lesson-7"
+    ],
+    "difficulty": "Beginner",
+    "estimatedTime": 12
   }
 ]

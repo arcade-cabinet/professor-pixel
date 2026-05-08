@@ -82,4 +82,97 @@ describe('shipped lessons.json', () => {
       expect(orders[i]).toBeGreaterThan(orders[i - 1]);
     }
   });
+
+  // P1.6 from the 2026-05-08 functional truth audit. The grader runs each
+  // step's solution through ast.parse + runtime rules; we don't have Pyodide
+  // in unit-suite reach, so this test does a textual surface-marker check
+  // that catches the most-common authoring drift: "solution edits drop a
+  // required AST construct (a print() call, a for-loop, a class definition)
+  // and nobody re-verifies the bundled solution still satisfies the rule."
+  //
+  // For each step's tests[] in 'rules' mode, we walk every requiredConstruct
+  // and runtimeRule, then assert the solution string contains the surface
+  // marker the rule expects. False positives are possible (a rule looks for
+  // `def greet():` but the solution defines `greet` via a lambda — the AST
+  // grader would still pass; this surface check would flag it). False
+  // negatives are bounded — we only check rules where the surface marker is
+  // unambiguous. The full belt-and-braces is the integration suite running
+  // the solutions through real Pyodide; this is the cheap unit-time guard.
+  it('every step solution contains the surface markers its rules require', () => {
+    for (const lesson of lessons) {
+      for (const step of lesson.content.steps) {
+        for (const test of step.tests ?? []) {
+          if (test.mode !== 'rules') continue;
+          for (const rc of test.astRules?.requiredConstructs ?? []) {
+            const sol = step.solution;
+            const where = `${lesson.id}/${step.id}`;
+            switch (rc.type) {
+              case 'function_call':
+                if (rc.name) {
+                  expect(
+                    sol.includes(`${rc.name}(`),
+                    `${where} requires call to ${rc.name}() but solution has no '${rc.name}('`
+                  ).toBe(true);
+                }
+                break;
+              case 'imports_module':
+                if (rc.name) {
+                  expect(
+                    sol.includes(`import ${rc.name}`) || sol.includes(`from ${rc.name}`),
+                    `${where} requires import of ${rc.name} but solution has neither 'import ${rc.name}' nor 'from ${rc.name}'`
+                  ).toBe(true);
+                }
+                break;
+              case 'loop':
+                expect(
+                  /\b(for|while)\b/.test(sol),
+                  `${where} requires a loop but solution has no for/while`
+                ).toBe(true);
+                break;
+              case 'if_statement':
+                expect(
+                  /\bif\b/.test(sol),
+                  `${where} requires an if but solution has no 'if '`
+                ).toBe(true);
+                break;
+              case 'defines_class':
+                if (rc.name) {
+                  expect(
+                    sol.includes(`class ${rc.name}`),
+                    `${where} requires class ${rc.name} but solution has no 'class ${rc.name}'`
+                  ).toBe(true);
+                } else {
+                  expect(/\bclass\s+\w+/.test(sol), `${where} requires a class def`).toBe(true);
+                }
+                break;
+              case 'calls_method':
+                if (rc.method) {
+                  expect(
+                    sol.includes(`.${rc.method}(`),
+                    `${where} requires .${rc.method}() but solution has no '.${rc.method}('`
+                  ).toBe(true);
+                }
+                break;
+              case 'variable_assignment':
+                if (rc.name) {
+                  expect(
+                    new RegExp(`\\b${rc.name}\\s*=`).test(sol),
+                    `${where} requires assignment to ${rc.name}`
+                  ).toBe(true);
+                }
+                break;
+              // 'string_literal', 'f_string', 'parameter_count', 'nesting_depth' —
+              // the surface marker is too noisy to assert textually; rely on the
+              // AST grader at runtime.
+            }
+          }
+          // Note: we deliberately do NOT cross-check `runtimeRules.outputContains`
+          // against the solution text. Computed output (e.g. width*height → 15)
+          // satisfies the runtime rule at execution time even when the literal
+          // never appears in the source. That belt-and-braces check is the
+          // integration-suite job, when we have real Pyodide on hand.
+        }
+      }
+    }
+  });
 });
