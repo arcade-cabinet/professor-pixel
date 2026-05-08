@@ -322,3 +322,26 @@ describe('useDeviceType — cleanup', () => {
     expect(listeners.get('orientationchange')?.size).toBe(0);
   });
 });
+
+describe('useDeviceType — msMaxTouchPoints undefined fallback (line 48 ?? falsy arm)', () => {
+  it('treats missing msMaxTouchPoints as 0 (no-touch desktop without legacy IE property)', () => {
+    // The OR chain
+    //   'ontouchstart' in window
+    //   || navigator.maxTouchPoints > 0
+    //   || (navigator.msMaxTouchPoints ?? 0) > 0
+    // short-circuits on the first truthy operand. For the third
+    // operand's \`?? 0\` to evaluate at all, the first two must be
+    // false (no-touch desktop). For path 1 of the ?? to fire, the
+    // legacy msMaxTouchPoints property must be undefined.
+    stubViewport({ width: 1440, height: 900, touch: false });
+    // stubViewport sets msMaxTouchPoints to a getter that returns 0;
+    // override to undefined so the ?? takes its right arm.
+    Object.defineProperty(globalThis.navigator, 'msMaxTouchPoints', {
+      configurable: true,
+      get: () => undefined,
+    });
+    const { result } = renderHook(() => useDeviceType());
+    // No touch via any signal — the hook resolves isTouchDevice=false.
+    expect(result.current.isTouchDevice).toBe(false);
+  });
+});
