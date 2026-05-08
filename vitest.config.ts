@@ -106,10 +106,10 @@ export default defineConfig({
       // Vitest projects — unit + integration + component (browser). The
       // numbers below are the aggregate across all three.
       //
-      // Today's snapshot (2026-05-08, post-error-handler-execute-second-call):
-      // statements 88.55%, branches 82.63%, functions 85.99%, lines 89.52%.
+      // Today's snapshot (2026-05-08, post-home-remix-null-snapshot):
+      // statements 88.55%, branches 82.60%, functions 85.99%, lines 89.52%.
       // Branches floor 80 (RATCHETED 79→80 in post-pyodide-ssr-and-existing-tag-
-      // undefined-status; floor sits 2.63pt under the aggregate run).
+      // undefined-status; floor sits 2.60pt under the aggregate run).
       // Branches floor stays at 77 (established flap envelope dips below
       // 78.00, and 78 was reverted in post-use-debug-flag-catch-spy).
       // (Aggregate flaps ±0.1% per run due to browser-suite render-effect
@@ -121,6 +121,7 @@ export default defineConfig({
       // these numbers UP raises the matching threshold in the same PR.
       //
       // Earlier snapshots:
+      //   2026-05-08 post-error-handler-execute-second-call: 88.55/82.63/85.99/89.52 → floor 87/80/85/88
       //   2026-05-08 post-dialogue-engine-handler-edges: 88.56/82.53/86.05/89.52 → floor 87/80/85/88
       //   2026-05-08 post-home-mutation-pending-states: 88.53/82.42/86.05/89.49 → floor 87/80/85/88
       //   2026-05-08 post-live-preview-non-error-throw: 88.52/82.30/85.99/89.49 → floor 87/80/85/88

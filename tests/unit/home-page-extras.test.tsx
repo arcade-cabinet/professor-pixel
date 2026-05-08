@@ -236,4 +236,28 @@ describe('Home — Remix mutation', () => {
     );
     expect(localStorage.getItem('pp.activeProjectId')).toBe('clone-1');
   });
+
+  it('remix succeeds + loadWizardProject resolves null → activeProjectId still set, no saveWizardState (line 147 path 1 falsy)', async () => {
+    // The remix mutation onSuccess hits a `if (snapshot)` guard before
+    // calling saveWizardState. Existing tests resolve loadWizardProject
+    // to a non-null snapshot (truthy arm). Resolving null exercises the
+    // falsy arm: saveWizardState is NOT called, but activeProjectId is
+    // still pinned to the clone and the kid still lands in the wizard.
+    listWizardProjectsMock.mockResolvedValue([proj]);
+    cloneWizardProjectMock.mockResolvedValue({
+      id: 'clone-2',
+      name: 'Pong Clone (copy)',
+    });
+    loadWizardProjectMock.mockResolvedValue(null);
+    renderHome();
+    fireEvent.click(await screen.findByTestId('my-game-remix-proj-1'));
+    await waitFor(() =>
+      expect(cloneWizardProjectMock).toHaveBeenCalledWith('proj-1')
+    );
+    await waitFor(() => {
+      expect(localStorage.getItem('pp.activeProjectId')).toBe('clone-2');
+    });
+    // saveWizardState gated by `if (snapshot)` — falsy arm skips it.
+    expect(saveWizardStateMock).not.toHaveBeenCalled();
+  });
 });
