@@ -111,6 +111,36 @@ describe('compilePythonGame — asset loader branches', () => {
     expect(out).toContain("pygame.image.load('no-path')");
   });
 
+  it('background falls back to asset.id when path is missing (line 93 || arm)', () => {
+    // The existing no-path pin only exercises the sprite branch. The
+    // background/sound/music type branches each have their own
+    // \`asset.path || asset.id\` fallback that stays cold without an
+    // explicit no-path test for that asset type.
+    const out = compilePythonGame({}, [
+      background({ id: 'bg-no-path', path: undefined as unknown as string }),
+    ]);
+    expect(out).toContain("pygame.image.load('bg-no-path')");
+    // Scale block still wires up — confirms we hit the background arm.
+    expect(out).toContain('pygame.transform.scale');
+  });
+
+  it('sound falls back to asset.id when path is missing (line 104 || arm)', () => {
+    const out = compilePythonGame({}, [
+      sound({ id: 'snd-no-path', path: undefined as unknown as string }),
+    ]);
+    expect(out).toContain("pygame.mixer.Sound('snd-no-path')");
+  });
+
+  it('music falls back to asset.id when path is missing (line 111 || arm)', () => {
+    const out = compilePythonGame({}, [
+      music({ id: 'mus-no-path', path: undefined as unknown as string }),
+    ]);
+    // The music branch stores the path string (not a Sound) under the
+    // <id>_music_path key, with the literal id as the value when path
+    // is missing.
+    expect(out).toContain("self.assets['mus-no-path_music_path'] = 'mus-no-path'");
+  });
+
   it('handles multiple assets of mixed types in one compilation', () => {
     const out = compilePythonGame({}, [
       sprite({ id: 's1' }),
