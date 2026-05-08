@@ -53,4 +53,17 @@ describe('base-url — captured BASE_URL variants', () => {
     expect(baseUrl).toBe('/');
     expect(routerBase).toBe('');
   });
+
+  it("falls back to '/' when import.meta.env.BASE_URL is undefined (line 4 || fallback)", async () => {
+    // The capture line is `(typeof import.meta !== 'undefined' &&
+    // import.meta.env?.BASE_URL) || '/'`. Stubbing BASE_URL to an empty
+    // string triggers the `|| '/'` fallback (empty string is falsy under
+    // ||) — exercising the cold path of the OR chain. Existing tests
+    // always set BASE_URL to a truthy string, leaving this fallback arm
+    // uncovered.
+    vi.stubEnv('BASE_URL', '');
+    const { baseUrl, routerBase } = await import('@lib/utils/base-url');
+    expect(baseUrl).toBe('/');
+    expect(routerBase).toBe('');
+  });
 });
