@@ -106,8 +106,8 @@ export default defineConfig({
       // Vitest projects — unit + integration + component (browser). The
       // numbers below are the aggregate across all three.
       //
-      // Today's snapshot (2026-05-08, post-retry-python-worker-and-file-status):
-      // statements 88.04%, branches 78.93%, functions 85.87%, lines 89.37%.
+      // Today's snapshot (2026-05-08, post-error-handler-column-and-multifile):
+      // statements 88.00%, branches 78.95%, functions 85.81%, lines 89.32%.
       // Branches floor stays at 77 (established flap envelope dips below
       // 78.00, and 78 was reverted in post-use-debug-flag-catch-spy).
       // (Aggregate flaps ±0.1% per run due to browser-suite render-effect
@@ -119,6 +119,7 @@ export default defineConfig({
       // these numbers UP raises the matching threshold in the same PR.
       //
       // Earlier snapshots:
+      //   2026-05-08 post-retry-python-worker-and-file-status: 88.04/78.93/85.87/89.37 → floor 87/77/85/88
       //   2026-05-08 post-sfx-master-off-error-pop: 87.89/78.76/85.81/89.24 → floor 87/77/85/88
       //   2026-05-08 post-use-toast-reducer-branches: 87.84/78.74/85.75/89.24 → floor 87/77/85/88
       //   2026-05-08 post-exporter-share-and-name-fallbacks: 87.84/78.70/85.75/89.24 → floor 87/77/85/88
