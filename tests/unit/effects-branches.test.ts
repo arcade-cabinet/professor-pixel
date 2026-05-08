@@ -112,6 +112,25 @@ describe('particleEffect.preview — type branches', () => {
     // confetti draws ≥5 rects (one per color in the rotating palette).
     expect(c.fillRect).toBeGreaterThanOrEqual(5);
   });
+
+  it('unknown type falls through the chain without drawing (line 78 path 1 falsy)', () => {
+    // The if-else chain at lines 45/55/69/78 routes on `type` and ends
+    // at confetti. An unknown type makes ALL four checks falsy — the
+    // chain falls through and only the initial `ctx.fillStyle` set
+    // remains. Existing tests cover the four known types but not the
+    // fall-through, so the falsy arm of `type === 'confetti'` (line 78)
+    // sat cold.
+    const ctx = makeFakeCtx();
+    expect(() =>
+      particleEffectComponent.preview(ctx, {
+        ...particleEffectComponent.defaultProperties,
+        type: 'unknown-type' as unknown as 'explosion',
+      })
+    ).not.toThrow();
+    const c = (ctx as unknown as { _calls: Record<string, number> })._calls;
+    // No drawing primitive fires when none of the type branches match.
+    expect((c.arc ?? 0) + (c.fillRect ?? 0) + (c.stroke ?? 0)).toBe(0);
+  });
 });
 
 describe('particleEffect.generateCode — produces runnable Python', () => {
