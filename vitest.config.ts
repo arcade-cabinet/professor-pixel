@@ -106,14 +106,15 @@ export default defineConfig({
       // Vitest projects — unit + integration + component (browser). The
       // numbers below are the aggregate across all three.
       //
-      // Today's snapshot (2026-05-07, post-wysiwyg-callbacks):
-      // statements 82.21%, branches 73.33%, functions 79.90%, lines 83.46%.
+      // Today's snapshot (2026-05-07, post-canvas-render-effect):
+      // statements 82.88%, branches 73.77%, functions 80.20%, lines 84.15%.
       // The thresholds below sit a hair below those numbers (rounded down
       // to the nearest integer minus 1 for noise tolerance) so any
       // regression fails CI. Per the ratchet doctrine: any PR that moves
       // these numbers UP raises the matching threshold in the same PR.
       //
       // Earlier snapshots:
+      //   2026-05-07 post-wysiwyg-callbacks: 82.21/73.33/79.90/83.46 → floor 82/73/79/83
       //   2026-05-07 post-lesson-page-misc: 81.89/72.91/79.24/83.16 → floor 81/72/79/83
       //   2026-05-07 post-presence-lesson-choices: 81.82/72.84/79.24/83.08 → floor 81/72/79/83
       //   2026-05-07 post-play-page-error-paths: 81.76/72.87/79.12/83.03 → floor 81/72/79/83
@@ -207,8 +208,8 @@ export default defineConfig({
       thresholds: {
         statements: 82,
         branches: 73,
-        functions: 79,
-        lines: 83,
+        functions: 80,
+        lines: 84,
       },
     },
   },
