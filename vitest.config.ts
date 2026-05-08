@@ -106,10 +106,10 @@ export default defineConfig({
       // Vitest projects — unit + integration + component (browser). The
       // numbers below are the aggregate across all three.
       //
-      // Today's snapshot (2026-05-08, post-tts-ssr-and-no-listener):
-      // statements 88.52%, branches 81.98%, functions 86.05%, lines 89.48%.
-      // Branches floor 79 (ratcheted 78→79 in post-pixel-minimized-hover; floor
-      // sits 2.98pt under the aggregate run).
+      // Today's snapshot (2026-05-08, post-pyodide-ssr-and-existing-tag-undefined-status):
+      // statements 88.52%, branches 82.05%, functions 85.99%, lines 89.49%.
+      // Branches floor 80 (RATCHETED 79→80 in this PR; first time crossing 82%
+      // — floor sits 2.05pt under the aggregate run).
       // Branches floor stays at 77 (established flap envelope dips below
       // 78.00, and 78 was reverted in post-use-debug-flag-catch-spy).
       // (Aggregate flaps ±0.1% per run due to browser-suite render-effect
@@ -121,6 +121,7 @@ export default defineConfig({
       // these numbers UP raises the matching threshold in the same PR.
       //
       // Earlier snapshots:
+      //   2026-05-08 post-tts-ssr-and-no-listener: 88.52/81.98/86.05/89.48 → floor 87/79/85/88
       //   2026-05-08 post-quota-ssr-and-null-paths: 88.49/81.86/85.99/89.48 → floor 87/79/85/88
       //   2026-05-08 post-pixel-minimized-current-activity: 88.46/81.72/85.99/89.48 → floor 87/79/85/88
       //   2026-05-08 post-play-cancelled-and-asset-fallback: 88.46/81.61/85.99/89.48 → floor 87/79/85/88
@@ -319,7 +320,7 @@ export default defineConfig({
       //   2026-05-05 post-#30: 27.71/22.42/22.28/27.71 → floor 26/21/21/26
       thresholds: {
         statements: 87,
-        branches: 79,
+        branches: 80,
         functions: 85,
         lines: 88,
       },
