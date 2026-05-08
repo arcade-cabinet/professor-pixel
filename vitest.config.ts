@@ -106,14 +106,15 @@ export default defineConfig({
       // Vitest projects — unit + integration + component (browser). The
       // numbers below are the aggregate across all three.
       //
-      // Today's snapshot (2026-05-07, post-home-error-paths):
-      // statements 85.80%, branches 76.17%, functions 83.87%, lines 87.26%.
+      // Today's snapshot (2026-05-07, post-lesson-completion-modal):
+      // statements 86.08%, branches 76.41%, functions 84.17%, lines 87.56%.
       // The thresholds below sit a hair below those numbers (rounded down
       // to the nearest integer minus 1 for noise tolerance) so any
       // regression fails CI. Per the ratchet doctrine: any PR that moves
       // these numbers UP raises the matching threshold in the same PR.
       //
       // Earlier snapshots:
+      //   2026-05-07 post-home-error-paths: 85.80/76.17/83.87/87.26 → floor 85/76/83/87
       //   2026-05-07 post-console-logger-categories: 85.56/76.06/83.63/86.99 → floor 85/76/83/86
       //   2026-05-07 post-asset-browser-multi-filter: 85.18/76.06/82.19/86.59 → floor 85/76/82/86
       //   2026-05-07 post-opfs-migration-shape-skips: 84.90/75.34/81.58/86.30 → floor 84/75/81/86
@@ -214,9 +215,9 @@ export default defineConfig({
       //   2026-05-06 post-#39: 31.68/25.20/25.26/31.66 → floor 30/24/24/30
       //   2026-05-05 post-#30: 27.71/22.42/22.28/27.71 → floor 26/21/21/26
       thresholds: {
-        statements: 85,
+        statements: 86,
         branches: 76,
-        functions: 83,
+        functions: 84,
         lines: 87,
       },
     },
