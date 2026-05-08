@@ -24,7 +24,8 @@
     "test:watch": "vitest",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest run --coverage",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "test:android:smoke": "node scripts/test-android-smoke.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
