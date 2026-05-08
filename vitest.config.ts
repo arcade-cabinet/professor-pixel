@@ -106,8 +106,8 @@ export default defineConfig({
       // Vitest projects — unit + integration + component (browser). The
       // numbers below are the aggregate across all three.
       //
-      // Today's snapshot (2026-05-08, post-runner-non-error-throws-and-no-error-result):
-      // statements 88.03%, branches 79.44%, functions 85.75%, lines 89.32%.
+      // Today's snapshot (2026-05-08, post-building-blocks-system-init-branches):
+      // statements 88.07%, branches 79.53%, functions 85.75%, lines 89.37%.
       // Branches floor 78 (ratcheted in post-persistence-cookie-and-migrate-null).
       // Branches floor stays at 77 (established flap envelope dips below
       // 78.00, and 78 was reverted in post-use-debug-flag-catch-spy).
@@ -120,6 +120,7 @@ export default defineConfig({
       // these numbers UP raises the matching threshold in the same PR.
       //
       // Earlier snapshots:
+      //   2026-05-08 post-runner-non-error-throws-and-no-error-result: 88.03/79.44/85.75/89.32 → floor 87/78/85/88
       //   2026-05-08 post-projects-load-no-snapshot-file: 88.03/79.37/85.75/89.32 → floor 87/78/85/88
       //   2026-05-08 post-use-device-type-pixel-ratio-zero: 88.01/79.34/85.75/89.32 → floor 87/78/85/88
       //   2026-05-08 post-client-handleStorageError-non-quota: 88.01/79.32/85.75/89.32 → floor 87/78/85/88
