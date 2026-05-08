@@ -207,6 +207,54 @@ describe('PygameWysiwygEditor — compact-viewport auto-open of properties drawe
   });
 });
 
+describe('PygameWysiwygEditor — Escape key closes the open drawer (lines 113, 116, 117)', () => {
+  it('Escape with the properties drawer open closes properties (line 116 truthy)', () => {
+    viewportFlags = { isCompact: true, isTouchPrimary: true };
+    const seed: PlacedComponent[] = [
+      { id: 'placed-1', componentId: 'ball', x: 0, y: 0, properties: {} },
+    ];
+    render(<PygameWysiwygEditor initialComponents={seed} />);
+    // Trigger compact-viewport auto-open of the properties drawer.
+    fireEvent.click(screen.getByTestId('canvas-select-btn'));
+    expect(screen.getByTestId('wysiwyg-properties-toggle').getAttribute('aria-pressed')).toBe(
+      'true'
+    );
+    // Escape closes it (line 116 truthy arm fires).
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(screen.getByTestId('wysiwyg-properties-toggle').getAttribute('aria-pressed')).toBe(
+      'false'
+    );
+  });
+
+  it('Escape with only the palette drawer open closes palette (line 117 falsy → else if arm)', () => {
+    // The else-if arm \`else if (paletteOpen) setPaletteOpen(false)\`
+    // requires propertiesOpen=false AND paletteOpen=true. The palette
+    // toggle button opens the drawer in compact viewports.
+    viewportFlags = { isCompact: true, isTouchPrimary: true };
+    render(<PygameWysiwygEditor />);
+    const paletteToggle = screen.getByTestId('wysiwyg-palette-toggle');
+    fireEvent.click(paletteToggle);
+    expect(paletteToggle.getAttribute('aria-pressed')).toBe('true');
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(screen.getByTestId('wysiwyg-palette-toggle').getAttribute('aria-pressed')).toBe('false');
+  });
+
+  it('non-Escape key with a drawer open is ignored (line 113 truthy early-return)', () => {
+    viewportFlags = { isCompact: true, isTouchPrimary: true };
+    const seed: PlacedComponent[] = [
+      { id: 'placed-1', componentId: 'ball', x: 0, y: 0, properties: {} },
+    ];
+    render(<PygameWysiwygEditor initialComponents={seed} />);
+    fireEvent.click(screen.getByTestId('canvas-select-btn'));
+    // Pressing 'a' (or any non-Escape key) hits \`if (e.key !== 'Escape') return\`
+    // and doesn't close the drawer.
+    fireEvent.keyDown(document, { key: 'a' });
+    expect(screen.getByTestId('wysiwyg-properties-toggle').getAttribute('aria-pressed')).toBe(
+      'true'
+    );
+  });
+});
+
 describe('PygameWysiwygEditor — snapToGrid=false falsy ternary arms (lines 144, 145, 169, 170)', () => {
   it('handleDrop and handleComponentMove pass raw coords through when snap-to-grid is off', () => {
     // The drop / move handlers each have a `snapToGrid ? round : raw`
