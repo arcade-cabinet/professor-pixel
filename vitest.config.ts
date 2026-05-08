@@ -106,12 +106,10 @@ export default defineConfig({
       // Vitest projects — unit + integration + component (browser). The
       // numbers below are the aggregate across all three.
       //
-      // Today's snapshot (2026-05-08, post-use-debug-flag-catch-spy):
-      // statements 87.64%, branches 77.96%, functions 85.69%, lines 89.04%.
-      // Branches floor reverted to 77 (post-use-toast snapshot read 78.00
-      // but the next run flapped to 77.96 — 78 was raised too tight inside
-      // the established ±0.1% flap envelope; the per-file targeted
-      // branches still move into the covered set deterministically).
+      // Today's snapshot (2026-05-08, post-use-debug-default-labels):
+      // statements 87.66%, branches 78.05%, functions 85.75%, lines 89.04%.
+      // Branches floor stays at 77 (established flap envelope dips below
+      // 78.00, and 78 was reverted in post-use-debug-flag-catch-spy).
       // (Aggregate flaps ±0.1% per run due to browser-suite render-effect
       // timing; the per-file targeted lines for each PR move into the
       // covered set deterministically.)
@@ -121,6 +119,7 @@ export default defineConfig({
       // these numbers UP raises the matching threshold in the same PR.
       //
       // Earlier snapshots:
+      //   2026-05-08 post-use-debug-flag-catch-spy: 87.64/77.96/85.69/89.04 → floor 87/77/85/88
       //   2026-05-08 post-use-toast-remove-all: 87.64/78.00/85.75/89.02 → floor 87/78/85/88 (REVERTED — floor too tight)
       //   2026-05-08 post-compiler-variant-blocks: 87.61/77.93/85.69/89.01 → floor 87/77/85/88
       //   2026-05-08 post-profile-rethrow: 87.57/77.86/85.69/88.96 → floor 87/77/85/88
