@@ -179,6 +179,27 @@ describe('generateGameTemplate', () => {
     expect(out).toContain(expectedSnippet);
   });
 
+  it('initializes inventory_system when "inventory" component is selected (lines 9697-9698)', () => {
+    const out = generateGameTemplate('Game', [{ component: 'inventory', choice: 'A' }]);
+    expect(out).toMatch(/InventorySystem\(\)/);
+    expect(out).toMatch(/Health Potion/);
+  });
+
+  it('initializes progression_system when "progression" component is selected (lines 9707-9708)', () => {
+    const out = generateGameTemplate('Game', [{ component: 'progression', choice: 'A' }]);
+    expect(out).toMatch(/ProgressionSystem\(self\.player\)/);
+  });
+
+  it('initializes map_system + skips default platforms when "mapgen" is selected (lines 9711-9712, 9724 path 1)', () => {
+    const out = generateGameTemplate('Game', [{ component: 'mapgen', choice: 'A' }]);
+    // mapgen branch fires.
+    expect(out).toMatch(/MapGenerationSystem\(\)/);
+    expect(out).toMatch(/generate_dungeon\(\)/);
+    // The default-platforms `if (!has('mapgen'))` branch takes its
+    // falsy arm — no default platforms appended.
+    expect(out).not.toMatch(/Create default platforms since no map system/);
+  });
+
   it('silently skips choices that reference unknown components', () => {
     // The .find() returns undefined and the loop body short-circuits —
     // pin this so a typo'd componentId doesn't blow up template generation.
