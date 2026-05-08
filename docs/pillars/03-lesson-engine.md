@@ -88,7 +88,7 @@ A lesson is **unlocked** when every id in its `prerequisites` array maps to a `U
 
 `UserProgress.currentStep` is written every time the student advances; `app/pages/lesson.tsx` reads it on mount and seeks the editor + step indicator there. Reload at step 3 → opens at step 3.
 
-`ClientStorage` (`src/storage/client.ts`) keys progress by `(userId, lessonId)` in localStorage. The current SPA uses a fixed `userId` of `local-user` — multi-user mode is out of scope until a name-the-pilot UI ships, at which point only the constant changes.
+`ClientStorage` (`src/storage/client.ts`) keys progress by `(userId, lessonId)` in localStorage. The current SPA uses a fixed `userId` of `local-user` (the constant lives in `app/pages/lesson.tsx` at the call site since it's the only consumer) — multi-user mode is out of scope until a name-the-pilot UI ships, at which point the constant moves into `src/storage/persistence.ts` as a typed accessor.
 
 Integration tests in `tests/integration/lesson-progress.test.ts` cover the round-trip: persist → fresh ClientStorage → restored.
 

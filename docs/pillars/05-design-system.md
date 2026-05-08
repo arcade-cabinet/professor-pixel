@@ -11,7 +11,7 @@ domain: design
 
 ## Tokens
 
-Theme tokens are CSS variables on `:root` (defined in `app/globals.css`) and exposed to Tailwind via `tailwind.config.ts`.
+Theme tokens are CSS variables on `:root` (defined in `app/index.css`) and exposed to Tailwind via `tailwind.config.ts`.
 
 | Token | Role |
 |-------|------|
@@ -94,4 +94,4 @@ Pixel reacts to events (success cheer, error sympathy, hint nudge). Reactions st
 - `app/components/ui/` — primitives source
 - `app/components/pixel/` — mascot components
 - `tailwind.config.ts` — token-to-utility wiring
-- `app/globals.css` — token definitions
+- `app/index.css` — token definitions

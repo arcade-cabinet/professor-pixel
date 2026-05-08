@@ -100,7 +100,7 @@ src + app + public
 
 ## Coverage
 
-`vitest.config.ts` pins a `coverage.thresholds` floor (statements 6, branches 4, functions 4, lines 6 as of 2026-05). The numbers are deliberately just above the current measured baseline — a **regression guard, not a goal**.
+`vitest.config.ts` pins a `coverage.thresholds` floor (statements 87, branches 80, functions 85, lines 88 as of 2026-05-08; the lineage table at the bottom of `vitest.config.ts` records every ratchet step). The numbers are deliberately just above the current measured baseline — a **regression guard, not a goal**.
 
 Ratchet doctrine:
 
