@@ -111,6 +111,27 @@ describe('addEvent — branching with currentPosition', () => {
     const events = sessionHistory.getEvents();
     expect(events.map((e) => e.description)).toEqual(['a', 'd']);
   });
+
+  it('truncates future events when jumping back then adding (line 53 truthy arm)', async () => {
+    // The previous revertToEvent test slices the events array down at
+    // revert time, so when addEvent runs `currentPosition < events
+    // .length - 1` is false (already at tail). jumpToEvent moves the
+    // cursor WITHOUT truncating, so currentPosition stays mid-history.
+    // Adding then triggers line 53's slice that drops orphan branches.
+    const { sessionHistory } = await freshHistory();
+    sessionHistory.addEvent('choice', 'a');
+    sessionHistory.addEvent('choice', 'b');
+    sessionHistory.addEvent('choice', 'c');
+
+    const aId = sessionHistory.getEvents()[0].id;
+    sessionHistory.jumpToEvent(aId); // cursor at index 0; events still length 3
+    sessionHistory.addEvent('choice', 'd');
+
+    // Now line 53's slice fired: events past position 0 are dropped,
+    // 'd' lands at position 1.
+    const events = sessionHistory.getEvents();
+    expect(events.map((e) => e.description)).toEqual(['a', 'd']);
+  });
 });
 
 describe('jumpToEvent + revertToEvent', () => {
