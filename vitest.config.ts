@@ -106,8 +106,8 @@ export default defineConfig({
       // Vitest projects — unit + integration + component (browser). The
       // numbers below are the aggregate across all three.
       //
-      // Today's snapshot (2026-05-08, post-audio-enable-storage-throw):
-      // statements 87.89%, branches 78.42%, functions 85.87%, lines 89.27%.
+      // Today's snapshot (2026-05-08, post-console-logger-defaults-and-trim):
+      // statements 87.91%, branches 78.44%, functions 85.87%, lines 89.30%.
       // Branches floor stays at 77 (established flap envelope dips below
       // 78.00, and 78 was reverted in post-use-debug-flag-catch-spy).
       // (Aggregate flaps ±0.1% per run due to browser-suite render-effect
@@ -119,6 +119,7 @@ export default defineConfig({
       // these numbers UP raises the matching threshold in the same PR.
       //
       // Earlier snapshots:
+      //   2026-05-08 post-audio-enable-storage-throw: 87.89/78.42/85.87/89.27 → floor 87/77/85/88
       //   2026-05-08 post-audio-sfx-storage-throw: 87.77/78.33/85.81/89.15 → floor 87/77/85/88
       //   2026-05-08 post-python-runner-input-routing: 87.74/78.26/85.75/89.13 → floor 87/77/85/88
       //   2026-05-08 post-wizard-utils-multistep-options-end: 87.73/78.23/85.75/89.12 → floor 87/77/85/88
