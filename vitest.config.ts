@@ -106,13 +106,17 @@ export default defineConfig({
       // Vitest projects — unit + integration + component (browser). The
       // numbers below are the aggregate across all three.
       //
-      // Today's snapshot (2026-05-08, post-registry-ssr-window-guards):
-      // statements 88.68%, branches 83.18%, functions 86.05%, lines 89.62%.
+      // Today's snapshot (2026-05-08, post-functional-truth-audit-fix-pass):
+      // statements 88.42%, branches 82.94%, functions 85.81%, lines 89.39%.
       // Branches floor 80 (RATCHETED 79→80 in post-pyodide-ssr-and-existing-tag-
-      // undefined-status; floor sits 3.18pt under the aggregate run).
-      // Eight consecutive runs at 83+ (envelope 82.97–83.18). Lower edge still
-      // 82.97 — ratchet 80→81 stays deferred (would leave 1.97pt cushion at
-      // the worst-case dip). Wait for actuals to reach 83.5+ to ratchet safely.
+      // undefined-status; floor sits 2.94pt under the aggregate run).
+      // Slight aggregate dip (~0.24pt across all four metrics) from the
+      // audit fix pass: new src/ code (lesson-10 dict steps, persistence
+      // helpers loadLastLandingPath/saveLastLandingPath/hasSeenIntro/
+      // markIntroSeen) added paths the existing tests don't yet drive,
+      // but the floors still hold with healthy cushion. No threshold
+      // change this commit — drainage will catch up in subsequent
+      // targeted-test PRs.
       // Branches floor stays at 77 (established flap envelope dips below
       // 78.00, and 78 was reverted in post-use-debug-flag-catch-spy).
       // (Aggregate flaps ±0.1% per run due to browser-suite render-effect
@@ -124,6 +128,7 @@ export default defineConfig({
       // these numbers UP raises the matching threshold in the same PR.
       //
       // Earlier snapshots:
+      //   2026-05-08 post-registry-ssr-window-guards: 88.68/83.18/86.05/89.62 → floor 87/80/85/88
       //   2026-05-08 post-effects-confetti-fallthrough: 88.68/83.18/86.05/89.62 → floor 87/80/85/88
       //   2026-05-08 post-base-url-empty-fallback: 88.68/83.11/86.05/89.62 → floor 87/80/85/88
       //   2026-05-08 post-runner-stop-ctx-null: 88.69/83.09/86.11/89.62 → floor 87/80/85/88
