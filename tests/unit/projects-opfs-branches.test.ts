@@ -135,6 +135,45 @@ describe('projects (OPFS) — listWizardProjects + opfsItemToProject', () => {
 });
 
 describe('projects (OPFS) — saveWizardProject thumbnail + compile branches', () => {
+  it('save without existingId revokes thumbnailUrls of every existing item (line 195 path 0 truthy)', async () => {
+    // The dedup-scan loop after listOpfsProjects revokes thumbnailUrl
+    // for every returned item to avoid leaking object URLs. Existing
+    // tests either pass existingId (skipping the loop) or default the
+    // list to empty (skipping the inner truthy arm). Seed two items
+    // with truthy thumbnailUrls so the `if (item.thumbnailUrl)` guard
+    // fires its truthy arm twice.
+    listOpfs.mockResolvedValue([
+      {
+        id: 'sp1',
+        name: 'Other',
+        template: 't',
+        created_at: new Date().toISOString(),
+        thumbnailUrl: 'blob:url-1',
+      },
+      {
+        id: 'sp2',
+        name: 'AlsoOther',
+        template: 't',
+        created_at: new Date().toISOString(),
+        thumbnailUrl: 'blob:url-2',
+      },
+    ]);
+    saveOpfs.mockResolvedValue({
+      id: 'sp3',
+      name: 'New',
+      template: 't',
+      created_at: new Date().toISOString(),
+    });
+    await saveWizardProject({
+      wizardState: { sessionActions: { selectedComponents: {} } } as never,
+      name: 'New',
+      template: 't',
+    });
+    // Both URLs revoked.
+    expect(revokeSpy).toHaveBeenCalledWith('blob:url-1');
+    expect(revokeSpy).toHaveBeenCalledWith('blob:url-2');
+  });
+
   it('save with thumbnailDataUrl converts data URL → blob (line 205-206)', async () => {
     saveOpfs.mockResolvedValue({
       id: 'sp1',
