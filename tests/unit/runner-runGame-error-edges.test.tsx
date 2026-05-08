@@ -81,6 +81,40 @@ describe('PygameRunner — runGame catch with non-Error throw (line 336 falsy)',
   });
 });
 
+describe('PygameRunner — runGame init-failure paths (lines 313, 317 path 0 truthy)', () => {
+  it('runGame with pyodide unavailable retries init then short-circuits with educational error', async () => {
+    // The runGame happy path runs after the mount-time initPyodide()
+    // populates pyodideRef. When mount-init fails, pyodideRef stays
+    // null — then a Run-Game click hits the cold path:
+    //   - line 313 path 0 truthy: !pyodideRef.current → retry initPyodide
+    //   - line 317 path 0 truthy: still null → setError + early return
+    // Both arms are zero-coverage in the existing suite because the
+    // error-edges test resolves getPyodide successfully on first try.
+    getPyodideMock.mockRejectedValue(new Error('CDN offline'));
+    const onError = vi.fn();
+    render(<PygameRunner onError={onError} />);
+    // Mount-time initPyodide rejects → onError fires once with the raw
+    // message + the panel surfaces the educational copy.
+    await waitFor(() => {
+      expect(onError).toHaveBeenCalledWith('CDN offline');
+    });
+    onError.mockClear();
+    // Now click Run Game while pyodideRef is still null. The button is
+    // not disabled by pyodide state — it gates only on isRunning.
+    const playBtn = screen
+      .getAllByRole('button')
+      .find((b) => /run game/i.test(b.textContent ?? ''));
+    fireEvent.click(playBtn!);
+    // The retry inside runGame also rejects → second onError.
+    await waitFor(() => {
+      expect(onError).toHaveBeenCalledWith('CDN offline');
+    });
+    // Compile must NOT have been attempted (pyodideRef still null after
+    // retry → line 317 truthy short-circuits before compilePythonGame).
+    expect(runPythonAsync).not.toHaveBeenCalled();
+  });
+});
+
 describe('PygameRunner — runGame catch without onError prop (line 338 falsy)', () => {
   it('rejection without an onError prop still surfaces the error panel', async () => {
     getPyodideMock.mockResolvedValue(fakePyodide);
