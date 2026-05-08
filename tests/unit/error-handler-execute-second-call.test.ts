@@ -60,6 +60,58 @@ afterEach(() => {
 
 const SETUP_OK: RunPythonResponse[] = [undefined, true, true, true];
 
+describe('createEnhancedErrorCapture — empty-stdout success literal + outer-catch non-Error', () => {
+  it('returns "Code executed successfully!" literal when stdout is empty (line 735 path 1 falsy)', async () => {
+    // Existing happy-path tests return non-empty stdout ('hi\n'), so the
+    // `stdout || 'Code executed successfully!'` falsy arm sat cold.
+    // Resolve runPython('sys.stdout.getvalue()') to '' so the literal arm fires.
+    const pyodide = fakePyodide([
+      ...SETUP_OK,
+      undefined, // clear
+      undefined, // io setup
+      undefined, // exec
+      '', // stdout (empty → falsy)
+      '', // stderr
+      { toJs: () => ({ traceback: '', type: '', message: '' }) },
+    ]);
+    setGlobalPyodide(pyodide);
+    const cap = createEnhancedErrorCapture();
+    const result = await cap.executeWithErrorCapture('pass');
+    expect(result.hasError).toBe(false);
+    expect(result.output).toBe('Code executed successfully!');
+  });
+
+  it('outer-catch String() fallback fires when runPython throws a non-Error (line 742 path 1 falsy)', async () => {
+    // The outer catch at line 739 wraps the entire setup+exec+capture
+    // sequence. An early runPython call (clear_enhanced_error() at line
+    // 631) throwing a non-Error triggers the outer catch with jsError
+    // as a plain string → `instanceof Error` is false → String(jsError).
+    const STRING_THROW = Symbol('string-throw');
+    let i = 0;
+    // Setup chain (4) succeeds, then clear_enhanced_error() throws.
+    const responses: Array<RunPythonResponse | typeof STRING_THROW> = [
+      ...SETUP_OK,
+      STRING_THROW,
+    ];
+    const pyodide = {
+      runPython: () => {
+        const next = responses[i++];
+        if (next === STRING_THROW) {
+          // eslint-disable-next-line no-throw-literal
+          throw 'outer-catch-non-error-string';
+        }
+        return next ?? null;
+      },
+      runPythonAsync: () => {},
+    } as unknown as PyodideInstance;
+    setGlobalPyodide(pyodide);
+    const cap = createEnhancedErrorCapture();
+    const result = await cap.executeWithErrorCapture('pass');
+    expect(result.hasError).toBe(true);
+    expect(result.error).toBeTruthy();
+  });
+});
+
 describe('createEnhancedErrorCapture — executionError + non-Error JS throw branches (lines 705-714)', () => {
   it('JS-level Error from runPython exec lands in the executionError branch with err.message', async () => {
     // Drive line 705 truthy: traceback empty, stderr empty, but the
