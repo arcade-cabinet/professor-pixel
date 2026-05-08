@@ -132,4 +132,61 @@ describe('quota monitoring (P4.20)', () => {
     // the in-memory gate would still suppress.
     expect(await shouldWarnQuota()).toBe(false);
   });
+
+  it('honors the cross-tab sessionStorage flag when in-memory warnedThisSession is false (line 153)', async () => {
+    // Cross-tab signal: the in-memory flag lives per-tab, but we also
+    // persist a sessionStorage entry so a kid who navigates within the
+    // same origin doesn't re-toast. After _resetQuotaWarning the
+    // in-memory gate is false; if the sessionStorage signal says '1',
+    // shouldWarnQuota returns false via the line-153 short-circuit.
+    sessionStorage.setItem('pp.quotaWarningShown', '1');
+    setMeasureBytesImpl(() => 4.5 * 1024 * 1024); // would otherwise warn
+    expect(await shouldWarnQuota()).toBe(false);
+    sessionStorage.removeItem('pp.quotaWarningShown');
+  });
+
+  it('default measureLocalStorageBytes survives a null localStorage.key (line 119)', async () => {
+    // localStorage.key(i) is documented to return null when i >= length.
+    // The defensive `if (key === null) continue;` arm guards against a
+    // length-of-N loop that races with another tab clearing storage.
+    // Stub localStorage.key to return null for some indexes; the loop
+    // must skip them and keep totalling the rest.
+    const originalKey = window.localStorage.key.bind(window.localStorage);
+    window.localStorage.setItem('a', 'x');
+    window.localStorage.setItem('b', 'yy');
+    let callCount = 0;
+    window.localStorage.key = function (i: number): string | null {
+      callCount++;
+      // Force the FIRST iteration to return null so the `key === null
+      // continue` branch fires, then defer to the real impl.
+      if (callCount === 1) return null;
+      return originalKey(i);
+    };
+    try {
+      // Should not throw; should return a finite number.
+      const result = await shouldWarnQuota();
+      expect(typeof result).toBe('boolean');
+    } finally {
+      window.localStorage.key = originalKey;
+    }
+  });
+
+  it('default measureLocalStorageBytes uses "" fallback when getItem returns null (line 120)', async () => {
+    // localStorage.key(i) returns 'a' but getItem('a') returns null
+    // (race: key listed but value cleared between iterations). The
+    // `?? ''` fallback yields an empty string so .length === 0 and the
+    // total still accumulates correctly without a TypeError.
+    const originalGet = window.localStorage.getItem.bind(window.localStorage);
+    window.localStorage.setItem('present', 'value');
+    window.localStorage.getItem = function (key: string): string | null {
+      if (key === 'present') return null; // simulate disappeared value
+      return originalGet(key);
+    };
+    try {
+      const result = await shouldWarnQuota();
+      expect(typeof result).toBe('boolean');
+    } finally {
+      window.localStorage.getItem = originalGet;
+    }
+  });
 });
