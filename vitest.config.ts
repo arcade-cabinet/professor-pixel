@@ -106,18 +106,18 @@ export default defineConfig({
       // Vitest projects — unit + integration + component (browser). The
       // numbers below are the aggregate across all three.
       //
-      // Today's snapshot (2026-05-07, post-simulator-create-env):
-      // statements 81.62%, branches 72.57%, functions 78.98%, lines 82.89%.
+      // Today's snapshot (2026-05-07, post-play-page-error-paths):
+      // statements 81.76%, branches 72.87%, functions 79.12%, lines 83.03%.
       // The thresholds below sit a hair below those numbers (rounded down
       // to the nearest integer minus 1 for noise tolerance) so any
       // regression fails CI. Per the ratchet doctrine: any PR that moves
       // these numbers UP raises the matching threshold in the same PR.
       //
       // Earlier snapshots:
+      //   2026-05-07 post-simulator-create-env: 81.62/72.57/78.98/82.89 → floor 81/72/78/82
       //   2026-05-07 post-simulator-pygame-shim: 81.39/72.25/78.80/82.64 → floor 81/72/78/82
       //   2026-05-07 post-wysiwyg-handlers: 80.41/71.32/76.21/81.57 → floor 80/71/76/81
       //   2026-05-07 post-code-editor-monaco-load: 80.34/71.28/75.97/81.51 → floor 80/71/75/81
-      //   2026-05-07 post-console-logger-helpers: 79.96/71.07/75.73/81.10 → floor 79/71/75/81
       //   2026-05-07 post-floating-feedback-render: 73.95/64.49/69.89/74.76 → floor 73/63/69/74
       //   2026-05-07 post-live-preview-extras: 73.82/64.15/69.71/74.65 → floor 73/63/69/74
       //   2026-05-07 post-pixel-menu-extras: 73.67/63.87/69.53/74.51 → floor 73/62/69/74
@@ -207,8 +207,8 @@ export default defineConfig({
       thresholds: {
         statements: 81,
         branches: 72,
-        functions: 78,
-        lines: 82,
+        functions: 79,
+        lines: 83,
       },
     },
   },
