@@ -258,6 +258,19 @@ describe('useDebug — error tracking', () => {
     expect(handlerState.errors[0].type).toBe('custom');
     expect(handlerState.errors[0].error).toBe('boom');
   });
+
+  it('trackCustomError without context falls back to "Custom Debug Error" (line 89 falsy arm)', () => {
+    // The track payload's context is `context || 'Custom Debug Error'`.
+    // Existing test always passes 'unit-test'. Without a context, the
+    // falsy arm fires and the literal fallback is recorded.
+    const { result } = renderHook(() => useDebug());
+    act(() => {
+      result.current.trackCustomError('boom-no-context');
+    });
+    expect(handlerState.errors).toHaveLength(1);
+    type TrackedWithContext = (typeof handlerState.errors)[number] & { context?: string };
+    expect((handlerState.errors[0] as TrackedWithContext).context).toBe('Custom Debug Error');
+  });
 });
 
 describe('useDebug — getSystemHealth', () => {
@@ -381,6 +394,33 @@ describe('usePerformanceMonitor', () => {
 
     expect(warnSpy).not.toHaveBeenCalled();
     warnSpy.mockRestore();
+  });
+
+  it('endRenderMeasure reports memoryUsage when performance.memory is available (line 164 truthy arm)', () => {
+    // performance.memory is a Chrome-only API; jsdom does not ship it,
+    // so the production fallback (memoryUsage = 0) is the path that
+    // exists by default. Stub a fake .memory and verify the truthy
+    // arm — Math.round(usedJSHeapSize / 1MB) — fires.
+    type PerfWithMemory = Performance & { memory?: { usedJSHeapSize: number } };
+    const perf = performance as PerfWithMemory;
+    const original = perf.memory;
+    Object.defineProperty(perf, 'memory', {
+      configurable: true,
+      value: { usedJSHeapSize: 32 * 1024 * 1024 }, // 32 MB
+    });
+    try {
+      const { result } = renderHook(() => usePerformanceMonitor());
+      act(() => {
+        result.current.endRenderMeasure(performance.now() - 5);
+      });
+      expect(result.current.metrics.memoryUsage).toBe(32);
+    } finally {
+      if (original === undefined) {
+        delete (perf as { memory?: unknown }).memory;
+      } else {
+        Object.defineProperty(perf, 'memory', { configurable: true, value: original });
+      }
+    }
   });
 
   describe('measureAsync', () => {
