@@ -1,9 +1,9 @@
 ---
 title: State
-updated: 2026-05-06
+updated: 2026-05-08
 status: current
 domain: context
-revision: post-dependency-cleanup-wave
+revision: post-functional-truth-audit
 ---
 
 
@@ -13,12 +13,13 @@ revision: post-dependency-cleanup-wave
 
 ## Active
 
-_None right now._ Engineering queue drained. Open PRs are owned by other actors (#8 release-please bot's v1.1.0 cut; #35 jbdevprimary's CodeQL workflow change).
+**`feat/test-coverage-visual-android-sweep`** (audit + fix in one PR, in progress). Functional truth audit (`docs/audits/2026-05-08-functional-truth-audit.md`) plus 14 fix-pass commits closing 11 P1 + 4 P2 items. Architectural finding: codebase honors the UI-as-shell doctrine; real leaks were 5 P1 items, all fixed. New harnesses (web visual route smoke, Android Maestro smoke) ship as artifact-only — no committed baselines until UI/UX confidence is real.
 
 ## Done (recent milestones)
 
 | Milestone | When | Notes |
 |-----------|------|-------|
+| Coverage drainage loop (PRs #341–#359) | 2026-05-08 | 17 micro-PRs draining cold BRDA paths in error-handler / runner / persistence / pygame components / lessons / runner-recovery / projects-opfs / pyodide-cache / pyodide-singleton / base-url. Branches floor ratcheted 79→80 in #332 with cushion; all subsequent PRs held the floor with growing cushion. Final aggregate before audit pass: 88.68/83.18/86.05/89.62. Each PR was one cold-path + one threshold-line lineage entry; the loop preserved the canonical shape (snapshot heading + lineage table) across every commit. |
 | Dependency cleanup wave (#3-#7, #10, #11, #13, #36-#38) | 2026-05-06 | Eight consecutive PRs draining the Dependabot backlog and closing 7 security alerts. #3-#7 GitHub Actions major-version bumps (release-please-action 4→5, deploy-pages 4→5, setup-node 4→6, configure-pages 4→6, upload-pages-artifact 3→5). #36 (`2e5bea1`) security: pillow 11.3.0→12.2.0 (closes 6 CVEs — 3 high + 3 medium; pillow is build-time only, asset-generator scripts), picomatch v4 override added for GHSA-3v7f-55p6-f55p. #37 (`9312e14`) drops unused react-day-picker + recharts (38 transitive packages dropped from lockfile; closes Dependabot #10 + #13 by superseding). #38 (`3b8c69f`) lucide-react 0.453.0→1.14.0 (rebrand release; widened 4 narrow icon ComponentType declarations to `size?: number \| string` to match v1 LucideProps; 324/324 unit tests pass). |
 | Post-#30 docs consolidation pillar (#31 + #32 + #33 + #34) | 2026-05-06 | Four-PR sequence on `feat/post-30-consolidation` and follow-ups. #31 (`e5cb28f`) closes 12 directive items: D1–D5 pillar docs (new `06-storage.md` + `07-deploy.md` frontmatter-headed pages; refreshed `02-runtime.md` + `01-frontend.md` for OPFS WASM cache, asset mounting, iOS voiceschanged race, wouter base wrap, edge-swipe, skeleton + aria-busy, AudioToggle chrome; refreshed `docs/README.md` 7-row pillar table + AGENTS.md numbering); S1–S4 12-plan-file archive into `docs/plans/_archive/` + STATE.md refresh + Next audit; R1–R3 Play Store + iOS TestFlight runbooks + asset-mount cross-link verified. Reviewer trio (code-reviewer + security-auditor + simplifier) findings folded forward (#31 7e7ee0d): `.whl` allowlist fix, AGENTS.md numbering, APK-vs-AAB callout, keytool plaintext-password fix, post-upload cleanup checklist, iOS altool credential-safe paths. #32 (`b65272f`) gemini-code-assist findings (4 fixes, including AAB→APK target row, vite preview --outDir, .whl sync to 02-runtime, shred → rm -P for macOS). #33 (`0cd8cf2`) preview cmd `--base=/professor-pixel/` + `--strictPort` flags. #34 (`a5d7665`) directive Status: ACTIVE → RELEASED. |
 | Post-launcher modernization closeout (#30 squash-merge) | 2026-05-06 | Branch: `feat/modernization-pillar-closeout`, merge commit `ff3a21b`. 30+ commits across 4 phases: launcher (M5/M6, OPFS-backed "My Games" with thumbnails + dedupe, save-time Python compile so /play skips recompile, real-Pyodide component test); deploy-chain audit (4 latent BASE_URL bugs caught — single `src/utils/base-url.ts` helper, 11 migrated sites, `src/python/asset-mount.ts` closing the silent magenta-placeholder regression, wouter `<Router base>` wrap); production-shape e2e suite (6 functional + 9 visual tests, multi-viewport, new CI `e2e-production-shape` job); experience polish (E3.1–E3.6 — asset mounting in onPlay, home skeleton + aria-busy, wysiwyg edge-swipe palette/properties, iOS Safari voiceschanged race fix with defer + flush + prewarm, use-edge-swipe debug-spam cleanup, CSP meta tag with wasm-unsafe-eval); Android security hardening (trusted-ref guard, `merge-base --is-ancestor` reachability, late keystore decode + `if: always()` shred cleanup); five stale CodeRabbit reviews dismissed + 12 unresolved threads resolved before merge. |
