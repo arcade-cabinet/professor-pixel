@@ -99,6 +99,31 @@ describe('Play — compile-error branches', () => {
     expect(await screen.findByTestId('play-compile-error')).toBeInTheDocument();
     expect(screen.getByText(/compiler bug/)).toBeInTheDocument();
   });
+
+  it('compile-error from non-Error throw uses the literal fallback message (line 123 path 1 falsy)', async () => {
+    // The inner compile try/catch builds the message via
+    // `(err as Error).message ?? 'Failed to compile game code'`. Existing
+    // tests throw `new Error('...')` so .message is always truthy. Throw
+    // a plain object cast as Error → .message is undefined → the ??
+    // fallback fires.
+    loadWizardProjectMock.mockResolvedValue({
+      id: 'proj-1',
+      name: 'Pong',
+      wizardState: {
+        sessionActions: { selectedComponents: { ball: 'A' } },
+        selectedAssetIds: [],
+      },
+    });
+    compilePythonGameMock.mockImplementation(() => {
+      // Plain object — no Error subclass, no .message property.
+      throw {} as unknown as Error;
+    });
+    render(<Play />);
+    expect(await screen.findByTestId('play-compile-error')).toBeInTheDocument();
+    expect(
+      screen.getByText(/Failed to compile game code/)
+    ).toBeInTheDocument();
+  });
 });
 
 describe('Play — onPlay runtime-error path', () => {
