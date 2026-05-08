@@ -207,6 +207,14 @@ describe('playError', () => {
     expect(createdOscillators[1].type).toBe('square');
     expect(createdOscillators[1].frequency.value).toBeCloseTo(174.61);
   });
+
+  it('is a no-op when master audio is OFF (line 75 truthy arm)', async () => {
+    masterAudioOn = false;
+    const sfx = await freshSfx();
+    sfx.playError();
+    expect(audioContextCtorCalls).toBe(0);
+    expect(createdOscillators).toHaveLength(0);
+  });
 });
 
 describe('playPop', () => {
@@ -216,6 +224,14 @@ describe('playPop', () => {
     expect(createdOscillators).toHaveLength(1);
     expect(createdOscillators[0].type).toBe('triangle');
     expect(createdOscillators[0].frequency.value).toBeCloseTo(880);
+  });
+
+  it('is a no-op when master audio is OFF (line 82 truthy arm)', async () => {
+    masterAudioOn = false;
+    const sfx = await freshSfx();
+    sfx.playPop();
+    expect(audioContextCtorCalls).toBe(0);
+    expect(createdOscillators).toHaveLength(0);
   });
 });
 
