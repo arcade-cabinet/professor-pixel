@@ -106,10 +106,10 @@ export default defineConfig({
       // Vitest projects — unit + integration + component (browser). The
       // numbers below are the aggregate across all three.
       //
-      // Today's snapshot (2026-05-08, post-play-cancelled-and-asset-fallback):
-      // statements 88.46%, branches 81.61%, functions 85.99%, lines 89.48%.
+      // Today's snapshot (2026-05-08, post-pixel-minimized-current-activity):
+      // statements 88.46%, branches 81.72%, functions 85.99%, lines 89.48%.
       // Branches floor 79 (ratcheted 78→79 in post-pixel-minimized-hover; floor
-      // sits 2.61pt under the aggregate run).
+      // sits 2.72pt under the aggregate run).
       // Branches floor stays at 77 (established flap envelope dips below
       // 78.00, and 78 was reverted in post-use-debug-flag-catch-spy).
       // (Aggregate flaps ±0.1% per run due to browser-suite render-effect
@@ -121,6 +121,7 @@ export default defineConfig({
       // these numbers UP raises the matching threshold in the same PR.
       //
       // Earlier snapshots:
+      //   2026-05-08 post-play-cancelled-and-asset-fallback: 88.46/81.61/85.99/89.48 → floor 87/79/85/88
       //   2026-05-08 post-code-editor-grading-result-arms: 88.43/81.49/85.99/89.48 → floor 87/79/85/88
       //   2026-05-08 post-profile-page-edge-paths: 88.43/81.17/85.99/89.48 → floor 87/79/85/88
       //   2026-05-08 post-wysiwyg-escape-closes-drawers: 88.53/81.22/86.11/89.57 → floor 87/79/85/88
