@@ -42,6 +42,27 @@ describe('registerPyodideCache — environment guards', () => {
   });
 });
 
+describe('registerPyodideCache — SSR window guard (line 44 path 1 falsy)', () => {
+  it('skips the Capacitor-protocol check when typeof window is undefined', async () => {
+    // The Capacitor protocol guard is gated by `typeof window !== 'undefined'`.
+    // Existing tests always run with jsdom (window present) → truthy arm
+    // is hot, falsy arm (SSR) sat cold. Stub navigator with a working
+    // serviceWorker + storage so the earlier guard passes, then
+    // window=undefined so the Capacitor check is skipped and registration
+    // proceeds.
+    const fakeReg = { scope: '/' };
+    const register = vi.fn().mockResolvedValue(fakeReg);
+    vi.stubGlobal('navigator', {
+      serviceWorker: { register },
+      storage: { persist: vi.fn().mockResolvedValue(true) },
+    });
+    vi.stubGlobal('window', undefined);
+    const { registerPyodideCache } = await import('@lib/python/pyodide-cache');
+    expect(await registerPyodideCache()).toBe(fakeReg);
+    expect(register).toHaveBeenCalledOnce();
+  });
+});
+
 describe('registerPyodideCache — happy path', () => {
   it('registers the SW under the baseUrl scope and returns the registration', async () => {
     const fakeReg = { scope: '/' };
