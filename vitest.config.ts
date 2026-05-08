@@ -106,14 +106,15 @@ export default defineConfig({
       // Vitest projects — unit + integration + component (browser). The
       // numbers below are the aggregate across all three.
       //
-      // Today's snapshot (2026-05-07, post-asset-browser-multi-filter):
-      // statements 85.18%, branches 76.06%, functions 82.19%, lines 86.59%.
+      // Today's snapshot (2026-05-07, post-console-logger-categories):
+      // statements 85.56%, branches 76.06%, functions 83.63%, lines 86.99%.
       // The thresholds below sit a hair below those numbers (rounded down
       // to the nearest integer minus 1 for noise tolerance) so any
       // regression fails CI. Per the ratchet doctrine: any PR that moves
       // these numbers UP raises the matching threshold in the same PR.
       //
       // Earlier snapshots:
+      //   2026-05-07 post-asset-browser-multi-filter: 85.18/76.06/82.19/86.59 → floor 85/76/82/86
       //   2026-05-07 post-opfs-migration-shape-skips: 84.90/75.34/81.58/86.30 → floor 84/75/81/86
       //   2026-05-07 post-simulator-flush-shapes: 84.58/75.13/81.52/85.96 → floor 84/75/81/85
       //   2026-05-07 post-global-handler-event-branches: 84.21/74.90/81.52/85.56 → floor 84/74/81/85
@@ -214,7 +215,7 @@ export default defineConfig({
       thresholds: {
         statements: 85,
         branches: 76,
-        functions: 82,
+        functions: 83,
         lines: 86,
       },
     },
