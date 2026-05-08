@@ -120,6 +120,26 @@ describe('generatePygameCode — background choice', () => {
     // `"forest"` could appear in a comment after a regression and still pass.
     expect(code).toMatch(/if\s+"forest"\s*==\s*"sky"\s*:/);
   });
+
+  it('falls back to bgType="sky" when choice.id is empty (line 312 || arm)', () => {
+    // \`const bgType = choice.id || 'sky'\` — when the wizard hands us a
+    // background choice with no id (empty string from a malformed flow,
+    // or a future shape that drops the id), the generator must default
+    // to 'sky' so the emitted Python still references a known bg type.
+    const choice: GameChoice = { type: 'background', id: '', name: 'No ID' };
+    const code = generatePygameCode([choice]);
+    expect(code).toMatch(/if\s+"sky"\s*==\s*"sky"\s*:/);
+  });
+
+  it("falls back to '(135,206,235)' (sky-blue RGB) for unknown background type (line 516 || arm)", () => {
+    // \`return colors[type] || '(135, 206, 235)'\` — a future flow that
+    // emits a never-before-seen background id (e.g. 'volcano') must
+    // still produce runnable Python. Pin the sky-blue RGB fallback
+    // instead of, say, an undefined that would crash pygame init.
+    const choice: GameChoice = { type: 'background', id: 'volcano', name: 'Volcano' };
+    const code = generatePygameCode([choice]);
+    expect(code).toContain('bg_color = (135, 206, 235)');
+  });
 });
 
 describe('generatePygameCode — multiple choices combine', () => {
