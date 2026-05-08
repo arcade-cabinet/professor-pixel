@@ -173,6 +173,53 @@ describe('Profile page — rename error branches', () => {
   });
 });
 
+describe('Profile page — cold edge branches in profile.tsx', () => {
+  it('clicking save with empty pronouns + a profile clears via null (line 80 path 0 truthy)', async () => {
+    // pronouns starts as 'they/them'. Click the "Not specified" radio
+    // (preset === '') so pronounsDraft becomes ''. Then click Save.
+    // The ternary `pronounsDraft.trim().length === 0 ? null : ...`
+    // hits its truthy arm and saveProfile receives pronouns=null,
+    // which loadProfile then omits from the parsed object.
+    saveProfile({ name: 'Maya', pronouns: 'they/them' });
+    renderProfile();
+    fireEvent.click(screen.getByTestId('pronouns-radio-none'));
+    fireEvent.click(screen.getByTestId('profile-save-expression'));
+    await waitFor(() => {
+      const p = loadProfile();
+      expect(p?.pronouns).toBeUndefined();
+    });
+  });
+
+  it('renders sinceFallbackDate when profile.createdAt is empty (line 242 path 1 falsy)', () => {
+    // Plant a profile record directly in localStorage with an empty
+    // createdAt. loadProfile accepts it (typeof '' === 'string') but
+    // line 242's truthy guard treats it as falsy and falls through to
+    // strings.profile.nameSection.sinceFallbackDate.
+    localStorage.setItem(
+      'pp.profile',
+      JSON.stringify({ name: 'Maya', createdAt: '' })
+    );
+    renderProfile();
+    // The "since" copy interpolates the fallback ("your first day").
+    expect(screen.getByText(/your first day/)).toBeInTheDocument();
+  });
+
+  it('clicking CUSTOM radio while already in custom-mode preserves draft (line 290 path 1 falsy)', () => {
+    // isCustomPronouns is true when pronounsDraft is non-empty AND not
+    // in PRONOUN_PRESETS. Seed a custom value, click CUSTOM — the
+    // `if (!isCustomPronouns)` guard is FALSY (we're already custom),
+    // so setPronounsDraft('') does NOT fire and the draft survives.
+    saveProfile({ name: 'Maya', pronouns: 'fae/faer' });
+    renderProfile();
+    const input = screen.getByTestId('pronouns-custom-input') as HTMLInputElement;
+    expect(input.value).toBe('fae/faer');
+    const customRadio = screen.getByTestId('pronouns-radio-CUSTOM');
+    fireEvent.click(customRadio);
+    // Falsy arm of line 290 — draft preserved.
+    expect(input.value).toBe('fae/faer');
+  });
+});
+
 describe('Profile page — switch-user', () => {
   it('Switch user → confirmation dialog appears, confirm wipes profile + progress', async () => {
     saveProfile('Maya');
