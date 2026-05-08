@@ -106,8 +106,8 @@ export default defineConfig({
       // Vitest projects — unit + integration + component (browser). The
       // numbers below are the aggregate across all three.
       //
-      // Today's snapshot (2026-05-08, post-wizard-utils-multistep-options-end):
-      // statements 87.73%, branches 78.23%, functions 85.75%, lines 89.12%.
+      // Today's snapshot (2026-05-08, post-python-runner-input-routing):
+      // statements 87.74%, branches 78.26%, functions 85.75%, lines 89.13%.
       // Branches floor stays at 77 (established flap envelope dips below
       // 78.00, and 78 was reverted in post-use-debug-flag-catch-spy).
       // (Aggregate flaps ±0.1% per run due to browser-suite render-effect
@@ -119,6 +119,7 @@ export default defineConfig({
       // these numbers UP raises the matching threshold in the same PR.
       //
       // Earlier snapshots:
+      //   2026-05-08 post-wizard-utils-multistep-options-end: 87.73/78.23/85.75/89.12 → floor 87/77/85/88
       //   2026-05-08 post-use-editor-history-redo-timer: 87.73/78.30/85.81/89.10 → floor 87/77/85/88
       //   2026-05-08 post-assets-manager-no-category-asset: 87.70/78.21/85.69/89.08 → floor 87/77/85/88
       //   2026-05-08 post-broadcast-self-senderid-skip: 87.73/78.30/85.75/89.10 → floor 87/77/85/88
