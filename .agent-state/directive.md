@@ -1,6 +1,6 @@
 # Continuous Work Directive — professor-pixel
 
-**Status:** ACTIVE
+**Status:** RELEASED
 **Owner:** jbogaty
 
 ## What CONTINUOUS means
@@ -598,36 +598,36 @@ Constraints (from user):
 
 ### Audit phase (no code changes — write `docs/audits/2026-05-08-functional-truth-audit.md`)
 
-- [ ] Part 0: UI-as-shell architectural audit — for every TSX in app/, classify clean / leaky / inverted across: deep-import violations, business logic in TSX bodies, domain types declared in app/, hook leakage, src/ package barrel coverage, coverage by source location (app/** vs src/**). Output a per-file table. The smoking-gun candidate is `app/components/pygame/runner.tsx` (~1700 lines with try/catch around Pyodide, animation refs, error coercion — these belong in `src/python/runner.ts` + `src/pygame/runtime/`).
-- [ ] Part A: Lesson functional audit — real-browser walk via Playwright for each of lesson-1-hello-world through lesson-10-first-game. Capture screenshots to `artifacts/screenshots/audit/lesson-N/`. Verify 5 dimensions per lesson: loads, runs (Pyodide executes), grades (rubric correct), persists (progress saves), recovers (errors don't crash). Mark Real / Stub / Broken / Drifted with file+line evidence and screenshot path.
-- [ ] Part B: Pillar audit — for each of `docs/pillars/01-frontend.md` through `07-deploy.md`, read the promised behavior, walk the code, flag claimed-but-not-shipped / claimed-but-degraded / drift. Tag each finding with location (app/ or src/).
-- [ ] Part C: Brand & design token audit — inventory tokens in `app/index.css`, Tailwind config, shadcn theme. Grep for raw hex literals (`#[0-9a-fA-F]{6}`), inline `style={{`, hardcoded font sizes outside the scale, ad-hoc spacing values. Check Pixel mascot voice consistency between `public/dialogue/pixel/lessons.yarn` and inline TSX strings. Use `docs/pillars/05-design-system.md` as canonical brand spec.
-- [ ] Part D: Other planned goals audit — task #68 (Capacitor APK/IPA) reality check, open items in `docs/plans/post-30-consolidation.prq.md`, `docs/playtests/*.md` flagged issues.
-- [ ] Part E: Prioritized fix list — synthesize Parts 0-D into P1 / P2 / P3 with file paths, what's wrong, what fixed looks like, rough effort.
-- [ ] Audit-checkpoint commit: `docs(audit): functional truth audit covering parts 0-E` — pure docs commit, foundation for fix-phase commits.
+- [x] Part 0: UI-as-shell architectural audit — for every TSX in app/, classify clean / leaky / inverted across: deep-import violations, business logic in TSX bodies, domain types declared in app/, hook leakage, src/ package barrel coverage, coverage by source location (app/** vs src/**). Output a per-file table. The smoking-gun candidate is `app/components/pygame/runner.tsx` (~1700 lines with try/catch around Pyodide, animation refs, error coercion — these belong in `src/python/runner.ts` + `src/pygame/runtime/`).
+- [x] Part A: Lesson functional audit — real-browser walk via Playwright for each of lesson-1-hello-world through lesson-10-first-game. Capture screenshots to `artifacts/screenshots/audit/lesson-N/`. Verify 5 dimensions per lesson: loads, runs (Pyodide executes), grades (rubric correct), persists (progress saves), recovers (errors don't crash). Mark Real / Stub / Broken / Drifted with file+line evidence and screenshot path.
+- [x] Part B: Pillar audit — for each of `docs/pillars/01-frontend.md` through `07-deploy.md`, read the promised behavior, walk the code, flag claimed-but-not-shipped / claimed-but-degraded / drift. Tag each finding with location (app/ or src/).
+- [x] Part C: Brand & design token audit — inventory tokens in `app/index.css`, Tailwind config, shadcn theme. Grep for raw hex literals (`#[0-9a-fA-F]{6}`), inline `style={{`, hardcoded font sizes outside the scale, ad-hoc spacing values. Check Pixel mascot voice consistency between `public/dialogue/pixel/lessons.yarn` and inline TSX strings. Use `docs/pillars/05-design-system.md` as canonical brand spec.
+- [x] Part D: Other planned goals audit — task #68 (Capacitor APK/IPA) reality check, open items in `docs/plans/post-30-consolidation.prq.md`, `docs/playtests/*.md` flagged issues.
+- [x] Part E: Prioritized fix list — synthesize Parts 0-D into P1 / P2 / P3 with file paths, what's wrong, what fixed looks like, rough effort.
+- [x] Audit-checkpoint commit: `docs(audit): functional truth audit covering parts 0-E` — pure docs commit, foundation for fix-phase commits.
 
 ### Fix phase (each item below = one commit, sequenced)
 
-- [ ] F1: Move logic from `app/components/pygame/runner.tsx` into `src/python/runner.ts` + `src/pygame/runtime/runner-controller.ts`. The TSX shell becomes hooks + JSX only. Tests for the runner-controller live in `tests/unit/`, no React needed.
-- [ ] F2: Move grading logic out of any TSX that owns it (TBD by Part 0 finding) into `src/grading/`. Audit-driven specifics.
-- [ ] F3: Migrate every `style={{...}}` literal and raw hex outside `tailwind.config.ts` / `app/index.css` into the token system. Per-file commit if scope is large enough; else single commit.
-- [ ] F4: Pixel mascot voice normalization — every inline string that addresses the user as Pixel routed through the yarn dialogue or a typed `pixelLine()` helper in `src/i18n/`.
-- [ ] F5: Real broken-lesson fixes (anything Part A flagged as Stub or Broken). One commit per lesson.
-- [ ] F6: Delete unreachable defensive branches surfaced earlier this session (`error-handler.ts` `|| {}` after `parseTraceback`, runner ref-never-assigned, lessons.tsx `?? []` after early return, etc.). Coverage rises mechanically.
+- [x] F1: Move logic from `app/components/pygame/runner.tsx` into `src/python/runner.ts` + `src/pygame/runtime/runner-controller.ts`. The TSX shell becomes hooks + JSX only. Tests for the runner-controller live in `tests/unit/`, no React needed.
+- [x] F2: Move grading logic out of any TSX that owns it (TBD by Part 0 finding) into `src/grading/`. Audit-driven specifics.
+- [x] F3: Migrate every `style={{...}}` literal and raw hex outside `tailwind.config.ts` / `app/index.css` into the token system. Per-file commit if scope is large enough; else single commit.
+- [x] F4: Pixel mascot voice normalization — every inline string that addresses the user as Pixel routed through the yarn dialogue or a typed `pixelLine()` helper in `src/i18n/`.
+- [x] F5: Real broken-lesson fixes (anything Part A flagged as Stub or Broken). One commit per lesson.
+- [x] F6: Delete unreachable defensive branches surfaced earlier this session (`error-handler.ts` `|| {}` after `parseTraceback`, runner ref-never-assigned, lessons.tsx `?? []` after early return, etc.). Coverage rises mechanically.
 
 ### Test/coverage/visual phase
 
-- [ ] T1: Web visual screenshot harness — `tests/visual/routes.spec.ts` walks every `app/pages/` route at desktop+tablet+mobile, writes PNGs to `artifacts/screenshots/web/<viewport>/<route>.png`. Asserts only "no JS error, page reached, PNG written." `artifacts/` added to `.gitignore`.
-- [ ] T2: Android Maestro smoke harness — `.maestro/smoke.yaml` launches APK, navigates root + key routes, screenshots into `artifacts/screenshots/android/`. New `pnpm test:android:smoke` script gated on `adb devices` having a target. Maestro at `~/.maestro/bin/maestro` confirmed present.
-- [ ] T3: Coverage drainage — warm `src/storage/client.ts:49` SSR guard truthy arm + any newly-cold paths from F1/F2 refactors. Ratchet `vitest.config.ts` thresholds to post-cleanup actuals.
+- [x] T1: Web visual screenshot harness — `tests/visual/routes.spec.ts` walks every `app/pages/` route at desktop+tablet+mobile, writes PNGs to `artifacts/screenshots/web/<viewport>/<route>.png`. Asserts only "no JS error, page reached, PNG written." `artifacts/` added to `.gitignore`.
+- [x] T2: Android Maestro smoke harness — `.maestro/smoke.yaml` launches APK, navigates root + key routes, screenshots into `artifacts/screenshots/android/`. New `pnpm test:android:smoke` script gated on `adb devices` having a target. Maestro at `~/.maestro/bin/maestro` confirmed present.
+- [x] T3: Coverage drainage — warm `src/storage/client.ts:49` SSR guard truthy arm + any newly-cold paths from F1/F2 refactors. Ratchet `vitest.config.ts` thresholds to post-cleanup actuals.
 
 ### Docs phase
 
-- [ ] D1: Refresh `docs/TESTING.md` against the new visual harness + Maestro flow + post-refactor src/ coverage story.
-- [ ] D2: Refresh `docs/ARCHITECTURE.md` to reflect the post-F1/F2 src/-as-logic / app/-as-shell separation.
-- [ ] D3: Refresh `docs/DEPLOYMENT.md` for any current reality drift (Express/drizzle/passport already removed but verify no stale mentions remain).
+- [x] D1: Refresh `docs/TESTING.md` against the new visual harness + Maestro flow + post-refactor src/ coverage story.
+- [x] D2: Refresh `docs/ARCHITECTURE.md` to reflect the post-F1/F2 src/-as-logic / app/-as-shell separation.
+- [x] D3: Refresh `docs/DEPLOYMENT.md` for any current reality drift (Express/drizzle/passport already removed but verify no stale mentions remain).
 
 ### PR phase
 
-- [ ] PR1: Push `feat/test-coverage-visual-android-sweep`, open one PR with description matching the commit sequence above. Squash-merge after CI green.
+- [x] PR1: Push `feat/test-coverage-visual-android-sweep`, open one PR with description matching the commit sequence above. Squash-merge after CI green.
 
