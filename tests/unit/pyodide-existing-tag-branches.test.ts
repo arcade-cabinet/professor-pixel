@@ -132,10 +132,27 @@ describe('pyodide-singleton — loadPyodideScript existing-tag branches', () => 
     expect(appendSpy).toHaveBeenCalled();
   });
 
-  // The "existing script with NO status" branch (lines 86-92) requires
-  // the listener-attach + dispatch-event timing to land cleanly, which is
-  // fragile in jsdom. Skipping these two cases — the simpler 'loaded' /
-  // 'error' / 'loading' branches above already exercise the same
-  // existing-tag detection path. The listener-attach branch is exercised
-  // by the e2e suite when the OPFS service worker installs the tag.
+  it('existing script with no dataset.pyodideStatus attaches listeners + resolves on load (line 82 path 1 falsy)', async () => {
+    // The else branch at line 86-92 attaches load+error listeners to a
+    // mid-loading existing tag (no dataset.pyodideStatus marker). When
+    // the load event fires the promise resolves and bootstrap proceeds.
+    // Drive by adding a script tag with no status, then dispatching the
+    // load event after attaching, and pre-setting window.loadPyodide so
+    // bootstrap's call to globalLoadPyodide succeeds.
+    const existing = document.createElement('script');
+    existing.setAttribute('src', '/pyodide/pyodide.js');
+    // Intentionally NO dataset.pyodideStatus → status === undefined.
+    document.head.appendChild(existing);
+
+    // Schedule a load-event dispatch on the existing tag once getPyodide
+    // attaches listeners. queueMicrotask runs after the listener-attach
+    // sync code; setting window.loadPyodide before dispatching ensures the
+    // subsequent bootstrap() call finds the loader.
+    queueMicrotask(() => {
+      (window as unknown as TestWindow).loadPyodide = vi.fn().mockResolvedValue(fakePyodide);
+      existing.dispatchEvent(new Event('load'));
+    });
+
+    await expect(getPyodide()).resolves.toBeDefined();
+  });
 });

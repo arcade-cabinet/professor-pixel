@@ -106,13 +106,13 @@ export default defineConfig({
       // Vitest projects — unit + integration + component (browser). The
       // numbers below are the aggregate across all three.
       //
-      // Today's snapshot (2026-05-08, post-persistence-ssr-and-cookie-no-equals):
-      // statements 88.60%, branches 83.04%, functions 85.99%, lines 89.57%.
+      // Today's snapshot (2026-05-08, post-pyodide-existing-tag-no-status):
+      // statements 88.69%, branches 83.04%, functions 86.11%, lines 89.62%.
       // Branches floor 80 (RATCHETED 79→80 in post-pyodide-ssr-and-existing-tag-
       // undefined-status; floor sits 3.04pt under the aggregate run).
-      // Branches now at 83.04 (run-to-run envelope 82.97–83.04). Ratchet
-      // 80→81 still deferred — flap envelope of ~0.07pt around 83 means a
-      // ratchet would leave only 1.97pt cushion at the lower edge. Wait
+      // Two consecutive runs at 83.04 with the envelope holding 82.97–83.04.
+      // Ratchet 80→81 still deferred — flap envelope of ~0.07pt around 83
+      // means a ratchet leaves only 1.97pt cushion at the lower edge. Wait
       // for actuals to durably reach 83.5+ before ratcheting.
       // Branches floor stays at 77 (established flap envelope dips below
       // 78.00, and 78 was reverted in post-use-debug-flag-catch-spy).
@@ -125,6 +125,7 @@ export default defineConfig({
       // these numbers UP raises the matching threshold in the same PR.
       //
       // Earlier snapshots:
+      //   2026-05-08 post-persistence-ssr-and-cookie-no-equals: 88.60/83.04/85.99/89.57 → floor 87/80/85/88
       //   2026-05-08 post-projects-opfs-load-schema-no-thumb: 88.62/82.97/86.05/89.57 → floor 87/80/85/88
       //   2026-05-08 post-projects-update-with-thumbnail: 88.60/83.00/85.99/89.57 → floor 87/80/85/88 (branches first crossed 83% — flap high)
       //   2026-05-08 post-projects-opfs-revoke-existing-thumbnails: 88.60/82.90/86.05/89.57 → floor 87/80/85/88
