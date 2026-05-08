@@ -106,8 +106,8 @@ export default defineConfig({
       // Vitest projects — unit + integration + component (browser). The
       // numbers below are the aggregate across all three.
       //
-      // Today's snapshot (2026-05-08, post-global-handler-debug-off):
-      // statements 88.53%, branches 82.19%, functions 86.05%, lines 89.49%.
+      // Today's snapshot (2026-05-08, post-runner-runGame-error-edges):
+      // statements 88.43%, branches 82.19%, functions 85.99%, lines 89.38%.
       // Branches floor 80 (RATCHETED 79→80 in post-pyodide-ssr-and-existing-tag-
       // undefined-status; floor sits 2.19pt under the aggregate run).
       // Branches floor stays at 77 (established flap envelope dips below
@@ -121,6 +121,7 @@ export default defineConfig({
       // these numbers UP raises the matching threshold in the same PR.
       //
       // Earlier snapshots:
+      //   2026-05-08 post-global-handler-debug-off: 88.53/82.19/86.05/89.49 → floor 87/80/85/88
       //   2026-05-08 post-pyodide-ssr-and-existing-tag-undefined-status: 88.52/82.05/85.99/89.49 → floor 87/80/85/88 (RATCHETED branches 79→80)
       //   2026-05-08 post-tts-ssr-and-no-listener: 88.52/81.98/86.05/89.48 → floor 87/79/85/88
       //   2026-05-08 post-quota-ssr-and-null-paths: 88.49/81.86/85.99/89.48 → floor 87/79/85/88
