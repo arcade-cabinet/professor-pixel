@@ -290,6 +290,25 @@ describe('projects (OPFS) — loadWizardProject branches', () => {
     expect(revokeSpy).toHaveBeenCalledWith('blob:abc');
   });
 
+  it('OPFS load schema-fail + null thumbnailUrl skips revoke (line 343 path 1 falsy)', async () => {
+    // The schema-fail branch only revokes if loaded.thumbnailUrl is
+    // truthy. The prior test covered the truthy arm; the falsy arm
+    // (no thumbnail to revoke) sat cold. Passing thumbnailUrl: null
+    // exercises the `if (loaded.thumbnailUrl)` falsy path.
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    loadOpfs.mockResolvedValue({
+      meta: { id: 'p1', name: 'X', template: 't' },
+      wizardState: 'not-a-wizard-state' as never,
+      thumbnailUrl: null,
+      gamePy: undefined,
+    });
+    const result = await loadWizardProject('p1');
+    expect(result).toBeNull();
+    expect(warn).toHaveBeenCalled();
+    // Falsy arm — revokeObjectURL must NOT have been called.
+    expect(revokeSpy).not.toHaveBeenCalled();
+  });
+
   it('OPFS load happy path materializes thumbnail data URL + revokes (lines 346-355)', async () => {
     loadOpfs.mockResolvedValue({
       meta: { id: 'p1', name: 'X', template: 't' },
