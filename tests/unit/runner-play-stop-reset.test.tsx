@@ -209,3 +209,33 @@ describe('PygameRunner — resetGame', () => {
     resolveAsync?.();
   });
 });
+
+describe('PygameRunner — initPyodide error edge cases', () => {
+  it('initPyodide rejection with a non-Error value uses String(err) (line 64 falsy arm)', async () => {
+    // The error coercion is `err instanceof Error ? err.message : String(err)`.
+    // The existing error-path test rejects with a real Error, hitting the
+    // truthy arm. Pin the falsy arm by rejecting with a plain string —
+    // the runner must still surface a friendly error panel rather than
+    // crashing on `.message` of a non-Error.
+    getPyodideMock.mockRejectedValueOnce('plain-string-failure');
+    const onError = vi.fn();
+    render(<PygameRunner onError={onError} />);
+    await waitFor(() => {
+      expect(screen.getByTestId('runner-error-panel')).toBeInTheDocument();
+    });
+    expect(onError).toHaveBeenCalledWith('plain-string-failure');
+  });
+
+  it('initPyodide rejection without an onError prop still surfaces the error panel (line 68 falsy arm)', async () => {
+    // `if (onError) onError(raw)` falsy arm — onError is undefined. The
+    // runner must still set the error state and render the panel even
+    // when no callback is wired up. Without this pin, a regression that
+    // started accessing onError.call(...) unconditionally would crash
+    // any caller that omits the prop.
+    getPyodideMock.mockRejectedValueOnce(new Error('init failed for solo runner'));
+    render(<PygameRunner />);
+    await waitFor(() => {
+      expect(screen.getByTestId('runner-error-panel')).toBeInTheDocument();
+    });
+  });
+});
