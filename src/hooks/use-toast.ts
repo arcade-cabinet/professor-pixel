@@ -1,5 +1,12 @@
 import * as React from 'react';
 
+// Boundary note: `useToast` lives in src/hooks but the toast UI primitives
+// (ToastActionElement / ToastProps) are derived from React component
+// types in app/components/ui/toast.tsx (shadcn convention — types live
+// alongside their components). Moving useToast into app/components would
+// break ~20 callers; instead we leave this single typed import as a
+// known exception. If a third app/→src boundary tax appears, lift the
+// prop-types into src/types/toast.d.ts as a peer to pyodide.d.ts.
 import type { ToastActionElement, ToastProps } from '@/components/ui/toast';
 
 const TOAST_LIMIT = 1;
