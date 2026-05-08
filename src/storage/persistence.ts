@@ -53,6 +53,8 @@ const SESSION_STATE_KEY = 'wizard.session.v1';
 const PREFERENCES_COOKIE_PREFIX = 'wizard_';
 const COOKIE_EXPIRY_DAYS = 365;
 const DEBOUNCE_DELAY = 200; // milliseconds
+const INTRO_SEEN_KEY = 'pp.hasSeenIntro';
+const LANDING_PATH_KEY = 'pp.lastLandingPath';
 
 // Debounce utility — generic over the function signature so callers keep
 // their argument types intact through the wrapper.
@@ -429,5 +431,56 @@ export function isStorageAvailable(): boolean {
     return true;
   } catch (_e) {
     return false;
+  }
+}
+
+/* ─── Landing-chooser preferences (consumed by app/pages/home.tsx) ────────
+ * The home page remembers two scrap-of-state values: which path the user
+ * last took ('wizard' | 'lessons') and whether the intro card has been
+ * dismissed. Both are tiny KV reads at boot, so localStorage is correct
+ * (sync, no async OPFS round-trip on first paint).
+ *
+ * These wrappers let the TSX call typed helpers instead of inline
+ * try/catch around localStorage. SSR-safe: typeof window guards mean the
+ * functions return defensible defaults under jsdom-without-window or any
+ * future server-render.
+ * ----------------------------------------------------------------------- */
+
+export type LandingPath = 'wizard' | 'lessons';
+
+export function loadLastLandingPath(): LandingPath | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const stored = localStorage.getItem(LANDING_PATH_KEY);
+    return stored === 'wizard' || stored === 'lessons' ? stored : null;
+  } catch {
+    return null;
+  }
+}
+
+export function saveLastLandingPath(path: LandingPath): void {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem(LANDING_PATH_KEY, path);
+  } catch {
+    // QuotaExceededError or similar — fail silently; chooser still works.
+  }
+}
+
+export function hasSeenIntro(): boolean {
+  if (typeof window === 'undefined') return false;
+  try {
+    return localStorage.getItem(INTRO_SEEN_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
+
+export function markIntroSeen(): void {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem(INTRO_SEEN_KEY, '1');
+  } catch {
+    // ignore
   }
 }

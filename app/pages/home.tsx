@@ -21,43 +21,13 @@ import StorageBlockedNotice from '@/components/ui/storage-blocked-notice';
 import { useToast } from '@lib/hooks/use-toast';
 import { strings } from '@lib/i18n';
 
-const INTRO_SEEN_KEY = 'pp.hasSeenIntro';
-const LANDING_PATH_KEY = 'pp.lastLandingPath';
-
-type LandingPath = 'wizard' | 'lessons';
-
-function readLastLandingPath(): LandingPath | null {
-  try {
-    const stored = localStorage.getItem(LANDING_PATH_KEY);
-    return stored === 'wizard' || stored === 'lessons' ? stored : null;
-  } catch {
-    return null;
-  }
-}
-
-function writeLastLandingPath(path: LandingPath): void {
-  try {
-    localStorage.setItem(LANDING_PATH_KEY, path);
-  } catch {
-    // QuotaExceededError or similar — fail silently; chooser still works.
-  }
-}
-
-function readHasSeenIntro(): boolean {
-  try {
-    return localStorage.getItem(INTRO_SEEN_KEY) === '1';
-  } catch {
-    return false;
-  }
-}
-
-function writeHasSeenIntro(): void {
-  try {
-    localStorage.setItem(INTRO_SEEN_KEY, '1');
-  } catch {
-    // ignore
-  }
-}
+import {
+  loadLastLandingPath,
+  saveLastLandingPath,
+  hasSeenIntro,
+  markIntroSeen,
+  type LandingPath,
+} from '@lib/storage/persistence';
 
 /**
  * Home — the landing chooser.
@@ -211,7 +181,7 @@ export default function Home() {
     // we want to honor the explicit Lessons choice over the implicit
     // "you have a wizard in flight" assumption.
     const persisted = loadWizardState();
-    const lastPath = readLastLandingPath();
+    const lastPath = loadLastLandingPath();
     if (lastPath === 'lessons') {
       setLocation('/lessons');
       return;
@@ -221,7 +191,7 @@ export default function Home() {
       return;
     }
     // First-visit micro-tutorial card
-    if (!readHasSeenIntro()) {
+    if (!hasSeenIntro()) {
       setShowIntroCard(true);
     }
 
@@ -253,12 +223,12 @@ export default function Home() {
   }, []);
 
   const dismissIntro = () => {
-    writeHasSeenIntro();
+    markIntroSeen();
     setShowIntroCard(false);
   };
 
   const choose = (path: LandingPath) => {
-    writeLastLandingPath(path);
+    saveLastLandingPath(path);
     if (path === 'wizard') {
       setSkipChooser(true);
     } else {

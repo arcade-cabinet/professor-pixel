@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { baseUrl } from '@lib/utils/base-url';
+import { strings } from '@lib/i18n';
 
 interface Props {
   children: ReactNode;
@@ -104,62 +105,26 @@ export class ErrorBoundary extends Component<Props, State> {
     window.location.href = baseUrl;
   };
 
+  /**
+   * Map a caught error to one of four educational categories. Copy lives in
+   * `src/i18n/strings.ts` (`strings.errorCategories`) so the mascot voice
+   * stays consistent with the rest of the app and so this TSX shell only
+   * owns the keyword-routing logic.
+   */
   getEducationalMessage = (error: Error) => {
     const errorMessage = error.message.toLowerCase();
+    const c = strings.chrome.errorCategories;
 
     if (errorMessage.includes('chunk load failed') || errorMessage.includes('loading chunk')) {
-      return {
-        title: 'Loading Issue',
-        explanation:
-          "It looks like some parts of the app didn't load properly. This can happen when your internet connection is slow or when the app is updating.",
-        suggestions: [
-          'Try refreshing the page',
-          'Check your internet connection',
-          'Clear your browser cache if the problem persists',
-        ],
-        severity: 'warning' as const,
-      };
+      return { ...c.chunkLoad, severity: 'warning' as const };
     }
-
     if (errorMessage.includes('network') || errorMessage.includes('fetch')) {
-      return {
-        title: 'Connection Problem',
-        explanation:
-          'The app is having trouble connecting to our servers. This might be a temporary network issue.',
-        suggestions: [
-          'Check your internet connection',
-          'Try again in a few seconds',
-          'Contact support if the problem continues',
-        ],
-        severity: 'error' as const,
-      };
+      return { ...c.network, severity: 'error' as const };
     }
-
     if (errorMessage.includes('permission') || errorMessage.includes('access')) {
-      return {
-        title: 'Hmm, something is blocked',
-        explanation:
-          'Your browser is being extra careful and blocked something Pixel needs. A refresh usually fixes this.',
-        suggestions: [
-          'Try refreshing the page',
-          "Ask a grown-up if your browser has settings that block 'cookies' or 'storage'",
-        ],
-        severity: 'warning' as const,
-      };
+      return { ...c.permission, severity: 'warning' as const };
     }
-
-    // Generic error
-    return {
-      title: 'Something Unexpected Happened',
-      explanation:
-        "Don't worry! This is a technical issue with the app, not with your code. Our team works hard to prevent these errors, but sometimes they slip through.",
-      suggestions: [
-        'Try refreshing the page - this often fixes the problem',
-        'Go back to the home page and try again',
-        'If this keeps happening, let us know so we can fix it',
-      ],
-      severity: 'error' as const,
-    };
+    return { ...c.generic, severity: 'error' as const };
   };
 
   render() {
@@ -204,7 +169,7 @@ export class ErrorBoundary extends Component<Props, State> {
                   <AlertDescription className="text-blue-800 dark:text-blue-200">
                     <div className="font-medium mb-2">What you can try:</div>
                     <ul className="space-y-1">
-                      {educationalMessage.suggestions.map((suggestion) => (
+                      {educationalMessage.suggestions.map((suggestion: string) => (
                         <li key={suggestion} className="flex items-start gap-2">
                           <span className="text-blue-600 dark:text-blue-400 font-bold">•</span>
                           <span>{suggestion}</span>
