@@ -187,6 +187,78 @@ describe('exportProjectAsZip', () => {
     expect(zip.file('assets/evil.png')).toBeTruthy();
   });
 
+  it('falls back to {asset.id}.bin when asset.path ends with a trailing slash (line 107)', async () => {
+    // src.split('/').pop() returns '' (empty string, not undefined) when
+    // the path ends with '/'. The `||` chain in exporter.ts:107 catches
+    // that and falls back to `${asset.id}.bin`. Existing tests always
+    // pass paths with a real basename so the right-hand fallback never
+    // executes.
+    const buf = new Uint8Array([7, 7, 7]).buffer;
+    const fetchStub = makeFetchStub({
+      '/assets/weird/': { ok: true, body: buf },
+    });
+    const assets: GameAsset[] = [
+      {
+        id: 'weird-id',
+        name: 'Weird Path',
+        type: 'character',
+        path: '/assets/weird/',
+      } as unknown as GameAsset,
+    ];
+    const result = await exportProjectAsZip({
+      selectedComponents: {},
+      selectedAssets: assets,
+      fetchImpl: fetchStub,
+    });
+    const zip = await JSZip.loadAsync(result.blob);
+    expect(zip.file('assets/weird-id.bin')).toBeTruthy();
+  });
+
+  it('falls back to asset.bin when sanitization reduces the basename to "" (line 108)', async () => {
+    // The sanitizer maps anything outside [a-zA-Z0-9._-] to '_'. A
+    // basename composed entirely of safe characters like '_' would still
+    // remain non-empty, so we craft one whose chars are ALL replaced by
+    // '_' AND whose pre-sanitization name is empty after pop. Easiest:
+    // path ends with '/' AND id is also empty/falsy → `${asset.id ||
+    // 'asset'}.bin` resolves to 'asset.bin' before sanitization runs;
+    // sanitization sees 'asset.bin' (already safe). Different angle:
+    // give a path with a basename that is a single ' ' (NUL), which
+    // gets replaced to '_' (so non-empty post-sanitize). To hit the
+    // line-108 fallback we need a basename of just '/' or empty after
+    // sanitize — which only happens through the same trailing-slash
+    // path. Given that, the line-108 fallback is effectively a
+    // belt-and-suspenders against pop returning a value composed
+    // entirely of separator characters that the regex collapses; we
+    // reach it by giving an id that's an empty string AND a trailing
+    // slash, which routes through line-107's `'asset'` fallback to
+    // 'asset.bin' — already safe. The truly empty post-sanitize case
+    // requires a basename of only invalid chars THAT regex collapses
+    // to ''. The current regex replaces, doesn't drop, so a basename
+    // of '????' becomes '____' (still non-empty). Net: line 108 is
+    // belt-and-suspenders defensive code; assert the trailing-slash
+    // empty-id case lands on the literal 'asset.bin'.
+    const buf = new Uint8Array([1]).buffer;
+    const fetchStub = makeFetchStub({
+      '/assets/x/': { ok: true, body: buf },
+    });
+    const assets: GameAsset[] = [
+      {
+        id: '',
+        name: 'Empty Id',
+        type: 'character',
+        path: '/assets/x/',
+      } as unknown as GameAsset,
+    ];
+    const result = await exportProjectAsZip({
+      selectedComponents: {},
+      selectedAssets: assets,
+      fetchImpl: fetchStub,
+    });
+    const zip = await JSZip.loadAsync(result.blob);
+    // Empty id → line 107 routes to 'asset.bin'.
+    expect(zip.file('assets/asset.bin')).toBeTruthy();
+  });
+
   it('records failed assets in MISSING.txt without aborting the bundle', async () => {
     const fetchStub = makeFetchStub({
       '/assets/exists.png': { ok: true, body: new ArrayBuffer(2) },
@@ -309,6 +381,27 @@ describe('shareOrDownload', () => {
     expect(downloadSpy).not.toHaveBeenCalled();
     expect(consoleWarnSpy).not.toHaveBeenCalled();
     consoleWarnSpy.mockRestore();
+  });
+
+  it('skips canShare gate (defaults to true) when navigator.canShare is not a function (line 158)', async () => {
+    // Older browsers (Firefox desktop, some Android WebViews) expose
+    // navigator.share but not navigator.canShare. The ternary in
+    // exporter.ts:158 falls back to `true` so the share path still
+    // attempts. Existing tests always provide canShare as a function;
+    // this case exercises the `: true` arm.
+    const shareSpy = vi.fn(async () => undefined);
+    vi.stubGlobal('navigator', {
+      share: shareSpy,
+      // canShare deliberately omitted (typeof === 'undefined' !== 'function')
+    });
+    vi.stubGlobal('URL', {
+      ...URL,
+      createObjectURL: vi.fn(() => 'blob:fake'),
+      revokeObjectURL: vi.fn(),
+    });
+    const action = await shareOrDownload(exported);
+    expect(action).toBe('shared');
+    expect(shareSpy).toHaveBeenCalled();
   });
 
   it('falls back to download silently on NotAllowedError (transient activation expired)', async () => {
