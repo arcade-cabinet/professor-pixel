@@ -106,12 +106,13 @@ export default defineConfig({
       // Vitest projects — unit + integration + component (browser). The
       // numbers below are the aggregate across all three.
       //
-      // Today's snapshot (2026-05-08, post-runner-stop-ctx-null):
-      // statements 88.69%, branches 83.09%, functions 86.11%, lines 89.62%.
+      // Today's snapshot (2026-05-08, post-base-url-empty-fallback):
+      // statements 88.68%, branches 83.11%, functions 86.05%, lines 89.62%.
       // Branches floor 80 (RATCHETED 79→80 in post-pyodide-ssr-and-existing-tag-
-      // undefined-status; floor sits 3.09pt under the aggregate run).
-      // Five consecutive runs at 83+ (envelope 82.97–83.09). Lower edge still
-      // 82.97 — ratchet 80→81 stays deferred until actuals reach 83.5+.
+      // undefined-status; floor sits 3.11pt under the aggregate run).
+      // Six consecutive runs at 83+ (envelope 82.97–83.11). Lower edge still
+      // 82.97 — ratchet 80→81 stays deferred (would leave 1.97pt cushion at
+      // the worst-case dip). Wait for actuals to reach 83.5+ to ratchet safely.
       // Branches floor stays at 77 (established flap envelope dips below
       // 78.00, and 78 was reverted in post-use-debug-flag-catch-spy).
       // (Aggregate flaps ±0.1% per run due to browser-suite render-effect
@@ -123,6 +124,7 @@ export default defineConfig({
       // these numbers UP raises the matching threshold in the same PR.
       //
       // Earlier snapshots:
+      //   2026-05-08 post-runner-stop-ctx-null: 88.69/83.09/86.11/89.62 → floor 87/80/85/88
       //   2026-05-08 post-pyodide-cache-ssr-window: 88.68/83.07/86.05/89.62 → floor 87/80/85/88
       //   2026-05-08 post-pyodide-existing-tag-no-status: 88.69/83.04/86.11/89.62 → floor 87/80/85/88
       //   2026-05-08 post-persistence-ssr-and-cookie-no-equals: 88.60/83.04/85.99/89.57 → floor 87/80/85/88
