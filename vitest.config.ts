@@ -106,8 +106,8 @@ export default defineConfig({
       // Vitest projects — unit + integration + component (browser). The
       // numbers below are the aggregate across all three.
       //
-      // Today's snapshot (2026-05-08, post-exporter-share-and-name-fallbacks):
-      // statements 87.84%, branches 78.70%, functions 85.75%, lines 89.24%.
+      // Today's snapshot (2026-05-08, post-use-toast-reducer-branches):
+      // statements 87.84%, branches 78.74%, functions 85.75%, lines 89.24%.
       // Branches floor stays at 77 (established flap envelope dips below
       // 78.00, and 78 was reverted in post-use-debug-flag-catch-spy).
       // (Aggregate flaps ±0.1% per run due to browser-suite render-effect
@@ -119,6 +119,7 @@ export default defineConfig({
       // these numbers UP raises the matching threshold in the same PR.
       //
       // Earlier snapshots:
+      //   2026-05-08 post-exporter-share-and-name-fallbacks: 87.84/78.70/85.75/89.24 → floor 87/77/85/88
       //   2026-05-08 post-manager-selection-wrong-type: 87.84/78.56/85.75/89.24 → floor 87/77/85/88
       //   2026-05-08 post-play-fallback-branches: 87.84/78.42/85.75/89.24 → floor 87/77/85/88
       //   2026-05-08 post-home-storage-catch-fallbacks: 87.84/78.35/85.75/89.24 → floor 87/77/85/88
