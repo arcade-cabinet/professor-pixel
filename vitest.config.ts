@@ -106,8 +106,8 @@ export default defineConfig({
       // Vitest projects — unit + integration + component (browser). The
       // numbers below are the aggregate across all three.
       //
-      // Today's snapshot (2026-05-08, post-wysiwyg-escape-closes-drawers):
-      // statements 88.53%, branches 81.22%, functions 86.11%, lines 89.57%.
+      // Today's snapshot (2026-05-08, post-profile-page-edge-paths):
+      // statements 88.43%, branches 81.17%, functions 85.99%, lines 89.48%.
       // Branches floor 79 (ratcheted 78→79 in post-pixel-minimized-hover; floor
       // sits 2.22pt under the aggregate run).
       // Branches floor stays at 77 (established flap envelope dips below
@@ -121,6 +121,7 @@ export default defineConfig({
       // these numbers UP raises the matching threshold in the same PR.
       //
       // Earlier snapshots:
+      //   2026-05-08 post-wysiwyg-escape-closes-drawers: 88.53/81.22/86.11/89.57 → floor 87/79/85/88
       //   2026-05-08 post-ui-button-preview-fontsize-fallback: 88.39/81.03/85.99/89.46 → floor 87/79/85/88
       //   2026-05-08 post-wysiwyg-snap-disabled-falsy-arms: 88.39/81.01/85.99/89.46 → floor 87/79/85/88 (branches first crossed 81%)
       //   2026-05-08 post-opfs-projects-ssr-no-navigator: 88.39/80.89/85.99/89.46 → floor 87/79/85/88
