@@ -106,8 +106,8 @@ export default defineConfig({
       // Vitest projects — unit + integration + component (browser). The
       // numbers below are the aggregate across all three.
       //
-      // Today's snapshot (2026-05-08, post-use-device-type-pixel-ratio-zero):
-      // statements 88.01%, branches 79.34%, functions 85.75%, lines 89.32%.
+      // Today's snapshot (2026-05-08, post-projects-load-no-snapshot-file):
+      // statements 88.03%, branches 79.37%, functions 85.75%, lines 89.32%.
       // Branches floor 78 (ratcheted in post-persistence-cookie-and-migrate-null).
       // Branches floor stays at 77 (established flap envelope dips below
       // 78.00, and 78 was reverted in post-use-debug-flag-catch-spy).
@@ -120,6 +120,7 @@ export default defineConfig({
       // these numbers UP raises the matching threshold in the same PR.
       //
       // Earlier snapshots:
+      //   2026-05-08 post-use-device-type-pixel-ratio-zero: 88.01/79.34/85.75/89.32 → floor 87/78/85/88
       //   2026-05-08 post-client-handleStorageError-non-quota: 88.01/79.32/85.75/89.32 → floor 87/78/85/88
       //   2026-05-08 post-manager-preload-music-and-other-type: 88.01/79.34/85.75/89.32 → floor 87/78/85/88
       //   2026-05-08 post-pyodide-existing-loading-status: 88.06/79.37/85.81/89.35 → floor 87/78/85/88

@@ -79,6 +79,20 @@ describe('wizard projects (P5)', () => {
     expect(await loadWizardProject('does-not-exist')).toBeNull();
   });
 
+  it('returns null when the project has no wizard-state.json file (line 370 truthy arm)', async () => {
+    // localStorage path: project exists but its files array doesn't
+    // contain the SNAPSHOT_FILE entry. files.find returns undefined →
+    // line 370's `if (!file) return null` truthy arm fires. Existing
+    // tests always go through the saveWizardProject path which writes
+    // the snapshot file, so this guard stayed cold.
+    const saved = await saveWizardProject(baseSnapshot);
+    const raw = JSON.parse(localStorage.getItem('pygame_academy_projects') ?? '{}');
+    // Strip the wizard-state.json file from the row.
+    raw[saved.id].files = [];
+    localStorage.setItem('pygame_academy_projects', JSON.stringify(raw));
+    expect(await loadWizardProject(saved.id)).toBeNull();
+  });
+
   it('returns null when the stored snapshot fails schema validation', async () => {
     // CR review feedback: loadWizardProject must validate the snapshot
     // shape before handing it back to the wizard, otherwise corrupt or
