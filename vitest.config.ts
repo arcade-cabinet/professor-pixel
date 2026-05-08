@@ -106,9 +106,12 @@ export default defineConfig({
       // Vitest projects — unit + integration + component (browser). The
       // numbers below are the aggregate across all three.
       //
-      // Today's snapshot (2026-05-08, post-use-toast-remove-all):
-      // statements 87.64%, branches 78.00%, functions 85.75%, lines 89.02%.
-      // Branches crossed 77→78 — ratcheted floor below.
+      // Today's snapshot (2026-05-08, post-use-debug-flag-catch-spy):
+      // statements 87.64%, branches 77.96%, functions 85.69%, lines 89.04%.
+      // Branches floor reverted to 77 (post-use-toast snapshot read 78.00
+      // but the next run flapped to 77.96 — 78 was raised too tight inside
+      // the established ±0.1% flap envelope; the per-file targeted
+      // branches still move into the covered set deterministically).
       // (Aggregate flaps ±0.1% per run due to browser-suite render-effect
       // timing; the per-file targeted lines for each PR move into the
       // covered set deterministically.)
@@ -118,6 +121,7 @@ export default defineConfig({
       // these numbers UP raises the matching threshold in the same PR.
       //
       // Earlier snapshots:
+      //   2026-05-08 post-use-toast-remove-all: 87.64/78.00/85.75/89.02 → floor 87/78/85/88 (REVERTED — floor too tight)
       //   2026-05-08 post-compiler-variant-blocks: 87.61/77.93/85.69/89.01 → floor 87/77/85/88
       //   2026-05-08 post-profile-rethrow: 87.57/77.86/85.69/88.96 → floor 87/77/85/88
       //   2026-05-08 post-lessons-refresh-and-rethrow: 87.54/77.77/85.69/88.93 → floor 87/77/85/88
@@ -253,7 +257,7 @@ export default defineConfig({
       //   2026-05-05 post-#30: 27.71/22.42/22.28/27.71 → floor 26/21/21/26
       thresholds: {
         statements: 87,
-        branches: 78,
+        branches: 77,
         functions: 85,
         lines: 88,
       },
