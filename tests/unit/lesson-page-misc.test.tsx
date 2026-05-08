@@ -4,7 +4,7 @@
 //     (lines 143-145 — the else-if branch)
 //   - handleNextStep advances + resets output/error (lines 270-280)
 
-import type React from "react";
+import type React from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom/vitest';
@@ -35,12 +35,10 @@ const getUserProgressForLessonMock = vi.fn();
 const updateUserProgressMock = vi.fn();
 vi.mock('@lib/storage/mode', () => ({
   getClientStorage: () => ({
-    getUserProgressForLesson: (
-      ...args: Parameters<typeof getUserProgressForLessonMock>
-    ) => getUserProgressForLessonMock(...args),
-    updateUserProgress: (
-      ...args: Parameters<typeof updateUserProgressMock>
-    ) => updateUserProgressMock(...args),
+    getUserProgressForLesson: (...args: Parameters<typeof getUserProgressForLessonMock>) =>
+      getUserProgressForLessonMock(...args),
+    updateUserProgress: (...args: Parameters<typeof updateUserProgressMock>) =>
+      updateUserProgressMock(...args),
   }),
 }));
 
@@ -58,11 +56,7 @@ vi.mock('@/components/editor/code-editor', () => ({
   }) => (
     <div>
       <pre data-testid="code-editor-stub">code:{code}</pre>
-      <button
-        type="button"
-        data-testid="editor-execute-stub"
-        onClick={() => onExecute('', false)}
-      >
+      <button type="button" data-testid="editor-execute-stub" onClick={() => onExecute('', false)}>
         editor-execute
       </button>
     </div>
@@ -72,8 +66,9 @@ vi.mock('@/components/floating-feedback', () => ({ default: () => null }));
 vi.mock('@/components/ui/offline-pill', () => ({ default: () => null }));
 vi.mock('framer-motion', () => {
   const passthrough =
-    (Tag: keyof React.JSX.IntrinsicElements) =>
-    (props: Record<string, unknown>) => <Tag {...(props as object)} />;
+    (Tag: keyof React.JSX.IntrinsicElements) => (props: Record<string, unknown>) => (
+      <Tag {...(props as object)} />
+    );
   return {
     motion: new Proxy(
       {},
@@ -132,9 +127,7 @@ describe('LessonEnhanced — saved progress without code falls back to initialCo
     await screen.findByTestId('lesson-header');
     // Editor should hold the step-2 initialCode 'print(2)'.
     await waitFor(() => {
-      expect(screen.getByTestId('code-editor-stub').textContent).toContain(
-        'print(2)'
-      );
+      expect(screen.getByTestId('code-editor-stub').textContent).toContain('print(2)');
     });
   });
 });

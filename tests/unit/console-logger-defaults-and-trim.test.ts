@@ -37,11 +37,7 @@ describe('ConsoleLogger — default switch arms (lines 104, 125, 142)', () => {
   it('formats and routes a log with unknown level/category through the default arms', async () => {
     const { logger } = await import('@lib/monitoring/console-logger');
     // Cast through unknown — runtime stays the unknown identifier.
-    logger.log(
-      'mystery' as never,
-      'unknown-cat' as never,
-      'hello from the default arms'
-    );
+    logger.log('mystery' as never, 'unknown-cat' as never, 'hello from the default arms');
     // No assertion needed for the icons themselves — coverage is the
     // contract here. Sanity: console.log was the routed method
     // (default in getConsoleMethod).

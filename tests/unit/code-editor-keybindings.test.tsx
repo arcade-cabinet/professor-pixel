@@ -85,18 +85,16 @@ function installMonacoOnAppend(
     cb: () => void
   ) => void) & { config: (cfg: unknown) => void };
   requireWithConfig.config = vi.fn();
-  return vi
-    .spyOn(document.head, 'appendChild')
-    .mockImplementation((node: Node) => {
-      if (node instanceof HTMLScriptElement && node.src.includes('monaco-editor')) {
-        const w = window as unknown as WritableShim;
-        w.require = requireWithConfig;
-        w.monaco = monacoStub;
-        queueMicrotask(() => node.dispatchEvent(new Event('load')));
-        return node;
-      }
-      return realAppend(node);
-    });
+  return vi.spyOn(document.head, 'appendChild').mockImplementation((node: Node) => {
+    if (node instanceof HTMLScriptElement && node.src.includes('monaco-editor')) {
+      const w = window as unknown as WritableShim;
+      w.require = requireWithConfig;
+      w.monaco = monacoStub;
+      queueMicrotask(() => node.dispatchEvent(new Event('load')));
+      return node;
+    }
+    return realAppend(node);
+  });
 }
 
 describe('CodeEditor — Ctrl+Enter callback fires onExecute (line 241-242)', () => {
@@ -172,10 +170,7 @@ describe('CodeEditor — addCommand try/catch (line 271-273)', () => {
     await new Promise((r) => setTimeout(r, 30));
     spy.mockRestore();
     // The keyboard-shortcut catch (line 271-273) logs.
-    expect(errSpy).toHaveBeenCalledWith(
-      'Error adding keyboard shortcut:',
-      expect.any(Error)
-    );
+    expect(errSpy).toHaveBeenCalledWith('Error adding keyboard shortcut:', expect.any(Error));
   });
 });
 
@@ -192,18 +187,16 @@ describe('CodeEditor — outer catch when require callback throws (line 275-277)
       throw new Error('config boom');
     });
     const realAppend = document.head.appendChild.bind(document.head);
-    const spy = vi
-      .spyOn(document.head, 'appendChild')
-      .mockImplementation((node: Node) => {
-        if (node instanceof HTMLScriptElement && node.src.includes('monaco-editor')) {
-          const w = window as unknown as WritableShim;
-          w.require = requireWithConfig;
-          w.monaco = { editor: {} };
-          queueMicrotask(() => node.dispatchEvent(new Event('load')));
-          return node;
-        }
-        return realAppend(node);
-      });
+    const spy = vi.spyOn(document.head, 'appendChild').mockImplementation((node: Node) => {
+      if (node instanceof HTMLScriptElement && node.src.includes('monaco-editor')) {
+        const w = window as unknown as WritableShim;
+        w.require = requireWithConfig;
+        w.monaco = { editor: {} };
+        queueMicrotask(() => node.dispatchEvent(new Event('load')));
+        return node;
+      }
+      return realAppend(node);
+    });
     render(<CodeEditor {...baseProps} />);
     await new Promise((r) => setTimeout(r, 30));
     spy.mockRestore();
@@ -221,10 +214,7 @@ describe('CodeEditor — dispose throw on unmount (line 291-293)', () => {
     await new Promise((r) => setTimeout(r, 30));
     spy.mockRestore();
     expect(() => unmount()).not.toThrow();
-    expect(errSpy).toHaveBeenCalledWith(
-      'Error disposing Monaco editor:',
-      expect.any(Error)
-    );
+    expect(errSpy).toHaveBeenCalledWith('Error disposing Monaco editor:', expect.any(Error));
   });
 });
 

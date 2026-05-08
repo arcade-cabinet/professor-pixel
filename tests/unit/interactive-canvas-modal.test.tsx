@@ -16,12 +16,13 @@ import '@testing-library/jest-dom/vitest';
 
 // Capture the spec passed to useDrop so the test can fire its drop callback
 // later. The collect() result + ref pair stays inert.
-let capturedSpec:
-  | {
-      drop: (item: unknown, monitor: { getClientOffset: () => { x: number; y: number } | null }) => void;
-      canDrop?: () => boolean;
-    }
-  | null = null;
+let capturedSpec: {
+  drop: (
+    item: unknown,
+    monitor: { getClientOffset: () => { x: number; y: number } | null }
+  ) => void;
+  canDrop?: () => boolean;
+} | null = null;
 vi.mock('react-dnd', () => ({
   useDrop: (specFn: () => unknown) => {
     capturedSpec = specFn() as typeof capturedSpec;
@@ -102,10 +103,7 @@ describe('InteractiveGameCanvas — drop opens config modal', () => {
   it('firing drop with a sprite asset opens the modal with grid-snapped position', () => {
     const onConfigChange = vi.fn();
     render(
-      <InteractiveGameCanvas
-        gameConfig={makeConfig(makeScene())}
-        onConfigChange={onConfigChange}
-      />
+      <InteractiveGameCanvas gameConfig={makeConfig(makeScene())} onConfigChange={onConfigChange} />
     );
     expect(capturedSpec).not.toBeNull();
     // Initially the modal isn't open — the entity-name input doesn't exist.
@@ -129,31 +127,19 @@ describe('InteractiveGameCanvas — drop opens config modal', () => {
   });
 
   it('drop with no client offset (offscreen drop) does NOT open the modal', () => {
-    render(
-      <InteractiveGameCanvas
-        gameConfig={makeConfig(makeScene())}
-        onConfigChange={vi.fn()}
-      />
-    );
+    render(<InteractiveGameCanvas gameConfig={makeConfig(makeScene())} onConfigChange={vi.fn()} />);
     actDrop({ id: 'sprite-ball', type: 'entity', name: 'Ball' }, null);
     expect(screen.queryByTestId('input-entity-name')).not.toBeInTheDocument();
   });
 
   it('drop with type !== "entity" coerces dropped item to a decoration', () => {
-    render(
-      <InteractiveGameCanvas
-        gameConfig={makeConfig(makeScene())}
-        onConfigChange={vi.fn()}
-      />
-    );
+    render(<InteractiveGameCanvas gameConfig={makeConfig(makeScene())} onConfigChange={vi.fn()} />);
     actDrop({ id: 'tree-1', type: 'sprite', name: 'Tree' }, { x: 100, y: 100 });
     // Modal opens with name 'Tree' — the type=='entity' ternary at line 100
     // falls to 'decoration' for non-entity items. We can't read the type
     // directly, but the modal renders → branch is exercised.
     expect(screen.getByTestId('input-entity-name')).toBeInTheDocument();
-    expect((screen.getByTestId('input-entity-name') as HTMLInputElement).value).toBe(
-      'Tree'
-    );
+    expect((screen.getByTestId('input-entity-name') as HTMLInputElement).value).toBe('Tree');
   });
 });
 
@@ -171,12 +157,7 @@ describe('InteractiveGameCanvas — modal input onChange handlers', () => {
   }
 
   it('typing in the name input updates entity-name state (line 416)', () => {
-    render(
-      <InteractiveGameCanvas
-        gameConfig={makeConfig(makeScene())}
-        onConfigChange={vi.fn()}
-      />
-    );
+    render(<InteractiveGameCanvas gameConfig={makeConfig(makeScene())} onConfigChange={vi.fn()} />);
     openModal();
     const nameInput = screen.getByTestId('input-entity-name') as HTMLInputElement;
     fireEvent.change(nameInput, { target: { value: 'Beach Ball' } });
@@ -184,12 +165,7 @@ describe('InteractiveGameCanvas — modal input onChange handlers', () => {
   });
 
   it('typing in the X / Y position inputs updates state (lines 434, 452)', () => {
-    render(
-      <InteractiveGameCanvas
-        gameConfig={makeConfig(makeScene())}
-        onConfigChange={vi.fn()}
-      />
-    );
+    render(<InteractiveGameCanvas gameConfig={makeConfig(makeScene())} onConfigChange={vi.fn()} />);
     openModal();
     const xInput = screen.getByTestId('input-entity-x') as HTMLInputElement;
     const yInput = screen.getByTestId('input-entity-y') as HTMLInputElement;
@@ -200,12 +176,7 @@ describe('InteractiveGameCanvas — modal input onChange handlers', () => {
   });
 
   it('non-numeric values fall through the parseInt|0 fallback for X/Y', () => {
-    render(
-      <InteractiveGameCanvas
-        gameConfig={makeConfig(makeScene())}
-        onConfigChange={vi.fn()}
-      />
-    );
+    render(<InteractiveGameCanvas gameConfig={makeConfig(makeScene())} onConfigChange={vi.fn()} />);
     openModal();
     const xInput = screen.getByTestId('input-entity-x') as HTMLInputElement;
     // type=number inputs in jsdom treat 'abc' as empty string → parseInt('') is NaN → ||0.
@@ -214,12 +185,7 @@ describe('InteractiveGameCanvas — modal input onChange handlers', () => {
   });
 
   it('typing in the width / height inputs updates state (lines 473, 491)', () => {
-    render(
-      <InteractiveGameCanvas
-        gameConfig={makeConfig(makeScene())}
-        onConfigChange={vi.fn()}
-      />
-    );
+    render(<InteractiveGameCanvas gameConfig={makeConfig(makeScene())} onConfigChange={vi.fn()} />);
     openModal();
     const wInput = screen.getByTestId('input-entity-width') as HTMLInputElement;
     const hInput = screen.getByTestId('input-entity-height') as HTMLInputElement;
@@ -230,12 +196,7 @@ describe('InteractiveGameCanvas — modal input onChange handlers', () => {
   });
 
   it('typing in the layer input updates state (line 511)', () => {
-    render(
-      <InteractiveGameCanvas
-        gameConfig={makeConfig(makeScene())}
-        onConfigChange={vi.fn()}
-      />
-    );
+    render(<InteractiveGameCanvas gameConfig={makeConfig(makeScene())} onConfigChange={vi.fn()} />);
     openModal();
     const layerInput = screen.getByTestId('input-entity-layer') as HTMLInputElement;
     fireEvent.change(layerInput, { target: { value: '5' } });
@@ -247,10 +208,7 @@ describe('InteractiveGameCanvas — handleSaveEntity (Add Entity button)', () =>
   it('clicking "Add Entity" calls onConfigChange with the new entity + closes the modal', () => {
     const onConfigChange = vi.fn();
     render(
-      <InteractiveGameCanvas
-        gameConfig={makeConfig(makeScene())}
-        onConfigChange={onConfigChange}
-      />
+      <InteractiveGameCanvas gameConfig={makeConfig(makeScene())} onConfigChange={onConfigChange} />
     );
     actDrop(
       {
@@ -269,9 +227,7 @@ describe('InteractiveGameCanvas — handleSaveEntity (Add Entity button)', () =>
     expect(updated.scenes[0].entities).toHaveLength(1);
     expect(updated.scenes[0].entities[0].name).toBe('Ball');
     // Toast was fired.
-    expect(toastMock).toHaveBeenCalledWith(
-      expect.objectContaining({ title: 'Entity Added' })
-    );
+    expect(toastMock).toHaveBeenCalledWith(expect.objectContaining({ title: 'Entity Added' }));
     // Modal closed — name input gone.
     expect(screen.queryByTestId('input-entity-name')).not.toBeInTheDocument();
   });
@@ -279,10 +235,7 @@ describe('InteractiveGameCanvas — handleSaveEntity (Add Entity button)', () =>
   it('clicking Cancel closes the modal without firing onConfigChange (line 522)', () => {
     const onConfigChange = vi.fn();
     render(
-      <InteractiveGameCanvas
-        gameConfig={makeConfig(makeScene())}
-        onConfigChange={onConfigChange}
-      />
+      <InteractiveGameCanvas gameConfig={makeConfig(makeScene())} onConfigChange={onConfigChange} />
     );
     actDrop(
       {

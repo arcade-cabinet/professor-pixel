@@ -36,9 +36,8 @@ const { saveProfileMock, realRef } = vi.hoisted(() => ({
 }));
 
 vi.mock('@lib/storage/profile', async () => {
-  const actual = await vi.importActual<typeof import('@lib/storage/profile')>(
-    '@lib/storage/profile'
-  );
+  const actual =
+    await vi.importActual<typeof import('@lib/storage/profile')>('@lib/storage/profile');
   realRef.saveProfile = actual.saveProfile;
   return {
     ...actual,

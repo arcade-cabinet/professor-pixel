@@ -13,9 +13,7 @@ vi.mock('react-dnd', () => ({
 // that pull in the simulator. They're harmless to call but noisy in
 // jsdom — stub them.
 vi.mock('@lib/pygame/runtime/simulator', async () => {
-  const actual = await vi.importActual<Record<string, unknown>>(
-    '@lib/pygame/runtime/simulator'
-  );
+  const actual = await vi.importActual<Record<string, unknown>>('@lib/pygame/runtime/simulator');
   return {
     ...actual,
     setCanvasContext: vi.fn(),
@@ -60,9 +58,7 @@ describe('PygameEditorCanvas — render', () => {
     render(
       <PygameEditorCanvas
         {...baseProps}
-        components={[
-          { id: 'p1', componentId: 'ball', x: 100, y: 100, properties: {} },
-        ]}
+        components={[{ id: 'p1', componentId: 'ball', x: 100, y: 100, properties: {} }]}
         selectedId="p1"
         onDelete={onDelete}
       />
@@ -121,7 +117,9 @@ describe('PygameEditorCanvas — keyboard placement (armed mode)', () => {
 });
 
 describe('PygameEditorCanvas — pointer placement', () => {
-  function fakePointerEvent(props: Partial<PointerEvent> = {}): React.PointerEvent<HTMLCanvasElement> {
+  function fakePointerEvent(
+    props: Partial<PointerEvent> = {}
+  ): React.PointerEvent<HTMLCanvasElement> {
     return {
       pointerId: 1,
       pointerType: 'mouse',
@@ -145,7 +143,10 @@ describe('PygameEditorCanvas — pointer placement', () => {
   it('clicking on empty canvas with no armed item deselects', () => {
     const onSelect = vi.fn();
     render(<PygameEditorCanvas {...baseProps} onSelect={onSelect} />);
-    fireEvent.pointerDown(screen.getByTestId('place-canvas'), fakePointerEvent({ clientX: 1, clientY: 1 }));
+    fireEvent.pointerDown(
+      screen.getByTestId('place-canvas'),
+      fakePointerEvent({ clientX: 1, clientY: 1 })
+    );
     expect(onSelect).toHaveBeenCalledWith(null);
   });
 

@@ -38,9 +38,7 @@ describe('WizardCodeEditor', () => {
   });
 
   it('applies the className to the wrapper', () => {
-    const { container } = render(
-      <WizardCodeEditor type="code-editor" className="test-class" />
-    );
+    const { container } = render(<WizardCodeEditor type="code-editor" className="test-class" />);
     expect(container.querySelector('.test-class')).toBeTruthy();
   });
 });

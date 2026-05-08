@@ -86,9 +86,6 @@ describe('PygameLivePreview — runSnippet non-Error rejection (line 195 path 1 
     await waitFor(() => {
       expect(toastMock).toHaveBeenCalled();
     });
-    expect(errSpy).toHaveBeenCalledWith(
-      '[live-preview]',
-      'Failed to execute pygame code'
-    );
+    expect(errSpy).toHaveBeenCalledWith('[live-preview]', 'Failed to execute pygame code');
   });
 });

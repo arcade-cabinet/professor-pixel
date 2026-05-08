@@ -108,23 +108,17 @@ describe('useViewport', () => {
     const addCalls: Array<[string, () => void]> = [];
     const removeCalls: Array<[string, () => void]> = [];
     vi.stubGlobal('innerWidth', 768);
-    vi.stubGlobal(
-      'matchMedia',
-      ((q: string) => ({
-        matches: false,
-        media: q,
-        // No addEventListener / removeEventListener here — typeof check
-        // in the hook should redirect to addListener / removeListener.
-        addListener: (cb: () => void) => addCalls.push([q, cb]),
-        removeListener: (cb: () => void) => removeCalls.push([q, cb]),
-      })) as unknown as typeof window.matchMedia
-    );
+    vi.stubGlobal('matchMedia', ((q: string) => ({
+      matches: false,
+      media: q,
+      // No addEventListener / removeEventListener here — typeof check
+      // in the hook should redirect to addListener / removeListener.
+      addListener: (cb: () => void) => addCalls.push([q, cb]),
+      removeListener: (cb: () => void) => removeCalls.push([q, cb]),
+    })) as unknown as typeof window.matchMedia);
     const { unmount } = renderHook(() => useViewport());
     // Both queries should have called addListener.
-    expect(addCalls.map(([q]) => q).sort()).toEqual([
-      '(any-pointer: fine)',
-      '(pointer: coarse)',
-    ]);
+    expect(addCalls.map(([q]) => q).sort()).toEqual(['(any-pointer: fine)', '(pointer: coarse)']);
     unmount();
     expect(removeCalls.map(([q]) => q).sort()).toEqual([
       '(any-pointer: fine)',

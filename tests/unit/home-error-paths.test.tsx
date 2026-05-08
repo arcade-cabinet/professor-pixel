@@ -147,9 +147,7 @@ describe('Home — deleteProjectMutation onError (lines 108-116)', () => {
       expect(destructive).toBe(true);
     });
     // Confirm UI cleared.
-    expect(
-      screen.queryByTestId('my-game-confirm-delete-proj-1')
-    ).not.toBeInTheDocument();
+    expect(screen.queryByTestId('my-game-confirm-delete-proj-1')).not.toBeInTheDocument();
   });
 });
 

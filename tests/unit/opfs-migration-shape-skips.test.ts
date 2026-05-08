@@ -266,9 +266,7 @@ describe('opfs-migration — thumbnail + saveOpfs failure paths', () => {
     );
     // The "deliberately not written" warn at line 189-191 fires.
     expect(
-      warn.mock.calls.some(
-        (c) => typeof c[0] === 'string' && c[0].includes('OPFS write failure')
-      )
+      warn.mock.calls.some((c) => typeof c[0] === 'string' && c[0].includes('OPFS write failure'))
     ).toBe(true);
   });
 });

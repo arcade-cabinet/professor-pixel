@@ -44,11 +44,7 @@ describe('PixelMinimized — desktop touchEnd is a no-op (line 152 path 1 falsy)
     // run the mobile path; this pins the desktop short-circuit.
     const onRestore = vi.fn();
     const { container } = render(
-      <PixelMinimized
-        onRestore={onRestore}
-        sessionActions={baseSessionActions}
-        isMobile={false}
-      />
+      <PixelMinimized onRestore={onRestore} sessionActions={baseSessionActions} isMobile={false} />
     );
     const wrapper = container.querySelector('.top-4.left-4') as HTMLElement;
     fireEvent.touchStart(wrapper, { touches: [{ clientY: 0 }] });
@@ -94,11 +90,7 @@ describe('PixelMinimized — tooltip current-activity arms (lines 293, 298)', ()
 
   it('omits the activity badge when neither currentLesson nor currentGame are set (line 293 falsy)', () => {
     const { container } = render(
-      <PixelMinimized
-        onRestore={vi.fn()}
-        sessionActions={baseSessionActions}
-        isMobile={false}
-      />
+      <PixelMinimized onRestore={vi.fn()} sessionActions={baseSessionActions} isMobile={false} />
     );
     const wrapper = container.querySelector('.top-4.left-4') as HTMLElement;
     fireEvent.mouseEnter(wrapper);
@@ -116,11 +108,7 @@ describe('PixelMinimized — tooltip current-activity arms (lines 293, 298)', ()
 describe('PixelMinimized — mobile encouragement + progress positioning (lines 318, 327, 350)', () => {
   it('mobile encouragement bubble lands in the top-right (line 318/327 truthy)', () => {
     const { container } = render(
-      <PixelMinimized
-        onRestore={vi.fn()}
-        sessionActions={baseSessionActions}
-        isMobile={true}
-      />
+      <PixelMinimized onRestore={vi.fn()} sessionActions={baseSessionActions} isMobile={true} />
     );
     // Encouragement timer fires at 30s.
     act(() => {
@@ -139,11 +127,7 @@ describe('PixelMinimized — mobile encouragement + progress positioning (lines 
       completedSteps: ['lesson-1', 'lesson-2', 'lesson-3', 'lesson-4'],
     } as unknown as SessionActions;
     const { container } = render(
-      <PixelMinimized
-        onRestore={vi.fn()}
-        sessionActions={sessionActions}
-        isMobile={true}
-      />
+      <PixelMinimized onRestore={vi.fn()} sessionActions={sessionActions} isMobile={true} />
     );
     // Progress widget gates on completedLessons>=3 AND uses the isMobile
     // ternary at line 350 to choose 'top-16 left-2' vs 'top-4 left-20'.

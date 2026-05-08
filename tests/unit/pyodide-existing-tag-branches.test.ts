@@ -10,10 +10,7 @@
 // Plus the bootstrap window-undefined branch (line 113-114).
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import {
-  __resetPyodideForTests,
-  getPyodide,
-} from '@lib/python/pyodide-singleton';
+import { __resetPyodideForTests, getPyodide } from '@lib/python/pyodide-singleton';
 
 interface TestWindow {
   loadPyodide?: (...args: unknown[]) => Promise<unknown>;

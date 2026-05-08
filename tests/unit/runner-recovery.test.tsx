@@ -102,17 +102,13 @@ describe('PygameRunner — recovery-failed branch (P9.3)', () => {
     // false. Existing tests run with default jsdom navigator (onLine
     // unset → not strictly false), only covering the falsy arm. Pin
     // navigator.onLine to false so the offline-aware copy fires.
-    const onLineSpy = vi
-      .spyOn(navigator, 'onLine', 'get')
-      .mockReturnValue(false);
+    const onLineSpy = vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false);
     getPyodideMock.mockRejectedValue(new Error('CDN down'));
     try {
       render(<PygameRunner />);
       await screen.findByTestId('runner-error-panel');
       fireEvent.click(screen.getByTestId('runner-recover-button'));
-      await waitFor(() =>
-        expect(screen.getByTestId('runner-error-panel')).toBeInTheDocument()
-      );
+      await waitFor(() => expect(screen.getByTestId('runner-error-panel')).toBeInTheDocument());
       fireEvent.click(screen.getByTestId('runner-recover-button'));
       const panel = await screen.findByTestId('runner-recovery-failed-panel');
       // Offline copy is the truthy arm — references "internet is off".
@@ -144,8 +140,8 @@ describe('PygameRunner — recovery-failed branch (P9.3)', () => {
       await waitFor(() => {
         expect(loadWizardStateMock).toHaveBeenCalled();
       });
-      const emptySlotWarns = warnSpy.mock.calls.filter(([msg]) =>
-        typeof msg === 'string' && msg.includes('wizard state slot is empty')
+      const emptySlotWarns = warnSpy.mock.calls.filter(
+        ([msg]) => typeof msg === 'string' && msg.includes('wizard state slot is empty')
       );
       expect(emptySlotWarns).toHaveLength(0);
     } finally {
@@ -164,9 +160,7 @@ describe('PygameRunner — recovery-failed branch (P9.3)', () => {
     render(<PygameRunner />);
     await screen.findByTestId('runner-error-panel');
     fireEvent.click(screen.getByTestId('runner-recover-button'));
-    await waitFor(() =>
-      expect(screen.getByTestId('runner-error-panel')).toBeInTheDocument()
-    );
+    await waitFor(() => expect(screen.getByTestId('runner-error-panel')).toBeInTheDocument());
     fireEvent.click(screen.getByTestId('runner-recover-button'));
     await screen.findByTestId('runner-recovery-failed-panel');
     // Now flip the mock so the next call resolves with a working pyodide.
@@ -177,9 +171,7 @@ describe('PygameRunner — recovery-failed branch (P9.3)', () => {
     });
     fireEvent.click(screen.getByTestId('runner-recovery-failed-retry'));
     await waitFor(() => {
-      expect(
-        screen.queryByTestId('runner-recovery-failed-panel')
-      ).not.toBeInTheDocument();
+      expect(screen.queryByTestId('runner-recovery-failed-panel')).not.toBeInTheDocument();
     });
   });
 });

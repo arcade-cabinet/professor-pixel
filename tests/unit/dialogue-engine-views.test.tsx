@@ -8,11 +8,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom/vitest';
-import {
-  DialogueText,
-  DialogueBox,
-  getDialogueHelpers,
-} from '@/components/wizard/dialogue-engine';
+import { DialogueText, DialogueBox, getDialogueHelpers } from '@/components/wizard/dialogue-engine';
 import type { DialogueState, WizardNode } from '@lib/wizard/types';
 
 afterEach(() => {
@@ -30,9 +26,7 @@ describe('DialogueText', () => {
   });
 
   it('returns null when text is empty', () => {
-    const { container } = render(
-      <DialogueText text="" nodeId="n1" dialogueStep={0} />
-    );
+    const { container } = render(<DialogueText text="" nodeId="n1" dialogueStep={0} />);
     expect(container.firstChild).toBeNull();
   });
 
@@ -59,9 +53,7 @@ describe('DialogueBox', () => {
   });
 
   it('forwards className to the outer wrapper', () => {
-    const { container } = render(
-      <DialogueBox text="Hi" className="dlg-cls" />
-    );
+    const { container } = render(<DialogueBox text="Hi" className="dlg-cls" />);
     expect(container.querySelector('.dlg-cls')).toBeTruthy();
   });
 });

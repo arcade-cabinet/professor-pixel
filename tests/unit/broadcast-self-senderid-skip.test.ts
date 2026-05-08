@@ -9,10 +9,7 @@
 // test and post a message with the module's own SENDER_ID.
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import {
-  subscribeStorageEvents,
-  _SENDER_ID_FOR_TESTS,
-} from '@lib/storage/broadcast';
+import { subscribeStorageEvents, _SENDER_ID_FOR_TESTS } from '@lib/storage/broadcast';
 
 describe('broadcast subscribeStorageEvents — self senderId skip (line 98)', () => {
   let unsubscribe: () => void;
@@ -21,7 +18,9 @@ describe('broadcast subscribeStorageEvents — self senderId skip (line 98)', ()
 
   beforeEach(() => {
     handler = vi.fn();
-    unsubscribe = subscribeStorageEvents(handler as unknown as Parameters<typeof subscribeStorageEvents>[0]);
+    unsubscribe = subscribeStorageEvents(
+      handler as unknown as Parameters<typeof subscribeStorageEvents>[0]
+    );
     otherTab = new BroadcastChannel('pp.storage.v1');
   });
 

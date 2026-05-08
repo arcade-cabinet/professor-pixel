@@ -546,12 +546,15 @@ describe('Persistence Library', () => {
       // the false arm (non-matching names) was uncovered.
       saveWizardState({ currentNodeId: 'test' });
       setCookie('theme', 'dark'); // becomes pygame-prefs-theme=dark
-      (cookieMock as unknown as { cookies: Record<string, string> }).cookies['analytics_id'] = 'abc123'; // non-prefixed
+      (cookieMock as unknown as { cookies: Record<string, string> }).cookies['analytics_id'] =
+        'abc123'; // non-prefixed
       clearAllData();
       // Wizard cookie is gone.
       expect(getCookie('theme')).toBeNull();
       // Non-prefixed cookie survived the false-arm fall-through.
-      expect((cookieMock as unknown as { cookies: Record<string, string> }).cookies['analytics_id']).toBe('abc123');
+      expect(
+        (cookieMock as unknown as { cookies: Record<string, string> }).cookies['analytics_id']
+      ).toBe('abc123');
     });
   });
 
@@ -569,9 +572,7 @@ describe('Persistence Library', () => {
       const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
       expect(() => migrateStorageIfNeeded()).not.toThrow();
       // Storage unchanged — the false arm did NOT enter the re-save block.
-      expect(localStorageMock.getItem('wizard.state.v1')).toBe(
-        JSON.stringify('not-an-object')
-      );
+      expect(localStorageMock.getItem('wizard.state.v1')).toBe(JSON.stringify('not-an-object'));
       errSpy.mockRestore();
       warnSpy.mockRestore();
       logSpy.mockRestore();

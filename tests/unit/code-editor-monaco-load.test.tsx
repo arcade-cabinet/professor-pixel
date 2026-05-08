@@ -65,14 +65,12 @@ describe('CodeEditor — Monaco script.onload happy path', () => {
       KeyMod: { CtrlCmd: 1 << 0, Shift: 1 << 1 },
       KeyCode: { Enter: 100, Space: 101 },
     };
-    const requireFn = vi.fn(
-      (modules: string[], cb: () => void) => {
-        // First call may be require.config; only the array+cb call drives the
-        // Monaco-create path. The component invokes require([...], cb) once
-        // it's done with require.config(...).
-        cb();
-      }
-    ) as unknown as ((modules: string[], cb: () => void) => void) & {
+    const requireFn = vi.fn((modules: string[], cb: () => void) => {
+      // First call may be require.config; only the array+cb call drives the
+      // Monaco-create path. The component invokes require([...], cb) once
+      // it's done with require.config(...).
+      cb();
+    }) as unknown as ((modules: string[], cb: () => void) => void) & {
       config: (cfg: unknown) => void;
     };
     requireFn.config = vi.fn();
@@ -81,25 +79,23 @@ describe('CodeEditor — Monaco script.onload happy path', () => {
     // (a) prevent jsdom from making a real network request and
     // (b) install the Monaco shim before firing the load event.
     const realAppend = document.head.appendChild.bind(document.head);
-    const appendSpy = vi
-      .spyOn(document.head, 'appendChild')
-      .mockImplementation((node: Node) => {
-        if (node instanceof HTMLScriptElement && node.src.includes('monaco-editor')) {
-          // Stage the global Monaco shim before flipping load — the
-          // script.onload handler reads window.require + window.monaco
-          // synchronously inside its require() callback chain.
-          const w = window as unknown as WritableShim;
-          w.require = requireFn;
-          w.monaco = monacoStub;
-          // Dispatch load on next microtask so the component's
-          // useEffect cleanup ordering is respected.
-          queueMicrotask(() => {
-            node.dispatchEvent(new Event('load'));
-          });
-          return node;
-        }
-        return realAppend(node);
-      });
+    const appendSpy = vi.spyOn(document.head, 'appendChild').mockImplementation((node: Node) => {
+      if (node instanceof HTMLScriptElement && node.src.includes('monaco-editor')) {
+        // Stage the global Monaco shim before flipping load — the
+        // script.onload handler reads window.require + window.monaco
+        // synchronously inside its require() callback chain.
+        const w = window as unknown as WritableShim;
+        w.require = requireFn;
+        w.monaco = monacoStub;
+        // Dispatch load on next microtask so the component's
+        // useEffect cleanup ordering is respected.
+        queueMicrotask(() => {
+          node.dispatchEvent(new Event('load'));
+        });
+        return node;
+      }
+      return realAppend(node);
+    });
 
     render(<CodeEditor {...baseProps} />);
 
@@ -141,18 +137,16 @@ describe('CodeEditor — Monaco script.onload happy path', () => {
       KeyCode: { Enter: 100, Space: 101 },
     };
     const realAppend = document.head.appendChild.bind(document.head);
-    const appendSpy = vi
-      .spyOn(document.head, 'appendChild')
-      .mockImplementation((node: Node) => {
-        if (node instanceof HTMLScriptElement && node.src.includes('monaco-editor')) {
-          const w = window as unknown as WritableShim;
-          w.require = requireFn;
-          w.monaco = monacoStub;
-          queueMicrotask(() => node.dispatchEvent(new Event('load')));
-          return node;
-        }
-        return realAppend(node);
-      });
+    const appendSpy = vi.spyOn(document.head, 'appendChild').mockImplementation((node: Node) => {
+      if (node instanceof HTMLScriptElement && node.src.includes('monaco-editor')) {
+        const w = window as unknown as WritableShim;
+        w.require = requireFn;
+        w.monaco = monacoStub;
+        queueMicrotask(() => node.dispatchEvent(new Event('load')));
+        return node;
+      }
+      return realAppend(node);
+    });
 
     render(<CodeEditor {...baseProps} />);
     await new Promise((resolve) => setTimeout(resolve, 30));
@@ -165,16 +159,14 @@ describe('CodeEditor — Monaco script.onload happy path', () => {
   it('script.onerror path is exercised when the loader fails to fetch', async () => {
     const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     const realAppend = document.head.appendChild.bind(document.head);
-    const appendSpy = vi
-      .spyOn(document.head, 'appendChild')
-      .mockImplementation((node: Node) => {
-        if (node instanceof HTMLScriptElement && node.src.includes('monaco-editor')) {
-          // Fire onerror instead of onload — Monaco never installs.
-          queueMicrotask(() => node.dispatchEvent(new Event('error')));
-          return node;
-        }
-        return realAppend(node);
-      });
+    const appendSpy = vi.spyOn(document.head, 'appendChild').mockImplementation((node: Node) => {
+      if (node instanceof HTMLScriptElement && node.src.includes('monaco-editor')) {
+        // Fire onerror instead of onload — Monaco never installs.
+        queueMicrotask(() => node.dispatchEvent(new Event('error')));
+        return node;
+      }
+      return realAppend(node);
+    });
 
     render(<CodeEditor {...baseProps} />);
     await new Promise((resolve) => setTimeout(resolve, 30));

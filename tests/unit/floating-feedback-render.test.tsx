@@ -223,17 +223,13 @@ describe('FloatingFeedback — celebration timer (lines 101-112)', () => {
       // signature className "fixed inset-0 pointer-events-none z-50".
       // The heading "Excellent Work! 🎉" has 🎉 too, so we match the
       // distinctive overlay class instead.
-      const overlay = document.body.querySelector(
-        '.fixed.inset-0.pointer-events-none.z-50'
-      );
+      const overlay = document.body.querySelector('.fixed.inset-0.pointer-events-none.z-50');
       expect(overlay).toBeTruthy();
       // Advance another 1100ms to clear the overlay.
       act(() => {
         vi.advanceTimersByTime(1100);
       });
-      const overlayAfter = document.body.querySelector(
-        '.fixed.inset-0.pointer-events-none.z-50'
-      );
+      const overlayAfter = document.body.querySelector('.fixed.inset-0.pointer-events-none.z-50');
       expect(overlayAfter).toBeFalsy();
     } finally {
       vi.useRealTimers();

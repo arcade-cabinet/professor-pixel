@@ -47,9 +47,7 @@ describe('apiCallWithRetry — throws result.error after exhaustion (line 228)',
   });
 
   it('rejects with the wrapped error when fetch keeps rejecting', async () => {
-    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockRejectedValue(
-      new Error('network down')
-    );
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockRejectedValue(new Error('network down'));
     await expect(
       apiCallWithRetry('https://example.invalid/x', undefined, {
         maxAttempts: 1,

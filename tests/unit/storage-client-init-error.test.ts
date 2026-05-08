@@ -83,8 +83,6 @@ describe('ClientStorage handleStorageError — window.toast branch (line 53)', (
     // catch routes through handleStorageError which sees a quota error
     // and calls window.toast. ≥1 invocation is sufficient.
     expect(toastMock).toHaveBeenCalled();
-    expect(toastMock.mock.calls[0][0]).toEqual(
-      expect.stringContaining('saved games are full')
-    );
+    expect(toastMock.mock.calls[0][0]).toEqual(expect.stringContaining('saved games are full'));
   });
 });

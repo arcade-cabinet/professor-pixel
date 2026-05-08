@@ -224,8 +224,8 @@ describe('GlobalErrorHandler — getErrorIcon (debug-mode track logging)', () =>
       timestamp: new Date().toISOString(),
       level: 'info',
     });
-    const wasIconLogged = logSpy.mock.calls.some((args) =>
-      typeof args[0] === 'string' && args[0].includes(icon)
+    const wasIconLogged = logSpy.mock.calls.some(
+      (args) => typeof args[0] === 'string' && args[0].includes(icon)
     );
     expect(wasIconLogged).toBe(true);
   });

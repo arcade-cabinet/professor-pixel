@@ -53,9 +53,7 @@ describe('logger.system convenience surface', () => {
       ...warnSpy.mock.calls,
       ...errorSpy.mock.calls,
     ];
-    const anySystem = allCalls.some(
-      (args) => typeof args[0] === 'string' && args[0].includes('⚙️')
-    );
+    const anySystem = allCalls.some((args) => typeof args[0] === 'string' && args[0].includes('⚙️'));
     expect(anySystem).toBe(true);
   });
 });

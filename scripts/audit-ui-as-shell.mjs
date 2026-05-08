@@ -72,7 +72,9 @@ for (const file of walk(ROOT)) {
   // 3. raw hex literals outside `from '...'` imports.
   const rawHexLines = src
     .split('\n')
-    .filter((l) => !l.trim().startsWith('//') && !l.includes('from ') && /#[0-9a-fA-F]{6}\b/.test(l));
+    .filter(
+      (l) => !l.trim().startsWith('//') && !l.includes('from ') && /#[0-9a-fA-F]{6}\b/.test(l)
+    );
   const rawHexCount = rawHexLines.length;
 
   // 4. inline style literals.
@@ -93,7 +95,8 @@ for (const file of walk(ROOT)) {
   const bodyLogicMarkers = [];
   if (/parseInt\(|parseFloat\(|Number\([^)]/m.test(src)) bodyLogicMarkers.push('numeric-parse');
   if (/JSON\.parse\(/.test(src)) bodyLogicMarkers.push('json-parse');
-  if (/new RegExp\(|\/[^\n/]+\/[gimsuy]*\.(test|exec|match)/.test(src)) bodyLogicMarkers.push('regex-eval');
+  if (/new RegExp\(|\/[^\n/]+\/[gimsuy]*\.(test|exec|match)/.test(src))
+    bodyLogicMarkers.push('regex-eval');
   if (/new Promise\s*\(/.test(src)) bodyLogicMarkers.push('promise-construction');
   if (/(?:await )?fetch\(/.test(src)) bodyLogicMarkers.push('fetch-call');
   if (/setInterval\(|setTimeout\(/.test(src)) bodyLogicMarkers.push('timer');
@@ -133,16 +136,22 @@ for (const file of walk(ROOT)) {
 
 // Sort: INVERTED first (worst → best within), then LEAKY, then CLEAN.
 const order = { INVERTED: 0, LEAKY: 1, CLEAN: 2 };
-results.sort((a, b) => order[a.verdict] - order[b.verdict] || b.score - a.score || b.lines - a.lines);
+results.sort(
+  (a, b) => order[a.verdict] - order[b.verdict] || b.score - a.score || b.lines - a.lines
+);
 
 const counts = results.reduce((acc, r) => ((acc[r.verdict] = (acc[r.verdict] || 0) + 1), acc), {});
 
 console.log(`# Part 0 — UI-as-shell architectural audit (mechanical pass)\n`);
 console.log(`Files scanned: **${results.length}**`);
-console.log(`Verdict: **${counts.INVERTED || 0} inverted**, **${counts.LEAKY || 0} leaky**, **${counts.CLEAN || 0} clean**\n`);
+console.log(
+  `Verdict: **${counts.INVERTED || 0} inverted**, **${counts.LEAKY || 0} leaky**, **${counts.CLEAN || 0} clean**\n`
+);
 
 console.log(`## Inverted — UI is load-bearing logic\n`);
-console.log(`| File | Lines | try/catch | bodyLogic | inlineStyle | rawHex | deepImports | domainTypes | Score |`);
+console.log(
+  `| File | Lines | try/catch | bodyLogic | inlineStyle | rawHex | deepImports | domainTypes | Score |`
+);
 console.log(`|---|---:|---:|---|---:|---:|---:|---|---:|`);
 for (const r of results.filter((r) => r.verdict === 'INVERTED')) {
   console.log(
@@ -151,7 +160,9 @@ for (const r of results.filter((r) => r.verdict === 'INVERTED')) {
 }
 
 console.log(`\n## Leaky — small but holding logic that should move\n`);
-console.log(`| File | Lines | try/catch | bodyLogic | inlineStyle | rawHex | deepImports | domainTypes | Score |`);
+console.log(
+  `| File | Lines | try/catch | bodyLogic | inlineStyle | rawHex | deepImports | domainTypes | Score |`
+);
 console.log(`|---|---:|---:|---|---:|---:|---:|---|---:|`);
 for (const r of results.filter((r) => r.verdict === 'LEAKY')) {
   console.log(
@@ -160,4 +171,6 @@ for (const r of results.filter((r) => r.verdict === 'LEAKY')) {
 }
 
 console.log(`\n## Clean — TSX-as-shell ✓\n`);
-console.log(`Total clean: ${counts.CLEAN || 0}. Names omitted; see machine-readable JSON for full list.\n`);
+console.log(
+  `Total clean: ${counts.CLEAN || 0}. Names omitted; see machine-readable JSON for full list.\n`
+);

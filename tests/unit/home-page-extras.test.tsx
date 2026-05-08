@@ -179,9 +179,7 @@ describe('Home — Delete cancel branch', () => {
     fireEvent.click(await screen.findByTestId('my-game-delete-proj-1'));
     fireEvent.click(screen.getByTestId('my-game-cancel-delete-proj-1'));
     expect(deleteWizardProjectMock).not.toHaveBeenCalled();
-    expect(
-      screen.queryByTestId('my-game-confirm-delete-proj-1')
-    ).not.toBeInTheDocument();
+    expect(screen.queryByTestId('my-game-confirm-delete-proj-1')).not.toBeInTheDocument();
   });
 });
 
@@ -238,13 +236,9 @@ describe('Home — Remix mutation', () => {
     });
     renderHome();
     fireEvent.click(await screen.findByTestId('my-game-remix-proj-1'));
-    await waitFor(() =>
-      expect(cloneWizardProjectMock).toHaveBeenCalledWith('proj-1')
-    );
+    await waitFor(() => expect(cloneWizardProjectMock).toHaveBeenCalledWith('proj-1'));
     // After the clone settles, the wizard takes over.
-    await waitFor(() =>
-      expect(screen.getByTestId('universal-wizard-stub')).toBeInTheDocument()
-    );
+    await waitFor(() => expect(screen.getByTestId('universal-wizard-stub')).toBeInTheDocument());
     expect(localStorage.getItem('pp.activeProjectId')).toBe('clone-1');
   });
 
@@ -262,9 +256,7 @@ describe('Home — Remix mutation', () => {
     loadWizardProjectMock.mockResolvedValue(null);
     renderHome();
     fireEvent.click(await screen.findByTestId('my-game-remix-proj-1'));
-    await waitFor(() =>
-      expect(cloneWizardProjectMock).toHaveBeenCalledWith('proj-1')
-    );
+    await waitFor(() => expect(cloneWizardProjectMock).toHaveBeenCalledWith('proj-1'));
     await waitFor(() => {
       expect(localStorage.getItem('pp.activeProjectId')).toBe('clone-2');
     });

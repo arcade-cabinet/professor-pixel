@@ -42,12 +42,10 @@ const getUserProgressForLessonMock = vi.fn();
 const updateUserProgressMock = vi.fn();
 vi.mock('@lib/storage/mode', () => ({
   getClientStorage: () => ({
-    getUserProgressForLesson: (
-      ...args: Parameters<typeof getUserProgressForLessonMock>
-    ) => getUserProgressForLessonMock(...args),
-    updateUserProgress: (
-      ...args: Parameters<typeof updateUserProgressMock>
-    ) => updateUserProgressMock(...args),
+    getUserProgressForLesson: (...args: Parameters<typeof getUserProgressForLessonMock>) =>
+      getUserProgressForLessonMock(...args),
+    updateUserProgress: (...args: Parameters<typeof updateUserProgressMock>) =>
+      updateUserProgressMock(...args),
   }),
 }));
 
@@ -79,11 +77,7 @@ vi.mock('@/components/editor/code-editor', () => ({
   }) => (
     <div>
       <pre data-testid="code-editor-stub">code:{code}</pre>
-      <button
-        type="button"
-        data-testid="editor-execute-stub"
-        onClick={() => onExecute('', true)}
-      >
+      <button type="button" data-testid="editor-execute-stub" onClick={() => onExecute('', true)}>
         editor-execute
       </button>
     </div>
@@ -109,11 +103,7 @@ vi.mock('@/components/floating-feedback', () => ({
       <button data-testid="ff-complete" type="button" onClick={onCompleteLesson}>
         complete
       </button>
-      <button
-        data-testid="ff-apply"
-        type="button"
-        onClick={() => onApplySolution('fixed = 1')}
-      >
+      <button data-testid="ff-apply" type="button" onClick={() => onApplySolution('fixed = 1')}>
         apply
       </button>
     </div>
@@ -124,8 +114,9 @@ vi.mock('@/components/ui/offline-pill', () => ({ default: () => null }));
 
 vi.mock('framer-motion', () => {
   const passthrough =
-    (Tag: keyof React.JSX.IntrinsicElements) =>
-    (props: Record<string, unknown>) => <Tag {...(props as object)} />;
+    (Tag: keyof React.JSX.IntrinsicElements) => (props: Record<string, unknown>) => (
+      <Tag {...(props as object)} />
+    );
   return {
     motion: new Proxy(
       {},

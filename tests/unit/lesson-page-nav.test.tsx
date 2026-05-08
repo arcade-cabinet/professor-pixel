@@ -9,7 +9,7 @@
 //   - completion modal "View All" tertiary (hasNext = true) → setLocation
 //   - completion modal no-next path → "View All" primary
 
-import type React from "react";
+import type React from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom/vitest';
@@ -41,12 +41,10 @@ const getUserProgressForLessonMock = vi.fn();
 const updateUserProgressMock = vi.fn();
 vi.mock('@lib/storage/mode', () => ({
   getClientStorage: () => ({
-    getUserProgressForLesson: (
-      ...args: Parameters<typeof getUserProgressForLessonMock>
-    ) => getUserProgressForLessonMock(...args),
-    updateUserProgress: (
-      ...args: Parameters<typeof updateUserProgressMock>
-    ) => updateUserProgressMock(...args),
+    getUserProgressForLesson: (...args: Parameters<typeof getUserProgressForLessonMock>) =>
+      getUserProgressForLessonMock(...args),
+    updateUserProgress: (...args: Parameters<typeof updateUserProgressMock>) =>
+      updateUserProgressMock(...args),
   }),
 }));
 
@@ -55,9 +53,7 @@ vi.mock('@/components/header', () => ({
   default: () => <header data-testid="lesson-header">Header</header>,
 }));
 vi.mock('@/components/editor/code-editor', () => ({
-  default: ({ code }: { code: string }) => (
-    <div data-testid="code-editor-stub">code:{code}</div>
-  ),
+  default: ({ code }: { code: string }) => <div data-testid="code-editor-stub">code:{code}</div>,
 }));
 vi.mock('@/components/floating-feedback', () => ({
   default: () => null,
@@ -65,8 +61,9 @@ vi.mock('@/components/floating-feedback', () => ({
 vi.mock('@/components/ui/offline-pill', () => ({ default: () => null }));
 vi.mock('framer-motion', () => {
   const passthrough =
-    (Tag: keyof React.JSX.IntrinsicElements) =>
-    (props: Record<string, unknown>) => <Tag {...(props as object)} />;
+    (Tag: keyof React.JSX.IntrinsicElements) => (props: Record<string, unknown>) => (
+      <Tag {...(props as object)} />
+    );
   return {
     motion: new Proxy(
       {},

@@ -35,9 +35,7 @@ vi.mock('react-dnd-html5-backend', () => ({
 
 // Pygame-runtime side effects — same shim that canvas.test.tsx uses.
 vi.mock('@lib/pygame/runtime/simulator', async () => {
-  const actual = await vi.importActual<Record<string, unknown>>(
-    '@lib/pygame/runtime/simulator'
-  );
+  const actual = await vi.importActual<Record<string, unknown>>('@lib/pygame/runtime/simulator');
   return {
     ...actual,
     setCanvasContext: vi.fn(),
@@ -143,14 +141,8 @@ describe('PygameWysiwygEditor — tabs', () => {
     // we don't drive a click here; the rendering pass alone exercises the
     // TabsList + TabsTrigger + TabsContent branches inside wysiwyg.
     render(<PygameWysiwygEditor />);
-    expect(screen.getByRole('tab', { name: /Visual/ })).toHaveAttribute(
-      'aria-selected',
-      'true'
-    );
-    expect(screen.getByRole('tab', { name: /Code/ })).toHaveAttribute(
-      'aria-selected',
-      'false'
-    );
+    expect(screen.getByRole('tab', { name: /Visual/ })).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getByRole('tab', { name: /Code/ })).toHaveAttribute('aria-selected', 'false');
   });
 });
 
@@ -195,18 +187,14 @@ describe('PygameWysiwygEditor — initialComponents', () => {
         properties: {},
       },
     ];
-    expect(() =>
-      render(<PygameWysiwygEditor initialComponents={initial} />)
-    ).not.toThrow();
+    expect(() => render(<PygameWysiwygEditor initialComponents={initial} />)).not.toThrow();
   });
 });
 
 describe('PygameWysiwygEditor — undo/redo keyboard shortcuts', () => {
   it('Ctrl+Z does not throw when document is in default state', () => {
     render(<PygameWysiwygEditor />);
-    expect(() =>
-      fireEvent.keyDown(document, { key: 'z', ctrlKey: true })
-    ).not.toThrow();
+    expect(() => fireEvent.keyDown(document, { key: 'z', ctrlKey: true })).not.toThrow();
   });
 
   it('Ctrl+Shift+Z (redo) does not throw', () => {
@@ -218,9 +206,7 @@ describe('PygameWysiwygEditor — undo/redo keyboard shortcuts', () => {
 
   it('Cmd+Z on macOS does not throw (metaKey path)', () => {
     render(<PygameWysiwygEditor />);
-    expect(() =>
-      fireEvent.keyDown(document, { key: 'z', metaKey: true })
-    ).not.toThrow();
+    expect(() => fireEvent.keyDown(document, { key: 'z', metaKey: true })).not.toThrow();
   });
 
   it('Ctrl+Z is no-op when target is an INPUT (yields to native undo)', () => {
@@ -228,9 +214,7 @@ describe('PygameWysiwygEditor — undo/redo keyboard shortcuts', () => {
     const input = document.createElement('input');
     document.body.appendChild(input);
     expect(() =>
-      input.dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'z', ctrlKey: true, bubbles: true })
-      )
+      input.dispatchEvent(new KeyboardEvent('keydown', { key: 'z', ctrlKey: true, bubbles: true }))
     ).not.toThrow();
     document.body.removeChild(input);
   });

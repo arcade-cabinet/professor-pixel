@@ -31,22 +31,14 @@ afterEach(() => {
 describe('PixelMinimized — render variants', () => {
   it('renders the Pixel avatar image', () => {
     render(
-      <PixelMinimized
-        onRestore={vi.fn()}
-        sessionActions={baseSessionActions}
-        isMobile={false}
-      />
+      <PixelMinimized onRestore={vi.fn()} sessionActions={baseSessionActions} isMobile={false} />
     );
     expect(screen.getByAltText(/Pixel Assistant/i)).toBeInTheDocument();
   });
 
   it('positions in the top-right on mobile', () => {
     const { container } = render(
-      <PixelMinimized
-        onRestore={vi.fn()}
-        sessionActions={baseSessionActions}
-        isMobile={true}
-      />
+      <PixelMinimized onRestore={vi.fn()} sessionActions={baseSessionActions} isMobile={true} />
     );
     // The position class is built from the isMobile flag — the outer
     // motion.div carries `top-2 right-2` for mobile.
@@ -55,11 +47,7 @@ describe('PixelMinimized — render variants', () => {
 
   it('positions in the top-left on desktop', () => {
     const { container } = render(
-      <PixelMinimized
-        onRestore={vi.fn()}
-        sessionActions={baseSessionActions}
-        isMobile={false}
-      />
+      <PixelMinimized onRestore={vi.fn()} sessionActions={baseSessionActions} isMobile={false} />
     );
     expect(container.querySelector('.top-4.left-4')).toBeTruthy();
   });
@@ -69,11 +57,7 @@ describe('PixelMinimized — click + swipe handlers', () => {
   it('clicking the avatar restores Pixel on desktop', () => {
     const onRestore = vi.fn();
     render(
-      <PixelMinimized
-        onRestore={onRestore}
-        sessionActions={baseSessionActions}
-        isMobile={false}
-      />
+      <PixelMinimized onRestore={onRestore} sessionActions={baseSessionActions} isMobile={false} />
     );
     fireEvent.click(screen.getByAltText(/Pixel Assistant/i));
     expect(onRestore).toHaveBeenCalled();
@@ -82,11 +66,7 @@ describe('PixelMinimized — click + swipe handlers', () => {
   it('clicking the avatar does NOT restore on mobile (swipe-only)', () => {
     const onRestore = vi.fn();
     render(
-      <PixelMinimized
-        onRestore={onRestore}
-        sessionActions={baseSessionActions}
-        isMobile={true}
-      />
+      <PixelMinimized onRestore={onRestore} sessionActions={baseSessionActions} isMobile={true} />
     );
     fireEvent.click(screen.getByAltText(/Pixel Assistant/i));
     expect(onRestore).not.toHaveBeenCalled();
@@ -95,11 +75,7 @@ describe('PixelMinimized — click + swipe handlers', () => {
   it('swipe-down on mobile restores Pixel (deltaY > 50)', () => {
     const onRestore = vi.fn();
     const { container } = render(
-      <PixelMinimized
-        onRestore={onRestore}
-        sessionActions={baseSessionActions}
-        isMobile={true}
-      />
+      <PixelMinimized onRestore={onRestore} sessionActions={baseSessionActions} isMobile={true} />
     );
     const wrapper = container.querySelector('.top-2.right-2') as HTMLElement;
     fireEvent.touchStart(wrapper, { touches: [{ clientY: 0 }] });
@@ -110,11 +86,7 @@ describe('PixelMinimized — click + swipe handlers', () => {
   it('swipe with deltaY ≤ 50 is ignored', () => {
     const onRestore = vi.fn();
     const { container } = render(
-      <PixelMinimized
-        onRestore={onRestore}
-        sessionActions={baseSessionActions}
-        isMobile={true}
-      />
+      <PixelMinimized onRestore={onRestore} sessionActions={baseSessionActions} isMobile={true} />
     );
     const wrapper = container.querySelector('.top-2.right-2') as HTMLElement;
     fireEvent.touchStart(wrapper, { touches: [{ clientY: 0 }] });
@@ -126,11 +98,7 @@ describe('PixelMinimized — click + swipe handlers', () => {
 describe('PixelMinimized — encouragement timer', () => {
   it('first encouragement fires after 30s', () => {
     render(
-      <PixelMinimized
-        onRestore={vi.fn()}
-        sessionActions={baseSessionActions}
-        isMobile={false}
-      />
+      <PixelMinimized onRestore={vi.fn()} sessionActions={baseSessionActions} isMobile={false} />
     );
     // No encouragement yet.
     expect(screen.queryByTestId('pixel-encouragement')).not.toBeInTheDocument();
@@ -147,11 +115,7 @@ describe('PixelMinimized — encouragement timer', () => {
 
   it('cleans up timers on unmount', () => {
     const { unmount } = render(
-      <PixelMinimized
-        onRestore={vi.fn()}
-        sessionActions={baseSessionActions}
-        isMobile={false}
-      />
+      <PixelMinimized onRestore={vi.fn()} sessionActions={baseSessionActions} isMobile={false} />
     );
     unmount();
     // Advance past all scheduled timers — no crash, no late state writes.
@@ -168,13 +132,7 @@ describe('PixelMinimized — completedSteps prop variants', () => {
       ...baseSessionActions,
       completedSteps: ['lesson-1', 'lesson-2', 'lesson-3', 'lesson-4'],
     } as unknown as SessionActions;
-    render(
-      <PixelMinimized
-        onRestore={vi.fn()}
-        sessionActions={sessionActions}
-        isMobile={false}
-      />
-    );
+    render(<PixelMinimized onRestore={vi.fn()} sessionActions={sessionActions} isMobile={false} />);
     // hasAchievements (>3) and completedLessons branches both fire.
     expect(screen.getByAltText(/Pixel Assistant/i)).toBeInTheDocument();
   });
@@ -183,11 +141,7 @@ describe('PixelMinimized — completedSteps prop variants', () => {
 describe('PixelMinimized — hover tooltip timer', () => {
   it('mouseenter then mouseleave does not crash before tooltip-show timer fires', () => {
     const { container } = render(
-      <PixelMinimized
-        onRestore={vi.fn()}
-        sessionActions={baseSessionActions}
-        isMobile={false}
-      />
+      <PixelMinimized onRestore={vi.fn()} sessionActions={baseSessionActions} isMobile={false} />
     );
     const wrapper = container.querySelector('.top-4.left-4') as HTMLElement;
     fireEvent.mouseEnter(wrapper);
@@ -206,11 +160,7 @@ describe('PixelMinimized — hover tooltip timer', () => {
     // stays cold — the existing leave-immediately test only covers the
     // cleanup path.
     const { container } = render(
-      <PixelMinimized
-        onRestore={vi.fn()}
-        sessionActions={baseSessionActions}
-        isMobile={false}
-      />
+      <PixelMinimized onRestore={vi.fn()} sessionActions={baseSessionActions} isMobile={false} />
     );
     const wrapper = container.querySelector('.top-4.left-4') as HTMLElement;
     fireEvent.mouseEnter(wrapper);
@@ -230,11 +180,7 @@ describe('PixelMinimized — hover tooltip timer', () => {
     // this, the truthy arm only fires on a real device. fire mouseEnter
     // on the mobile wrapper to flip isHovered while isMobile is true.
     const { container } = render(
-      <PixelMinimized
-        onRestore={vi.fn()}
-        sessionActions={baseSessionActions}
-        isMobile={true}
-      />
+      <PixelMinimized onRestore={vi.fn()} sessionActions={baseSessionActions} isMobile={true} />
     );
     const wrapper = container.querySelector('.top-2.right-2') as HTMLElement;
     fireEvent.mouseEnter(wrapper);

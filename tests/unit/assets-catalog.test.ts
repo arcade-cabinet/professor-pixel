@@ -131,9 +131,7 @@ describe('loadSprites / loadSounds / loadBackgrounds', () => {
         json: async () => FAKE_RAW,
       }))
     );
-    const { loadSprites, loadSounds, loadBackgrounds } = await import(
-      '@lib/assets/catalog'
-    );
+    const { loadSprites, loadSounds, loadBackgrounds } = await import('@lib/assets/catalog');
     const sprites = await loadSprites();
     const sounds = await loadSounds();
     const backgrounds = await loadBackgrounds();

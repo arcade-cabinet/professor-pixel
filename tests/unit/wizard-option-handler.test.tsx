@@ -37,9 +37,7 @@ afterEach(() => {
 
 describe('WizardOptionHandler — render + click forwarding', () => {
   it('returns null when options is empty', () => {
-    const { container } = render(
-      <WizardOptionHandler options={[]} onOptionSelect={vi.fn()} />
-    );
+    const { container } = render(<WizardOptionHandler options={[]} onOptionSelect={vi.fn()} />);
     expect(container.firstChild).toBeNull();
   });
 
@@ -81,11 +79,7 @@ describe('WizardOptionHandler — render + click forwarding', () => {
     ['phone-landscape' as const],
   ])('renders successfully for variant=%s', (variant) => {
     render(
-      <WizardOptionHandler
-        options={[baseOption]}
-        onOptionSelect={vi.fn()}
-        variant={variant}
-      />
+      <WizardOptionHandler options={[baseOption]} onOptionSelect={vi.fn()} variant={variant} />
     );
     expect(screen.getByTestId('dialogue-option-0')).toBeInTheDocument();
   });
@@ -110,11 +104,7 @@ describe('WizardOptionHandler — render + click forwarding', () => {
 
   it('forwards className to the wrapper', () => {
     const { container } = render(
-      <WizardOptionHandler
-        options={[baseOption]}
-        onOptionSelect={vi.fn()}
-        className="my-cls"
-      />
+      <WizardOptionHandler options={[baseOption]} onOptionSelect={vi.fn()} className="my-cls" />
     );
     expect(container.querySelector('.my-cls')).toBeTruthy();
   });

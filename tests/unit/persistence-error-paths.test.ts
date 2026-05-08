@@ -101,18 +101,18 @@ describe('persistence — handleStorageError window.toast branch (line 107)', ()
       throw makeQuotaError();
     });
     clearWizardState();
-    expect(toastMock).toHaveBeenCalledWith(
-      expect.stringContaining('saved games are full')
-    );
+    expect(toastMock).toHaveBeenCalledWith(expect.stringContaining('saved games are full'));
   });
 });
 
 describe('persistence — handleStorageError window.trackError branch (line 117)', () => {
   it('window.trackError is called with the error + operation context', () => {
     const trackMock = vi.fn();
-    (window as Window & {
-      trackError?: (e: Error, ctx: Record<string, unknown>) => void;
-    }).trackError = trackMock;
+    (
+      window as Window & {
+        trackError?: (e: Error, ctx: Record<string, unknown>) => void;
+      }
+    ).trackError = trackMock;
     vi.spyOn(Storage.prototype, 'removeItem').mockImplementation(() => {
       // Avoid the substring 'quota' — isQuotaExceeded does a /quota/i regex
       // on the message, which would flip quotaExceeded=true.

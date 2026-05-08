@@ -109,9 +109,7 @@ describe('WizardCodeRunner — placeholder switch', () => {
   });
 
   it('returns null for an unrecognized type', () => {
-    const { container } = render(
-      <WizardCodeRunner type={'whatever' as never} />
-    );
+    const { container } = render(<WizardCodeRunner type={'whatever' as never} />);
     expect(container.firstChild).toBeNull();
   });
 

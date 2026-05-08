@@ -15,13 +15,9 @@ vi.mock('wouter', async () => {
   return {
     ...actual,
     useParams: () => useParamsMock(),
-    Link: ({
-      children,
-      href,
-    }: {
-      children: React.ReactNode;
-      href: string;
-    }) => <a href={href}>{children}</a>,
+    Link: ({ children, href }: { children: React.ReactNode; href: string }) => (
+      <a href={href}>{children}</a>
+    ),
   };
 });
 
@@ -120,9 +116,7 @@ describe('Play — compile-error branches', () => {
     });
     render(<Play />);
     expect(await screen.findByTestId('play-compile-error')).toBeInTheDocument();
-    expect(
-      screen.getByText(/Failed to compile game code/)
-    ).toBeInTheDocument();
+    expect(screen.getByText(/Failed to compile game code/)).toBeInTheDocument();
   });
 });
 

@@ -12,7 +12,7 @@
 // Same heavyweight mocks as lesson-page-smoke.test.tsx — the page itself
 // is the unit under test; downstream UI + storage are stubs.
 
-import type React from "react";
+import type React from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom/vitest';
@@ -46,12 +46,10 @@ const getUserProgressForLessonMock = vi.fn();
 const updateUserProgressMock = vi.fn();
 vi.mock('@lib/storage/mode', () => ({
   getClientStorage: () => ({
-    getUserProgressForLesson: (
-      ...args: Parameters<typeof getUserProgressForLessonMock>
-    ) => getUserProgressForLessonMock(...args),
-    updateUserProgress: (
-      ...args: Parameters<typeof updateUserProgressMock>
-    ) => updateUserProgressMock(...args),
+    getUserProgressForLesson: (...args: Parameters<typeof getUserProgressForLessonMock>) =>
+      getUserProgressForLessonMock(...args),
+    updateUserProgress: (...args: Parameters<typeof updateUserProgressMock>) =>
+      updateUserProgressMock(...args),
   }),
 }));
 
@@ -75,11 +73,7 @@ vi.mock('@/components/editor/code-editor', () => ({
   }) => (
     <div>
       <pre data-testid="code-editor-stub">code:{code}</pre>
-      <button
-        type="button"
-        data-testid="editor-execute-stub"
-        onClick={() => onExecute('', true)}
-      >
+      <button type="button" data-testid="editor-execute-stub" onClick={() => onExecute('', true)}>
         editor-execute
       </button>
     </div>
@@ -93,8 +87,9 @@ vi.mock('@/components/ui/offline-pill', () => ({
 }));
 vi.mock('framer-motion', () => {
   const passthrough =
-    (Tag: keyof React.JSX.IntrinsicElements) =>
-    (props: Record<string, unknown>) => <Tag {...(props as object)} />;
+    (Tag: keyof React.JSX.IntrinsicElements) => (props: Record<string, unknown>) => (
+      <Tag {...(props as object)} />
+    );
   return {
     motion: new Proxy(
       {},
@@ -281,9 +276,7 @@ describe('LessonEnhanced — hint button', () => {
 
     renderLesson();
     await screen.findByTestId('lesson-header');
-    const hintBtn = screen
-      .getAllByRole('button')
-      .find((b) => /hint/i.test(b.textContent ?? ''));
+    const hintBtn = screen.getAllByRole('button').find((b) => /hint/i.test(b.textContent ?? ''));
     expect(hintBtn).toBeDefined();
     // Just exercising the path — no throw means showNextHint ran.
     expect(() => fireEvent.click(hintBtn!)).not.toThrow();

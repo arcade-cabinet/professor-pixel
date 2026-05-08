@@ -31,9 +31,9 @@ vi.mock('@lib/python/pyodide-singleton', () => ({
 }));
 
 vi.mock('@lib/pygame/runtime/compiler', () => ({
-  compilePythonGame: vi.fn().mockReturnValue(
-    'import pygame\nif __name__ == "__main__":\n    pygame.init()\n'
-  ),
+  compilePythonGame: vi
+    .fn()
+    .mockReturnValue('import pygame\nif __name__ == "__main__":\n    pygame.init()\n'),
 }));
 
 const ctxStub = {
@@ -152,11 +152,7 @@ describe('PygameRunner — stopGame canvas clear', () => {
     fireEvent.click(playBtn!);
 
     // Wait until the running state flips and the button shows Stop.
-    const stopBtn = await screen.findByRole(
-      'button',
-      { name: /stop/i },
-      { timeout: 2000 }
-    );
+    const stopBtn = await screen.findByRole('button', { name: /stop/i }, { timeout: 2000 });
     fireEvent.click(stopBtn);
 
     // stopGame painted the canvas black.
@@ -195,11 +191,7 @@ describe('PygameRunner — stopGame ctx-null short-circuit (line 355 path 1 fals
         .getAllByRole('button')
         .find((b) => /run game/i.test(b.textContent ?? ''));
       fireEvent.click(playBtn!);
-      const stopBtn = await screen.findByRole(
-        'button',
-        { name: /stop/i },
-        { timeout: 2000 }
-      );
+      const stopBtn = await screen.findByRole('button', { name: /stop/i }, { timeout: 2000 });
       const fillRectCallsBefore = ctxStub.fillRect.mock.calls.length;
       fireEvent.click(stopBtn);
       // isRunning flips back; the stopBtn no longer renders.
@@ -243,9 +235,7 @@ describe('PygameRunner — resetGame', () => {
     // Wait for isRunning to flip → button shows Stop → Reset enables.
     await screen.findByRole('button', { name: /stop/i }, { timeout: 2000 });
 
-    const resetBtn = screen
-      .getAllByRole('button')
-      .find((b) => /reset/i.test(b.textContent ?? ''));
+    const resetBtn = screen.getAllByRole('button').find((b) => /reset/i.test(b.textContent ?? ''));
     expect(resetBtn).toBeDefined();
     fireEvent.click(resetBtn!);
 

@@ -99,12 +99,7 @@ describe('CodeEditor — expected output panel', () => {
   });
 
   it('hides the expected-output panel when no tests are supplied', () => {
-    render(
-      <CodeEditor
-        {...baseProps}
-        currentStep={{ id: 's', title: 't', description: 'd' }}
-      />
-    );
+    render(<CodeEditor {...baseProps} currentStep={{ id: 's', title: 't', description: 'd' }} />);
     expect(screen.queryByText(/Expected Output/i)).not.toBeInTheDocument();
   });
 });

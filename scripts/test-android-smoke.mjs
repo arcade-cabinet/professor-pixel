@@ -19,10 +19,7 @@ import { homedir } from 'node:os';
 import { resolve } from 'node:path';
 
 function maestroPath() {
-  const candidates = [
-    'maestro',
-    resolve(homedir(), '.maestro', 'bin', 'maestro'),
-  ];
+  const candidates = ['maestro', resolve(homedir(), '.maestro', 'bin', 'maestro')];
   for (const c of candidates) {
     try {
       execSync(`${c} --version`, { stdio: 'ignore' });
@@ -53,15 +50,21 @@ function adbDevices() {
 
 const maestro = maestroPath();
 if (!maestro) {
-  console.log('[android-smoke] skip — `maestro` is not on PATH and ~/.maestro/bin/maestro is absent.');
-  console.log('[android-smoke] install: https://docs.maestro.dev/getting-started/installing-maestro');
+  console.log(
+    '[android-smoke] skip — `maestro` is not on PATH and ~/.maestro/bin/maestro is absent.'
+  );
+  console.log(
+    '[android-smoke] install: https://docs.maestro.dev/getting-started/installing-maestro'
+  );
   process.exit(0);
 }
 
 const targets = adbDevices();
 if (targets.length === 0) {
   console.log('[android-smoke] skip — `adb devices` reports zero connected devices/emulators.');
-  console.log('[android-smoke] start an emulator (`emulator @<avd-name>`) or plug in a device with USB debugging on.');
+  console.log(
+    '[android-smoke] start an emulator (`emulator @<avd-name>`) or plug in a device with USB debugging on.'
+  );
   process.exit(0);
 }
 

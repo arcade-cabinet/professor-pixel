@@ -28,10 +28,9 @@ describe('use-toast reducer — REMOVE_TOAST without toastId (line 112)', () => 
       // future may add should round-trip. Pin that contract.
       extra: 'preserve-me',
     } as unknown as Parameters<typeof reducer>[0];
-    const next = reducer(
-      seeded,
-      { type: 'REMOVE_TOAST' } as Parameters<typeof reducer>[1]
-    ) as unknown as { toasts: unknown[]; extra?: string };
+    const next = reducer(seeded, { type: 'REMOVE_TOAST' } as Parameters<
+      typeof reducer
+    >[1]) as unknown as { toasts: unknown[]; extra?: string };
     expect(next.toasts).toEqual([]);
     expect(next.extra).toBe('preserve-me');
   });

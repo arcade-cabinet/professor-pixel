@@ -21,10 +21,7 @@ describe('shouldShowOptions — multiStep last step with multiple options (line 
   it('returns true when at the end of a multiStep with two real choices', () => {
     const n = node({
       multiStep: ['intro line 1', 'intro line 2'],
-      options: [
-        opt({ text: 'Pick A', next: 'a' }),
-        opt({ text: 'Pick B', next: 'b' }),
-      ],
+      options: [opt({ text: 'Pick A', next: 'a' }), opt({ text: 'Pick B', next: 'b' })],
     });
     // dialogueStep === multiStep.length - 1 → fall through past the
     // multiStep guard. Two distinct options → not the

@@ -24,9 +24,7 @@ vi.mock('react-dnd', async () => {
 });
 vi.mock('react-dnd-html5-backend', () => ({ HTML5Backend: {} }));
 vi.mock('@lib/pygame/runtime/simulator', async () => {
-  const actual = await vi.importActual<Record<string, unknown>>(
-    '@lib/pygame/runtime/simulator'
-  );
+  const actual = await vi.importActual<Record<string, unknown>>('@lib/pygame/runtime/simulator');
   return {
     ...actual,
     setCanvasContext: vi.fn(),
@@ -43,11 +41,7 @@ vi.mock('@lib/hooks/use-viewport', () => ({
 // the test. The real palette wires up react-dnd useDrag — bypassing it
 // keeps this focused on the wysiwyg-side logic.
 vi.mock('@/components/editor/palette', () => ({
-  default: ({
-    onArm,
-  }: {
-    onArm?: (id: string) => void;
-  }) =>
+  default: ({ onArm }: { onArm?: (id: string) => void }) =>
     onArm ? (
       <button type="button" data-testid="palette-arm-stub" onClick={() => onArm('ball')}>
         arm-ball
@@ -88,12 +82,8 @@ describe('PygameWysiwygEditor — tab switching', () => {
   it('renders both Visual and Code tab triggers', () => {
     render(<PygameWysiwygEditor />);
     // Both tabs render simultaneously (tab triggers are always in the DOM).
-    expect(
-      screen.getAllByRole('tab').some((t) => /visual/i.test(t.textContent ?? ''))
-    ).toBe(true);
-    expect(
-      screen.getAllByRole('tab').some((t) => /code/i.test(t.textContent ?? ''))
-    ).toBe(true);
+    expect(screen.getAllByRole('tab').some((t) => /visual/i.test(t.textContent ?? ''))).toBe(true);
+    expect(screen.getAllByRole('tab').some((t) => /code/i.test(t.textContent ?? ''))).toBe(true);
   });
 });
 
@@ -108,9 +98,7 @@ describe('PygameWysiwygEditor — compact palette + properties drawer scrims', (
     expect(scrim).not.toBeNull();
     fireEvent.click(scrim as Element);
     // After scrim tap, aria-pressed flips back to false.
-    expect(
-      screen.getByTestId('wysiwyg-palette-toggle').getAttribute('aria-pressed')
-    ).toBe('false');
+    expect(screen.getByTestId('wysiwyg-palette-toggle').getAttribute('aria-pressed')).toBe('false');
   });
 
   it('palette onArm closes the drawer + arms the component', () => {
@@ -122,9 +110,7 @@ describe('PygameWysiwygEditor — compact palette + properties drawer scrims', (
     const armStubs = screen.queryAllByTestId('palette-arm-stub');
     expect(armStubs.length).toBeGreaterThan(0);
     fireEvent.click(armStubs[0]);
-    expect(
-      screen.getByTestId('wysiwyg-palette-toggle').getAttribute('aria-pressed')
-    ).toBe('false');
+    expect(screen.getByTestId('wysiwyg-palette-toggle').getAttribute('aria-pressed')).toBe('false');
   });
 
   it('palette onArm fires (touch-primary desktop) without closing any drawer', () => {
@@ -140,11 +126,7 @@ describe('PygameWysiwygEditor — compact palette + properties drawer scrims', (
 describe('PygameWysiwygEditor — initialComponents accepted', () => {
   it('renders without throwing when seeded with placed components', () => {
     viewportFlags = { isCompact: true, isTouchPrimary: true };
-    const seed: PlacedComponent[] = [
-      { id: 'p1', componentId: 'ball', x: 0, y: 0, properties: {} },
-    ];
-    expect(() =>
-      render(<PygameWysiwygEditor initialComponents={seed} />)
-    ).not.toThrow();
+    const seed: PlacedComponent[] = [{ id: 'p1', componentId: 'ball', x: 0, y: 0, properties: {} }];
+    expect(() => render(<PygameWysiwygEditor initialComponents={seed} />)).not.toThrow();
   });
 });

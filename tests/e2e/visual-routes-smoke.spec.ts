@@ -98,7 +98,9 @@ test.describe('Visual route smoke (artifact-only — no committed baselines)', (
       // exactly what we want to look at.
       if (consoleErrors.length > 0) {
         // eslint-disable-next-line no-console
-        console.log(`[visual-routes] ${route.slug} produced ${consoleErrors.length} console error(s):`);
+        console.log(
+          `[visual-routes] ${route.slug} produced ${consoleErrors.length} console error(s):`
+        );
         for (const e of consoleErrors.slice(0, 5)) {
           // eslint-disable-next-line no-console
           console.log(`  - ${e}`);
