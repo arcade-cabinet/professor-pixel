@@ -106,8 +106,8 @@ export default defineConfig({
       // Vitest projects — unit + integration + component (browser). The
       // numbers below are the aggregate across all three.
       //
-      // Today's snapshot (2026-05-08, post-persistence-needs-migration-catch):
-      // statements 87.21%, branches 77.38%, functions 85.25%, lines 88.63%.
+      // Today's snapshot (2026-05-08, post-quota-measure-bytes-catch):
+      // statements 87.23%, branches 77.33%, functions 85.25%, lines 88.64%.
       // (Aggregate flaps ±0.1% per run due to browser-suite render-effect
       // timing; the per-file targeted lines for each PR move into the
       // covered set deterministically.)
@@ -117,6 +117,7 @@ export default defineConfig({
       // these numbers UP raises the matching threshold in the same PR.
       //
       // Earlier snapshots:
+      //   2026-05-08 post-persistence-needs-migration-catch: 87.21/77.38/85.25/88.63 → floor 87/77/85/88
       //   2026-05-08 post-broadcast-sender-id-fallback: 87.20/77.33/85.25/88.61 → floor 87/77/85/88
       //   2026-05-08 post-schema-test-spec-rules: 87.32/77.45/85.37/88.72 → floor 87/77/85/88
       //   2026-05-08 post-storage-client-init-error: 87.23/77.33/85.31/88.63 → floor 87/77/85/88
