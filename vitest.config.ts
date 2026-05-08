@@ -106,14 +106,20 @@ export default defineConfig({
       // Vitest projects — unit + integration + component (browser). The
       // numbers below are the aggregate across all three.
       //
-      // Today's snapshot (2026-05-07, post-lesson-completion-modal):
-      // statements 86.08%, branches 76.41%, functions 84.17%, lines 87.56%.
+      // Today's snapshot (2026-05-07, post-opfs-projects-edge-cases):
+      // statements 86.88%, branches 76.89%, functions 85.01%, lines 88.35%.
       // The thresholds below sit a hair below those numbers (rounded down
       // to the nearest integer minus 1 for noise tolerance) so any
       // regression fails CI. Per the ratchet doctrine: any PR that moves
       // these numbers UP raises the matching threshold in the same PR.
       //
       // Earlier snapshots:
+      //   2026-05-07 post-persistence-error-paths: 86.74/76.75/84.95/88.20 → floor 86/76/84/87
+      //   2026-05-07 post-canvas-drop-callback: 86.64/76.71/84.95/88.09 → floor 86/76/84/87
+      //   2026-05-07 post-code-editor-keybindings: 86.48/76.61/84.77/87.94 → floor 86/76/84/87
+      //   2026-05-07 post-live-preview-error-paths: 86.38/76.57/84.59/87.83 → floor 86/76/84/87
+      //   2026-05-07 post-pyodide-existing-tag-branches: 86.16/76.50/84.17/87.65 → floor 86/76/84/87
+      //   2026-05-07 post-lesson-completion-modal: 86.08/76.41/84.17/87.56 → floor 86/76/84/87
       //   2026-05-07 post-home-error-paths: 85.80/76.17/83.87/87.26 → floor 85/76/83/87
       //   2026-05-07 post-console-logger-categories: 85.56/76.06/83.63/86.99 → floor 85/76/83/86
       //   2026-05-07 post-asset-browser-multi-filter: 85.18/76.06/82.19/86.59 → floor 85/76/82/86
@@ -217,8 +223,8 @@ export default defineConfig({
       thresholds: {
         statements: 86,
         branches: 76,
-        functions: 84,
-        lines: 87,
+        functions: 85,
+        lines: 88,
       },
     },
   },
