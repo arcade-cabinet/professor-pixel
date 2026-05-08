@@ -253,6 +253,24 @@ describe('runSnippet — basic fallback', () => {
     expect(result.error).toBe('pyodide explode');
   });
 
+  it('coerces non-Error throws via String() in the runSnippet catch (line 95 falsy arm)', async () => {
+    // The runSnippet catch does `error instanceof Error ? error.message
+    // : String(error)`. Existing test throws Error; this one throws a
+    // plain string so the falsy arm of the ternary fires.
+    const py = makePyodide();
+    let calls = 0;
+    py.runPython = vi.fn(() => {
+      calls += 1;
+      // eslint-disable-next-line @typescript-eslint/no-throw-literal
+      if (calls === 3) throw 'plain-string-non-error';
+      return '';
+    });
+    const runner = new PythonRunner(py);
+    const result = await runner.runSnippet({ code: 'x' });
+    expect(result.output).toBe('');
+    expect(result.error).toBe('plain-string-non-error');
+  });
+
   it('uses enhanced path when isEnhancedReady=true even if executeWithEnhancedErrors is undefined', async () => {
     // Defensive branch: option set but function missing → still falls back basic.
     const py = makePyodide();
@@ -342,6 +360,54 @@ describe('runProject', () => {
       context: explicit,
     });
     expect(enhanced.mock.calls[0]![1]).toBe(explicit);
+  });
+
+  it('basic-fallback runProject yields hasError=false + error=undefined when stderr empty (line 140 falsy arm)', async () => {
+    // The runProject ternary `result.error ? {title, ...} : undefined`
+    // takes its falsy arm when executeCodeBasic returns no error. The
+    // existing fallback test always populates stderr → truthy. With
+    // empty stderr, executeCodeBasic returns error: '' and the ternary
+    // resolves to undefined.
+    const py = makePyodide();
+    py.runPython = vi.fn((code: string) => {
+      if (code.includes('sys.stdout.getvalue()')) return 'output ok';
+      if (code.includes('sys.stderr.getvalue()')) return ''; // no error
+      return undefined;
+    });
+    const runner = new PythonRunner(py, { isEnhancedReady: false });
+    const result = await runner.runProject({
+      files: { 'main.py': 'print("ok")' },
+      main: 'main.py',
+    });
+    expect(result.hasError).toBe(false);
+    expect(result.error).toBeUndefined();
+    expect(result.output).toMatch(/output ok|Code executed successfully/);
+  });
+
+  it('coerces non-Error throws via String() in the runProject outer catch (line 152 falsy arm)', async () => {
+    // The runProject outer catch covers non-Error throws from the
+    // enhanced executor. Force a string throw out of the enhanced
+    // executor and assert the error.message is the String() coercion.
+    // (writeFilesToFS swallows its own throws; the enhanced path is
+    // the cleanest way to bubble a thrown value into runProject's
+    // outer catch.)
+    const py = makePyodide();
+    py.runPython = vi.fn(() => undefined);
+    const enhanced = vi.fn(() => {
+      // eslint-disable-next-line @typescript-eslint/no-throw-literal
+      throw 'enhanced-string-throw';
+    }) as unknown as (code: string, ctx: ExecutionContext) => Promise<ExecutionResult>;
+    const runner = new PythonRunner(py, {
+      executeWithEnhancedErrors: enhanced,
+      isEnhancedReady: true,
+    });
+    const result = await runner.runProject({
+      files: { 'main.py': 'print("x")' },
+      main: 'main.py',
+    });
+    expect(result.hasError).toBe(true);
+    expect(result.error?.message).toBe('enhanced-string-throw');
+    expect(result.error?.title).toBe('Project Execution Error');
   });
 
   it('falls back to basic executor when enhanced not ready, normalizing error shape', async () => {
