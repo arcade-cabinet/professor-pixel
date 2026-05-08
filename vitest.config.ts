@@ -106,17 +106,15 @@ export default defineConfig({
       // Vitest projects — unit + integration + component (browser). The
       // numbers below are the aggregate across all three.
       //
-      // Today's snapshot (2026-05-08, post-functional-truth-audit-fix-pass):
-      // statements 88.42%, branches 82.94%, functions 85.81%, lines 89.39%.
+      // Today's snapshot (2026-05-08, post-audit-fix-pass-with-drainage):
+      // statements 88.69%, branches 83.21%, functions 86.05%, lines 89.63%.
       // Branches floor 80 (RATCHETED 79→80 in post-pyodide-ssr-and-existing-tag-
-      // undefined-status; floor sits 2.94pt under the aggregate run).
-      // Slight aggregate dip (~0.24pt across all four metrics) from the
-      // audit fix pass: new src/ code (lesson-10 dict steps, persistence
-      // helpers loadLastLandingPath/saveLastLandingPath/hasSeenIntro/
-      // markIntroSeen) added paths the existing tests don't yet drive,
-      // but the floors still hold with healthy cushion. No threshold
-      // change this commit — drainage will catch up in subsequent
-      // targeted-test PRs.
+      // undefined-status; floor sits 3.21pt under the aggregate run).
+      // Audit fix pass added new code (lesson-10 dictionaries, four
+      // persistence landing-chooser helpers); persistence-landing-helpers
+      // test (12 tests covering happy / SSR-window / try-catch arms)
+      // recovered + exceeded the prior peak. Branches at a new high
+      // (83.21% vs prior 83.18%).
       // Branches floor stays at 77 (established flap envelope dips below
       // 78.00, and 78 was reverted in post-use-debug-flag-catch-spy).
       // (Aggregate flaps ±0.1% per run due to browser-suite render-effect
@@ -128,6 +126,7 @@ export default defineConfig({
       // these numbers UP raises the matching threshold in the same PR.
       //
       // Earlier snapshots:
+      //   2026-05-08 post-functional-truth-audit-fix-pass: 88.42/82.94/85.81/89.39 → floor 87/80/85/88
       //   2026-05-08 post-registry-ssr-window-guards: 88.68/83.18/86.05/89.62 → floor 87/80/85/88
       //   2026-05-08 post-effects-confetti-fallthrough: 88.68/83.18/86.05/89.62 → floor 87/80/85/88
       //   2026-05-08 post-base-url-empty-fallback: 88.68/83.11/86.05/89.62 → floor 87/80/85/88
