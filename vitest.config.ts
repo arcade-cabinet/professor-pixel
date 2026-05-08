@@ -106,8 +106,8 @@ export default defineConfig({
       // Vitest projects — unit + integration + component (browser). The
       // numbers below are the aggregate across all three.
       //
-      // Today's snapshot (2026-05-08, post-live-preview-toggle-stopped):
-      // statements 87.44%, branches 77.72%, functions 85.49%, lines 88.83%.
+      // Today's snapshot (2026-05-08, post-interactive-canvas-drop-spec):
+      // statements 87.49%, branches 77.75%, functions 85.67%, lines 88.86%.
       // (Aggregate flaps ±0.1% per run due to browser-suite render-effect
       // timing; the per-file targeted lines for each PR move into the
       // covered set deterministically.)
@@ -117,6 +117,7 @@ export default defineConfig({
       // these numbers UP raises the matching threshold in the same PR.
       //
       // Earlier snapshots:
+      //   2026-05-08 post-live-preview-toggle-stopped: 87.44/77.72/85.49/88.83 → floor 87/77/85/88
       //   2026-05-08 post-pixel-menu-swipe-close: 87.49/77.75/85.55/88.86 → floor 87/77/85/88
       //   2026-05-08 post-opfs-projects-list-delete: 87.42/77.68/85.37/88.80 → floor 87/77/85/88
       //   2026-05-08 post-profile-avatar-preserve: 87.40/77.65/85.43/88.80 → floor 87/77/85/88
