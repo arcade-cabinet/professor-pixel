@@ -106,8 +106,8 @@ export default defineConfig({
       // Vitest projects — unit + integration + component (browser). The
       // numbers below are the aggregate across all three.
       //
-      // Today's snapshot (2026-05-08, post-error-handler-caret-no-prevline):
-      // statements 88.59%, branches 82.90%, functions 85.99%, lines 89.57%.
+      // Today's snapshot (2026-05-08, post-projects-opfs-revoke-existing-thumbnails):
+      // statements 88.60%, branches 82.90%, functions 86.05%, lines 89.57%.
       // Branches floor 80 (RATCHETED 79→80 in post-pyodide-ssr-and-existing-tag-
       // undefined-status; floor sits 2.90pt under the aggregate run).
       // Branches floor stays at 77 (established flap envelope dips below
@@ -121,6 +121,7 @@ export default defineConfig({
       // these numbers UP raises the matching threshold in the same PR.
       //
       // Earlier snapshots:
+      //   2026-05-08 post-error-handler-caret-no-prevline: 88.59/82.90/85.99/89.57 → floor 87/80/85/88
       //   2026-05-08 post-error-handler-with-pyodide-edges: 88.59/82.88/85.99/89.57 → floor 87/80/85/88
       //   2026-05-08 post-error-handler-empty-stdout-and-outer-catch: 88.69/82.86/86.11/89.67 → floor 87/80/85/88 (browser-suite flap)
       //   2026-05-08 post-error-handler-execution-error-branch: 88.60/82.77/86.05/89.57 → floor 87/80/85/88
