@@ -288,6 +288,24 @@ describe('console-logger singleton', () => {
       delete (window as Window & { __trackError?: typeof trackError }).__trackError;
     });
 
+    it('error-level trackError context omits the " - suffix" when context is undefined (line 189 falsy arm)', () => {
+      // The trackError payload's context field is
+      // `${category}${context ? ' - ${context}' : ''}`. Without a
+      // context arg, the falsy arm fires (just the category). Existing
+      // test always passes 'while-running'.
+      const trackError = vi.fn();
+      (window as Window & { __trackError?: typeof trackError }).__trackError = trackError;
+      logger.error('python', 'crash-no-context');
+      expect(trackError).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: 'custom',
+          level: 'error',
+          context: 'python', // bare category, no ' - ...' suffix
+        })
+      );
+      delete (window as Window & { __trackError?: typeof trackError }).__trackError;
+    });
+
     it('non-error levels do NOT invoke window.__trackError', () => {
       const trackError = vi.fn();
       (window as Window & { __trackError?: typeof trackError }).__trackError = trackError;

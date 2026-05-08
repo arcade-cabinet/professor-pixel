@@ -100,6 +100,16 @@ describe('educationalLogger helpers', () => {
     expect(allLog).toMatch(/42ms/);
   });
 
+  it('codeExecution success without executionTime omits the " in Xms" suffix (line 464 falsy arm)', () => {
+    // The success-path string is `Code executed successfully${time ? ` in ${time}ms` : ''}`.
+    // Without an execution time, the conditional's falsy arm fires —
+    // the message has no "ms" suffix. Existing test always passes 42.
+    educationalLogger.codeExecution(true);
+    const allLog = logSpy.mock.calls.map((c) => String(c[0])).join('\n');
+    expect(allLog).toMatch(/Code executed successfully/);
+    expect(allLog).not.toMatch(/ms/);
+  });
+
   it('codeExecution failure path warns', () => {
     educationalLogger.codeExecution(false);
     expect(warnSpy).toHaveBeenCalled();
