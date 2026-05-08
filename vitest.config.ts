@@ -106,8 +106,8 @@ export default defineConfig({
       // Vitest projects — unit + integration + component (browser). The
       // numbers below are the aggregate across all three.
       //
-      // Today's snapshot (2026-05-08, post-component-boolean-ternaries):
-      // statements 87.64%, branches 78.09%, functions 85.69%, lines 89.04%.
+      // Today's snapshot (2026-05-08, post-ast-empty-and-retry-throw):
+      // statements 87.67%, branches 78.16%, functions 85.69%, lines 89.07%.
       // Branches floor stays at 77 (established flap envelope dips below
       // 78.00, and 78 was reverted in post-use-debug-flag-catch-spy).
       // (Aggregate flaps ±0.1% per run due to browser-suite render-effect
@@ -119,6 +119,7 @@ export default defineConfig({
       // these numbers UP raises the matching threshold in the same PR.
       //
       // Earlier snapshots:
+      //   2026-05-08 post-component-boolean-ternaries: 87.64/78.09/85.69/89.04 → floor 87/77/85/88
       //   2026-05-08 post-systems-index-unknown-category: 87.64/78.05/85.69/89.04 → floor 87/77/85/88
       //   2026-05-08 post-use-debug-default-labels: 87.66/78.05/85.75/89.04 → floor 87/77/85/88
       //   2026-05-08 post-use-debug-flag-catch-spy: 87.64/77.96/85.69/89.04 → floor 87/77/85/88
