@@ -60,6 +60,64 @@ afterEach(() => {
 
 const SETUP_OK: RunPythonResponse[] = [undefined, true, true, true];
 
+describe('createEnhancedErrorCapture — executionError + non-Error JS throw branches (lines 705-714)', () => {
+  it('JS-level Error from runPython exec lands in the executionError branch with err.message', async () => {
+    // Drive line 705 truthy: traceback empty, stderr empty, but the
+    // exec runPython() call throws → executionError is set. parseTraceback
+    // on the err.message returns null → fallback object literal at 710-713
+    // fires. Asserts hasError true + a SyntaxError 'type' shape.
+    const pyodide = fakePyodide([
+      ...SETUP_OK,
+      undefined, // clear
+      undefined, // io
+      THROW, // exec → executionError = Error('runPython exploded')
+      '', // stdout
+      '', // stderr
+      // errorInfo with empty traceback so the traceback-arm at 689 is falsy
+      { toJs: () => ({ traceback: '', type: '', message: '' }) },
+    ]);
+    setGlobalPyodide(pyodide);
+    const cap = createEnhancedErrorCapture();
+    const result = await cap.executeWithErrorCapture('print(broken)');
+    expect(result.hasError).toBe(true);
+    expect(result.error).toBeTruthy();
+  });
+
+  it('JS-level non-Error throw lands in executionError String() fallback (line 708 path 1 falsy)', async () => {
+    // Same shape as above but the throw is a plain string. The
+    // `executionError instanceof Error` ternary at 707-708 fires the
+    // path 1 falsy arm — String(executionError) is used instead of
+    // executionError.message.
+    const STRING_THROW = Symbol('string-throw');
+    let i = 0;
+    const responses: Array<RunPythonResponse | typeof STRING_THROW> = [
+      ...SETUP_OK,
+      undefined,
+      undefined,
+      STRING_THROW, // exec throws a plain string
+      '', // stdout
+      '', // stderr
+      { toJs: () => ({ traceback: '', type: '', message: '' }) },
+    ];
+    const pyodide = {
+      runPython: () => {
+        const next = responses[i++];
+        if (next === STRING_THROW) {
+          // eslint-disable-next-line no-throw-literal
+          throw 'plain-string-rejection';
+        }
+        return next ?? null;
+      },
+      runPythonAsync: () => {},
+    } as unknown as PyodideInstance;
+    setGlobalPyodide(pyodide);
+    const cap = createEnhancedErrorCapture();
+    const result = await cap.executeWithErrorCapture('print(broken)');
+    expect(result.hasError).toBe(true);
+    expect(result.error).toBeTruthy();
+  });
+});
+
 describe('createEnhancedErrorCapture — second call hits cached arms (lines 601, 625 falsy)', () => {
   it('reuses cached pyodideInstance + isSetup on second executeWithErrorCapture call', async () => {
     // First call: setup chain (4) + execute chain (6) = 10 responses
