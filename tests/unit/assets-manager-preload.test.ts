@@ -257,6 +257,24 @@ describe('AssetManager.preloadAssets', () => {
     expect(m.getLoadStatus().loaded).toBe(3);
   });
 
+  it('drives a music-typed sound through preloadSound (line 213 branch 19 path 1)', async () => {
+    // Existing test only uses asset.type === 'sound'. The OR
+    // `'sound' || 'music'` short-circuits before the 'music' arm
+    // evaluates. A music-typed asset forces the right side of the OR
+    // to be the matching branch, exercising path 1 of branch 19.
+    stubCatalogFetch({
+      sounds: [fakeSound({ id: 'music-1', type: 'music' }) as unknown as SoundAsset],
+    });
+    installMediaStubs();
+    const { AssetManager } = await import('@lib/assets/manager');
+    const m = new AssetManager();
+    await m.ready();
+    const p = m.preloadAssets(['music-1']);
+    queueMicrotask(() => AudioStub.instances[0]?.oncanplaythrough?.());
+    await p;
+    expect(m.getLoadStatus().loaded).toBe(1);
+  });
+
   it('swallows individual load failures so other assets still finish', async () => {
     stubCatalogFetch({
       sprites: [
