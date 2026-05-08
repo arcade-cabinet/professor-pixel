@@ -418,6 +418,23 @@ describe('pythonExecutionWithRetry', () => {
     expect(op).toHaveBeenCalledTimes(2);
   });
 
+  it('retries on "Worker error" (line 248)', async () => {
+    // Sibling allowlist entry to "pyodide not ready" — workers crash
+    // when Pyodide blows the heap; retrying once recovers most of
+    // these in practice. Without a test the truthy arm of line 248
+    // stays cold.
+    const op = vi
+      .fn()
+      .mockRejectedValueOnce(new Error('Worker error: postMessage closed'))
+      .mockResolvedValueOnce('recovered');
+
+    const promise = retryMechanism.pythonExecutionWithRetry(op, { jitter: false, baseDelay: 1 });
+    await vi.runAllTimersAsync();
+    const result = await promise;
+    expect(result).toBe('recovered');
+    expect(op).toHaveBeenCalledTimes(2);
+  });
+
   it('does NOT retry on SyntaxError type', async () => {
     const op = vi.fn().mockRejectedValue({ type: 'SyntaxError', message: 'bad indent' });
     const caught = retryMechanism
@@ -462,6 +479,49 @@ describe('fileOperationWithRetry', () => {
     await vi.runAllTimersAsync();
     const result = await promise;
     expect(result).toBe('uploaded');
+  });
+
+  it('retries on 5xx server error (line 279 truthy arm)', async () => {
+    // File operations should retry on 500/502/503/504 — server hiccups
+    // are usually transient. The status check at line 279 short-circuits
+    // before the message-based check below; without a status-shaped
+    // error the truthy arm stays cold.
+    const op = vi
+      .fn()
+      .mockRejectedValueOnce({ status: 503, message: 'Service Unavailable' })
+      .mockResolvedValueOnce('uploaded');
+    const promise = retryMechanism.fileOperationWithRetry(op, { jitter: false, baseDelay: 1 });
+    await vi.runAllTimersAsync();
+    const result = await promise;
+    expect(result).toBe('uploaded');
+    expect(op).toHaveBeenCalledTimes(2);
+  });
+
+  it('retries on 408 Request Timeout (line 280 truthy arm)', async () => {
+    // 408 = the server timed out waiting for the request. Almost always
+    // transient. Worth retrying for file ops.
+    const op = vi
+      .fn()
+      .mockRejectedValueOnce({ status: 408, message: 'Request Timeout' })
+      .mockResolvedValueOnce('uploaded');
+    const promise = retryMechanism.fileOperationWithRetry(op, { jitter: false, baseDelay: 1 });
+    await vi.runAllTimersAsync();
+    const result = await promise;
+    expect(result).toBe('uploaded');
+    expect(op).toHaveBeenCalledTimes(2);
+  });
+
+  it('retries on 429 Too Many Requests (line 280 truthy arm)', async () => {
+    // 429 = throttled. Backoff lets the rate-limit window roll over.
+    const op = vi
+      .fn()
+      .mockRejectedValueOnce({ status: 429, message: 'Too Many Requests' })
+      .mockResolvedValueOnce('uploaded');
+    const promise = retryMechanism.fileOperationWithRetry(op, { jitter: false, baseDelay: 1 });
+    await vi.runAllTimersAsync();
+    const result = await promise;
+    expect(result).toBe('uploaded');
+    expect(op).toHaveBeenCalledTimes(2);
   });
 
   it('does NOT retry on 404', async () => {
