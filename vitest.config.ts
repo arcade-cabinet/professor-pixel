@@ -106,10 +106,10 @@ export default defineConfig({
       // Vitest projects — unit + integration + component (browser). The
       // numbers below are the aggregate across all three.
       //
-      // Today's snapshot (2026-05-08, post-error-boundary-no-context-componentstack-null):
-      // statements 88.26%, branches 80.48%, functions 85.99%, lines 89.46%.
+      // Today's snapshot (2026-05-08, post-sfx-ssr-no-window-no-localstorage):
+      // statements 88.30%, branches 80.55%, functions 85.99%, lines 89.46%.
       // Branches floor 79 (ratcheted 78→79 in post-pixel-minimized-hover; floor
-      // sits 1.48pt under the aggregate run).
+      // sits 1.55pt under the aggregate run).
       // Branches floor stays at 77 (established flap envelope dips below
       // 78.00, and 78 was reverted in post-use-debug-flag-catch-spy).
       // (Aggregate flaps ±0.1% per run due to browser-suite render-effect
@@ -121,6 +121,7 @@ export default defineConfig({
       // these numbers UP raises the matching threshold in the same PR.
       //
       // Earlier snapshots:
+      //   2026-05-08 post-error-boundary-no-context-componentstack-null: 88.26/80.48/85.99/89.46 → floor 87/79/85/88
       //   2026-05-08 post-interactive-canvas-no-scene-fallbacks: 88.30/80.50/86.05/89.49 → floor 87/79/85/88
       //   2026-05-08 post-asset-browser-non-thumbnail-and-suggested: 88.26/80.41/85.99/89.46 → floor 87/79/85/88
       //   2026-05-08 post-runner-init-error-non-error-and-no-onerror: 88.26/80.22/85.99/89.46 → floor 87/79/85/88
