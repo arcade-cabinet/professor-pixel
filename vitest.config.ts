@@ -106,10 +106,10 @@ export default defineConfig({
       // Vitest projects — unit + integration + component (browser). The
       // numbers below are the aggregate across all three.
       //
-      // Today's snapshot (2026-05-08, post-profile-storage-ssr-no-localstorage):
-      // statements 88.33%, branches 80.71%, functions 86.05%, lines 89.46%.
+      // Today's snapshot (2026-05-08, post-client-storage-ssr-no-window):
+      // statements 88.37%, branches 80.78%, functions 86.05%, lines 89.46%.
       // Branches floor 79 (ratcheted 78→79 in post-pixel-minimized-hover; floor
-      // sits 1.71pt under the aggregate run).
+      // sits 1.78pt under the aggregate run).
       // Branches floor stays at 77 (established flap envelope dips below
       // 78.00, and 78 was reverted in post-use-debug-flag-catch-spy).
       // (Aggregate flaps ±0.1% per run due to browser-suite render-effect
@@ -121,6 +121,7 @@ export default defineConfig({
       // these numbers UP raises the matching threshold in the same PR.
       //
       // Earlier snapshots:
+      //   2026-05-08 post-profile-storage-ssr-no-localstorage: 88.33/80.71/86.05/89.46 → floor 87/79/85/88
       //   2026-05-08 post-compiler-asset-no-path-fallback: 88.32/80.66/86.05/89.46 → floor 87/79/85/88
       //   2026-05-08 post-sfx-ssr-no-window-no-localstorage: 88.30/80.55/85.99/89.46 → floor 87/79/85/88
       //   2026-05-08 post-error-boundary-no-context-componentstack-null: 88.26/80.48/85.99/89.46 → floor 87/79/85/88
