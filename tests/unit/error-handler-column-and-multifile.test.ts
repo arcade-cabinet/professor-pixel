@@ -59,6 +59,25 @@ describe('parseTraceback — column extraction from caret marker (lines 218-226)
     // coverage check confirms the path executed.
     expect(result.title).toBeTruthy();
   });
+
+  it('skips column extraction when the ^ caret has no preceding line (line 223 path 1 falsy)', () => {
+    // The `if (prevLine)` guard at line 223 protects against a caret-line
+    // appearing at the start of the traceback (lines.indexOf - 1 = -1 →
+    // lines[-1] is undefined). Existing tests always have content before
+    // the caret. Drive the falsy arm by prepending the caret to the very
+    // start of the traceback — `prevLine` is undefined, so the indexOf
+    // call is skipped and columnNumber stays undefined.
+    const traceback = [
+      '         ^', // caret with no preceding line
+      'Traceback (most recent call last):',
+      '  File "main.py", line 2',
+      '    print(x)',
+      'SyntaxError: invalid syntax',
+    ].join('\n');
+    const result = quickFormatError(traceback);
+    // Branch coverage of the falsy arm — assert formatter doesn't throw.
+    expect(result.title).toBeTruthy();
+  });
 });
 
 describe('parseTraceback — multi-file fallback when File header missing (lines 258-261)', () => {
