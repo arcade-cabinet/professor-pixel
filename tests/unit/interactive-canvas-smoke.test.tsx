@@ -281,4 +281,44 @@ describe('InteractiveGameCanvas — empty / missing scene fallbacks', () => {
     ).not.toThrow();
     expect(screen.getByTestId('game-canvas-drop-zone')).toBeInTheDocument();
   });
+
+  it('mounts with an empty scenes array without crashing (line 76 fallback chain)', () => {
+    // `scene = gameConfig.scenes.find(...) || gameConfig.scenes[0]` — when
+    // both halves miss, `scene` is undefined and every handler early-returns
+    // via its `if (!scene) return` guard. Pin that the component still
+    // renders the toolbar shell without throwing — the kid sees an empty
+    // canvas instead of a white-screen crash if a config gets corrupted.
+    const config: GameConfig = {
+      id: 'g1',
+      name: 'Empty',
+      version: 1,
+      scenes: [],
+      componentChoices: [],
+      assets: [],
+      settings: {} as GameConfig['settings'],
+    };
+    expect(() =>
+      render(<InteractiveGameCanvas gameConfig={config} onConfigChange={vi.fn()} />)
+    ).not.toThrow();
+    // The toolbar still renders (it doesn't depend on scene).
+    expect(screen.getByTestId('button-play-pause')).toBeInTheDocument();
+  });
+
+  it('falls back to scenes[0] when currentScene id does not match any scene (line 76 second arm)', () => {
+    // `find()` returns undefined → falsy → `|| gameConfig.scenes[0]` fires.
+    // Existing tests use the default currentScene='main' which always matches
+    // makeScene({id:'main'}); pass an unknown id to force the second arm.
+    const sceneA = makeScene({ id: 'level-1', name: 'Level 1' });
+    expect(() =>
+      render(
+        <InteractiveGameCanvas
+          gameConfig={makeConfig(sceneA)}
+          onConfigChange={vi.fn()}
+          currentScene="this-id-does-not-exist"
+        />
+      )
+    ).not.toThrow();
+    // The fallback resolved to scenes[0] so its entity is still rendered.
+    expect(screen.getByTestId('entity-e1')).toBeInTheDocument();
+  });
 });
