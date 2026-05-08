@@ -133,6 +133,19 @@ describe('wizard projects (P5)', () => {
     expect(list[0].thumbnailDataUrl).toBe(dataUrl);
   });
 
+  it('replaces an existing thumbnail when saveWizardProject(existingId) supplies a new dataUrl (line 300 path 0 truthy)', async () => {
+    // The prior test covers the falsy arm of `snapshot.thumbnailDataUrl
+    // !== undefined` — the truthy arm (passing a dataUrl on the update
+    // path) was cold. Capture a fresh save → resave with a new dataUrl
+    // → the spread arm fires, the new thumbnail replaces the old one.
+    const firstUrl = 'data:image/jpeg;base64,/9j/AAAAAA==';
+    const secondUrl = 'data:image/jpeg;base64,/9j/BBBBBBB==';
+    const saved = await saveWizardProject({ ...baseSnapshot, thumbnailDataUrl: firstUrl });
+    await saveWizardProject({ ...baseSnapshot, thumbnailDataUrl: secondUrl }, saved.id);
+    const list = await listWizardProjects();
+    expect(list[0].thumbnailDataUrl).toBe(secondUrl);
+  });
+
   it('renames a project in place, preserving files and template (P4.8)', async () => {
     const saved = await saveWizardProject(baseSnapshot);
     expect(saved.name).toBe('Robot Quest');
