@@ -277,6 +277,53 @@ describe('getCurrentText', () => {
     const sa = makeSessionActions({ gameType: 'rpg' });
     expect(getCurrentText(n, 0, sa)).toBe('top\n\nrpg follow');
   });
+
+  it('skips conditionalText branch when conditionalText.gameType is undefined (line 123 falsy arm)', () => {
+    // The `if (conditionalTexts)` guard fires false when the
+    // conditionalText.gameType key isn't on the node. Falls through to
+    // the regular text path. Existing tests always populate gameType.
+    const n = node({
+      text: 'fallback',
+      conditionalText: {} as never, // gameType key absent
+    });
+    const sa = makeSessionActions({ gameType: 'rpg' });
+    expect(getCurrentText(n, 0, sa)).toBe('fallback');
+  });
+
+  it('skips conditionalFollowUp when conditionalFollowUp.gameType is undefined (line 141 falsy arm)', () => {
+    // Same shape on the followUp side.
+    const n = node({
+      text: 'top',
+      conditionalFollowUp: {} as never,
+    });
+    const sa = makeSessionActions({ gameType: 'rpg' });
+    expect(getCurrentText(n, 0, sa)).toBe('top');
+  });
+
+  it('uses followUp as the message when text is empty AND conditionalFollowUp matches (line 145 falsy arm)', () => {
+    // The text-empty path of `text ? '${text}\n\n${followUpText}' : followUpText`.
+    // text starts empty; conditionalText is absent, so text remains '';
+    // conditionalFollowUp's matching gameType supplies followUpText.
+    // Without text, the output is just the followUpText (no "\n\n" prefix).
+    const n = node({
+      text: '', // empty, no conditional override
+      conditionalFollowUp: { gameType: { rpg: 'just-follow' } },
+    });
+    const sa = makeSessionActions({ gameType: 'rpg' });
+    expect(getCurrentText(n, 0, sa)).toBe('just-follow');
+  });
+
+  it('falls back to default in conditionalFollowUp.gameType when key missing (line 143 paths)', () => {
+    // The `conditionalFollowUps[gameType] || conditionalFollowUps.default
+    // || ''` chain. When the specific gameType is missing but default is
+    // present, the middle arm fires.
+    const n = node({
+      text: 'top',
+      conditionalFollowUp: { gameType: { default: 'def-only' } },
+    });
+    const sa = makeSessionActions({ gameType: 'rpg' });
+    expect(getCurrentText(n, 0, sa)).toBe('top\n\ndef-only');
+  });
 });
 
 describe('updateSessionActionsForOption', () => {
@@ -304,6 +351,12 @@ describe('updateSessionActionsForOption', () => {
     ['Brain puzzle tricky', 'puzzle'],
     ['Adventure - Explore', 'adventure'],
     ['Point-and-Click adventure mystery', 'adventure'],
+    // Reach the inner OR sub-decisions individually (line 208 paths
+    // 1, 2). The previous Adventure/Point-and-Click rows always
+    // include 'adventure' first → short-circuit before the
+    // explore/point-and-click checks fire.
+    ['Point-and-Click explore mystery', 'adventure'],
+    ['Point-and-Click mystery', 'adventure'],
   ])('routes %s → gameType=%s on initial selection', (text, expected) => {
     const out = updateSessionActionsForOption(makeSessionActions(), text);
     expect(out.gameType).toBe(expected);

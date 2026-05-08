@@ -106,8 +106,8 @@ export default defineConfig({
       // Vitest projects — unit + integration + component (browser). The
       // numbers below are the aggregate across all three.
       //
-      // Today's snapshot (2026-05-08, post-use-debug-no-context-and-perf-memory):
-      // statements 88.01%, branches 79.13%, functions 85.75%, lines 89.32%.
+      // Today's snapshot (2026-05-08, post-wizard-utils-explore-and-conditional-empty):
+      // statements 88.03%, branches 79.32%, functions 85.81%, lines 89.32%.
       // Branches floor 78 (ratcheted in post-persistence-cookie-and-migrate-null).
       // Branches floor stays at 77 (established flap envelope dips below
       // 78.00, and 78 was reverted in post-use-debug-flag-catch-spy).
@@ -120,6 +120,7 @@ export default defineConfig({
       // these numbers UP raises the matching threshold in the same PR.
       //
       // Earlier snapshots:
+      //   2026-05-08 post-use-debug-no-context-and-perf-memory: 88.01/79.13/85.75/89.32 → floor 87/78/85/88
       //   2026-05-08 post-console-logger-no-context-and-no-time: 88.03/79.11/85.81/89.32 → floor 87/78/85/88
       //   2026-05-08 post-opfs-projects-missing-wizard-file: 88.03/79.07/85.81/89.32 → floor 87/78/85/88
       //   2026-05-08 post-quota-already-warned-and-default-bytes: 88.01/79.07/85.81/89.32 → floor 87/78/85/88
