@@ -87,4 +87,48 @@ describe('useViewport', () => {
     expect(result.current.isCompact).toBe(true);
     expect(result.current.width).toBe(375);
   });
+
+  it('falls back to safe defaults when window.matchMedia is missing entirely', () => {
+    // jsdom has matchMedia by default; stub it away so the optional-chain
+    // and ?? fallbacks (lines 37/38, 53/54) take their right-hand arms.
+    vi.stubGlobal('innerWidth', 900);
+    vi.stubGlobal('matchMedia', undefined);
+    const { result } = renderHook(() => useViewport());
+    // coarsePointer ?? false → false, noFinePointer = !(true) → false, so
+    // isTouchPrimary = false. The hook still reports a usable width.
+    expect(result.current.width).toBe(900);
+    expect(result.current.isTouchPrimary).toBe(false);
+  });
+
+  it('uses legacy addListener / removeListener when addEventListener is unavailable (lines 84, 93)', () => {
+    // Safari < 14 and iOS 13 ship matchMedia without addEventListener; the
+    // hook must fall through to the deprecated addListener API. Pin both
+    // the subscribe leg (addListener called) and the cleanup leg
+    // (removeListener called on unmount).
+    const addCalls: Array<[string, () => void]> = [];
+    const removeCalls: Array<[string, () => void]> = [];
+    vi.stubGlobal('innerWidth', 768);
+    vi.stubGlobal(
+      'matchMedia',
+      ((q: string) => ({
+        matches: false,
+        media: q,
+        // No addEventListener / removeEventListener here — typeof check
+        // in the hook should redirect to addListener / removeListener.
+        addListener: (cb: () => void) => addCalls.push([q, cb]),
+        removeListener: (cb: () => void) => removeCalls.push([q, cb]),
+      })) as unknown as typeof window.matchMedia
+    );
+    const { unmount } = renderHook(() => useViewport());
+    // Both queries should have called addListener.
+    expect(addCalls.map(([q]) => q).sort()).toEqual([
+      '(any-pointer: fine)',
+      '(pointer: coarse)',
+    ]);
+    unmount();
+    expect(removeCalls.map(([q]) => q).sort()).toEqual([
+      '(any-pointer: fine)',
+      '(pointer: coarse)',
+    ]);
+  });
 });
