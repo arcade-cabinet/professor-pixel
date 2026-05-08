@@ -190,6 +190,37 @@ describe('opfs-projects — generateId crypto-less fallback (lines 161-164)', ()
   });
 });
 
+describe('opfs-projects — loadOpfsProject returns null when wizard file missing (line 260)', () => {
+  it('returns null when project.json is valid but wizard-state.json is absent', async () => {
+    // valid meta loaded, but the wizard file is missing. readJsonFile
+    // for wizard-state.json returns null (not in the dir map; the
+    // makeFakeDir.getFileHandle throws NotFoundError, readJsonFile
+    // catches and returns null). The `if (!wizardState) return null`
+    // guard at line 260 takes its truthy arm.
+    const validMeta = {
+      schema_version: 1,
+      id: 'proj-bad',
+      name: 'No Wizard',
+      template: 't',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+    const projDir = makeFakeDir({
+      'project.json': { content: JSON.stringify(validMeta) },
+      // wizard-state.json deliberately absent
+    });
+    const gamesDir = makeFakeDir({}, { 'proj-bad': projDir });
+    Object.defineProperty(navigator, 'storage', {
+      configurable: true,
+      value: {
+        getDirectory: async () => makeFakeDir({}, { games: gamesDir }),
+      },
+    });
+    const result = await loadOpfsProject('proj-bad');
+    expect(result).toBeNull();
+  });
+});
+
 describe('opfs-projects — loadOpfsProject thumbnail URL.createObjectURL (line 273)', () => {
   it('loadOpfsProject with a thumbnail.png file produces a thumbnailUrl', async () => {
     const validMeta = {
