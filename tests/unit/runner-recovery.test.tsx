@@ -90,4 +90,59 @@ describe('PygameRunner — recovery-failed branch (P9.3)', () => {
       expect(screen.getByTestId('runner-recovery-failed-panel')).toBeInTheDocument()
     );
   });
+
+  it('recovery-failed panel shows offline copy when navigator.onLine is false (line 482 path 0)', async () => {
+    // The recovery-failed panel's body branches on navigator.onLine ===
+    // false. Existing tests run with default jsdom navigator (onLine
+    // unset → not strictly false), only covering the falsy arm. Pin
+    // navigator.onLine to false so the offline-aware copy fires.
+    const onLineSpy = vi
+      .spyOn(navigator, 'onLine', 'get')
+      .mockReturnValue(false);
+    getPyodideMock.mockRejectedValue(new Error('CDN down'));
+    try {
+      render(<PygameRunner />);
+      await screen.findByTestId('runner-error-panel');
+      fireEvent.click(screen.getByTestId('runner-recover-button'));
+      await waitFor(() =>
+        expect(screen.getByTestId('runner-error-panel')).toBeInTheDocument()
+      );
+      fireEvent.click(screen.getByTestId('runner-recover-button'));
+      const panel = await screen.findByTestId('runner-recovery-failed-panel');
+      // Offline copy is the truthy arm — references "internet is off".
+      expect(panel.textContent).toMatch(/internet is off/i);
+    } finally {
+      onLineSpy.mockRestore();
+    }
+  });
+
+  it('Try once more re-attempt succeeds → recoveryFailed flips false, primary canvas returns (line 500 path 1 falsy)', async () => {
+    // The retry button checks `pyodideRef.current === null` to decide
+    // whether to set recoveryFailed back to true. Existing tests keep
+    // getPyodide rejecting on the retry, only covering the truthy arm
+    // (failure → stay on recovery-failed). When the retry SUCCEEDS,
+    // pyodideRef.current becomes non-null → falsy arm → setRecoveryFailed
+    // stays at false → recovery-failed panel unmounts.
+    getPyodideMock.mockRejectedValue(new Error('CDN down'));
+    render(<PygameRunner />);
+    await screen.findByTestId('runner-error-panel');
+    fireEvent.click(screen.getByTestId('runner-recover-button'));
+    await waitFor(() =>
+      expect(screen.getByTestId('runner-error-panel')).toBeInTheDocument()
+    );
+    fireEvent.click(screen.getByTestId('runner-recover-button'));
+    await screen.findByTestId('runner-recovery-failed-panel');
+    // Now flip the mock so the next call resolves with a working pyodide.
+    getPyodideMock.mockReset();
+    getPyodideMock.mockResolvedValue({
+      runPython: vi.fn(),
+      runPythonAsync: vi.fn(),
+    });
+    fireEvent.click(screen.getByTestId('runner-recovery-failed-retry'));
+    await waitFor(() => {
+      expect(
+        screen.queryByTestId('runner-recovery-failed-panel')
+      ).not.toBeInTheDocument();
+    });
+  });
 });
