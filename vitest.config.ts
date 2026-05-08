@@ -106,8 +106,8 @@ export default defineConfig({
       // Vitest projects — unit + integration + component (browser). The
       // numbers below are the aggregate across all three.
       //
-      // Today's snapshot (2026-05-08, post-lessons-refresh-and-rethrow):
-      // statements 87.54%, branches 77.77%, functions 85.69%, lines 88.93%.
+      // Today's snapshot (2026-05-08, post-profile-rethrow):
+      // statements 87.57%, branches 77.86%, functions 85.69%, lines 88.96%.
       // (Aggregate flaps ±0.1% per run due to browser-suite render-effect
       // timing; the per-file targeted lines for each PR move into the
       // covered set deterministically.)
@@ -117,6 +117,7 @@ export default defineConfig({
       // these numbers UP raises the matching threshold in the same PR.
       //
       // Earlier snapshots:
+      //   2026-05-08 post-lessons-refresh-and-rethrow: 87.54/77.77/85.69/88.93 → floor 87/77/85/88
       //   2026-05-08 post-home-rename-form-guard: 87.51/77.75/85.63/88.90 → floor 87/77/85/88
       //   2026-05-08 post-dev-hud-collapsed-catch: 87.51/77.77/85.69/88.88 → floor 87/77/85/88
       //   2026-05-08 post-interactive-canvas-drop-spec: 87.49/77.75/85.67/88.86 → floor 87/77/85/88
