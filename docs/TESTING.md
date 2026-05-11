@@ -189,7 +189,7 @@ and the audit doctrine the harnesses encode.
 
 ## Future enhancements
 
-- Coverage thresholds (90/85/90/90 lines/branches/functions/statements) re-enabled. (Current: 87/80/85/88. Branches at 83.21%; on track.)
+- Coverage thresholds (90/85/90/90 lines/branches/functions/statements) re-enabled. Current configured floors in `vitest.config.ts`: statements 87, branches 80, functions 85, lines 88. Current measured actuals: 88.69 / 83.21 / 86.05 / 89.63 — see the lineage table in `vitest.config.ts` for ratchet history.
 - Visual regression baselines committed once UI/UX is confidence-locked. The Playwright + Maestro harnesses already capture the screenshots; flipping them into pass/fail mode is a one-line change once we want it.
 - Accessibility checks via `@axe-core/playwright`. (Already partially shipped via `tests/integration/axe-*.test.tsx`; expanding to e2e is the future enhancement.)
 - Performance benchmarks for Pyodide cold-start and frame-rate of the simulator.

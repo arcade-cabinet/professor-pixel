@@ -22,7 +22,8 @@ list closes.
 ## How to clear
 
 ```sh
-rm -rf artifacts/
+# Wipe screenshots but keep this README (the only tracked file under artifacts/):
+find artifacts -mindepth 1 ! -name README.md -exec rm -rf {} +
 ```
 
 Anything important got referenced from a doc or PR description by hash —

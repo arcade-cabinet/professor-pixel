@@ -1,4 +1,4 @@
-import type { GameChoice } from './types';
+import type { GameChoice } from '@lib/wizard/types';
 
 interface CodeTemplate {
   imports: string[];

@@ -99,6 +99,22 @@ describe('shipped lessons.json', () => {
   // unambiguous. The full belt-and-braces is the integration suite running
   // the solutions through real Pyodide; this is the cheap unit-time guard.
   it('every step solution contains the surface markers its rules require', () => {
+    // Construct kinds we've deliberately decided NOT to surface-check.
+    // Their textual markers are too noisy or ambiguous; the AST grader at
+    // runtime is authoritative. Listed explicitly so the `default` arm
+    // below fails fast on any newly-introduced kind we haven't triaged.
+    const surfaceUncheckable = new Set([
+      'string_literal',
+      'f_string',
+      'parameter_count',
+      'nesting_depth',
+    ]);
+
+    // Escape user-provided strings before embedding in a RegExp source.
+    // Without this, a rule name containing regex metacharacters (`$`, `(`,
+    // `.`, etc.) would change the match semantics or throw.
+    const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
     for (const lesson of lessons) {
       for (const step of lesson.content.steps) {
         for (const test of step.tests ?? []) {
@@ -156,14 +172,21 @@ describe('shipped lessons.json', () => {
               case 'variable_assignment':
                 if (rc.name) {
                   expect(
-                    new RegExp(`\\b${rc.name}\\s*=`).test(sol),
+                    new RegExp(`\\b${escapeRegExp(rc.name)}\\s*=`).test(sol),
                     `${where} requires assignment to ${rc.name}`
                   ).toBe(true);
                 }
                 break;
-              // 'string_literal', 'f_string', 'parameter_count', 'nesting_depth' —
-              // the surface marker is too noisy to assert textually; rely on the
-              // AST grader at runtime.
+              default: {
+                // Fail loudly when a new construct kind is added to the
+                // schema and this audit hasn't been taught how to handle it.
+                // Either add a case above or add the kind to surfaceUncheckable.
+                const kind = (rc as { type: string }).type;
+                expect(
+                  surfaceUncheckable.has(kind),
+                  `${where}: requiredConstructs kind '${kind}' is not on the surface-check switch AND not on the explicit surfaceUncheckable list. Triage in tests/unit/lessons-content.test.ts.`
+                ).toBe(true);
+              }
             }
           }
           // Note: we deliberately do NOT cross-check `runtimeRules.outputContains`

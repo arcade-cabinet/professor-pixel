@@ -70,10 +70,15 @@ for (const file of walk(ROOT)) {
   const tryCatchCount = (src.match(/^\s*try\s*\{/gm) || []).length;
 
   // 3. raw hex literals outside `from '...'` imports.
+  // Match both 3-digit shorthand (#F57) and 6-digit (#FF5733); excluding 8-digit
+  // (with alpha) is fine — those are rare in this codebase.
   const rawHexLines = src
     .split('\n')
     .filter(
-      (l) => !l.trim().startsWith('//') && !l.includes('from ') && /#[0-9a-fA-F]{6}\b/.test(l)
+      (l) =>
+        !l.trim().startsWith('//') &&
+        !l.includes('from ') &&
+        /#[0-9a-fA-F]{3}([0-9a-fA-F]{3})?\b/.test(l)
     );
   const rawHexCount = rawHexLines.length;
 

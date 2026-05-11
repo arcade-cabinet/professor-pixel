@@ -115,8 +115,6 @@ export default defineConfig({
       // test (12 tests covering happy / SSR-window / try-catch arms)
       // recovered + exceeded the prior peak. Branches at a new high
       // (83.21% vs prior 83.18%).
-      // Branches floor stays at 77 (established flap envelope dips below
-      // 78.00, and 78 was reverted in post-use-debug-flag-catch-spy).
       // (Aggregate flaps ±0.1% per run due to browser-suite render-effect
       // timing; the per-file targeted lines for each PR move into the
       // covered set deterministically.)

@@ -53,8 +53,8 @@
   --sidebar-border: hsl(30, 10%, 91%);
   --sidebar-ring: hsl(221, 70%, 55%);
   /* System font stacks — no webfonts so we stay CDN-free under strict CSP. */
-  --font-sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  --font-mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  --font-sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', 'Roboto', sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', 'Menlo', 'Consolas', monospace;
   --font-serif: Georgia, serif;
   --radius: 0.375rem;
   --code-bg: hsl(240, 15%, 14%);
@@ -120,26 +120,35 @@
 
   h1 {
     @apply text-3xl font-bold tracking-tight;
+
     color: hsl(280, 20%, 20%);
     line-height: 1.2;
   }
+
   h2 {
     @apply text-2xl font-semibold tracking-tight;
+
     color: hsl(280, 18%, 22%);
     line-height: 1.3;
   }
+
   h3 {
     @apply text-xl font-semibold;
+
     color: hsl(280, 16%, 25%);
     line-height: 1.4;
   }
+
   h4 {
     @apply text-lg font-medium;
+
     color: hsl(280, 14%, 28%);
     line-height: 1.4;
   }
+
   p {
     @apply text-base leading-relaxed;
+
     color: hsl(280, 12%, 32%);
     line-height: 1.6;
   }
