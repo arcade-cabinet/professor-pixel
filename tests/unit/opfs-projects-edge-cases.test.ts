@@ -14,11 +14,7 @@
 // navigator.storage.
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import {
-  OpfsUnavailableError,
-  loadOpfsProject,
-  saveOpfsProject,
-} from '@lib/storage/opfs-projects';
+import { OpfsUnavailableError, loadOpfsProject, saveOpfsProject } from '@lib/storage/opfs-projects';
 
 let originalStorage: typeof navigator.storage | undefined;
 
@@ -47,7 +43,10 @@ function makeFakeDir(
         kind: 'file',
         name,
         getFile: async () => {
-          const blob = file.content instanceof Blob ? file.content : new Blob([file.content], { type: file.type ?? 'text/plain' });
+          const blob =
+            file.content instanceof Blob
+              ? file.content
+              : new Blob([file.content], { type: file.type ?? 'text/plain' });
           // Provide a .text() that reads the blob's content.
           return Object.assign(blob, {
             text: async () =>
@@ -56,7 +55,7 @@ function makeFakeDir(
         },
         createWritable: async () => ({
           write: async (data: string | BufferSource | Blob) => {
-            files[name].content = typeof data === 'string' ? data : data as Blob;
+            files[name].content = typeof data === 'string' ? data : (data as Blob);
           },
           close: async () => {},
         }),
@@ -180,7 +179,9 @@ describe('opfs-projects — generateId crypto-less fallback (lines 161-164)', ()
       } as never,
     });
     // UUID v4 shape: 8-4-4-4-12 hex chars.
-    expect(result.id).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
+    expect(result.id).toMatch(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/
+    );
 
     // Restore.
     Object.defineProperty(globalThis, 'crypto', {

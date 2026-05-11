@@ -1,0 +1,54 @@
+# Maestro smoke flow — added 2026-05-08 from the audit fix list (T2).
+#
+# Verifies the Capacitor APK launches and the React app reaches its first
+# paint on a real Android emulator/device. Captures one screenshot per
+# key route into artifacts/screenshots/android/.
+#
+# Run via:
+#   pnpm test:android:smoke
+#
+# The script gates on `adb devices` having a target — if no emulator is up,
+# it skips with a friendly message rather than failing CI. Maestro itself
+# lives at ~/.maestro/bin/maestro on the dev machine.
+#
+# Same review-only contract as the web visual harness (T1): screenshots
+# are dumped for human review, NOT regression-diffed against committed
+# baselines. Until UI/UX confidence is real, baselines are premature.
+
+appId: com.arcadecabinet.professorpixel
+---
+# Cold launch — boots Pyodide, OPFS migration, etc.
+- launchApp:
+    clearState: true
+- assertVisible:
+    text: "Pixel"
+    optional: true
+# Wait long enough for first paint plus Pyodide to settle.
+- waitForAnimationToEnd:
+    timeout: 5000
+- takeScreenshot: artifacts/screenshots/android/01-home
+
+# Try the lessons index. The chooser may auto-route returning users
+# elsewhere on subsequent boots — `clearState: true` above avoids that.
+- runFlow:
+    when:
+      visible: "Try a Python lesson"
+    commands:
+      - tapOn: "Try a Python lesson"
+      - waitForAnimationToEnd:
+          timeout: 5000
+      - takeScreenshot: artifacts/screenshots/android/02-lessons
+
+# Back to home for the wizard variant.
+- back
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- runFlow:
+    when:
+      visible: "Build a game with Pixel"
+    commands:
+      - tapOn: "Build a game with Pixel"
+      - waitForAnimationToEnd:
+          timeout: 5000
+      - takeScreenshot: artifacts/screenshots/android/03-wizard

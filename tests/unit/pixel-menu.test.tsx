@@ -164,9 +164,7 @@ describe('PixelMenu — supplied sessionActions override mock history', () => {
         icon: () => null,
       },
     ];
-    render(
-      <PixelMenu isOpen={true} onClose={vi.fn()} sessionActions={sessionActions} />
-    );
+    render(<PixelMenu isOpen={true} onClose={vi.fn()} sessionActions={sessionActions} />);
     const tabs = screen.getAllByRole('button');
     const historyTab = tabs.find((b) => /history|recent|activity/i.test(b.textContent ?? ''));
     if (historyTab) fireEvent.click(historyTab);

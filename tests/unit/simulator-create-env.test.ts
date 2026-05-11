@@ -89,11 +89,7 @@ describe('createPygameEnvironment — draw module', () => {
     // The simulator's draw.rect accepts both tuple-style and PygameRect-shape
     // — we go through the unknown cast to avoid a strict-class TS check on
     // the ad-hoc shape that fakeable classes don't satisfy.
-    pygame.draw.rect(
-      surface,
-      [255, 255, 0],
-      rectArg as Parameters<typeof pygame.draw.rect>[2]
-    );
+    pygame.draw.rect(surface, [255, 255, 0], rectArg as Parameters<typeof pygame.draw.rect>[2]);
     const cmd = getFrameBuffer().find((c) => c.type === 'rect');
     expect(cmd?.args[1]).toBe(3);
     expect(cmd?.args[2]).toBe(7);
@@ -106,11 +102,15 @@ describe('createPygameEnvironment — draw module', () => {
     const surface = pygame.display.set_mode([200, 200]);
     flushFrameBuffer();
     pygame.draw.line(surface, [0, 0, 0], [0, 0], [50, 50], 2);
-    pygame.draw.polygon(surface, [255, 0, 0], [
-      [0, 0],
-      [10, 0],
-      [10, 10],
-    ]);
+    pygame.draw.polygon(
+      surface,
+      [255, 0, 0],
+      [
+        [0, 0],
+        [10, 0],
+        [10, 10],
+      ]
+    );
     const cmds = getFrameBuffer();
     expect(cmds.some((c) => c.type === 'line')).toBe(true);
     expect(cmds.some((c) => c.type === 'polygon')).toBe(true);
@@ -137,10 +137,14 @@ describe('createPygameEnvironment — draw module', () => {
     pygame.draw.circle(offMain, [255, 0, 0], [5, 5], 3);
     pygame.draw.rect(offMain, [255, 0, 0], [0, 0, 5, 5]);
     pygame.draw.line(offMain, [255, 0, 0], [0, 0], [5, 5], 1);
-    pygame.draw.polygon(offMain, [255, 0, 0], [
-      [0, 0],
-      [5, 5],
-    ]);
+    pygame.draw.polygon(
+      offMain,
+      [255, 0, 0],
+      [
+        [0, 0],
+        [5, 5],
+      ]
+    );
     pygame.draw.ellipse(offMain, [255, 0, 0], [0, 0, 5, 5]);
     expect(getFrameBuffer().length).toBe(0);
   });
@@ -277,7 +281,7 @@ describe('createPygameEnvironment — random helpers', () => {
     const arr = [1, 2, 3, 4, 5];
     const shuffled = pygame.random.shuffle(arr);
     // Shape preserved.
-    expect((shuffled as number[])).toHaveLength(5);
+    expect(shuffled as number[]).toHaveLength(5);
     // Same set of elements (Fisher–Yates is in-place).
     expect((shuffled as number[]).sort()).toEqual([1, 2, 3, 4, 5]);
   });

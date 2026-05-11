@@ -43,9 +43,7 @@ afterEach(() => {
 describe('exportSavedProject', () => {
   it('throws when the project id does not resolve', async () => {
     loadWizardProjectMock.mockResolvedValueOnce(null);
-    await expect(exportSavedProject('no-such-id')).rejects.toThrow(
-      /Project no-such-id not found/
-    );
+    await expect(exportSavedProject('no-such-id')).rejects.toThrow(/Project no-such-id not found/);
   });
 
   it('hydrates asset IDs against the asset manager and exports successfully', async () => {
@@ -60,9 +58,7 @@ describe('exportSavedProject', () => {
     });
     // a1 → real asset, a2 → undefined (filter drops it), a3 → real asset.
     getAssetByIdMock.mockImplementation((id: string) =>
-      id === 'a1' || id === 'a3'
-        ? { id, name: id, type: 'sprite', path: `/p/${id}` }
-        : undefined
+      id === 'a1' || id === 'a3' ? { id, name: id, type: 'sprite', path: `/p/${id}` } : undefined
     );
 
     const result = await exportSavedProject('proj-1');

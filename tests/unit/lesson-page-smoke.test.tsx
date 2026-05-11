@@ -3,6 +3,7 @@
 // and the previousStep / nextStep navigation, with the heavyweight Pyodide,
 // CodeEditor, and FloatingFeedback components stubbed out.
 
+import type React from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom/vitest';
@@ -36,12 +37,10 @@ const getUserProgressForLessonMock = vi.fn();
 const updateUserProgressMock = vi.fn();
 vi.mock('@lib/storage/mode', () => ({
   getClientStorage: () => ({
-    getUserProgressForLesson: (
-      ...args: Parameters<typeof getUserProgressForLessonMock>
-    ) => getUserProgressForLessonMock(...args),
-    updateUserProgress: (
-      ...args: Parameters<typeof updateUserProgressMock>
-    ) => updateUserProgressMock(...args),
+    getUserProgressForLesson: (...args: Parameters<typeof getUserProgressForLessonMock>) =>
+      getUserProgressForLessonMock(...args),
+    updateUserProgress: (...args: Parameters<typeof updateUserProgressMock>) =>
+      updateUserProgressMock(...args),
   }),
 }));
 
@@ -58,9 +57,7 @@ vi.mock('@/components/header', () => ({
   ),
 }));
 vi.mock('@/components/editor/code-editor', () => ({
-  default: ({ code }: { code: string }) => (
-    <div data-testid="code-editor-stub">code:{code}</div>
-  ),
+  default: ({ code }: { code: string }) => <div data-testid="code-editor-stub">code:{code}</div>,
 }));
 vi.mock('@/components/floating-feedback', () => ({
   default: () => <div data-testid="floating-feedback-stub" />,
@@ -72,12 +69,13 @@ vi.mock('@/components/ui/offline-pill', () => ({
 // modal close transitions don't matter under jsdom.
 vi.mock('framer-motion', () => {
   const passthrough =
-    (Tag: keyof JSX.IntrinsicElements) =>
-    (props: Record<string, unknown>) => <Tag {...(props as object)} />;
+    (Tag: keyof React.JSX.IntrinsicElements) => (props: Record<string, unknown>) => (
+      <Tag {...(props as object)} />
+    );
   return {
     motion: new Proxy(
       {},
-      { get: (_t, key: string) => passthrough(key as keyof JSX.IntrinsicElements) }
+      { get: (_t, key: string) => passthrough(key as keyof React.JSX.IntrinsicElements) }
     ) as unknown as Record<string, React.FC<Record<string, unknown>>>,
     AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,
   };
@@ -210,8 +208,6 @@ describe('LessonEnhanced — main render with a resolved lesson', () => {
       const header = screen.getByTestId('lesson-header');
       expect(header.getAttribute('data-progress')).toBe('50');
     });
-    expect(
-      screen.getByTestId('code-editor-stub').textContent
-    ).toContain('print("custom hello")');
+    expect(screen.getByTestId('code-editor-stub').textContent).toContain('print("custom hello")');
   });
 });

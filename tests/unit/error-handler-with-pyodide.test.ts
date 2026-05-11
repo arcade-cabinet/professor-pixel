@@ -114,14 +114,7 @@ describe('createEnhancedErrorCapture — isReadyForCapture', () => {
   it('returns true when setup succeeded and health check passes', () => {
     // setup: install + isActive + excepthook + testCapture
     // isReadyForCapture: check_enhanced_capture_status + excepthook
-    const { pyodide } = fakePyodide([
-      undefined as unknown as string,
-      true,
-      true,
-      true,
-      true,
-      true,
-    ]);
+    const { pyodide } = fakePyodide([undefined as unknown as string, true, true, true, true, true]);
     setGlobalPyodide(pyodide);
     const cap = createEnhancedErrorCapture();
     cap.setupErrorCapture();
@@ -144,13 +137,7 @@ describe('createEnhancedErrorCapture — isReadyForCapture', () => {
   });
 
   it('returns false when health check throws', () => {
-    const { pyodide } = fakePyodide([
-      undefined as unknown as string,
-      true,
-      true,
-      true,
-      THROW,
-    ]);
+    const { pyodide } = fakePyodide([undefined as unknown as string, true, true, true, THROW]);
     setGlobalPyodide(pyodide);
     const cap = createEnhancedErrorCapture();
     cap.setupErrorCapture();

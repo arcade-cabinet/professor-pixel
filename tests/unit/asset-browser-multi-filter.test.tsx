@@ -42,7 +42,9 @@ import AssetBrowserWizard from '@/components/wizard/asset-browser';
 
 beforeEach(() => {
   filterAssetsMock.mockReset().mockReturnValue(fakeAssets);
-  getAssetByIdMock.mockReset().mockImplementation((id: string) => fakeAssets.find((a) => a.id === id));
+  getAssetByIdMock
+    .mockReset()
+    .mockImplementation((id: string) => fakeAssets.find((a) => a.id === id));
   getSuggestedAssetsMock.mockReset().mockReturnValue([fakeAssets[0]]);
 });
 
@@ -80,12 +82,7 @@ describe('AssetBrowserWizard — multiSelect mode (lines 111-123)', () => {
   it('first click adds asset to selection + fires onMultiSelect with one asset', () => {
     const onMultiSelect = vi.fn();
     render(
-      <AssetBrowserWizard
-        onSelect={vi.fn()}
-        embedded
-        multiSelect
-        onMultiSelect={onMultiSelect}
-      />
+      <AssetBrowserWizard onSelect={vi.fn()} embedded multiSelect onMultiSelect={onMultiSelect} />
     );
     fireEvent.click(screen.getByTestId('asset-card-sprite-0'));
     expect(onMultiSelect).toHaveBeenCalledTimes(1);
@@ -97,12 +94,7 @@ describe('AssetBrowserWizard — multiSelect mode (lines 111-123)', () => {
   it('clicking a selected asset removes it (toggle) + fires onMultiSelect with empty array', () => {
     const onMultiSelect = vi.fn();
     render(
-      <AssetBrowserWizard
-        onSelect={vi.fn()}
-        embedded
-        multiSelect
-        onMultiSelect={onMultiSelect}
-      />
+      <AssetBrowserWizard onSelect={vi.fn()} embedded multiSelect onMultiSelect={onMultiSelect} />
     );
     const card = screen.getByTestId('asset-card-sprite-0');
     fireEvent.click(card);
@@ -174,12 +166,7 @@ describe('AssetBrowserWizard — clear selection (line 488)', () => {
   it('clear-selection button resets selectedAssets to empty', () => {
     const onMultiSelect = vi.fn();
     render(
-      <AssetBrowserWizard
-        onSelect={vi.fn()}
-        embedded
-        multiSelect
-        onMultiSelect={onMultiSelect}
-      />
+      <AssetBrowserWizard onSelect={vi.fn()} embedded multiSelect onMultiSelect={onMultiSelect} />
     );
     fireEvent.click(screen.getByTestId('asset-card-sprite-0'));
     fireEvent.click(screen.getByTestId('asset-card-sprite-1'));

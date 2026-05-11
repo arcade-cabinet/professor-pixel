@@ -36,9 +36,7 @@ const { saveProfileMock, realRef } = vi.hoisted(() => ({
 
 vi.mock('@lib/storage/profile', async () => {
   const actual =
-    await vi.importActual<typeof import('@lib/storage/profile')>(
-      '@lib/storage/profile'
-    );
+    await vi.importActual<typeof import('@lib/storage/profile')>('@lib/storage/profile');
   realRef.saveProfile = actual.saveProfile;
   return {
     ...actual,
@@ -94,9 +92,7 @@ describe('Profile page — handleSaveExpression error branch (lines 88-99)', () 
 
     // Click Save Expression — the catch should run; the toast should
     // appear; the test runner should NOT see an uncaught exception.
-    expect(() =>
-      fireEvent.click(screen.getByTestId('profile-save-expression'))
-    ).not.toThrow();
+    expect(() => fireEvent.click(screen.getByTestId('profile-save-expression'))).not.toThrow();
 
     await waitFor(() => {
       expect(saveProfileMock).toHaveBeenCalled();
@@ -118,8 +114,8 @@ describe('Profile page — handleSaveExpression error branch (lines 88-99)', () 
       throw new Error('something else broke');
     });
 
-    expect(() =>
-      fireEvent.click(screen.getByTestId('profile-save-expression'))
-    ).toThrow(/something else broke/);
+    expect(() => fireEvent.click(screen.getByTestId('profile-save-expression'))).toThrow(
+      /something else broke/
+    );
   });
 });

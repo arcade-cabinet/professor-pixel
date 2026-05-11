@@ -583,3 +583,51 @@ Branch: TBD (after PR #30 squash-merge)
 - [x] E3.5 Pixel mascot bundle bloat — 9× 1-1.6MB PNGs are statically imported, blowing the main JS chunk to 1.12MB. Move to `<img>` tags with `loading="lazy"` or sprite-sheet them — moved 25 mascot PNGs from `app/assets/pixel/` (Vite static-import path, hashed filenames in `dist/assets/`) to `public/pixel/` (stable URLs, lazy fetch on first render). New `src/assets/pixel-images.ts` exports `pixelImages` map keyed by expression with URLs resolved through `withBase`. All 8 import sites migrated (avatar-display, menu, presence, minimize-animation, minimized, lesson, profile, not-found). `dist/pixel/` contains stable-named files; SW can cache by URL across deploys; browser handles per-mount lazy load. Note: this didn't shrink the main JS chunk (PNGs were already external assets in dist/assets/ with hashed names, not in the JS chunk itself), but the URL stability + cacheability improvement is the actual user win.
 - [x] E3.6 CSP meta tag in index.html (security review LOW finding) — `default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; ...` — Pyodide compatibility needs verification — added meta CSP. Pyodide needs `'wasm-unsafe-eval'` (Webassembly.compile); `'unsafe-eval'` intentionally excluded so any future need surfaces explicitly. style-src `'unsafe-inline'` covers Tailwind + framer-motion. img-src includes data: + blob: for thumbnails + OPFS materialization. worker-src self + blob: covers Vite ?worker. connect-src 'self' (no third-party APIs). frame-ancestors omitted (header-only directive, ignored in meta; commented inline). 6/6 production-shape e2e pass with CSP active. CodeRabbit's earlier security note closed.
 
+## Batch — functional-truth-and-architectural-realignment (batch-20260508-141500)
+
+Source: user request 2026-05-08 ("ensure all documentation and testing is up to date and as close to 100% coverage as possible … determination of REAL functionality across all lessons and other planned goals … 100% actually implemented fully, wired, with consistent brand / design token language … UI of this learning application is exercising well tested packages, or is it itself a dependency").
+Started: 2026-05-08T14:15:00Z
+Branch: feat/test-coverage-visual-android-sweep
+Mode: Option B — audit + fix in ONE PR. No checkpoint pauses. Squash-merged at the end.
+
+Constraints (from user):
+- Web GUI sufficient as primary platform; Android Maestro smoke acceptable for mobile validation; iOS deferred (Maestro has emulator but Android sufficient for now).
+- No committed visual baselines — screenshots dump to gitignored `artifacts/screenshots/`. Build confidence in UI before locking baselines.
+- ~100% coverage as close as feasible: delete dead branches, warm reachable cold paths, accept the resulting number.
+- Reduce problems dramatically; circle back to anything residual after the squash-merge.
+
+### Audit phase (no code changes — write `docs/audits/2026-05-08-functional-truth-audit.md`)
+
+- [x] Part 0: UI-as-shell architectural audit — for every TSX in app/, classify clean / leaky / inverted across: deep-import violations, business logic in TSX bodies, domain types declared in app/, hook leakage, src/ package barrel coverage, coverage by source location (app/** vs src/**). Output a per-file table. The smoking-gun candidate is `app/components/pygame/runner.tsx` (~1700 lines with try/catch around Pyodide, animation refs, error coercion — these belong in `src/python/runner.ts` + `src/pygame/runtime/`).
+- [x] Part A: Lesson functional audit — real-browser walk via Playwright for each of lesson-1-hello-world through lesson-10-first-game. Capture screenshots to `artifacts/screenshots/audit/lesson-N/`. Verify 5 dimensions per lesson: loads, runs (Pyodide executes), grades (rubric correct), persists (progress saves), recovers (errors don't crash). Mark Real / Stub / Broken / Drifted with file+line evidence and screenshot path.
+- [x] Part B: Pillar audit — for each of `docs/pillars/01-frontend.md` through `07-deploy.md`, read the promised behavior, walk the code, flag claimed-but-not-shipped / claimed-but-degraded / drift. Tag each finding with location (app/ or src/).
+- [x] Part C: Brand & design token audit — inventory tokens in `app/index.css`, Tailwind config, shadcn theme. Grep for raw hex literals (`#[0-9a-fA-F]{6}`), inline `style={{`, hardcoded font sizes outside the scale, ad-hoc spacing values. Check Pixel mascot voice consistency between `public/dialogue/pixel/lessons.yarn` and inline TSX strings. Use `docs/pillars/05-design-system.md` as canonical brand spec.
+- [x] Part D: Other planned goals audit — task #68 (Capacitor APK/IPA) reality check, open items in `docs/plans/post-30-consolidation.prq.md`, `docs/playtests/*.md` flagged issues.
+- [x] Part E: Prioritized fix list — synthesize Parts 0-D into P1 / P2 / P3 with file paths, what's wrong, what fixed looks like, rough effort.
+- [x] Audit-checkpoint commit: `docs(audit): functional truth audit covering parts 0-E` — pure docs commit, foundation for fix-phase commits.
+
+### Fix phase (each item below = one commit, sequenced)
+
+- [x] F1: Move logic from `app/components/pygame/runner.tsx` into `src/python/runner.ts` + `src/pygame/runtime/runner-controller.ts`. The TSX shell becomes hooks + JSX only. Tests for the runner-controller live in `tests/unit/`, no React needed.
+- [x] F2: Move grading logic out of any TSX that owns it (TBD by Part 0 finding) into `src/grading/`. Audit-driven specifics.
+- [x] F3: Migrate every `style={{...}}` literal and raw hex outside `tailwind.config.ts` / `app/index.css` into the token system. Per-file commit if scope is large enough; else single commit.
+- [x] F4: Pixel mascot voice normalization — every inline string that addresses the user as Pixel routed through the yarn dialogue or a typed `pixelLine()` helper in `src/i18n/`.
+- [x] F5: Real broken-lesson fixes (anything Part A flagged as Stub or Broken). One commit per lesson.
+- [x] F6: Delete unreachable defensive branches surfaced earlier this session (`error-handler.ts` `|| {}` after `parseTraceback`, runner ref-never-assigned, lessons.tsx `?? []` after early return, etc.). Coverage rises mechanically.
+
+### Test/coverage/visual phase
+
+- [x] T1: Web visual screenshot harness — `tests/visual/routes.spec.ts` walks every `app/pages/` route at desktop+tablet+mobile, writes PNGs to `artifacts/screenshots/web/<viewport>/<route>.png`. Asserts only "no JS error, page reached, PNG written." `artifacts/` added to `.gitignore`.
+- [x] T2: Android Maestro smoke harness — `.maestro/smoke.yaml` launches APK, navigates root + key routes, screenshots into `artifacts/screenshots/android/`. New `pnpm test:android:smoke` script gated on `adb devices` having a target. Maestro at `~/.maestro/bin/maestro` confirmed present.
+- [x] T3: Coverage drainage — warm `src/storage/client.ts:49` SSR guard truthy arm + any newly-cold paths from F1/F2 refactors. Ratchet `vitest.config.ts` thresholds to post-cleanup actuals.
+
+### Docs phase
+
+- [x] D1: Refresh `docs/TESTING.md` against the new visual harness + Maestro flow + post-refactor src/ coverage story.
+- [x] D2: Refresh `docs/ARCHITECTURE.md` to reflect the post-F1/F2 src/-as-logic / app/-as-shell separation.
+- [x] D3: Refresh `docs/DEPLOYMENT.md` for any current reality drift (Express/drizzle/passport already removed but verify no stale mentions remain).
+
+### PR phase
+
+- [x] PR1: Push `feat/test-coverage-visual-android-sweep`, open one PR with description matching the commit sequence above. Squash-merge after CI green.
+

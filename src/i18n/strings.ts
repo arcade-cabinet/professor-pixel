@@ -60,6 +60,56 @@ export const strings = {
       body: 'Pixel ran into a problem. Try refreshing the page — if it keeps happening, ask a grown-up for help.',
       refresh: 'Refresh',
     },
+    /**
+     * Educational error categories surfaced by the React error boundary.
+     * Selection is keyword-based on the caught error's message — see
+     * app/components/error-boundary.tsx#getEducationalMessage.
+     *
+     * Voice: same Pixel mascot register as the rest of this catalog —
+     * plain language, encouraging, never patronising. Each category has
+     * a title, an explanation paragraph, and a 3-bullet suggestion list.
+     */
+    errorCategories: {
+      chunkLoad: {
+        title: 'Loading Issue',
+        explanation:
+          "It looks like some parts of the app didn't load properly. This can happen when your internet connection is slow or when the app is updating.",
+        suggestions: [
+          'Try refreshing the page',
+          'Check your internet connection',
+          'Clear your browser cache if the problem persists',
+        ] as readonly string[],
+      },
+      network: {
+        title: 'Connection Problem',
+        explanation:
+          'The app is having trouble connecting to our servers. This might be a temporary network issue.',
+        suggestions: [
+          'Check your internet connection',
+          'Try again in a few seconds',
+          'Contact support if the problem continues',
+        ] as readonly string[],
+      },
+      permission: {
+        title: 'Hmm, something is blocked',
+        explanation:
+          'Your browser is being extra careful and blocked something Pixel needs. A refresh usually fixes this.',
+        suggestions: [
+          'Try refreshing the page',
+          "Ask a grown-up if your browser has settings that block 'cookies' or 'storage'",
+        ] as readonly string[],
+      },
+      generic: {
+        title: 'Something Unexpected Happened',
+        explanation:
+          "Don't worry! This is a technical issue with the app, not with your code. Our team works hard to prevent these errors, but sometimes they slip through.",
+        suggestions: [
+          'Try refreshing the page - this often fixes the problem',
+          'Go back to the home page and try again',
+          'If this keeps happening, let us know so we can fix it',
+        ] as readonly string[],
+      },
+    },
   },
 
   /* ─── Landing page (home.tsx) ───────────────────────────────────────── */

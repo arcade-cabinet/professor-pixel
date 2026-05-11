@@ -184,7 +184,7 @@ describe('scoreText.preview — fontFamily/alignment fallbacks', () => {
 });
 
 describe('scoreText.generateCode — isScore=false branch', () => {
-  it("emits self.is_score = False when isScore is false", () => {
+  it('emits self.is_score = False when isScore is false', () => {
     // The default-properties object sets isScore=true so the "False"
     // arm of `${props.isScore ? 'True' : 'False'}` (line 83) sat cold.
     const out = scoreTextComponent.generateCode({

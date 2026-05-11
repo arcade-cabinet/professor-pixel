@@ -94,7 +94,7 @@ describe('parseTraceback — multi-file fallback when File header missing (lines
       'Traceback (most recent call last):',
       '  File "missing.py", line 3, in <module>',
       '    foo()',
-      'NameError: name \'foo\' is not defined',
+      "NameError: name 'foo' is not defined",
     ].join('\n');
     const concatenatedContextCode = [
       '# === File: a.py ===',
@@ -119,7 +119,7 @@ describe('getLineContext — errorLine fallback when index out of range (line 16
     const traceback = [
       'Traceback (most recent call last):',
       '  File "main.py", line 99, in <module>',
-      'NameError: name \'x\' is not defined',
+      "NameError: name 'x' is not defined",
     ].join('\n');
     const shortSource = 'a = 1\nb = 2\n';
     const result = quickFormatError(traceback, { code: shortSource });

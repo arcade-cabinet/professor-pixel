@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { generatePygameCode, generateTestCode } from '@lib/wizard/code-generator';
-import type { GameChoice } from '@/components/pygame/live-preview';
+import type { GameChoice } from '@lib/wizard/types';
 
 // Pure code-generator — takes wizard choices + params, returns a
 // Python source string. Tests assert structural invariants of the

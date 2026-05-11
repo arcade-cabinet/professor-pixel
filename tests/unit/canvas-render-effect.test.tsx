@@ -18,9 +18,7 @@ vi.mock('react-dnd', () => ({
 const setCanvasContextMock = vi.fn();
 const flushFrameBufferMock = vi.fn();
 vi.mock('@lib/pygame/runtime/simulator', async () => {
-  const actual = await vi.importActual<Record<string, unknown>>(
-    '@lib/pygame/runtime/simulator'
-  );
+  const actual = await vi.importActual<Record<string, unknown>>('@lib/pygame/runtime/simulator');
   return {
     ...actual,
     setCanvasContext: (...args: unknown[]) => setCanvasContextMock(...args),
@@ -29,7 +27,7 @@ vi.mock('@lib/pygame/runtime/simulator', async () => {
 });
 
 import PygameEditorCanvas from '@/components/editor/canvas';
-import type { PlacedComponent } from '@/components/editor/wysiwyg';
+import type { PlacedComponent } from '@lib/pygame/components/types';
 
 // Build a fake 2D context whose every drawing method is a vi.fn so we can
 // assert the exact call shape.
@@ -103,17 +101,12 @@ describe('PygameEditorCanvas — render effect happy path', () => {
     // setCanvasContext was called with our fake ctx (line 88).
     expect(setCanvasContextMock).toHaveBeenCalledWith(fakeCtx);
     // The clear-canvas line at the top of render() ran.
-    expect((fakeCtx.clearRect as ReturnType<typeof vi.fn>)).toHaveBeenCalledWith(
-      0,
-      0,
-      800,
-      600
-    );
+    expect(fakeCtx.clearRect as ReturnType<typeof vi.fn>).toHaveBeenCalledWith(0, 0, 800, 600);
     // flushFrameBuffer is the very last call inside render() before the rAF
     // gate — its presence proves the body ran end-to-end.
     expect(flushFrameBufferMock).toHaveBeenCalled();
     // No grid → no stroke calls from the grid loop.
-    expect((fakeCtx.stroke as ReturnType<typeof vi.fn>)).not.toHaveBeenCalled();
+    expect(fakeCtx.stroke as ReturnType<typeof vi.fn>).not.toHaveBeenCalled();
   });
 
   it('canvas.width + canvas.height get set to 800×600 (drawing-buffer size)', () => {
@@ -129,9 +122,9 @@ describe('PygameEditorCanvas — render effect grid branch', () => {
     render(<PygameEditorCanvas {...baseProps} showGrid={true} />);
     // The grid loops cover x in [0, 800] step 20 → 41 vertical lines, plus
     // y in [0, 600] step 20 → 31 horizontal lines, for 72 stroke calls total.
-    expect(
-      (fakeCtx.stroke as ReturnType<typeof vi.fn>).mock.calls.length
-    ).toBeGreaterThanOrEqual(70);
+    expect((fakeCtx.stroke as ReturnType<typeof vi.fn>).mock.calls.length).toBeGreaterThanOrEqual(
+      70
+    );
     // Grid stroke style is set before the loop — verify the assignment landed.
     // (We can't read the stroke calls' state mid-flight, but lineWidth must be 1
     // after the assignment on line 98.)
@@ -147,38 +140,24 @@ describe('PygameEditorCanvas — render effect components branch', () => {
     render(<PygameEditorCanvas {...baseProps} components={components} />);
     // save() called once for the unselected component (no selection-highlight
     // strokeRect path).
-    expect((fakeCtx.save as ReturnType<typeof vi.fn>)).toHaveBeenCalled();
+    expect(fakeCtx.save as ReturnType<typeof vi.fn>).toHaveBeenCalled();
     // translate(comp.x, comp.y) at line 118.
-    expect((fakeCtx.translate as ReturnType<typeof vi.fn>)).toHaveBeenCalledWith(
-      100,
-      200
-    );
+    expect(fakeCtx.translate as ReturnType<typeof vi.fn>).toHaveBeenCalledWith(100, 200);
     // restore() at line 129.
-    expect((fakeCtx.restore as ReturnType<typeof vi.fn>)).toHaveBeenCalled();
+    expect(fakeCtx.restore as ReturnType<typeof vi.fn>).toHaveBeenCalled();
     // No selection highlight → strokeRect not called for the highlight path.
     // (The ball preview itself doesn't use strokeRect; ctx.arc + ctx.fill are
     // its draw primitives.)
-    expect((fakeCtx.strokeRect as ReturnType<typeof vi.fn>)).not.toHaveBeenCalled();
+    expect(fakeCtx.strokeRect as ReturnType<typeof vi.fn>).not.toHaveBeenCalled();
   });
 
   it('with a placed ball + selectedId matching, the highlight strokeRect at (-2,-2,64,64) fires', () => {
     const components: PlacedComponent[] = [
       { id: 'placed-1', componentId: 'ball', x: 50, y: 50, properties: {} },
     ];
-    render(
-      <PygameEditorCanvas
-        {...baseProps}
-        components={components}
-        selectedId="placed-1"
-      />
-    );
+    render(<PygameEditorCanvas {...baseProps} components={components} selectedId="placed-1" />);
     // Lines 121-124 — selection highlight draws an outset 64×64 square.
-    expect((fakeCtx.strokeRect as ReturnType<typeof vi.fn>)).toHaveBeenCalledWith(
-      -2,
-      -2,
-      64,
-      64
-    );
+    expect(fakeCtx.strokeRect as ReturnType<typeof vi.fn>).toHaveBeenCalledWith(-2, -2, 64, 64);
   });
 
   it('with an unknown componentId, the per-component branch is skipped (no crash)', () => {
@@ -190,7 +169,7 @@ describe('PygameEditorCanvas — render effect components branch', () => {
     ).not.toThrow();
     // No translate/save/restore for the unknown component (the if-guard at
     // line 116 fails, so the body never runs).
-    expect((fakeCtx.translate as ReturnType<typeof vi.fn>)).not.toHaveBeenCalled();
+    expect(fakeCtx.translate as ReturnType<typeof vi.fn>).not.toHaveBeenCalled();
   });
 });
 
@@ -216,9 +195,7 @@ describe('PygameEditorCanvas — render effect cleanup', () => {
     window.requestAnimationFrame = vi.fn(() => 99) as never;
     const cancelAnimationFrameSpy = vi.fn();
     window.cancelAnimationFrame = cancelAnimationFrameSpy;
-    const { unmount } = render(
-      <PygameEditorCanvas {...baseProps} isPlaying={true} />
-    );
+    const { unmount } = render(<PygameEditorCanvas {...baseProps} isPlaying={true} />);
     setCanvasContextMock.mockClear();
     unmount();
     // Lines 144-145 — cancelAnimationFrame fires with the rAF id.

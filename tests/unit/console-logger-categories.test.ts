@@ -53,10 +53,7 @@ describe('logger — python convenience surface (lines 231-242)', () => {
     expect(errorSpy).toHaveBeenCalled();
     expect(logSpy.mock.calls.length).toBeGreaterThanOrEqual(2);
     // Python icon 🐍 in formatted message.
-    const allCalls = [
-      ...logSpy.mock.calls.flat(),
-      ...debugSpy.mock.calls.flat(),
-    ];
+    const allCalls = [...logSpy.mock.calls.flat(), ...debugSpy.mock.calls.flat()];
     expect(allCalls.some((m) => typeof m === 'string' && m.includes('🐍'))).toBe(true);
   });
 });
@@ -72,10 +69,7 @@ describe('logger — pygame convenience surface (lines 244-255)', () => {
     expect(debugSpy).toHaveBeenCalled();
     expect(warnSpy).toHaveBeenCalled();
     expect(errorSpy).toHaveBeenCalled();
-    const allCalls = [
-      ...logSpy.mock.calls.flat(),
-      ...debugSpy.mock.calls.flat(),
-    ];
+    const allCalls = [...logSpy.mock.calls.flat(), ...debugSpy.mock.calls.flat()];
     expect(allCalls.some((m) => typeof m === 'string' && m.includes('🎮'))).toBe(true);
   });
 });
@@ -105,10 +99,7 @@ describe('logger — network convenience surface (lines 270-281)', () => {
     expect(debugSpy).toHaveBeenCalled();
     expect(warnSpy).toHaveBeenCalled();
     expect(errorSpy).toHaveBeenCalled();
-    const allCalls = [
-      ...logSpy.mock.calls.flat(),
-      ...debugSpy.mock.calls.flat(),
-    ];
+    const allCalls = [...logSpy.mock.calls.flat(), ...debugSpy.mock.calls.flat()];
     expect(allCalls.some((m) => typeof m === 'string' && m.includes('🌐'))).toBe(true);
   });
 });
@@ -124,10 +115,7 @@ describe('logger — performance convenience surface (lines 283-294)', () => {
     expect(debugSpy).toHaveBeenCalled();
     expect(warnSpy).toHaveBeenCalled();
     expect(errorSpy).toHaveBeenCalled();
-    const allCalls = [
-      ...logSpy.mock.calls.flat(),
-      ...debugSpy.mock.calls.flat(),
-    ];
+    const allCalls = [...logSpy.mock.calls.flat(), ...debugSpy.mock.calls.flat()];
     expect(allCalls.some((m) => typeof m === 'string' && m.includes('⚡'))).toBe(true);
   });
 });
@@ -143,10 +131,7 @@ describe('logger — ui convenience surface (lines 296-307)', () => {
     expect(debugSpy).toHaveBeenCalled();
     expect(warnSpy).toHaveBeenCalled();
     expect(errorSpy).toHaveBeenCalled();
-    const allCalls = [
-      ...logSpy.mock.calls.flat(),
-      ...debugSpy.mock.calls.flat(),
-    ];
+    const allCalls = [...logSpy.mock.calls.flat(), ...debugSpy.mock.calls.flat()];
     expect(allCalls.some((m) => typeof m === 'string' && m.includes('🎨'))).toBe(true);
   });
 });
@@ -162,8 +147,8 @@ describe('ConsoleLogger constructor — saved prefs hydration (lines 64-73)', ()
     logger.system.error('should-pass');
     expect(errorSpy).toHaveBeenCalled();
     // info doesn't reach console.log because the level is disabled.
-    const infoCall = logSpy.mock.calls.find((c) =>
-      typeof c[0] === 'string' && c[0].includes('should-be-filtered')
+    const infoCall = logSpy.mock.calls.find(
+      (c: unknown[]) => typeof c[0] === 'string' && c[0].includes('should-be-filtered')
     );
     expect(infoCall).toBeUndefined();
   });
@@ -176,11 +161,11 @@ describe('ConsoleLogger constructor — saved prefs hydration (lines 64-73)', ()
     logger.system.info('system-should-be-filtered');
     logger.pygame.info('pygame-should-pass');
     // Only the pygame line reached console.log.
-    const systemCall = logSpy.mock.calls.find((c) =>
-      typeof c[0] === 'string' && c[0].includes('system-should-be-filtered')
+    const systemCall = logSpy.mock.calls.find(
+      (c: unknown[]) => typeof c[0] === 'string' && c[0].includes('system-should-be-filtered')
     );
-    const pygameCall = logSpy.mock.calls.find((c) =>
-      typeof c[0] === 'string' && c[0].includes('pygame-should-pass')
+    const pygameCall = logSpy.mock.calls.find(
+      (c: unknown[]) => typeof c[0] === 'string' && c[0].includes('pygame-should-pass')
     );
     expect(systemCall).toBeUndefined();
     expect(pygameCall).toBeDefined();

@@ -13,11 +13,7 @@
 //     NotFoundError so the operation is idempotent
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import {
-  listOpfsProjects,
-  loadOpfsProject,
-  deleteOpfsProject,
-} from '@lib/storage/opfs-projects';
+import { listOpfsProjects, loadOpfsProject, deleteOpfsProject } from '@lib/storage/opfs-projects';
 
 let originalStorage: typeof navigator.storage | undefined;
 
@@ -49,9 +45,7 @@ function makeFakeDir(
               : new Blob([file.content], { type: file.type ?? 'text/plain' });
           return Object.assign(blob, {
             text: async () =>
-              file.content instanceof Blob
-                ? await file.content.text()
-                : (file.content as string),
+              file.content instanceof Blob ? await file.content.text() : (file.content as string),
           });
         },
         createWritable: async () => ({

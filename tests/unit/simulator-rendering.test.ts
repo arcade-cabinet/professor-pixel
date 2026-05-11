@@ -147,11 +147,15 @@ describe('flushFrameBuffer — draw command branches', () => {
     const ctx = fakeCtx();
     setCanvasContext(ctx);
     const screen = pygameShim.display.set_mode([800, 600]);
-    pygameShim.draw.polygon(screen, [255, 0, 255], [
-      [0, 0],
-      [10, 0],
-      [10, 10],
-    ]);
+    pygameShim.draw.polygon(
+      screen,
+      [255, 0, 255],
+      [
+        [0, 0],
+        [10, 0],
+        [10, 10],
+      ]
+    );
     flushFrameBuffer();
     // polygon shim emits N 'line' commands (one per edge), so stroke fires.
     expect(ctx.stroke).toHaveBeenCalled();

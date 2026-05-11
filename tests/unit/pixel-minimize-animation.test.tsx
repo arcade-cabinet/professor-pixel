@@ -39,11 +39,9 @@ describe('PixelMinimizeAnimation', () => {
     expect(screen.getAllByAltText('Pixel').length).toBeGreaterThan(0);
   });
 
-  it("uses the default message when none is supplied", () => {
+  it('uses the default message when none is supplied', () => {
     const onAnimationComplete = vi.fn();
-    render(
-      <PixelMinimizeAnimation onAnimationComplete={onAnimationComplete} isMobile={false} />
-    );
+    render(<PixelMinimizeAnimation onAnimationComplete={onAnimationComplete} isMobile={false} />);
     expect(screen.getByText(/right here if you need me/i)).toBeInTheDocument();
   });
 
@@ -100,24 +98,12 @@ describe('PixelMinimizeAnimation', () => {
   it('exposes the desktop target position (top-left) when isMobile=false', () => {
     // Indirect: the component renders; we just confirm both isMobile
     // values produce a valid render.
-    render(
-      <PixelMinimizeAnimation
-        message="bye"
-        onAnimationComplete={vi.fn()}
-        isMobile={false}
-      />
-    );
+    render(<PixelMinimizeAnimation message="bye" onAnimationComplete={vi.fn()} isMobile={false} />);
     expect(screen.getAllByAltText('Pixel').length).toBeGreaterThan(0);
   });
 
   it('exposes the mobile target position (top-right) when isMobile=true', () => {
-    render(
-      <PixelMinimizeAnimation
-        message="bye"
-        onAnimationComplete={vi.fn()}
-        isMobile={true}
-      />
-    );
+    render(<PixelMinimizeAnimation message="bye" onAnimationComplete={vi.fn()} isMobile={true} />);
     expect(screen.getAllByAltText('Pixel').length).toBeGreaterThan(0);
   });
 });

@@ -26,9 +26,8 @@ vi.mock('@lib/storage/mode', () => ({
 
 const saveProfileMock = vi.fn();
 vi.mock('@lib/storage/profile', async () => {
-  const actual = await vi.importActual<typeof import('@lib/storage/profile')>(
-    '@lib/storage/profile'
-  );
+  const actual =
+    await vi.importActual<typeof import('@lib/storage/profile')>('@lib/storage/profile');
   return {
     ...actual,
     loadProfile: () => null,

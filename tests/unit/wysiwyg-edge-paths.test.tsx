@@ -23,9 +23,7 @@ vi.mock('react-dnd', async () => {
 vi.mock('react-dnd-html5-backend', () => ({ HTML5Backend: {} }));
 
 vi.mock('@lib/pygame/runtime/simulator', async () => {
-  const actual = await vi.importActual<Record<string, unknown>>(
-    '@lib/pygame/runtime/simulator'
-  );
+  const actual = await vi.importActual<Record<string, unknown>>('@lib/pygame/runtime/simulator');
   return {
     ...actual,
     setCanvasContext: vi.fn(),
@@ -46,7 +44,8 @@ vi.mock('@lib/hooks/use-edge-swipe', () => ({
   },
 }));
 
-import PygameWysiwygEditor, { type PlacedComponent } from '@/components/editor/wysiwyg';
+import PygameWysiwygEditor from '@/components/editor/wysiwyg';
+import type { PlacedComponent } from '@lib/pygame/components/types';
 
 beforeEach(() => {
   viewportFlags = { isCompact: false, isTouchPrimary: false };

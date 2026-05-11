@@ -58,9 +58,7 @@ describe('PixelMenu — formatTime branches in History tab', () => {
     expect(screen.getByText('Built game X')).toBeInTheDocument();
     // The exact phrasing is from the i18n catalog, but it must contain the
     // hour count in some form (h, hour, etc.).
-    expect(
-      screen.queryAllByText(/2.*(hour|hr|h\b)/i).length
-    ).toBeGreaterThanOrEqual(1);
+    expect(screen.queryAllByText(/2.*(hour|hr|h\b)/i).length).toBeGreaterThanOrEqual(1);
   });
 
   it('renders an action with days-ago label when timestamp is more than 24 hours old', () => {
@@ -88,9 +86,7 @@ describe('PixelMenu — formatTime branches in History tab', () => {
     if (historyTab) fireEvent.click(historyTab);
     expect(screen.getByText('Old game')).toBeInTheDocument();
     // The label must include some representation of "3 days".
-    expect(
-      screen.queryAllByText(/3.*(day|d\b)/i).length
-    ).toBeGreaterThanOrEqual(1);
+    expect(screen.queryAllByText(/3.*(day|d\b)/i).length).toBeGreaterThanOrEqual(1);
   });
 });
 
@@ -106,7 +102,9 @@ describe('PixelMenu — tab toggle round-trip', () => {
     // History tab visible → action grid hidden.
     expect(screen.queryByTestId('change-game-button')).not.toBeInTheDocument();
     // Now click the Actions tab to come back.
-    const actionsTab = screen.getAllByRole('button').find((b) => /actions/i.test(b.textContent ?? ''));
+    const actionsTab = screen
+      .getAllByRole('button')
+      .find((b) => /actions/i.test(b.textContent ?? ''));
     expect(actionsTab).toBeDefined();
     fireEvent.click(actionsTab!);
     expect(screen.getByTestId('change-game-button')).toBeInTheDocument();

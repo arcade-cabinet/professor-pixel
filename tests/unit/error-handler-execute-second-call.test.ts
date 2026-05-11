@@ -89,10 +89,7 @@ describe('createEnhancedErrorCapture — empty-stdout success literal + outer-ca
     const STRING_THROW = Symbol('string-throw');
     let i = 0;
     // Setup chain (4) succeeds, then clear_enhanced_error() throws.
-    const responses: Array<RunPythonResponse | typeof STRING_THROW> = [
-      ...SETUP_OK,
-      STRING_THROW,
-    ];
+    const responses: Array<RunPythonResponse | typeof STRING_THROW> = [...SETUP_OK, STRING_THROW];
     const pyodide = {
       runPython: () => {
         const next = responses[i++];

@@ -67,12 +67,7 @@ afterEach(() => {
 describe('InteractiveGameCanvas — render + toolbar toggles', () => {
   it('renders the toolbar, drop zone, and the seeded entity', () => {
     const scene = makeScene();
-    render(
-      <InteractiveGameCanvas
-        gameConfig={makeConfig(scene)}
-        onConfigChange={vi.fn()}
-      />
-    );
+    render(<InteractiveGameCanvas gameConfig={makeConfig(scene)} onConfigChange={vi.fn()} />);
     expect(screen.getByTestId('button-play-pause')).toBeInTheDocument();
     expect(screen.getByTestId('button-toggle-grid')).toBeInTheDocument();
     expect(screen.getByTestId('switch-grid-snap')).toBeInTheDocument();
@@ -81,12 +76,7 @@ describe('InteractiveGameCanvas — render + toolbar toggles', () => {
   });
 
   it('Play toggles between Play and Pause copy and shows the running overlay', () => {
-    render(
-      <InteractiveGameCanvas
-        gameConfig={makeConfig(makeScene())}
-        onConfigChange={vi.fn()}
-      />
-    );
+    render(<InteractiveGameCanvas gameConfig={makeConfig(makeScene())} onConfigChange={vi.fn()} />);
     const playBtn = screen.getByTestId('button-play-pause');
     expect(playBtn.textContent).toMatch(/play/i);
     fireEvent.click(playBtn);
@@ -95,12 +85,7 @@ describe('InteractiveGameCanvas — render + toolbar toggles', () => {
   });
 
   it('Toggle Grid flips the showGrid state on/off', () => {
-    render(
-      <InteractiveGameCanvas
-        gameConfig={makeConfig(makeScene())}
-        onConfigChange={vi.fn()}
-      />
-    );
+    render(<InteractiveGameCanvas gameConfig={makeConfig(makeScene())} onConfigChange={vi.fn()} />);
     const gridBtn = screen.getByTestId('button-toggle-grid');
     // Initial state: showGrid is true (default), button has the active class.
     fireEvent.click(gridBtn);
@@ -125,12 +110,7 @@ describe('InteractiveGameCanvas — render + toolbar toggles', () => {
 
 describe('InteractiveGameCanvas — entity selection + delete', () => {
   it('clicking an entity selects it and shows the delete button + badge', () => {
-    render(
-      <InteractiveGameCanvas
-        gameConfig={makeConfig(makeScene())}
-        onConfigChange={vi.fn()}
-      />
-    );
+    render(<InteractiveGameCanvas gameConfig={makeConfig(makeScene())} onConfigChange={vi.fn()} />);
     fireEvent.click(screen.getByTestId('entity-e1'));
     expect(screen.getByTestId('button-delete-entity')).toBeInTheDocument();
   });
@@ -139,10 +119,7 @@ describe('InteractiveGameCanvas — entity selection + delete', () => {
     const onConfigChange = vi.fn();
     const scene = makeScene();
     render(
-      <InteractiveGameCanvas
-        gameConfig={makeConfig(scene)}
-        onConfigChange={onConfigChange}
-      />
+      <InteractiveGameCanvas gameConfig={makeConfig(scene)} onConfigChange={onConfigChange} />
     );
     fireEvent.click(screen.getByTestId('entity-e1'));
     fireEvent.click(screen.getByTestId('button-delete-entity'));
@@ -152,36 +129,21 @@ describe('InteractiveGameCanvas — entity selection + delete', () => {
   });
 
   it('keyboard Enter selects the entity (accessibility path)', () => {
-    render(
-      <InteractiveGameCanvas
-        gameConfig={makeConfig(makeScene())}
-        onConfigChange={vi.fn()}
-      />
-    );
+    render(<InteractiveGameCanvas gameConfig={makeConfig(makeScene())} onConfigChange={vi.fn()} />);
     const entity = screen.getByTestId('entity-e1');
     fireEvent.keyDown(entity, { key: 'Enter' });
     expect(screen.getByTestId('button-delete-entity')).toBeInTheDocument();
   });
 
   it('keyboard Space also selects the entity', () => {
-    render(
-      <InteractiveGameCanvas
-        gameConfig={makeConfig(makeScene())}
-        onConfigChange={vi.fn()}
-      />
-    );
+    render(<InteractiveGameCanvas gameConfig={makeConfig(makeScene())} onConfigChange={vi.fn()} />);
     const entity = screen.getByTestId('entity-e1');
     fireEvent.keyDown(entity, { key: ' ' });
     expect(screen.getByTestId('button-delete-entity')).toBeInTheDocument();
   });
 
   it('keyboard Enter does NOT select while playing (interaction is suppressed)', () => {
-    render(
-      <InteractiveGameCanvas
-        gameConfig={makeConfig(makeScene())}
-        onConfigChange={vi.fn()}
-      />
-    );
+    render(<InteractiveGameCanvas gameConfig={makeConfig(makeScene())} onConfigChange={vi.fn()} />);
     fireEvent.click(screen.getByTestId('button-play-pause'));
     const entity = screen.getByTestId('entity-e1');
     fireEvent.keyDown(entity, { key: 'Enter' });
@@ -194,10 +156,7 @@ describe('InteractiveGameCanvas — drag-to-move', () => {
     const onConfigChange = vi.fn();
     const scene = makeScene({ gridSize: 20 });
     render(
-      <InteractiveGameCanvas
-        gameConfig={makeConfig(scene)}
-        onConfigChange={onConfigChange}
-      />
+      <InteractiveGameCanvas gameConfig={makeConfig(scene)} onConfigChange={onConfigChange} />
     );
     const entity = screen.getByTestId('entity-e1');
     // Mouse down on the entity arms the drag.
@@ -223,25 +182,20 @@ describe('InteractiveGameCanvas — drag-to-move', () => {
 
 describe('InteractiveGameCanvas — keyboard shortcuts', () => {
   it('Ctrl+G toggles the grid', () => {
-    render(
-      <InteractiveGameCanvas
-        gameConfig={makeConfig(makeScene())}
-        onConfigChange={vi.fn()}
-      />
-    );
-    // Just exercise the path — no throw means Ctrl+G handler ran.
-    expect(() =>
-      fireEvent.keyDown(window, { key: 'g', ctrlKey: true })
-    ).not.toThrow();
+    render(<InteractiveGameCanvas gameConfig={makeConfig(makeScene())} onConfigChange={vi.fn()} />);
+    // Grid defaults to ON: toggle button carries `bg-muted` when showGrid=true
+    // (see app/components/pygame/interactive-canvas.tsx:257). Verify the
+    // shortcut actually flips state by asserting the className changes.
+    const toggle = screen.getByTestId('button-toggle-grid');
+    expect(toggle.className).toMatch(/bg-muted/);
+    fireEvent.keyDown(window, { key: 'g', ctrlKey: true });
+    expect(toggle.className).not.toMatch(/bg-muted/);
+    fireEvent.keyDown(window, { key: 'g', ctrlKey: true });
+    expect(toggle.className).toMatch(/bg-muted/);
   });
 
   it('Space (when target is body) toggles play/pause', () => {
-    render(
-      <InteractiveGameCanvas
-        gameConfig={makeConfig(makeScene())}
-        onConfigChange={vi.fn()}
-      />
-    );
+    render(<InteractiveGameCanvas gameConfig={makeConfig(makeScene())} onConfigChange={vi.fn()} />);
     const playBtn = screen.getByTestId('button-play-pause');
     expect(playBtn.textContent).toMatch(/play/i);
     // Body-target Space triggers the play toggle.
@@ -255,10 +209,7 @@ describe('InteractiveGameCanvas — keyboard shortcuts', () => {
   it('Delete on selected entity removes it', () => {
     const onConfigChange = vi.fn();
     render(
-      <InteractiveGameCanvas
-        gameConfig={makeConfig(makeScene())}
-        onConfigChange={onConfigChange}
-      />
+      <InteractiveGameCanvas gameConfig={makeConfig(makeScene())} onConfigChange={onConfigChange} />
     );
     fireEvent.click(screen.getByTestId('entity-e1'));
     fireEvent.keyDown(window, { key: 'Delete' });
@@ -272,12 +223,7 @@ describe('InteractiveGameCanvas — empty / missing scene fallbacks', () => {
   it('renders without crashing when scene has no entities', () => {
     const scene = makeScene({ entities: [] });
     expect(() =>
-      render(
-        <InteractiveGameCanvas
-          gameConfig={makeConfig(scene)}
-          onConfigChange={vi.fn()}
-        />
-      )
+      render(<InteractiveGameCanvas gameConfig={makeConfig(scene)} onConfigChange={vi.fn()} />)
     ).not.toThrow();
     expect(screen.getByTestId('game-canvas-drop-zone')).toBeInTheDocument();
   });

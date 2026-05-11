@@ -21,9 +21,7 @@ vi.mock('react-dnd', async () => {
 });
 vi.mock('react-dnd-html5-backend', () => ({ HTML5Backend: {} }));
 vi.mock('@lib/pygame/runtime/simulator', async () => {
-  const actual = await vi.importActual<Record<string, unknown>>(
-    '@lib/pygame/runtime/simulator'
-  );
+  const actual = await vi.importActual<Record<string, unknown>>('@lib/pygame/runtime/simulator');
   return {
     ...actual,
     setCanvasContext: vi.fn(),
@@ -52,18 +50,10 @@ vi.mock('@/components/editor/canvas', () => ({
     onDelete: (id: string) => void;
   }) => (
     <div data-testid="canvas-stub">
-      <button
-        type="button"
-        data-testid="canvas-drop-btn"
-        onClick={() => onDrop('ball', 23, 47)}
-      >
+      <button type="button" data-testid="canvas-drop-btn" onClick={() => onDrop('ball', 23, 47)}>
         drop
       </button>
-      <button
-        type="button"
-        data-testid="canvas-select-btn"
-        onClick={() => onSelect('placed-1')}
-      >
+      <button type="button" data-testid="canvas-select-btn" onClick={() => onSelect('placed-1')}>
         select
       </button>
       <button
@@ -73,11 +63,7 @@ vi.mock('@/components/editor/canvas', () => ({
       >
         move
       </button>
-      <button
-        type="button"
-        data-testid="canvas-delete-btn"
-        onClick={() => onDelete('placed-1')}
-      >
+      <button type="button" data-testid="canvas-delete-btn" onClick={() => onDelete('placed-1')}>
         delete
       </button>
     </div>
@@ -114,9 +100,8 @@ vi.mock('@/components/editor/code-panel', () => ({
   default: () => <div data-testid="code-panel-stub">code</div>,
 }));
 
-import PygameWysiwygEditor, {
-  type PlacedComponent,
-} from '@/components/editor/wysiwyg';
+import PygameWysiwygEditor from '@/components/editor/wysiwyg';
+import type { PlacedComponent } from '@lib/pygame/components/types';
 
 beforeEach(() => {
   viewportFlags = { isCompact: false, isTouchPrimary: false };
@@ -184,9 +169,7 @@ describe('PygameWysiwygEditor — handlePropertyChange wired through properties 
     ];
     render(<PygameWysiwygEditor initialComponents={seed} />);
     fireEvent.click(screen.getByTestId('canvas-select-btn'));
-    expect(() =>
-      fireEvent.click(screen.getByTestId('properties-change-btn'))
-    ).not.toThrow();
+    expect(() => fireEvent.click(screen.getByTestId('properties-change-btn'))).not.toThrow();
     // Selection persists (handlePropertyChange doesn't clear it).
     expect(screen.getByTestId('properties-selected-id').textContent).toBe('placed-1');
   });

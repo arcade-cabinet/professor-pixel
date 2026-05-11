@@ -102,7 +102,9 @@ describe('PygameEditorCodePanel — Download', () => {
     expect(downloadBtn).toBeDefined();
 
     // Spy on the synthesized <a> click that the handler will dispatch.
-    const anchorClickSpy = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
+    const anchorClickSpy = vi
+      .spyOn(HTMLAnchorElement.prototype, 'click')
+      .mockImplementation(() => {});
 
     fireEvent.click(downloadBtn!);
 

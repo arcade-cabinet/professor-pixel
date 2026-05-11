@@ -244,9 +244,7 @@ describe('ErrorBoundary — context/level fallback chain (line 70 final arm)', (
       </ErrorBoundary>
     );
     // The context line is one of multiple console.error calls; find it.
-    const contextLogged = errSpy.mock.calls.some(
-      (c) => c[0] === 'Context:' && c[1] === 'Unknown'
-    );
+    const contextLogged = errSpy.mock.calls.some((c) => c[0] === 'Context:' && c[1] === 'Unknown');
     expect(contextLogged).toBe(true);
   });
 
@@ -271,5 +269,4 @@ describe('ErrorBoundary — context/level fallback chain (line 70 final arm)', (
     const last = tracked[tracked.length - 1]!;
     expect('componentStack' in last).toBe(true);
   });
-
 });

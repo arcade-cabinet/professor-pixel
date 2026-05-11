@@ -10,15 +10,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { render } from '@testing-library/react';
 import '@testing-library/jest-dom/vitest';
 
-let capturedSpec:
-  | {
-      drop: (
-        item: { componentId: string },
-        monitor: { getClientOffset: () => { x: number; y: number } | null }
-      ) => void;
-      collect: (monitor: { isOver: () => boolean }) => { isOver: boolean };
-    }
-  | null = null;
+let capturedSpec: {
+  drop: (
+    item: { componentId: string },
+    monitor: { getClientOffset: () => { x: number; y: number } | null }
+  ) => void;
+  collect: (monitor: { isOver: () => boolean }) => { isOver: boolean };
+} | null = null;
 
 vi.mock('react-dnd', () => ({
   useDrop: (specFn: () => unknown) => {
@@ -28,9 +26,7 @@ vi.mock('react-dnd', () => ({
 }));
 
 vi.mock('@lib/pygame/runtime/simulator', async () => {
-  const actual = await vi.importActual<Record<string, unknown>>(
-    '@lib/pygame/runtime/simulator'
-  );
+  const actual = await vi.importActual<Record<string, unknown>>('@lib/pygame/runtime/simulator');
   return {
     ...actual,
     setCanvasContext: vi.fn(),
@@ -85,10 +81,7 @@ describe('PygameEditorCanvas — useDrop drop callback (lines 51-69)', () => {
     canvas.width = 800;
     canvas.height = 600;
     expect(capturedSpec).not.toBeNull();
-    capturedSpec!.drop(
-      { componentId: 'ball' },
-      { getClientOffset: () => ({ x: 130, y: 90 }) }
-    );
+    capturedSpec!.drop({ componentId: 'ball' }, { getClientOffset: () => ({ x: 130, y: 90 }) });
     // canvas 800×600, getBoundingClientRect 800×600 → scaleX = scaleY = 1.
     // PLACE_HALF = 30, so x = 130 - 30 = 100, y = 60.
     expect(onDrop).toHaveBeenCalledWith('ball', 100, 60);

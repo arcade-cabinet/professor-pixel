@@ -46,7 +46,7 @@ describe('quota — measureLocalStorageBytes SSR (line 114 truthy)', () => {
 });
 
 describe('quota — null key / null value mid-iteration (lines 119, 120)', () => {
-  it("skips entries when localStorage.key(i) returns null (line 119 path 0 truthy)", async () => {
+  it('skips entries when localStorage.key(i) returns null (line 119 path 0 truthy)', async () => {
     // Plant 1MB of "a"=value to make length>0 but stub key() to return
     // null, forcing the `if (key === null) continue` arm. The byte total
     // stays at 0 so shouldWarnQuota returns false (well under 4MB).

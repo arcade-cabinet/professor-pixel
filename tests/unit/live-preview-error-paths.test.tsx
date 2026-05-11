@@ -10,7 +10,8 @@ import type React from 'react';
 import { describe, expect, it, vi, beforeAll, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom/vitest';
-import PygameLivePreview, { type GameChoice } from '@/components/pygame/live-preview';
+import PygameLivePreview from '@/components/pygame/live-preview';
+import type { GameChoice } from '@lib/wizard/types';
 
 const setCanvasContextMock = vi.fn();
 const flushFrameBufferMock = vi.fn();
@@ -50,11 +51,7 @@ vi.mock('@/components/ui/slider', () => ({
     'data-testid'?: string;
     onValueChange?: (vals: number[]) => void;
   }) => (
-    <button
-      type="button"
-      data-testid={testId}
-      onClick={() => onValueChange?.([7])}
-    >
+    <button type="button" data-testid={testId} onClick={() => onValueChange?.([7])}>
       slider-{testId}
     </button>
   ),
@@ -116,10 +113,7 @@ describe('PygameLivePreview — runSnippet error path (lines 177-208)', () => {
     await waitFor(() => {
       expect(toastMock).toHaveBeenCalled();
     });
-    expect(errSpy).toHaveBeenCalledWith(
-      '[live-preview]',
-      expect.stringContaining('TypeError')
-    );
+    expect(errSpy).toHaveBeenCalledWith('[live-preview]', expect.stringContaining('TypeError'));
     // Toast called with kid-friendly title.
     expect(toastMock.mock.calls[0][0]).toMatchObject({
       title: expect.stringContaining('Oops'),
@@ -133,10 +127,7 @@ describe('PygameLivePreview — runSnippet error path (lines 177-208)', () => {
     await waitFor(() => {
       expect(toastMock).toHaveBeenCalled();
     });
-    expect(errSpy).toHaveBeenCalledWith(
-      '[live-preview]',
-      expect.stringContaining('network blip')
-    );
+    expect(errSpy).toHaveBeenCalledWith('[live-preview]', expect.stringContaining('network blip'));
   });
 });
 
@@ -159,10 +150,7 @@ describe('PygameLivePreview — handle_click runPython throw (line 319)', () => 
     // Tap the canvas — handle_click runPython will throw.
     const canvas = document.querySelector('canvas')!;
     fireEvent.pointerDown(canvas, { pointerType: 'mouse', clientX: 100, clientY: 100 });
-    expect(errSpy).toHaveBeenCalledWith(
-      'Failed to handle click:',
-      expect.any(Error)
-    );
+    expect(errSpy).toHaveBeenCalledWith('Failed to handle click:', expect.any(Error));
   });
 });
 

@@ -51,9 +51,7 @@ describe('GameProgressSidebar — overall progress + stage rollup', () => {
 
   it('renders 25% with title-stage configured + "Making good progress!" copy', () => {
     // Boundary check: progressPercentage === 25 falls into the `< 50` branch.
-    render(
-      <GameProgressSidebar sessionActions={{ ...baseSession, titlePresetApplied: true }} />
-    );
+    render(<GameProgressSidebar sessionActions={{ ...baseSession, titlePresetApplied: true }} />);
     expect(screen.getByText('25%')).toBeInTheDocument();
     expect(screen.getByText(/Making good progress!/)).toBeInTheDocument();
   });
@@ -172,9 +170,7 @@ describe('GameProgressSidebar — selected components rollup', () => {
 
   it('caps progress at 95% via component bonus when stages are partial', () => {
     // With 25% from title and 5+ components, bonus pushes us toward 95%.
-    const lots = Object.fromEntries(
-      Array.from({ length: 10 }, (_, i) => [`comp_${i}`, 'A'])
-    );
+    const lots = Object.fromEntries(Array.from({ length: 10 }, (_, i) => [`comp_${i}`, 'A']));
     render(
       <GameProgressSidebar
         sessionActions={{

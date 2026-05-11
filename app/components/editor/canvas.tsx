@@ -4,7 +4,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Trash2 } from 'lucide-react';
 import { cn } from '@lib/utils/cn';
-import { PlacedComponent } from './wysiwyg';
+import type { PlacedComponent } from '@lib/pygame/components/types';
 import { getComponentById } from '@lib/pygame/components/registry';
 import { setCanvasContext, flushFrameBuffer } from '@lib/pygame/runtime/simulator';
 

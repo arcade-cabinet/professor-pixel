@@ -26,6 +26,23 @@ export type ComponentType =
  */
 export type ComponentPropertyValue = string | number | boolean;
 
+/**
+ * One component instance placed onto the WYSIWYG editor canvas. The visual
+ * editor's source of truth is `placedComponents: PlacedComponent[]` —
+ * the code panel `useMemo`s the generated Python from it (read-only direction).
+ *
+ * Lives in src/ rather than app/ because it's also referenced by the code
+ * generator and the wizard live-preview path; the UI shell consumes it as a
+ * domain type, not declares it.
+ */
+export interface PlacedComponent {
+  id: string;
+  componentId: string;
+  x: number;
+  y: number;
+  properties: Record<string, ComponentPropertyValue>;
+}
+
 /** Bag the wizard threads through the inspector — every property is one of
  * the runtime types we know how to surface. */
 export type ComponentPropertyBag = Record<string, ComponentPropertyValue>;

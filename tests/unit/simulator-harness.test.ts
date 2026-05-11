@@ -39,8 +39,9 @@ describe('createFakeCanvasContext — proxy getter for tracked props (line 68 tr
 
   it('records method calls (e.g. fillRect) in the ledger', () => {
     const harness = createFakeCanvasContext();
-    (harness.ctx as unknown as { fillRect: (x: number, y: number, w: number, h: number) => void })
-      .fillRect(1, 2, 3, 4);
+    (
+      harness.ctx as unknown as { fillRect: (x: number, y: number, w: number, h: number) => void }
+    ).fillRect(1, 2, 3, 4);
     expect(harness.getLedger()).toEqual([{ type: 'fillRect', args: [1, 2, 3, 4] }]);
   });
 

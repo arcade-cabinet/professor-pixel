@@ -408,9 +408,7 @@ describe('projects (OPFS) — cloneWizardProject', () => {
       thumbnailUrl: 'blob:src',
       gamePy: undefined,
     });
-    listOpfs.mockResolvedValue([
-      { id: 'src', name: 'Has Thumb', thumbnailUrl: 'blob:list-1' },
-    ]);
+    listOpfs.mockResolvedValue([{ id: 'src', name: 'Has Thumb', thumbnailUrl: 'blob:list-1' }]);
     saveOpfs.mockResolvedValue({
       id: 'cloned',
       name: 'Has Thumb — Remix 1',

@@ -24,6 +24,17 @@ const saveWizardStateMock = vi.fn();
 vi.mock('@lib/storage/persistence', () => ({
   loadWizardState: () => loadWizardStateMock(),
   saveWizardState: (s: unknown) => saveWizardStateMock(s),
+  loadLastLandingPath: () => {
+    const v = localStorage.getItem('pp.lastLandingPath');
+    return v === 'wizard' || v === 'lessons' ? v : null;
+  },
+  saveLastLandingPath: (p: 'wizard' | 'lessons') => {
+    localStorage.setItem('pp.lastLandingPath', p);
+  },
+  hasSeenIntro: () => localStorage.getItem('pp.hasSeenIntro') === '1',
+  markIntroSeen: () => {
+    localStorage.setItem('pp.hasSeenIntro', '1');
+  },
 }));
 
 const listWizardProjectsMock = vi.fn();
@@ -136,9 +147,7 @@ describe('Home — deleteProjectMutation onError (lines 108-116)', () => {
       expect(destructive).toBe(true);
     });
     // Confirm UI cleared.
-    expect(
-      screen.queryByTestId('my-game-confirm-delete-proj-1')
-    ).not.toBeInTheDocument();
+    expect(screen.queryByTestId('my-game-confirm-delete-proj-1')).not.toBeInTheDocument();
   });
 });
 

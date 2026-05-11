@@ -16,15 +16,7 @@ import TapToPlaceHint from './tap-to-place-hint';
 import PygameEditorPalette from './palette';
 import PygameEditorProperties from './properties';
 import PygameEditorCodePanel from './code-panel';
-import type { ComponentPropertyValue } from '@lib/pygame/components/types';
-
-export interface PlacedComponent {
-  id: string;
-  componentId: string;
-  x: number;
-  y: number;
-  properties: Record<string, ComponentPropertyValue>;
-}
+import type { ComponentPropertyValue, PlacedComponent } from '@lib/pygame/components/types';
 
 interface PygameWysiwygEditorProps {
   className?: string;

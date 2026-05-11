@@ -106,15 +106,15 @@ export default defineConfig({
       // Vitest projects — unit + integration + component (browser). The
       // numbers below are the aggregate across all three.
       //
-      // Today's snapshot (2026-05-08, post-registry-ssr-window-guards):
-      // statements 88.68%, branches 83.18%, functions 86.05%, lines 89.62%.
+      // Today's snapshot (2026-05-08, post-audit-fix-pass-with-drainage):
+      // statements 88.69%, branches 83.21%, functions 86.05%, lines 89.63%.
       // Branches floor 80 (RATCHETED 79→80 in post-pyodide-ssr-and-existing-tag-
-      // undefined-status; floor sits 3.18pt under the aggregate run).
-      // Eight consecutive runs at 83+ (envelope 82.97–83.18). Lower edge still
-      // 82.97 — ratchet 80→81 stays deferred (would leave 1.97pt cushion at
-      // the worst-case dip). Wait for actuals to reach 83.5+ to ratchet safely.
-      // Branches floor stays at 77 (established flap envelope dips below
-      // 78.00, and 78 was reverted in post-use-debug-flag-catch-spy).
+      // undefined-status; floor sits 3.21pt under the aggregate run).
+      // Audit fix pass added new code (lesson-10 dictionaries, four
+      // persistence landing-chooser helpers); persistence-landing-helpers
+      // test (12 tests covering happy / SSR-window / try-catch arms)
+      // recovered + exceeded the prior peak. Branches at a new high
+      // (83.21% vs prior 83.18%).
       // (Aggregate flaps ±0.1% per run due to browser-suite render-effect
       // timing; the per-file targeted lines for each PR move into the
       // covered set deterministically.)
@@ -124,6 +124,8 @@ export default defineConfig({
       // these numbers UP raises the matching threshold in the same PR.
       //
       // Earlier snapshots:
+      //   2026-05-08 post-functional-truth-audit-fix-pass: 88.42/82.94/85.81/89.39 → floor 87/80/85/88
+      //   2026-05-08 post-registry-ssr-window-guards: 88.68/83.18/86.05/89.62 → floor 87/80/85/88
       //   2026-05-08 post-effects-confetti-fallthrough: 88.68/83.18/86.05/89.62 → floor 87/80/85/88
       //   2026-05-08 post-base-url-empty-fallback: 88.68/83.11/86.05/89.62 → floor 87/80/85/88
       //   2026-05-08 post-runner-stop-ctx-null: 88.69/83.09/86.11/89.62 → floor 87/80/85/88

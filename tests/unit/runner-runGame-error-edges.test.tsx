@@ -25,9 +25,9 @@ vi.mock('@lib/python/pyodide-singleton', () => ({
 }));
 
 vi.mock('@lib/pygame/runtime/compiler', () => ({
-  compilePythonGame: vi.fn().mockReturnValue(
-    'import pygame\nif __name__ == "__main__":\n    pygame.init()\n'
-  ),
+  compilePythonGame: vi
+    .fn()
+    .mockReturnValue('import pygame\nif __name__ == "__main__":\n    pygame.init()\n'),
 }));
 
 const ctxStub = {

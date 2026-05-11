@@ -8,7 +8,8 @@ import type React from 'react';
 import { describe, expect, it, vi, beforeAll, beforeEach, afterEach } from 'vitest';
 import { render, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom/vitest';
-import PygameLivePreview, { type GameChoice } from '@/components/pygame/live-preview';
+import PygameLivePreview from '@/components/pygame/live-preview';
+import type { GameChoice } from '@lib/wizard/types';
 
 const setCanvasContextMock = vi.fn();
 const flushFrameBufferMock = vi.fn();
@@ -85,9 +86,6 @@ describe('PygameLivePreview — runSnippet non-Error rejection (line 195 path 1 
     await waitFor(() => {
       expect(toastMock).toHaveBeenCalled();
     });
-    expect(errSpy).toHaveBeenCalledWith(
-      '[live-preview]',
-      'Failed to execute pygame code'
-    );
+    expect(errSpy).toHaveBeenCalledWith('[live-preview]', 'Failed to execute pygame code');
   });
 });

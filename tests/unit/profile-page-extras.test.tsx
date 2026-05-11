@@ -195,10 +195,7 @@ describe('Profile page — cold edge branches in profile.tsx', () => {
     // createdAt. loadProfile accepts it (typeof '' === 'string') but
     // line 242's truthy guard treats it as falsy and falls through to
     // strings.profile.nameSection.sinceFallbackDate.
-    localStorage.setItem(
-      'pp.profile',
-      JSON.stringify({ name: 'Maya', createdAt: '' })
-    );
+    localStorage.setItem('pp.profile', JSON.stringify({ name: 'Maya', createdAt: '' }));
     renderProfile();
     // The "since" copy interpolates the fallback ("your first day").
     expect(screen.getByText(/your first day/)).toBeInTheDocument();

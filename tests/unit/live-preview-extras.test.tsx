@@ -10,14 +10,13 @@ import type React from 'react';
 import { describe, expect, it, vi, beforeAll, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom/vitest';
-import PygameLivePreview, { type GameChoice } from '@/components/pygame/live-preview';
+import PygameLivePreview from '@/components/pygame/live-preview';
+import type { GameChoice } from '@lib/wizard/types';
 import { TooltipProvider } from '@/components/ui/tooltip';
 
 // The Compare button uses a Radix Tooltip; the rest of the live-preview
 // surface doesn't, so we only wrap renders that pass showComparison=true.
-const withTooltip = (children: React.ReactNode) => (
-  <TooltipProvider>{children}</TooltipProvider>
-);
+const withTooltip = (children: React.ReactNode) => <TooltipProvider>{children}</TooltipProvider>;
 
 vi.mock('@lib/pygame/runtime/simulator', () => ({
   setCanvasContext: vi.fn(),
@@ -94,11 +93,7 @@ describe('PygameLivePreview — Compare button (showComparison flag)', () => {
   it('renders the Compare button when showComparison=true', () => {
     render(
       withTooltip(
-        <PygameLivePreview
-          choices={[sampleChoice]}
-          pyodide={mockPyodide}
-          showComparison={true}
-        />
+        <PygameLivePreview choices={[sampleChoice]} pyodide={mockPyodide} showComparison={true} />
       )
     );
     expect(screen.getByTestId('button-toggle-split')).toBeInTheDocument();

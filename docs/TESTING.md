@@ -1,6 +1,6 @@
 ---
 title: Testing
-updated: 2026-05-04
+updated: 2026-05-08
 status: current
 domain: quality
 ---
@@ -136,7 +136,7 @@ If a Playwright spec needs to target an element that doesn't have a `data-testid
 
 ## Coverage
 
-`vitest.config.ts` ships v8 coverage with `text + html + lcov` reporters and writes to `coverage/`. Include globs are `app/**/*.{ts,tsx}` and `src/**/*.{ts,tsx}`; barrels and `*.stories.tsx` are excluded. Thresholds are not enforced yet — adding them is tracked in [`STATE.md`](STATE.md).
+`vitest.config.ts` ships v8 coverage with `text + html + lcov` reporters and writes to `coverage/`. Include globs are `app/**/*.{ts,tsx}` and `src/**/*.{ts,tsx}`; barrels and `*.stories.tsx` are excluded. **Thresholds are enforced** — current configured floors are statements 87, branches 80, functions 85, lines 88 (see the "Future enhancements" section below for the lineage table and measured actuals). The ratchet doctrine: floors only ever move up, never down, and only land alongside the commit that earned the headroom.
 
 ## CI integration
 
@@ -165,13 +165,36 @@ If a Playwright spec needs to target an element that doesn't have a `data-testid
 | Playwright times out at startup | `pnpm dev` slow / port 5173 busy | Increase `webServer.timeout` in `playwright.config.ts`; free port 5173 |
 | Asset catalog 404 in tests | `predev`/`prebuild` didn't run | `pnpm catalog` |
 
+## Visual + Android smoke harnesses (artifact-only)
+
+Added 2026-05-08 from the functional truth audit (T1, T2). Both harnesses
+write screenshots to a **gitignored** `artifacts/` directory for human
+review. There are intentionally NO committed baselines and NO diff-based
+regression assertions yet — until UI/UX confidence is real, baselines
+would just enshrine current-state flaws. Visual regression with diffs
+becomes meaningful only after the audit fix list closes.
+
+| Harness | Trigger | Output |
+|---|---|---|
+| Web routes (Playwright) | `pnpm test:e2e` (the file `tests/e2e/visual-routes-smoke.spec.ts` runs alongside other e2e specs) | `artifacts/screenshots/web/<viewport>/<route>.png` |
+| Android (Maestro) | `pnpm test:android:smoke` (gated on `adb devices` + `maestro --version`) | `artifacts/screenshots/android/0[1-3]-*.png` |
+
+Both contracts pin only "did the page render without throwing" — the
+reviewer opens the artifact directory to assess visual quality. Gating
+on Maestro/adb means the script exits cleanly with a friendly skip on
+machines without an emulator.
+
+See `artifacts/README.md` for the directory layout, clear-out recipe,
+and the audit doctrine the harnesses encode.
+
 ## Future enhancements
 
-- Coverage thresholds (90/85/90/90 lines/branches/functions/statements) re-enabled.
-- Visual regression with Playwright screenshots (per-project baselines).
-- Accessibility checks via `@axe-core/playwright`.
+- Coverage thresholds reach the aspirational target of 90/85/90/90 (lines / branches / functions / statements). **Current enforced floors** in `vitest.config.ts` are lower — statements 87, branches 80, functions 85, lines 88 — and they ratchet upward as drainage commits add covered code. **Current measured actuals** at HEAD: statements 88.69, branches 83.21, functions 86.05, lines 89.63. See the lineage table in `vitest.config.ts` for ratchet history. Aspirational ≠ enforced; the gap is intentional headroom so CI doesn't flap on legitimate test-additions that drop branch percent fractionally.
+- Visual regression baselines committed once UI/UX is confidence-locked. The Playwright + Maestro harnesses already capture the screenshots; flipping them into pass/fail mode is a one-line change once we want it.
+- Accessibility checks via `@axe-core/playwright`. (Already partially shipped via `tests/integration/axe-*.test.tsx`; expanding to e2e is the future enhancement.)
 - Performance benchmarks for Pyodide cold-start and frame-rate of the simulator.
 - Mutation testing (e.g. `stryker`) on the grader and PyGame simulator.
+- Catalog self-test that runs every lesson's bundled `solution` through real Pyodide + the grader. (The unit-time surface-marker check already shipped — see `tests/unit/lessons-content.test.ts`. The full Pyodide round-trip is the future enhancement.)
 
 ## See also
 

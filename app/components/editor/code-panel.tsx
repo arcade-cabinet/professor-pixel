@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Copy, Download, FileCode, Info } from 'lucide-react';
 import { cn } from '@lib/utils/cn';
-import { PlacedComponent } from './wysiwyg';
+import type { PlacedComponent } from '@lib/pygame/components/types';
 import { getComponentById } from '@lib/pygame/components/registry';
 import { useToast } from '@lib/hooks/use-toast';
 

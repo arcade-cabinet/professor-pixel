@@ -17,9 +17,7 @@ vi.mock('react-dnd', () => ({
 }));
 
 vi.mock('@lib/pygame/runtime/simulator', async () => {
-  const actual = await vi.importActual<Record<string, unknown>>(
-    '@lib/pygame/runtime/simulator'
-  );
+  const actual = await vi.importActual<Record<string, unknown>>('@lib/pygame/runtime/simulator');
   return {
     ...actual,
     setCanvasContext: vi.fn(),
@@ -91,9 +89,7 @@ describe('PygameEditorCanvas — component selection + drag-move', () => {
     render(
       <PygameEditorCanvas
         {...baseProps}
-        components={[
-          { id: 'p1', componentId: 'ball', x: 100, y: 100, properties: {} },
-        ]}
+        components={[{ id: 'p1', componentId: 'ball', x: 100, y: 100, properties: {} }]}
         onSelect={onSelect}
         onMove={onMove}
       />
@@ -109,9 +105,7 @@ describe('PygameEditorCanvas — component selection + drag-move', () => {
     render(
       <PygameEditorCanvas
         {...baseProps}
-        components={[
-          { id: 'p1', componentId: 'ball', x: 100, y: 100, properties: {} },
-        ]}
+        components={[{ id: 'p1', componentId: 'ball', x: 100, y: 100, properties: {} }]}
         onMove={onMove}
       />
     );
@@ -143,9 +137,7 @@ describe('PygameEditorCanvas — component selection + drag-move', () => {
     render(
       <PygameEditorCanvas
         {...baseProps}
-        components={[
-          { id: 'p1', componentId: 'ball', x: 100, y: 100, properties: {} },
-        ]}
+        components={[{ id: 'p1', componentId: 'ball', x: 100, y: 100, properties: {} }]}
         onMove={onMove}
       />
     );
@@ -170,9 +162,7 @@ describe('PygameEditorCanvas — component selection + drag-move', () => {
     render(
       <PygameEditorCanvas
         {...baseProps}
-        components={[
-          { id: 'p1', componentId: 'ball', x: 100, y: 100, properties: {} },
-        ]}
+        components={[{ id: 'p1', componentId: 'ball', x: 100, y: 100, properties: {} }]}
         onMove={onMove}
       />
     );
@@ -200,9 +190,7 @@ describe('PygameEditorCanvas — component selection + drag-move', () => {
     render(
       <PygameEditorCanvas
         {...baseProps}
-        components={[
-          { id: 'p1', componentId: 'ball', x: 100, y: 100, properties: {} },
-        ]}
+        components={[{ id: 'p1', componentId: 'ball', x: 100, y: 100, properties: {} }]}
         onMove={onMove}
       />
     );
@@ -230,9 +218,7 @@ describe('PygameEditorCanvas — component selection + drag-move', () => {
     render(
       <PygameEditorCanvas
         {...baseProps}
-        components={[
-          { id: 'p1', componentId: 'ball', x: 100, y: 100, properties: {} },
-        ]}
+        components={[{ id: 'p1', componentId: 'ball', x: 100, y: 100, properties: {} }]}
         onMove={onMove}
       />
     );
@@ -260,9 +246,7 @@ describe('PygameEditorCanvas — component selection + drag-move', () => {
     render(
       <PygameEditorCanvas
         {...baseProps}
-        components={[
-          { id: 'p1', componentId: 'ball', x: 100, y: 100, properties: {} },
-        ]}
+        components={[{ id: 'p1', componentId: 'ball', x: 100, y: 100, properties: {} }]}
         onSelect={onSelect}
       />
     );
@@ -288,18 +272,14 @@ describe('PygameEditorCanvas — component selection + drag-move', () => {
 describe('PygameEditorCanvas — render branches', () => {
   it('renders the empty-canvas hint when no components are placed', () => {
     render(<PygameEditorCanvas {...baseProps} />);
-    expect(
-      screen.getByText(/Drag components here, or tap one to arm it/i)
-    ).toBeInTheDocument();
+    expect(screen.getByText(/Drag components here, or tap one to arm it/i)).toBeInTheDocument();
   });
 
   it('hides the empty-canvas hint once a component is placed', () => {
     render(
       <PygameEditorCanvas
         {...baseProps}
-        components={[
-          { id: 'p1', componentId: 'ball', x: 0, y: 0, properties: {} },
-        ]}
+        components={[{ id: 'p1', componentId: 'ball', x: 0, y: 0, properties: {} }]}
       />
     );
     expect(
@@ -315,16 +295,12 @@ describe('PygameEditorCanvas — render branches', () => {
   });
 
   it('runs the showGrid render branch without crashing', () => {
-    expect(() =>
-      render(<PygameEditorCanvas {...baseProps} showGrid={true} />)
-    ).not.toThrow();
+    expect(() => render(<PygameEditorCanvas {...baseProps} showGrid={true} />)).not.toThrow();
   });
 
   it('runs the isPlaying render branch (requestAnimationFrame loop) without crashing', () => {
     // jsdom has rAF; it shouldn't run synchronously and we cleanup on unmount.
-    const { unmount } = render(
-      <PygameEditorCanvas {...baseProps} isPlaying={true} />
-    );
+    const { unmount } = render(<PygameEditorCanvas {...baseProps} isPlaying={true} />);
     expect(() => unmount()).not.toThrow();
   });
 

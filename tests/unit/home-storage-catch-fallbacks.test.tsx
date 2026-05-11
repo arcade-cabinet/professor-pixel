@@ -18,6 +18,39 @@ vi.mock('wouter', () => ({
 vi.mock('@lib/storage/persistence', () => ({
   loadWizardState: () => null,
   saveWizardState: vi.fn(),
+  // Mirror src/storage/persistence.ts shape: try/catch swallows
+  // SecurityError / QuotaExceededError / no-storage-mode so the home
+  // page never sees a throw bubble up. The cold-arm test below spies
+  // localStorage to throw and expects render not to crash.
+  loadLastLandingPath: () => {
+    try {
+      const v = localStorage.getItem('pp.lastLandingPath');
+      return v === 'wizard' || v === 'lessons' ? v : null;
+    } catch {
+      return null;
+    }
+  },
+  saveLastLandingPath: (p: 'wizard' | 'lessons') => {
+    try {
+      localStorage.setItem('pp.lastLandingPath', p);
+    } catch {
+      /* fail silently */
+    }
+  },
+  hasSeenIntro: () => {
+    try {
+      return localStorage.getItem('pp.hasSeenIntro') === '1';
+    } catch {
+      return false;
+    }
+  },
+  markIntroSeen: () => {
+    try {
+      localStorage.setItem('pp.hasSeenIntro', '1');
+    } catch {
+      /* fail silently */
+    }
+  },
 }));
 
 vi.mock('@lib/storage/projects', () => ({

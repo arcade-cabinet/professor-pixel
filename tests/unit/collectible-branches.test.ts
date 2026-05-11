@@ -106,7 +106,7 @@ describe('collectible.preview — type branches', () => {
     expect(c.fillText).toBeGreaterThan(0);
   });
 
-  it("unknown type falls through every branch — no draw calls (line 59 final falsy arm)", () => {
+  it('unknown type falls through every branch — no draw calls (line 59 final falsy arm)', () => {
     // The if/else-if chain ends at \`type === 'health'\`. A type that
     // matches none (e.g. 'gem' from a future flow) silently emits no
     // shape. Pin: \`fillStyle\` is still set from the unconditional

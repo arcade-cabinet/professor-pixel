@@ -236,12 +236,16 @@ describe('pygameShim — draw module (line, polygon)', () => {
   it('draw.polygon emits one line per edge (closed polygon)', () => {
     const surface = pygameShim.display.set_mode([400, 300]);
     flushFrameBuffer(); // clear any pending commands
-    pygameShim.draw.polygon(surface, [255, 0, 0], [
-      [0, 0],
-      [10, 0],
-      [10, 10],
-      [0, 10],
-    ]);
+    pygameShim.draw.polygon(
+      surface,
+      [255, 0, 0],
+      [
+        [0, 0],
+        [10, 0],
+        [10, 10],
+        [0, 10],
+      ]
+    );
     const cmds = getFrameBuffer();
     // 4 edges → 4 line commands.
     const lineCmds = cmds.filter((c) => c.type === 'line');
@@ -250,10 +254,7 @@ describe('pygameShim — draw module (line, polygon)', () => {
 
   it('draw on a non-main surface does NOT emit framebuffer commands', () => {
     flushFrameBuffer();
-    const offscreen = pygameShim.transform.scale(
-      pygameShim.display.set_mode([100, 100]),
-      [50, 50]
-    );
+    const offscreen = pygameShim.transform.scale(pygameShim.display.set_mode([100, 100]), [50, 50]);
     flushFrameBuffer(); // wipe set_mode's clear
     pygameShim.draw.circle(offscreen, [255, 0, 0], [10, 10], 5);
     // Off-main draws are no-ops; framebuffer stays empty.
