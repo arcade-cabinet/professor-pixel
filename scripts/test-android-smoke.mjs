@@ -13,16 +13,22 @@
 // Triggered manually for now. A future CI job (self-hosted Android runner
 // or matrix expansion of cd-mobile.yml) can call it once a runner exists.
 
-import { execSync } from 'node:child_process';
+import { execFileSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { resolve } from 'node:path';
+
+// All child processes spawned here use execFileSync with an args array
+// (no shell). The maestro path is sourced from `homedir()` and the flow
+// path from `process.cwd()` — both attacker-controllable in principle, so
+// shell interpolation would be a CodeQL-flagged command-injection vector.
+// execFile bypasses /bin/sh entirely: argv stays an array.
 
 function maestroPath() {
   const candidates = ['maestro', resolve(homedir(), '.maestro', 'bin', 'maestro')];
   for (const c of candidates) {
     try {
-      execSync(`${c} --version`, { stdio: 'ignore' });
+      execFileSync(c, ['--version'], { stdio: 'ignore' });
       return c;
     } catch {
       // try next
@@ -33,7 +39,7 @@ function maestroPath() {
 
 function adbDevices() {
   try {
-    const out = execSync('adb devices', { encoding: 'utf8' });
+    const out = execFileSync('adb', ['devices'], { encoding: 'utf8' });
     // First line is "List of devices attached"; subsequent non-blank lines
     // are "<serial>\t<state>". State `device` means ready; `offline` /
     // `unauthorized` means no.
@@ -77,7 +83,7 @@ if (!existsSync(flowPath)) {
 }
 
 try {
-  execSync(`${maestro} test ${flowPath}`, { stdio: 'inherit' });
+  execFileSync(maestro, ['test', flowPath], { stdio: 'inherit' });
   console.log('[android-smoke] flow finished. Screenshots: artifacts/screenshots/android/');
 } catch (err) {
   console.error('[android-smoke] maestro test failed:', err.message);
