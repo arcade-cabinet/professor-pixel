@@ -114,6 +114,10 @@ describe('shipped lessons.json', () => {
     // Without this, a rule name containing regex metacharacters (`$`, `(`,
     // `.`, etc.) would change the match semantics or throw.
     const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    // Python identifier left-boundary: callable/identifier must NOT be preceded
+    // by another identifier char. Plain `\b` would match `foo(` inside `xfoo(`
+    // — see CodeRabbit feedback on PR #360. Node 18+ supports lookbehinds.
+    const identBoundary = (name: string) => `(?<![A-Za-z0-9_])${escapeRegExp(name)}`;
 
     for (const lesson of lessons) {
       for (const step of lesson.content.steps) {
@@ -126,16 +130,16 @@ describe('shipped lessons.json', () => {
               case 'function_call':
                 if (rc.name) {
                   expect(
-                    sol.includes(`${rc.name}(`),
-                    `${where} requires call to ${rc.name}() but solution has no '${rc.name}('`
+                    new RegExp(`${identBoundary(rc.name)}\\s*\\(`).test(sol),
+                    `${where} requires call to ${rc.name}() but solution has no boundary-aware match for '${rc.name}('`
                   ).toBe(true);
                 }
                 break;
               case 'imports_module':
                 if (rc.name) {
                   expect(
-                    sol.includes(`import ${rc.name}`) || sol.includes(`from ${rc.name}`),
-                    `${where} requires import of ${rc.name} but solution has neither 'import ${rc.name}' nor 'from ${rc.name}'`
+                    new RegExp(`\\b(?:import|from)\\s+${escapeRegExp(rc.name)}\\b`).test(sol),
+                    `${where} requires import of ${rc.name} but solution has no boundary-aware 'import ${rc.name}' or 'from ${rc.name}'`
                   ).toBe(true);
                 }
                 break;
@@ -154,8 +158,8 @@ describe('shipped lessons.json', () => {
               case 'defines_class':
                 if (rc.name) {
                   expect(
-                    sol.includes(`class ${rc.name}`),
-                    `${where} requires class ${rc.name} but solution has no 'class ${rc.name}'`
+                    new RegExp(`\\bclass\\s+${escapeRegExp(rc.name)}\\b`).test(sol),
+                    `${where} requires class ${rc.name} but solution has no boundary-aware 'class ${rc.name}'`
                   ).toBe(true);
                 } else {
                   expect(/\bclass\s+\w+/.test(sol), `${where} requires a class def`).toBe(true);
@@ -164,7 +168,7 @@ describe('shipped lessons.json', () => {
               case 'calls_method':
                 if (rc.method) {
                   expect(
-                    sol.includes(`.${rc.method}(`),
+                    new RegExp(`\\.${escapeRegExp(rc.method)}\\s*\\(`).test(sol),
                     `${where} requires .${rc.method}() but solution has no '.${rc.method}('`
                   ).toBe(true);
                 }
@@ -172,8 +176,8 @@ describe('shipped lessons.json', () => {
               case 'variable_assignment':
                 if (rc.name) {
                   expect(
-                    new RegExp(`\\b${escapeRegExp(rc.name)}\\s*=`).test(sol),
-                    `${where} requires assignment to ${rc.name}`
+                    new RegExp(`${identBoundary(rc.name)}\\b\\s*=(?!=)`).test(sol),
+                    `${where} requires assignment to ${rc.name} (boundary-aware, not '==')`
                   ).toBe(true);
                 }
                 break;

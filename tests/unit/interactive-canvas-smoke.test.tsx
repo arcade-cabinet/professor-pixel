@@ -183,8 +183,15 @@ describe('InteractiveGameCanvas — drag-to-move', () => {
 describe('InteractiveGameCanvas — keyboard shortcuts', () => {
   it('Ctrl+G toggles the grid', () => {
     render(<InteractiveGameCanvas gameConfig={makeConfig(makeScene())} onConfigChange={vi.fn()} />);
-    // Just exercise the path — no throw means Ctrl+G handler ran.
-    expect(() => fireEvent.keyDown(window, { key: 'g', ctrlKey: true })).not.toThrow();
+    // Grid defaults to ON: toggle button carries `bg-muted` when showGrid=true
+    // (see app/components/pygame/interactive-canvas.tsx:257). Verify the
+    // shortcut actually flips state by asserting the className changes.
+    const toggle = screen.getByTestId('button-toggle-grid');
+    expect(toggle.className).toMatch(/bg-muted/);
+    fireEvent.keyDown(window, { key: 'g', ctrlKey: true });
+    expect(toggle.className).not.toMatch(/bg-muted/);
+    fireEvent.keyDown(window, { key: 'g', ctrlKey: true });
+    expect(toggle.className).toMatch(/bg-muted/);
   });
 
   it('Space (when target is body) toggles play/pause', () => {

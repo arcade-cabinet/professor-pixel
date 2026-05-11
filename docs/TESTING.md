@@ -136,7 +136,7 @@ If a Playwright spec needs to target an element that doesn't have a `data-testid
 
 ## Coverage
 
-`vitest.config.ts` ships v8 coverage with `text + html + lcov` reporters and writes to `coverage/`. Include globs are `app/**/*.{ts,tsx}` and `src/**/*.{ts,tsx}`; barrels and `*.stories.tsx` are excluded. Thresholds are not enforced yet — adding them is tracked in [`STATE.md`](STATE.md).
+`vitest.config.ts` ships v8 coverage with `text + html + lcov` reporters and writes to `coverage/`. Include globs are `app/**/*.{ts,tsx}` and `src/**/*.{ts,tsx}`; barrels and `*.stories.tsx` are excluded. **Thresholds are enforced** — current configured floors are statements 87, branches 80, functions 85, lines 88 (see the "Future enhancements" section below for the lineage table and measured actuals). The ratchet doctrine: floors only ever move up, never down, and only land alongside the commit that earned the headroom.
 
 ## CI integration
 
