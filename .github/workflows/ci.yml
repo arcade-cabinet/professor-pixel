@@ -153,7 +153,7 @@ jobs:
       # failure keeps storage costs bounded).
       - name: Upload Playwright artifacts on failure
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: playwright-production-shape-${{ github.sha }}
           path: |
